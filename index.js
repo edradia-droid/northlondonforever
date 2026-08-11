@@ -1,30 +1,81 @@
-/* Arsenal Treasure Room — homepage interactions */
 document.addEventListener("DOMContentLoaded", () => {
+  const sidebar = document.getElementById("sidebar");
+  const overlay = document.getElementById("overlay");
+  const menuBtn = document.getElementById("menuBtn");
+  const closeMenu = document.getElementById("closeMenu");
+  const sideNav = document.getElementById("sideNav");
+  const header = document.querySelector(".topbar");
 
-  /* Mobile navigation */
-  const toggle = document.getElementById("menuToggle");
-  const menu = document.getElementById("siteMenu");
-
-  if (toggle && menu) {
-    toggle.addEventListener("click", () => {
-      const open = menu.classList.toggle("open");
-      toggle.setAttribute("aria-expanded", String(open));
-      toggle.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
-    });
-
-    menu.querySelectorAll("a").forEach(link => {
-      link.addEventListener("click", () => {
-        menu.classList.remove("open");
-        toggle.setAttribute("aria-expanded", "false");
-      });
-    });
+  // Mobile sidebar
+  function openMenu() {
+    sidebar?.classList.add("open");
+    overlay?.classList.add("show");
+    document.body.classList.add("menu-open");
+    menuBtn?.setAttribute("aria-expanded", "true");
+    menuBtn?.setAttribute("aria-label", "Close menu");
   }
 
-  /* Reveal elements as they enter the screen */
+  function closeSidebar() {
+    sidebar?.classList.remove("open");
+    overlay?.classList.remove("show");
+    document.body.classList.remove("menu-open");
+    menuBtn?.setAttribute("aria-expanded", "false");
+    menuBtn?.setAttribute("aria-label", "Open menu");
+  }
+
+  menuBtn?.addEventListener("click", () => {
+    if (sidebar?.classList.contains("open")) closeSidebar();
+    else openMenu();
+  });
+
+  closeMenu?.addEventListener("click", closeSidebar);
+  overlay?.addEventListener("click", closeSidebar);
+
+  // Close sidebar after selecting a mobile navigation link.
+  sideNav?.querySelectorAll("a").forEach(link => {
+    link.addEventListener("click", closeSidebar);
+  });
+
+  // Close with Escape.
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") closeSidebar();
+  });
+
+  // If the screen becomes desktop-sized, remove mobile-open state.
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 900) closeSidebar();
+  });
+
+  // Header scroll effect.
+  window.addEventListener("scroll", () => {
+    header?.classList.toggle("scrolled", window.scrollY > 30);
+  });
+
+  // Active sidebar link.
+  const sections = document.querySelectorAll("main section[id]");
+  const navLinks = document.querySelectorAll(".nav-link");
+
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+
+        navLinks.forEach(link => link.classList.remove("active"));
+        const active = document.querySelector(
+          `.nav-link[href="#${entry.target.id}"]`
+        );
+        active?.classList.add("active");
+      });
+    }, { rootMargin: "-35% 0px -55% 0px" });
+
+    sections.forEach(section => observer.observe(section));
+  }
+
+  // Reveal elements.
   const revealItems = document.querySelectorAll(".reveal");
 
   if ("IntersectionObserver" in window) {
-    const observer = new IntersectionObserver((entries, obs) => {
+    const revealObserver = new IntersectionObserver((entries, obs) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add("visible");
@@ -33,12 +84,12 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }, { threshold: 0.12 });
 
-    revealItems.forEach(item => observer.observe(item));
+    revealItems.forEach(item => revealObserver.observe(item));
   } else {
     revealItems.forEach(item => item.classList.add("visible"));
   }
 
-  /* Timeline modal */
+  // Timeline modal — works if the elements exist on another page using this JS.
   const modal = document.getElementById("homeModal");
   const modalTitle = document.getElementById("modalTitle");
   const modalText = document.getElementById("modalText");
@@ -53,24 +104,19 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".timeline-item").forEach(item => {
     item.addEventListener("click", () => {
       if (!modal) return;
-      modalTitle.textContent = item.dataset.title || "Arsenal Moment";
-      modalText.textContent = item.dataset.text || "";
+      if (modalTitle) modalTitle.textContent = item.dataset.title || "Arsenal Moment";
+      if (modalText) modalText.textContent = item.dataset.text || "";
       modal.classList.add("open");
       modal.setAttribute("aria-hidden", "false");
     });
   });
 
   modalClose?.addEventListener("click", closeModal);
-
   modal?.addEventListener("click", event => {
     if (event.target === modal) closeModal();
   });
 
-  document.addEventListener("keydown", event => {
-    if (event.key === "Escape") closeModal();
-  });
-
-  /* Did-you-know carousel */
+  // Did-you-know carousel.
   const facts = [
     {
       title: "An unbeaten season became a piece of Arsenal folklore.",
@@ -99,20 +145,22 @@ document.addEventListener("DOMContentLoaded", () => {
     factIndex = (factIndex + 1) % facts.length;
     const fact = facts[factIndex];
 
-    factTitle.style.opacity = "0";
-    factText.style.opacity = "0";
+    if (factTitle) factTitle.style.opacity = "0";
+    if (factText) factText.style.opacity = "0";
 
     setTimeout(() => {
-      factTitle.textContent = fact.title;
-      factText.textContent = fact.text;
-      factTitle.style.opacity = "1";
-      factText.style.opacity = "1";
+      if (factTitle) {
+        factTitle.textContent = fact.title;
+        factTitle.style.opacity = "1";
+      }
+      if (factText) {
+        factText.textContent = fact.text;
+        factText.style.opacity = "1";
+      }
     }, 160);
   });
 
-  /* Treasure progress.
-     Uses the existing trophy-viewing localStorage key if present.
-     Falls back gracefully to 0/4 on the homepage. */
+  // Treasure progress.
   const progressText = document.getElementById("vaultProgress");
   const progressFill = document.getElementById("progressFill");
 
@@ -134,6 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!value) continue;
 
         const parsed = JSON.parse(value);
+
         if (Array.isArray(parsed)) {
           count = Math.min(parsed.length, 4);
           break;
@@ -145,7 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     } catch (_) {
-      /* Keep the safe default of 0/4. */
+      // Keep safe default of 0/4.
     }
 
     progressText.textContent = `${count} / 4`;
@@ -153,42 +202,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   updateVaultProgress();
-
-  /* If another page updates the same storage, refresh when returning here. */
   window.addEventListener("storage", updateVaultProgress);
   window.addEventListener("pageshow", updateVaultProgress);
 });
-
-const header=document.querySelector(".topbar");const btn=document.getElementById("menuBtn");const nav=document.getElementById("nav");window.addEventListener("scroll",()=>header.classList.toggle("scrolled",scrollY>30));btn?.addEventListener("click",()=>nav.classList.toggle("open"));nav?.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>nav.classList.remove("open")));
-
-/* HOME DASHBOARD */
-const sidebar = document.getElementById("sidebar");
-const overlay = document.getElementById("overlay");
-const menuBtn = document.getElementById("menuBtn");
-const closeMenu = document.getElementById("closeMenu");
-
-function openMenu(){sidebar.classList.add("open");overlay.classList.add("show")}
-function closeSidebar(){sidebar.classList.remove("open");overlay.classList.remove("show")}
-
-menuBtn?.addEventListener("click", openMenu);
-closeMenu?.addEventListener("click", closeSidebar);
-overlay?.addEventListener("click", closeSidebar);
-
-document.querySelectorAll(".nav-link, .treasure-link").forEach(link=>{
-  link.addEventListener("click", closeSidebar);
-});
-
-const sections = document.querySelectorAll("main section[id]");
-const navLinks = document.querySelectorAll(".nav-link");
-
-const observer = new IntersectionObserver(entries=>{
-  entries.forEach(entry=>{
-    if(entry.isIntersecting){
-      navLinks.forEach(link=>link.classList.remove("active"));
-      const active=document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
-      if(active) active.classList.add("active");
-    }
-  });
-},{rootMargin:"-35% 0px -55% 0px"});
-
-sections.forEach(section=>observer.observe(section));

@@ -1158,3 +1158,95 @@ footer{border-top:1px solid var(--line);padding:28px 5%;display:flex;justify-con
 .legacy{margin-top:55px;text-align:center;padding:60px 20px;background:linear-gradient(135deg,#170607,#111);border:1px solid var(--line)}.legacy h2{font-size:clamp(35px,6vw,70px);margin:8px}.legacy h2 span{color:var(--red)}
 @media(max-width:900px){.cards{grid-template-columns:repeat(2,1fr)}.story-grid{grid-template-columns:1fr 1fr}.profile{grid-template-columns:1fr}.number{display:none}}
 @media(max-width:650px){nav{display:none}#menuBtn{display:block}.hero{min-height:72vh;padding:70px 6%}.hero h1{letter-spacing:-3px}.cards{grid-template-columns:1fr}.card{min-height:0}.card-img{height:350px}.section-head{display:block}.story-grid{grid-template-columns:1fr}footer{display:block;text-align:center}.detail-hero{min-height:65vh;padding:65px 6%}.detail-hero h1{letter-spacing:-3px}.facts{padding:24px}.fact{display:block}.fact dd{text-align:left;max-width:none;margin-top:6px}.portrait{min-height:420px}}
+
+
+/* =========================================================
+   MOBILE SIDEBAR FIX
+   Add this block to the END of your existing styles.css.
+   ========================================================= */
+
+@media (max-width: 900px) {
+  body.menu-open {
+    overflow: hidden;
+  }
+
+  .menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    z-index: 1100;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(320px, 86vw);
+    height: 100dvh;
+    z-index: 1200;
+    transform: translateX(-105%);
+    visibility: hidden;
+    pointer-events: none;
+    overflow-y: auto;
+    transition: transform .28s ease, visibility .28s ease;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .mobile-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1150;
+    background: rgba(0, 0, 0, .62);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .28s ease, visibility .28s ease;
+  }
+
+  .mobile-overlay.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .close-menu {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .side-nav {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .side-nav .nav-link,
+  .side-nav .treasure-link {
+    display: flex;
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+@media (min-width: 901px) {
+  .sidebar {
+    transform: none;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .mobile-overlay,
+  .close-menu {
+    display: none;
+  }
+}
