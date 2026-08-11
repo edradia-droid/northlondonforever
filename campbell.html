@@ -9,8 +9,7 @@
 ```
 <title>Sol Campbell | Arsenal Legend</title>
 
-<link rel="stylesheet" href="./styles.css">
-<script src="index.js" defer></script>
+<link rel="stylesheet" href="styles.css">
 ```
 
 </head>
@@ -18,152 +17,274 @@
 <body>
 
 ```
-<div class="arsenal-logo">
+<header class="topbar">
 
-    <nav class="main-nav">
+    <a class="brand" href="index.html">
+        <span class="mark">A</span>
 
-        <h1 class="logo-text">
-            <span class="nl4">NL4</span><br>
-            <em class="north-london">North London Forever</em>
-        </h1>
+        <span>
+            <b>ARSENAL</b>
+            <small>NORTH LONDON FOREVER</small>
+        </span>
+    </a>
 
-        <div class="menu">
-            <a href="index.html">Home</a>
-            <a href="history.html">History</a>
-            <a href="players.html" class="active">Players</a>
-            <a href="trophies.html">Treasures</a>
-        </div>
+    <button
+        id="menuBtn"
+        onclick="document.querySelector('nav').classList.toggle('open')"
+    >
+        ☰
+    </button>
 
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="history.html">History</a>
+        <a class="active" href="legends.html">Legends</a>
+        <a href="trophies.html">Treasure Room</a>
     </nav>
 
-    <main>
+</header>
 
-        <h1>Sol Campbell</h1>
 
-        <p>
-            Sol Campbell (born September 18, 1974) is an English former
-            professional footballer and manager best known as a commanding
-            central defender for Arsenal, Tottenham Hotspur, and the
-            England national team. Renowned for strength, leadership, and
-            tactical discipline, he became one of the Premier League's
-            most decorated defenders.
+<section
+    class="detail-hero"
+    style="--hero: url('https://i.postimg.cc/HsvVSkRY/screenshot-2023-10-31-at-13-49-25-1202x1598.jpg');"
+>
+
+    <div class="hero-copy">
+
+        <p class="eyebrow">
+            ARSENAL LEGENDS / PLAYER ARCHIVE
         </p>
 
-        <table class="player-table">
-
-            <tr>
-                <td rowspan="2" class="image-cell">
-                    <img
-                        src="https://i.postimg.cc/HsvVSkRY/screenshot-2023-10-31-at-13-49-25-1202x1598.jpg"
-                        alt="Sol Campbell">
-                </td>
-
-                <th>Sol Campbell</th>
-            </tr>
-
-            <tr>
-                <td>Arsenal Legend</td>
-            </tr>
-
-            <tr>
-                <td>Full Name</td>
-                <td>Sulzeer Jeremiah Campbell</td>
-            </tr>
-
-            <tr>
-                <td>Born</td>
-                <td>September 18, 1974 — Plaistow, London, England</td>
-            </tr>
-
-            <tr>
-                <td>Position</td>
-                <td>Centre-back</td>
-            </tr>
-
-            <tr>
-                <td>Clubs</td>
-                <td>Tottenham Hotspur, Arsenal, Portsmouth, Newcastle United</td>
-            </tr>
-
-            <tr>
-                <td>England Caps/Goals</td>
-                <td>73 / 1</td>
-            </tr>
-
-        </table>
-
-        <h1>Club Career and Achievements</h1>
+        <h1>
+            SOL<br>
+            <span>CAMPBELL</span>
+        </h1>
 
         <p>
-            Campbell began his professional career at Tottenham Hotspur,
-            making his debut in 1992 and eventually becoming captain.
-            In 2001, he made the controversial move to Arsenal on a free
-            transfer.
+            A commanding centre-back whose strength, leadership and
+            defensive excellence helped Arsenal conquer the Premier
+            League and complete the legendary Invincibles season.
         </p>
+
+        <a class="gold-btn" href="#story">
+            Explore the story ↓
+        </a>
+
+    </div>
+
+</section>
+
+
+<main class="main">
+
+    <div class="section-head">
+
+        <div>
+            <p class="eyebrow">
+                THE COMPLETE STORY
+            </p>
+
+            <h2>
+                THE MAN BEHIND<br>
+                <span>THE LEGEND.</span>
+            </h2>
+        </div>
+
+    </div>
+
+
+    <section class="profile">
+
+        <article class="portrait">
+
+            <img
+                src="https://i.postimg.cc/HsvVSkRY/screenshot-2023-10-31-at-13-49-25-1202x1598.jpg"
+                alt="Sol Campbell, Arsenal legend"
+            >
+
+        </article>
+
+
+        <article class="facts">
+
+            <p class="eyebrow">
+                PLAYER ARCHIVE
+            </p>
+
+            <h2>
+                AT A GLANCE
+            </h2>
+
+            <dl>
+
+                <div class="fact">
+                    <dt>Full Name</dt>
+                    <dd>Sulzeer Jeremiah Campbell</dd>
+                </div>
+
+                <div class="fact">
+                    <dt>Born</dt>
+                    <dd>September 18, 1974 – Plaistow, London</dd>
+                </div>
+
+                <div class="fact">
+                    <dt>Position</dt>
+                    <dd>Centre-back</dd>
+                </div>
+
+                <div class="fact">
+                    <dt>Arsenal Era</dt>
+                    <dd>2001–2006 and 2010</dd>
+                </div>
+
+                <div class="fact">
+                    <dt>International</dt>
+                    <dd>73 caps / 1 goal for England</dd>
+                </div>
+
+                <div class="fact">
+                    <dt>Major Honours</dt>
+                    <dd>2 Premier League titles / 3 FA Cups</dd>
+                </div>
+
+            </dl>
+
+        </article>
+
+    </section>
+
+
+    <section id="story">
+
+        <div class="section-head">
+
+            <div>
+
+                <p class="eyebrow">
+                    02 / HIS JOURNEY
+                </p>
+
+                <h2>
+                    THE SOL STORY
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="story-grid">
+
+            <article class="story">
+
+                <h3>
+                    Club Career &amp; Arsenal Legacy
+                </h3>
+
+                <p>
+                    Campbell began his professional career with Tottenham
+                    Hotspur before making the controversial move across
+                    North London to Arsenal in 2001. His arrival brought
+                    experience, physical strength and leadership to Arsène
+                    Wenger's defence.
+                </p>
+
+                <p>
+                    At Arsenal, Campbell won two Premier League titles
+                    and three FA Cups. He became a central figure in the
+                    2003–04 Invincibles side, helping Arsenal complete an
+                    entire Premier League season without defeat.
+                </p>
+
+            </article>
+
+
+            <article class="story">
+
+                <h3>
+                    International Career
+                </h3>
+
+                <p>
+                    Campbell represented England between 1996 and 2007,
+                    earning 73 caps and scoring once. He appeared at six
+                    consecutive major international tournaments, from
+                    UEFA Euro 1996 through the 2006 FIFA World Cup.
+                </p>
+
+                <p>
+                    His consistency and commanding performances made him
+                    one of England's most respected defenders of his era.
+                </p>
+
+            </article>
+
+
+            <article class="story">
+
+                <h3>
+                    Later Career &amp; Coaching
+                </h3>
+
+                <p>
+                    After leaving Arsenal, Campbell captained Portsmouth
+                    to FA Cup success in 2008 before later playing for
+                    Notts County and Newcastle United. He eventually
+                    retired from professional football.
+                </p>
+
+                <p>
+                    Campbell later moved into management, taking charge
+                    of Macclesfield Town and Southend United while also
+                    becoming an advocate for greater diversity and
+                    opportunity within football.
+                </p>
+
+            </article>
+
+        </div>
+
+    </section>
+
+
+    <section class="legacy">
+
+        <p class="eyebrow">
+            NORTH LONDON FOREVER
+        </p>
+
+        <h2>
+            EVERY LEGEND<br>
+            <span>LEAVES A MARK.</span>
+        </h2>
 
         <p>
-            At Arsenal, Campbell won two Premier League titles and three
-            FA Cups. He was a key member of the legendary 2003–04
-            "Invincibles" team that completed an entire Premier League
-            season unbeaten.
+            Sol Campbell's power, leadership and defensive excellence
+            made him an unforgettable Arsenal Invincible and one of
+            the defining defenders of his generation.
         </p>
 
-        <p>
-            Later, he captained Portsmouth to the 2008 FA Cup victory
-            before finishing his playing career with Newcastle United.
-            Remarkably, all of his major club transfers were completed
-            as free transfers.
-        </p>
+        <a class="gold-btn" href="legends.html">
+            ← Back to Arsenal Legends
+        </a>
 
-        <h1>International Career</h1>
+    </section>
 
-        <p>
-            Between 1996 and 2007, Campbell earned 73 England caps,
-            scoring once. He represented England at six consecutive major
-            tournaments from Euro 1996 through the 2006 World Cup.
-        </p>
+</main>
 
-        <p>
-            He was selected for both the 2002 FIFA World Cup and UEFA
-            Euro 2004 all-star teams, recognition of his consistency at
-            international level.
-        </p>
 
-        <h1>Coaching and Advocacy</h1>
+<footer>
 
-        <p>
-            After retiring, Campbell moved into management, taking charge
-            of Macclesfield Town and later Southend United. He gained
-            experience working with teams facing difficult circumstances.
-        </p>
+    <b>ARSENAL</b>
 
-        <p>
-            Campbell has also spoken publicly about racial inequality in
-            British football coaching and has advocated for greater
-            representation and opportunity within the sport.
-        </p>
+    <span>
+        History • Heritage • North London Forever
+    </span>
 
-        <h1>Recognition and Legacy</h1>
-
-        <p>
-            In 2023, Campbell received the Sporting Equals Lifetime
-            Achievement Award for his contributions on and off the pitch.
-        </p>
-
-        <p>
-            Today, Sol Campbell is remembered as a trailblazing defender,
-            an Arsenal Invincible, and a powerful voice for equality and
-            leadership within football.
-        </p>
-
-        <p>
-            <a href="players.html">← Back to Players</a>
-        </p>
-
-    </main>
-
-</div>
+</footer>
 ```
 
 </body>
+
 </html>

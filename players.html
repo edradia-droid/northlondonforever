@@ -4,65 +4,69 @@
 
 <head>
     <meta charset="utf-8">
+
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1"
+        content="width=device-width, initial-scale=1.0"
     >
 
-```
-<title>Arsenal Players | Arsenal Treasure Room</title>
+    <title>Arsenal Players | Arsenal Treasure Room</title>
 
-<link
-    rel="stylesheet"
-    href="players-archive.css"
->
-```
+    <link
+        rel="stylesheet"
+        href="players-archive.css"
+    >
 
+    <script src="index.js" defer></script>
 </head>
-
 <body>
 
-```
+
 <!-- =========================
      TOP NAVIGATION
 ========================== -->
 
 <header class="topbar">
 
-    <a class="brand" href="players.html">
 
-        <span class="mark">A</span>
+<a class="brand" href="players.html">
+    <span class="mark">A</span>
 
-        <span>
-            <b>ARSENAL TREASURE ROOM</b>
-            <small>PLAYERS ARCHIVE</small>
-        </span>
+    <span>
+        <b>ARSENAL TREASURE ROOM</b>
+        <small>PLAYERS ARCHIVE</small>
+    </span>
+</a>
 
+<button
+    id="menuBtn"
+    class="menu-btn"
+    type="button"
+    aria-label="Open navigation menu"
+    aria-expanded="false"
+>
+    ☰
+</button>
+
+<nav id="mainNav" class="mobile-nav">
+
+    <a href="index.html">Home</a>
+
+    <a href="history.html">History</a>
+
+    <a href="players.html" class="active">
+        Players
     </a>
 
+    <a href="trophies.html">
+        Treasures
+    </a>
 
-    <nav>
+</nav>
 
-        <a href="index.html">Home</a>
-
-        <a href="history.html">History</a>
-
-        <a href="players.html" class="active">
-            Players
-        </a>
-
-        <a href="trophies.html">
-            Treasures
-        </a>
-
-    </nav>
-
-
-    <button id="menuBtn">
-        ☰
-    </button>
 
 </header>
+
 
 
 <!-- =========================

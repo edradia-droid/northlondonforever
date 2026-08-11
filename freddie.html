@@ -9,8 +9,7 @@
 ```
 <title>Freddie Ljungberg | Arsenal Legend</title>
 
-<link rel="stylesheet" href="./styles.css">
-<script src="index.js" defer></script>
+<link rel="stylesheet" href="styles.css">
 ```
 
 </head>
@@ -18,142 +17,303 @@
 <body>
 
 ```
-<div class="arsenal-logo">
+<!-- =========================
+     TOP NAVIGATION
+========================== -->
+<header class="topbar">
 
-    <nav class="main-nav">
+    <a class="brand" href="index.html">
+        <span class="mark">A</span>
 
-        <h1 class="logo-text">
-            <span class="nl4">NL4</span><br>
-            <em class="north-london">North London Forever</em>
-        </h1>
+        <span>
+            <b>ARSENAL</b>
+            <small>NORTH LONDON FOREVER</small>
+        </span>
+    </a>
 
-        <div class="menu">
-            <a href="index.html">Home</a>
-            <a href="history.html">History</a>
-            <a href="players.html" class="active">Players</a>
-            <a href="trophies.html">Treasures</a>
-        </div>
+    <button
+        id="menuBtn"
+        onclick="document.querySelector('nav').classList.toggle('open')"
+    >
+        ☰
+    </button>
 
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="history.html">History</a>
+        <a class="active" href="legends.html">Legends</a>
+        <a href="trophies.html">Treasure Room</a>
     </nav>
 
-    <main>
+</header>
 
-        <h1>Freddie Ljungberg</h1>
 
-        <p>
-            Freddie Ljungberg (born Karl Fredrik Ljungberg, April 16, 1977)
-            is a retired Swedish footballer best known as a dynamic winger
-            and midfielder for Arsenal F.C. during its late-1990s and
-            early-2000s dominance. Renowned for his tireless energy,
-            attacking intelligence, and knack for crucial goals, he was a
-            key figure in Arsenal's "Invincibles" era.
+<!-- =========================
+     HERO SECTION
+========================== -->
+<section
+    class="detail-hero"
+    style="--hero: url('https://i.postimg.cc/Z5q5pz5g/gun-1481818693-freddiedefiningmoments2.jpg');"
+>
+
+    <div class="hero-copy">
+
+        <p class="eyebrow">
+            ARSENAL LEGENDS / PLAYER ARCHIVE
         </p>
 
-        <table class="player-table">
-
-            <tr>
-                <td rowspan="2" class="image-cell">
-                    <img
-                        src="https://i.postimg.cc/Z5q5pz5g/gun-1481818693-freddiedefiningmoments2.jpg"
-                        alt="Freddie Ljungberg">
-                </td>
-
-                <th>Freddie Ljungberg</th>
-            </tr>
-
-            <tr>
-                <td>Arsenal Legend</td>
-            </tr>
-
-            <tr>
-                <td>Full Name</td>
-                <td>Karl Fredrik Ljungberg</td>
-            </tr>
-
-            <tr>
-                <td>Born</td>
-                <td>April 16, 1977 — Vittsjö, Sweden</td>
-            </tr>
-
-            <tr>
-                <td>Position</td>
-                <td>Right/attacking midfielder, winger</td>
-            </tr>
-
-            <tr>
-                <td>Arsenal Record</td>
-                <td>1998–2007 — 325 appearances, 72 goals</td>
-            </tr>
-
-            <tr>
-                <td>Sweden Caps/Goals</td>
-                <td>75 / 14 — 1998–2008</td>
-            </tr>
-
-        </table>
-
-        <h1>Arsenal Career and Achievements</h1>
+        <h1>
+            FREDDIE<br>
+            <span>LJUNGBERG</span>
+        </h1>
 
         <p>
-            Ljungberg joined Arsenal in 1998 under manager Arsène Wenger.
-            He quickly became a fixture on the right flank, combining
-            pace, late runs, and finishing ability. His standout campaign
-            came in 2001–02, when he scored 17 goals as Arsenal won the
-            domestic Double.
+            The Swedish winger whose energy, intelligence and
+            goals made him one of the defining players of
+            Arsenal's golden era.
         </p>
+
+        <a class="gold-btn" href="#story">
+            Explore the story ↓
+        </a>
+
+    </div>
+
+</section>
+
+
+<!-- =========================
+     MAIN CONTENT
+========================== -->
+<main class="main">
+
+
+    <!-- =========================
+         PLAYER INTRODUCTION
+    ========================== -->
+    <div class="section-head">
+
+        <div>
+            <p class="eyebrow">
+                THE COMPLETE STORY
+            </p>
+
+            <h2>
+                THE MAN BEHIND<br>
+                <span>THE LEGEND.</span>
+            </h2>
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         PLAYER PROFILE
+    ========================== -->
+    <section class="profile">
+
+        <!-- Player Portrait -->
+        <article class="portrait">
+
+            <img
+                src="https://i.postimg.cc/Z5q5pz5g/gun-1481818693-freddiedefiningmoments2.jpg"
+                alt="Freddie Ljungberg, Arsenal legend"
+            >
+
+        </article>
+
+
+        <!-- Player Facts -->
+        <article class="facts">
+
+            <p class="eyebrow">
+                PLAYER ARCHIVE
+            </p>
+
+            <h2>
+                AT A GLANCE
+            </h2>
+
+            <dl>
+
+                <div class="fact">
+                    <dt>Full Name</dt>
+                    <dd>Karl Fredrik Ljungberg</dd>
+                </div>
+
+                <div class="fact">
+                    <dt>Born</dt>
+                    <dd>April 16, 1977 – Vittsjö, Sweden</dd>
+                </div>
+
+                <div class="fact">
+                    <dt>Position</dt>
+                    <dd>Right / attacking midfielder, winger</dd>
+                </div>
+
+                <div class="fact">
+                    <dt>Arsenal Record</dt>
+                    <dd>325 appearances — 72 goals</dd>
+                </div>
+
+                <div class="fact">
+                    <dt>International</dt>
+                    <dd>75 caps / 14 goals for Sweden</dd>
+                </div>
+
+                <div class="fact">
+                    <dt>Arsenal Era</dt>
+                    <dd>1998–2007</dd>
+                </div>
+
+            </dl>
+
+        </article>
+
+    </section>
+
+
+    <!-- =========================
+         PLAYER STORY
+    ========================== -->
+    <section id="story">
+
+        <div class="section-head">
+
+            <div>
+
+                <p class="eyebrow">
+                    02 / HIS JOURNEY
+                </p>
+
+                <h2>
+                    THE FREDDIE STORY
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="story-grid">
+
+            <!-- Club Career -->
+            <article class="story">
+
+                <h3>
+                    Club Career &amp; Arsenal Legacy
+                </h3>
+
+                <p>
+                    Ljungberg joined Arsenal in 1998 under manager
+                    Arsène Wenger and quickly established himself as
+                    one of the club's most dangerous attacking players.
+                    His pace, intelligent movement and ability to arrive
+                    late in the box made him a crucial part of Arsenal's
+                    midfield.
+                </p>
+
+                <p>
+                    His standout campaign came in 2001–02, when he scored
+                    17 goals as Arsenal won the Premier League and FA Cup
+                    Double. He was also an important member of the
+                    2003–04 "Invincibles" side that completed an entire
+                    Premier League season unbeaten.
+                </p>
+
+            </article>
+
+
+            <!-- International Career -->
+            <article class="story">
+
+                <h3>
+                    International Career
+                </h3>
+
+                <p>
+                    Ljungberg represented Sweden from 1998 to 2008,
+                    earning 75 international caps and scoring 14 goals.
+                    He became captain of his country and represented
+                    Sweden at UEFA Euro 2000, Euro 2004 and Euro 2008,
+                    as well as the 2002 and 2006 FIFA World Cups.
+                </p>
+
+            </article>
+
+
+            <!-- Later Career -->
+            <article class="story">
+
+                <h3>
+                    Later Career &amp; Coaching
+                </h3>
+
+                <p>
+                    After leaving Arsenal in 2007, Ljungberg continued
+                    his career with West Ham United, Seattle Sounders,
+                    Chicago Fire, Celtic, Shimizu S-Pulse and Mumbai
+                    City before retiring from professional football
+                    in 2015.
+                </p>
+
+                <p>
+                    He later returned to Arsenal as a coach, working with
+                    the club's youth teams before becoming part of the
+                    senior coaching staff. In 2019, he briefly served as
+                    Arsenal's interim head coach.
+                </p>
+
+            </article>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         LEGACY SECTION
+    ========================== -->
+    <section class="legacy">
+
+        <p class="eyebrow">
+            NORTH LONDON FOREVER
+        </p>
+
+        <h2>
+            EVERY LEGEND<br>
+            <span>LEAVES A MARK.</span>
+        </h2>
 
         <p>
-            Ljungberg was also integral to the 2003–04 unbeaten
-            "Invincibles" side, contributing goals, pressing, and leadership
-            alongside stars such as Thierry Henry and Dennis Bergkamp.
+            Freddie Ljungberg's energy, goals and fearless attacking
+            style made him an unforgettable part of Arsenal's golden
+            era and a beloved figure among supporters.
         </p>
 
-        <h1>International Career</h1>
+        <a class="gold-btn" href="legends.html">
+            ← Back to Arsenal Legends
+        </a>
 
-        <p>
-            For Sweden, Ljungberg earned 75 caps and captained the team
-            from 2006 to 2008. He represented his country at UEFA Euro
-            2000, 2004, and 2008, as well as the 2002 and 2006 FIFA World
-            Cups, scoring 14 goals.
-        </p>
+    </section>
 
-        <h1>Later Career and Coaching</h1>
+</main>
 
-        <p>
-            After leaving Arsenal in 2007, Ljungberg had spells with West
-            Ham United, Seattle Sounders, Chicago Fire, Celtic, Shimizu
-            S-Pulse, and Mumbai City before retiring in 2015.
-        </p>
 
-        <p>
-            He later coached Arsenal's youth teams and briefly served as
-            interim head coach of the senior side in 2019 following Unai
-            Emery's departure.
-        </p>
+<!-- =========================
+     FOOTER
+========================== -->
+<footer>
 
-        <h1>Legacy and Recognition</h1>
+    <b>ARSENAL</b>
 
-        <p>
-            Ljungberg's industrious style, distinctive red-streaked hair,
-            and clutch scoring earned him cult-hero status among Arsenal
-            fans. Beyond football, he gained global visibility through a
-            Calvin Klein modelling campaign.
-        </p>
+    <span>
+        History • Heritage • North London Forever
+    </span>
 
-        <p>
-            A two-time winner of Sweden's Guldbollen, in 2002 and 2006,
-            Ljungberg remains celebrated as one of his nation's greatest
-            midfielders and a defining figure of Arsenal's golden era.
-        </p>
-
-        <p>
-            <a href="players.html">← Back to Players</a>
-        </p>
-
-    </main>
-
-</div>
+</footer>
 ```
 
 </body>
+
 </html>

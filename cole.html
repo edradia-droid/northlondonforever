@@ -9,8 +9,7 @@
 ```
 <title>Ashley Cole | Arsenal Legend</title>
 
-<link rel="stylesheet" href="./styles.css">
-<script src="index.js" defer></script>
+<link rel="stylesheet" href="styles.css">
 ```
 
 </head>
@@ -18,149 +17,271 @@
 <body>
 
 ```
-<div class="arsenal-logo">
+<header class="topbar">
 
-    <nav class="main-nav">
+    <a class="brand" href="index.html">
+        <span class="mark">A</span>
 
-        <h1 class="logo-text">
-            <span class="nl4">NL4</span><br>
-            <em class="north-london">North London Forever</em>
-        </h1>
+        <span>
+            <b>ARSENAL</b>
+            <small>NORTH LONDON FOREVER</small>
+        </span>
+    </a>
 
-        <div class="menu">
-            <a href="index.html">Home</a>
-            <a href="history.html">History</a>
-            <a href="players.html" class="active">Players</a>
-            <a href="trophies.html">Treasures</a>
-        </div>
+    <button
+        id="menuBtn"
+        onclick="document.querySelector('nav').classList.toggle('open')"
+    >
+        ☰
+    </button>
 
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="history.html">History</a>
+        <a class="active" href="legends.html">Legends</a>
+        <a href="trophies.html">Treasure Room</a>
     </nav>
 
-    <main>
+</header>
 
-        <h1>Ashley Cole</h1>
 
-        <p>
-            Ashley Cole (born December 20, 1980, in Stepney, London) is an
-            English former professional footballer and coach. A dynamic
-            left-back renowned for his defensive precision and attacking
-            flair, he played chiefly for Arsenal and Chelsea and is widely
-            regarded as one of the best full-backs in Premier League
-            history.
+<section
+    class="detail-hero"
+    style="--hero: url('https://i.postimg.cc/QCtWt9wp/hi-res-0c661f405e060fa5e6b748919a610f8d-crop-north.jpg');"
+>
+
+    <div class="hero-copy">
+
+        <p class="eyebrow">
+            ARSENAL LEGENDS / PLAYER ARCHIVE
         </p>
 
-        <table class="player-table">
-
-            <tr>
-                <td rowspan="2" class="image-cell">
-                    <img
-                        src="https://i.postimg.cc/QCtWt9wp/hi-res-0c661f405e060fa5e6b748919a610f8d-crop-north.jpg"
-                        alt="Ashley Cole">
-                </td>
-
-                <th>Ashley Cole</th>
-            </tr>
-
-            <tr>
-                <td>Arsenal Legend</td>
-            </tr>
-
-            <tr>
-                <td>Full Name</td>
-                <td>Ashley Cole</td>
-            </tr>
-
-            <tr>
-                <td>Born</td>
-                <td>December 20, 1980 — Stepney, London, England</td>
-            </tr>
-
-            <tr>
-                <td>Position</td>
-                <td>Left-back</td>
-            </tr>
-
-            <tr>
-                <td>Clubs</td>
-                <td>Arsenal, Chelsea, Roma, LA Galaxy, Derby County</td>
-            </tr>
-
-            <tr>
-                <td>England Caps</td>
-                <td>107 — 2001–2014</td>
-            </tr>
-
-        </table>
-
-        <h1>Arsenal Years</h1>
+        <h1>
+            ASHLEY<br>
+            <span>COLE</span>
+        </h1>
 
         <p>
-            A product of Arsenal's academy, Cole made his first-team debut
-            in 1999 and quickly established himself as first-choice
-            left-back under Arsène Wenger.
+            A dynamic left-back whose defensive precision, pace and
+            attacking ability helped define Arsenal's golden generation.
         </p>
+
+        <a class="gold-btn" href="#story">
+            Explore the story ↓
+        </a>
+
+    </div>
+
+</section>
+
+
+<main class="main">
+
+    <div class="section-head">
+
+        <div>
+            <p class="eyebrow">
+                THE COMPLETE STORY
+            </p>
+
+            <h2>
+                THE MAN BEHIND<br>
+                <span>THE LEGEND.</span>
+            </h2>
+        </div>
+
+    </div>
+
+
+    <section class="profile">
+
+        <article class="portrait">
+
+            <img
+                src="https://i.postimg.cc/QCtWt9wp/hi-res-0c661f405e060fa5e6b748919a610f8d-crop-north.jpg"
+                alt="Ashley Cole, Arsenal legend"
+            >
+
+        </article>
+
+
+        <article class="facts">
+
+            <p class="eyebrow">
+                PLAYER ARCHIVE
+            </p>
+
+            <h2>
+                AT A GLANCE
+            </h2>
+
+            <dl>
+
+                <div class="fact">
+                    <dt>Full Name</dt>
+                    <dd>Ashley Cole</dd>
+                </div>
+
+                <div class="fact">
+                    <dt>Born</dt>
+                    <dd>December 20, 1980 – Stepney, London</dd>
+                </div>
+
+                <div class="fact">
+                    <dt>Position</dt>
+                    <dd>Left-back</dd>
+                </div>
+
+                <div class="fact">
+                    <dt>Arsenal Era</dt>
+                    <dd>1999–2006</dd>
+                </div>
+
+                <div class="fact">
+                    <dt>International</dt>
+                    <dd>107 caps for England</dd>
+                </div>
+
+                <div class="fact">
+                    <dt>Premier League</dt>
+                    <dd>385 appearances</dd>
+                </div>
+
+            </dl>
+
+        </article>
+
+    </section>
+
+
+    <section id="story">
+
+        <div class="section-head">
+
+            <div>
+
+                <p class="eyebrow">
+                    02 / HIS JOURNEY
+                </p>
+
+                <h2>
+                    THE ASHLEY STORY
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="story-grid">
+
+            <article class="story">
+
+                <h3>
+                    Arsenal Career &amp; Invincibles
+                </h3>
+
+                <p>
+                    A product of Arsenal's academy, Cole made his first-team
+                    debut in 1999 and quickly established himself as the
+                    club's first-choice left-back under Arsène Wenger.
+                </p>
+
+                <p>
+                    He played a major role in Arsenal's 2001–02 Double
+                    triumph and was an important member of the legendary
+                    2003–04 Invincibles team that went unbeaten throughout
+                    the Premier League season.
+                </p>
+
+            </article>
+
+
+            <article class="story">
+
+                <h3>
+                    International Career
+                </h3>
+
+                <p>
+                    Cole became one of England's most reliable defenders,
+                    earning 107 international caps between 2001 and 2014.
+                    He represented England at three FIFA World Cups and
+                    several European Championships.
+                </p>
+
+                <p>
+                    His defensive ability and consistency earned him
+                    widespread recognition as one of the finest
+                    left-backs of his generation.
+                </p>
+
+            </article>
+
+
+            <article class="story">
+
+                <h3>
+                    Later Career &amp; Coaching
+                </h3>
+
+                <p>
+                    Cole joined Chelsea in 2006 and continued to collect
+                    major honours, including Premier League, FA Cup,
+                    UEFA Champions League and Europa League titles.
+                </p>
+
+                <p>
+                    Following retirement, he moved into coaching and
+                    worked with England's youth teams. He was part of
+                    the setup that helped England's Under-21 side win
+                    the 2023 European Championship.
+                </p>
+
+            </article>
+
+        </div>
+
+    </section>
+
+
+    <section class="legacy">
+
+        <p class="eyebrow">
+            NORTH LONDON FOREVER
+        </p>
+
+        <h2>
+            EVERY LEGEND<br>
+            <span>LEAVES A MARK.</span>
+        </h2>
 
         <p>
-            He was integral to Arsenal's 2001–02 Double-winning campaign
-            and later became a key member of the legendary "Invincibles"
-            side that went unbeaten through the 2003–04 Premier League
-            season.
+            Ashley Cole's pace, defensive excellence and attacking
+            intelligence established him as one of Arsenal's greatest
+            modern full-backs.
         </p>
 
-        <p>
-            His tireless energy and overlapping runs combined brilliantly
-            with Arsenal's attacking players, including Thierry Henry and
-            Robert Pirès.
-        </p>
+        <a class="gold-btn" href="legends.html">
+            ← Back to Arsenal Legends
+        </a>
 
-        <h1>Chelsea and International Success</h1>
+    </section>
 
-        <p>
-            Cole joined Chelsea in 2006, where he added another Premier
-            League title and became one of the most decorated players in
-            FA Cup history.
-        </p>
+</main>
 
-        <p>
-            His Chelsea career also included Champions League and Europa
-            League triumphs. Internationally, he earned 107 England caps
-            and represented his country at three World Cups and two
-            European Championships.
-        </p>
 
-        <h1>Legacy and Hall of Fame Recognition</h1>
+<footer>
 
-        <p>
-            Celebrated for redefining the modern full-back role, Cole
-            combined defensive tenacity with technical excellence.
-        </p>
+    <b>ARSENAL</b>
 
-        <p>
-            He made 385 Premier League appearances and was inducted into
-            the Premier League Hall of Fame in 2024.
-        </p>
+    <span>
+        History • Heritage • North London Forever
+    </span>
 
-        <h1>Coaching Career</h1>
-
-        <p>
-            Following his retirement in 2019, Cole transitioned into
-            coaching. He worked with England's youth teams and helped the
-            Under-21 side win the 2023 European Championship.
-        </p>
-
-        <p>
-            His coaching career has continued to develop as he has taken
-            on roles within the England setup.
-        </p>
-
-        <p>
-            <a href="players.html">← Back to Players</a>
-        </p>
-
-    </main>
-
-</div>
+</footer>
 ```
 
 </body>
+
 </html>

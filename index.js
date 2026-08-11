@@ -260,3 +260,51 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Escape') document.querySelectorAll('.popup.show').forEach(p => p.classList.remove('show'));
   });
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+
+
+const menuBtn = document.getElementById("menuBtn");
+const mainNav = document.getElementById("mainNav");
+
+if (!menuBtn || !mainNav) {
+    return;
+}
+
+menuBtn.addEventListener("click", function () {
+
+    const isOpen = mainNav.classList.toggle("open");
+
+    menuBtn.setAttribute(
+        "aria-expanded",
+        isOpen ? "true" : "false"
+    );
+
+    menuBtn.textContent = isOpen ? "✕" : "☰";
+
+});
+
+
+/* Close menu when a link is clicked */
+
+const navLinks = mainNav.querySelectorAll("a");
+
+navLinks.forEach(function (link) {
+
+    link.addEventListener("click", function () {
+
+        mainNav.classList.remove("open");
+
+        menuBtn.setAttribute(
+            "aria-expanded",
+            "false"
+        );
+
+        menuBtn.textContent = "☰";
+
+    });
+
+});
+
+
+});

@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 
 <html lang="en">
 
@@ -9,12 +9,19 @@
 
 <meta
     name="viewport"
-    content="width=device-width, initial-scale=1"
+    content="width=device-width, initial-scale=1.0"
 >
 
-<title>1980s–1990s | Arsenal Treasure Room</title>
+<title>
+    1980s–1990s | Arsenal Treasure Room
+</title>
 
-<link rel="stylesheet" href="players-archive.css">
+<link
+    rel="stylesheet"
+    href="players-archive.css"
+>
+
+<script src="index.js" defer></script>
 ```
 
 </head>
@@ -28,19 +35,50 @@
 
 <header class="topbar">
 
-    <a class="brand" href="players.html">
 
-        <span class="mark">A</span>
+    <a
+        class="brand"
+        href="players.html"
+    >
+
+        <span class="mark">
+            A
+        </span>
 
         <span>
-            <b>ARSENAL TREASURE ROOM</b>
-            <small>PLAYERS ARCHIVE</small>
+
+            <b>
+                ARSENAL TREASURE ROOM
+            </b>
+
+            <small>
+                PLAYERS ARCHIVE
+            </small>
+
         </span>
 
     </a>
 
 
-    <nav>
+    <!-- MOBILE MENU BUTTON -->
+
+    <button
+        id="menuBtn"
+        class="menu-btn"
+        type="button"
+        aria-label="Open navigation menu"
+        aria-expanded="false"
+    >
+        ☰
+    </button>
+
+
+    <!-- NAVIGATION -->
+
+    <nav
+        id="mainNav"
+        class="mobile-nav"
+    >
 
         <a href="index.html">
             Home
@@ -64,16 +102,12 @@
     </nav>
 
 
-    <button id="menuBtn">
-        ☰
-    </button>
-
 </header>
 
 
 
 <!-- =========================
-     HERO
+     ARCHIVE HERO
 ========================== -->
 
 <section class="archive-hero">
@@ -107,7 +141,7 @@
 <main class="main">
 
 
-    <!-- BACK BUTTON -->
+    <!-- BACK TO PLAYERS -->
 
     <a
         class="back"
@@ -118,7 +152,9 @@
 
 
 
-    <!-- SECTION HEADING -->
+    <!-- =========================
+         SECTION HEADING
+    ========================== -->
 
     <div class="section-head">
 
@@ -133,7 +169,6 @@
             </h2>
 
         </div>
-
 
         <p>
             Every card leads to the player profile already
@@ -449,7 +484,7 @@
 
 
     <!-- =========================
-         QUOTE
+         QUOTE SECTION
     ========================== -->
 
     <section class="quote">
@@ -490,24 +525,6 @@
     </span>
 
 </footer>
-
-
-
-<!-- MOBILE MENU -->
-
-<script>
-
-    const menuBtn =
-        document.getElementById("menuBtn");
-
-    const nav =
-        document.querySelector(".topbar nav");
-
-    menuBtn.addEventListener("click", () => {
-        nav.classList.toggle("open");
-    });
-
-</script>
 ```
 
 </body>
