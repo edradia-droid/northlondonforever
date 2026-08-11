@@ -205,3 +205,44 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("storage", updateVaultProgress);
   window.addEventListener("pageshow", updateVaultProgress);
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+  const menuBtn = document.getElementById("menuBtn");
+  const nav = document.getElementById("nav");
+
+  if (menuBtn && nav) {
+    const setMenu = (open) => {
+      nav.classList.toggle("open", open);
+      menuBtn.setAttribute("aria-expanded", String(open));
+      menuBtn.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
+      document.body.classList.toggle("menu-open", open);
+    };
+
+    menuBtn.addEventListener("click", () => setMenu(!nav.classList.contains("open")));
+    nav.querySelectorAll("a").forEach(a => a.addEventListener("click", () => setMenu(false)));
+    document.addEventListener("keydown", e => { if (e.key === "Escape") setMenu(false); });
+    window.addEventListener("resize", () => { if (window.innerWidth > 820) setMenu(false); });
+  }
+
+  const sidebar = document.getElementById("sidebar");
+  const overlay = document.getElementById("overlay");
+  const closeMenu = document.getElementById("closeMenu");
+
+  if (sidebar && overlay) {
+    const closeSidebar = () => {
+      sidebar.classList.remove("open");
+      overlay.classList.remove("show");
+      document.body.classList.remove("menu-open");
+    };
+    document.getElementById("menuBtn")?.addEventListener("click", () => {
+      sidebar.classList.add("open");
+      overlay.classList.add("show");
+      document.body.classList.add("menu-open");
+    });
+    closeMenu?.addEventListener("click", closeSidebar);
+    overlay.addEventListener("click", closeSidebar);
+    document.querySelectorAll(".nav-link, .treasure-link").forEach(a =>
+      a.addEventListener("click", closeSidebar)
+    );
+  }
+});
