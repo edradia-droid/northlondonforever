@@ -1,0 +1,1 @@
+Put these files beside your existing Arsenal profile pages. players.html is now the generation selector; each generation card opens its own player collection page. players-archive.css provides the black/red/gold design shared by all pages.
