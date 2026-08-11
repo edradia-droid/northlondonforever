@@ -1250,3 +1250,132 @@ footer{border-top:1px solid var(--line);padding:28px 5%;display:flex;justify-con
     display: none;
   }
 }
+
+/* SHARED SIDEBAR FIX — append to the END of styles.css */
+
+@media (max-width: 900px) {
+  html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  body.menu-open {
+    overflow: hidden;
+  }
+
+  .menu-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    z-index: 1301;
+  }
+
+  .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    width: min(320px, 86vw) !important;
+    height: 100dvh !important;
+    max-height: 100dvh;
+    z-index: 1300 !important;
+    transform: translateX(-105%) !important;
+    visibility: hidden;
+    opacity: 1 !important;
+    pointer-events: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    transition: transform .28s ease, visibility .28s ease !important;
+  }
+
+  .sidebar.open {
+    transform: translateX(0) !important;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .sidebar-top {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  .side-nav {
+    display: flex !important;
+    flex-direction: column;
+    width: 100%;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  .side-nav .nav-label,
+  .side-nav .nav-link,
+  .side-nav .treasure-link,
+  .side-nav .nav-divider {
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  .side-nav .nav-link,
+  .side-nav .treasure-link {
+    display: flex !important;
+    width: 100%;
+    min-height: 48px;
+    align-items: center;
+    flex-shrink: 0;
+    pointer-events: auto;
+  }
+
+  .close-menu {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .mobile-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw;
+    height: 100dvh;
+    z-index: 1250 !important;
+    background: rgba(0,0,0,.68);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .28s ease, visibility .28s ease;
+  }
+
+  .mobile-overlay.show {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  .main {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+}
+
+@media (min-width: 901px) {
+  .sidebar {
+    transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .mobile-overlay,
+  .close-menu {
+    display: none !important;
+  }
+}

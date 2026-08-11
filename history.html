@@ -1,60 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Arsenal History | From Woolwich to North London</title>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arsenal History | From Woolwich to North London</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<header class="topbar">
-  <a class="brand" href="index.html"><span class="mark">A</span><span><b>ARSENAL</b><small>NORTH LONDON FOREVER</small></span></a>
-  <button id="menuBtn">☰</button>
-  <nav id="nav"><a href="index.html">Home</a><a class="active" href="history.html">History</a><a href="players.html">Players</a><a href="trophies.html">Treasure Room</a><a href="legends.html">Legends</a></nav>
-</header>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <a class="logo" href="index.html">
+        <span class="logo-box">A</span>
+        <span><b>ARSENAL</b><small>THE GUNNERS</small></span>
+      </a>
+      <button class="close-menu" id="closeMenu" type="button" aria-label="Close menu">×</button>
+    </div>
+    <nav class="side-nav" id="sideNav">
+      <p class="nav-label">CLUB HUB</p>
+      <a class="nav-link" href="index.html"><span>⌂</span> Home</a>
+      <a class="nav-link active" href="history.html"><span>◷</span> History</a>
+      <a class="nav-link" href="players.html"><span>♟</span> Players</a>
+      <p class="nav-label">TREASURE</p>
+      <a class="nav-link" href="trophies.html"><span>🏆</span> Treasures</a>
+      <a class="nav-link" href="legends.html"><span>★</span> Legends</a>
+      <div class="nav-divider"></div>
+      <a class="treasure-link" href="trophies.html"><span>🔐</span><b>Treasure Room</b><small>Explore Arsenal history</small></a>
+    </nav>
+    <div class="sidebar-bottom"><span>COYG</span><span>1886 • FOREVER</span></div>
+  </aside>
 
-<main>
-<section class="hero">
-  <div class="hero-overlay"></div>
-  <div class="hero-content">
-    <p class="eyebrow">THE ARSENAL STORY</p>
-    <h1>HISTORY OF<br><span>ARSENAL FOOTBALL CLUB</span></h1>
-    <p>From Dial Square in Woolwich to North London: explore the eras, people and achievements that shaped the club.</p>
-    <a class="gold-btn" href="#timeline">Explore the timeline ↓</a>
-  </div>
-  <div class="hero-year">1886<br><small>THE JOURNEY BEGINS</small></div>
-</section>
+  <div class="mobile-overlay" id="overlay"></div>
 
-<section class="intro">
- <p class="eyebrow">THE COMPLETE STORY</p>
- <h2>FROM WOOLWICH<br>TO NORTH LONDON.</h2>
- <p class="lead">The material from your original history page is preserved below, reorganised into a more readable museum-style experience without removing its periods, events, figures, achievements or chapter links.</p>
-</section>
+  <main class="main">
+    <header class="topbar">
+      <button class="menu-btn" id="menuBtn" type="button" aria-label="Open menu" aria-controls="sidebar" aria-expanded="false">☰</button>
+      <div class="crumb"><span>ARSENAL</span><b>/</b> HISTORY</div>
+      <div class="top-actions"><span class="live-dot"></span><span>ARSENAL HISTORY</span></div>
+    </header>
 
-<section class="timeline" id="timeline">
- <div class="section-head"><div><p class="eyebrow">01 / CLUB TIMELINE</p><h2>THE ERAS</h2></div><span>1886 — PRESENT</span></div>
- <div class="era-list"><article class="era-card"><div class="era-period">1886–1913 (Formation & Early Years)</div><div><h3>Founded as Dial Square in Woolwich; renamed Royal Arsenal, then Woolwich Arsenal; moved to Highbury in 1913</h3><p><b>Notable figures:</b> Founders (workers at Royal Arsenal factory)</p><p><b>Achievements / notes:</b> Joined the Football League in 1893</p></div></article>
-<article class="era-card"><div class="era-period">1919–1939 (Rise to Power)</div><div><h3>Promoted to First Division controversially in 1919; became dominant in English football</h3><p><b>Notable figures:</b> Herbert Chapman</p><p><b>Achievements / notes:</b> Won multiple league titles and FA Cups; introduced modern tactics and professionalism</p></div></article>
-<article class="era-card"><div class="era-period">1940s–1960s (Post-war Period)</div><div><h3>Mixed success after WWII; gradual rebuilding</h3><p><b>Notable figures:</b> Bertie Mee</p><p><b>Achievements / notes:</b> First “Double” (League + FA Cup) in club history</p></div></article>
-<article class="era-card"><div class="era-period">1980s–1990s (George Graham Era)</div><div><h3>Defensive discipline; strong domestic success</h3><p><b>Notable figures:</b> George Graham</p><p><b>Achievements / notes:</b> League titles (1989, 1991); European Cup Winners’ Cup (1994)</p></div></article>
-<article class="era-card"><div class="era-period">1996–2018 (Arsène Wenger Era)</div><div><h3>1996–2018 (Arsène Wenger Era)</h3><p><b>Notable figures:</b> Arsene Wenger</p><p><b>Achievements / notes:</b> “Invincibles” 2003–04 season (unbeaten league); multiple FA Cups</p></div></article>
-<article class="era-card"><div class="era-period">2006 (European Highlight)</div><div><h3>Reached UEFA Champions League final</h3><p><b>Notable figures:</b> Arsène Wenger, Thierry Henry</p><p><b>Achievements / notes:</b> First and only UCL final (lost to Barcelona)</p></div></article>
-<article class="era-card"><div class="era-period">2006–Present (Emirates Era)</div><div><h3>Moved to Emirates Stadium; financial transition period</h3><p><b>Notable figures:</b> Arsène Wenger</p><p><b>Achievements / notes:</b> Continued FA Cup success; rebuilding phase</p></div></article>
-<article class="era-card"><div class="era-period">2019–Present (Modern Era)</div><div><h3>Youth development and squad rebuild under Arteta</h3><p><b>Notable figures:</b> Mikel Arteta</p><p><b>Achievements / notes:</b> FA Cup 2020; renewed title challenges</p></div></article>
+    <section class="hero">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <p class="eyebrow">THE ARSENAL STORY</p>
+        <h1>HISTORY OF<br><span>ARSENAL FOOTBALL CLUB</span></h1>
+        <p>From Dial Square in Woolwich to North London: explore the eras, people and achievements that shaped the club.</p>
+        <a class="gold-btn" href="#timeline">Explore the timeline ↓</a>
+      </div>
+      <div class="hero-year">1886<br><small>THE JOURNEY BEGINS</small></div>
+    </section>
+
+    <section class="intro">
+      <p class="eyebrow">THE COMPLETE STORY</p>
+      <h2>FROM WOOLWICH<br>TO NORTH LONDON.</h2>
+      <p class="lead">The material from your original history page is preserved below, reorganised into a more readable museum-style experience without removing its periods, events, figures, achievements or chapter links.</p>
+    </section>
+
+    <section class="timeline" id="timeline">
+      <div class="section-head"><div><p class="eyebrow">01 / CLUB TIMELINE</p><h2>THE ERAS</h2></div><span>1886 — PRESENT</span></div>
+      <div class="era-list">
+        <article class="era-card"><div class="era-period">1886–1913 (Formation & Early Years)</div><div><h3>Founded as Dial Square in Woolwich; renamed Royal Arsenal, then Woolwich Arsenal; moved to Highbury in 1913</h3><p><b>Notable figures:</b> Founders (workers at Royal Arsenal factory)</p><p><b>Achievements / notes:</b> Joined the Football League in 1893</p></div></article>
+        <article class="era-card"><div class="era-period">1919–1939 (Rise to Power)</div><div><h3>Promoted to First Division controversially in 1919; became dominant in English football</h3><p><b>Notable figures:</b> Herbert Chapman</p><p><b>Achievements / notes:</b> Won multiple league titles and FA Cups; introduced modern tactics and professionalism</p></div></article>
+        <article class="era-card"><div class="era-period">1940s–1960s (Post-war Period)</div><div><h3>Mixed success after WWII; gradual rebuilding</h3><p><b>Notable figures:</b> Bertie Mee</p><p><b>Achievements / notes:</b> First “Double” (League + FA Cup) in club history</p></div></article>
+        <article class="era-card"><div class="era-period">1980s–1990s (George Graham Era)</div><div><h3>Defensive discipline; strong domestic success</h3><p><b>Notable figures:</b> George Graham</p><p><b>Achievements / notes:</b> League titles (1989, 1991); European Cup Winners’ Cup (1994)</p></div></article>
+        <article class="era-card"><div class="era-period">1996–2018 (Arsène Wenger Era)</div><div><h3>1996–2018 (Arsène Wenger Era)</h3><p><b>Notable figures:</b> Arsene Wenger</p><p><b>Achievements / notes:</b> “Invincibles” 2003–04 season (unbeaten league); multiple FA Cups</p></div></article>
+        <article class="era-card"><div class="era-period">2006 (European Highlight)</div><div><h3>Reached UEFA Champions League final</h3><p><b>Notable figures:</b> Arsène Wenger, Thierry Henry</p><p><b>Achievements / notes:</b> First and only UCL final (lost to Barcelona)</p></div></article>
+        <article class="era-card"><div class="era-period">2006–Present (Emirates Era)</div><div><h3>Moved to Emirates Stadium; financial transition period</h3><p><b>Notable figures:</b> Arsène Wenger</p><p><b>Achievements / notes:</b> Continued FA Cup success; rebuilding phase</p></div></article>
+        <article class="era-card"><div class="era-period">2019–Present (Modern Era)</div><div><h3>Youth development and squad rebuild under Arteta</h3><p><b>Notable figures:</b> Mikel Arteta</p><p><b>Achievements / notes:</b> FA Cup 2020; renewed title challenges</p></div></article>
+      </div>
+    </section>
+
+    <section class="chapters">
+      <div class="section-head"><div><p class="eyebrow">02 / THE FOUNDATION</p><h2>HISTORY CHAPTERS</h2></div></div>
+      <div class="chapter-grid">
+        <a class="detail-card" href="dial.html"><span>→</span><h3>DIAL SQUARE TO NORTH LONDON</h3><small>Read this chapter</small></a>
+        <a class="detail-card" href="royal-arsenal-formed-in-woolwich.html"><span>→</span><h3>ROYAL ARSENAL FORMED IN WOOLWICH</h3><small>Read this chapter</small></a>
+        <a class="detail-card" href="come-on-you-reds-the-clubs-colors.html"><span>→</span><h3>COME ON YOU REDS - THE CLUB’S COLORS</h3><small>Read this chapter</small></a>
+        <a class="detail-card" href="woolwich-arsenal-played-their-first-game.html"><span>→</span><h3>WOOLWICH ARSENAL PLAYED THEIR FIRST GAME</h3><small>Read this chapter</small></a>
+        <a class="detail-card" href="club-moved-from-woolwich-to-highbury.html"><span>→</span><h3>CLUB MOVED FROM WOOLWICH TO HIGHBURY</h3><small>Read this chapter</small></a>
+        <a class="detail-card" href="norris-negotiated-top-flight-return.html"><span>→</span><h3>NORRIS NEGOTIATED TOP-FLIGHT RETURN</h3><small>Read this chapter</small></a>
+      </div>
+    </section>
+
+    <section class="quote">
+      <div><p class="eyebrow">NORTH LONDON FOREVER</p><h2>EVERY ERA<br>LEFT A MARK.</h2><p>Continue exploring Arsenal's story through the detailed chapters above.</p></div>
+      <a class="gold-btn" href="trophies.html">Visit the Treasure Room →</a>
+    </section>
+
+    <footer class="footer"><b>ARSENAL</b><span>History • Heritage • North London Forever</span></footer>
+  </main>
 </div>
-</section>
-
-<section class="chapters">
- <div class="section-head"><div><p class="eyebrow">02 / THE FOUNDATION</p><h2>HISTORY CHAPTERS</h2></div></div>
- <div class="chapter-grid"><a class="detail-card" href="dial.html"><span>→</span><h3>DIAL SQUARE TO NORTH LONDON</h3><small>Read this chapter</small></a><a class="detail-card" href="royal-arsenal-formed-in-woolwich.html"><span>→</span><h3>ROYAL ARSNAL FORMED IN WOOLWICH</h3><small>Read this chapter</small></a><a class="detail-card" href="come-on-you-reds-the-clubs-colors.html"><span>→</span><h3>COME ON YOU REDS-THE CLUB’S COLORS</h3><small>Read this chapter</small></a><a class="detail-card" href="woolwich-arsenal-played-their-first-game.html"><span>→</span><h3>WOOLWICH ARSENAL PLAYED THEIR FIRST GAME</h3><small>Read this chapter</small></a><a class="detail-card" href="club-moved-from-woolwich-to-highbury.html"><span>→</span><h3>CLUB MOVED FROM WOOLWICH TO HIGHBURY</h3><small>Read this chapter</small></a><a class="detail-card" href="norris-negotiated-top-flight-return.html"><span>→</span><h3>NORRIS NEGOTIATED TOP-FLIGHT RETURN</h3><small>Read this chapter</small></a></div>
-</section>
-
-<section class="quote">
- <div><p class="eyebrow">NORTH LONDON FOREVER</p><h2>EVERY ERA<br>LEFT A MARK.</h2><p>Continue exploring Arsenal's story through the detailed chapters above.</p></div>
- <a class="gold-btn" href="trophies.html">Visit the Treasure Room →</a>
-</section>
-</main>
-<footer><b>ARSENAL</b><span>History • Heritage • North London Forever</span></footer>
 <script src="index.js"></script>
 </body>
 </html>
