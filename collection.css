@@ -1,0 +1,6187 @@
+body {
+ background: linear-gradient(to right, red, rgb(242, 178, 178)) ;
+  min-height:100vh;
+}
+
+.alt-bg {
+  background: linear-gradient(to right, #ff0303, #fdfbfb);
+}
+
+.figcaption{
+  text-align: center;
+}
+
+.image-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.image-container img {
+  width: 150px;
+  height: auto;
+  border-radius: 6px;
+  justify-content: center;
+}
+
+.arsenal-logo {
+  background: url("https://i.postimg.cc/dt5b72ss/Untitled-design.png");
+  background-repeat: repeat-x;
+  background-size: auto 20px;
+padding: 2px;
+  width: 100;
+
+  animation: moveLogo 10s linear infinite;
+}
+
+@keyframes moveLogo {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: 1000px;
+  }
+}
+
+
+.main-nav p{
+  font-size: 14px;
+  color: linear-gradient(to right, red, rgb(242, 178, 178));
+  border-radius: 40px;
+  display: flex;
+  margin-top: 50px;
+  justify-content: center;
+}
+
+
+.main-nav {
+  background: linear-gradient(to right, red, rgb(242, 178, 178));
+
+  width: fit-content;
+  padding: 10px 0;
+  border-radius: 40px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+
+  margin: 30px 150px;
+  overflow: visible;
+}
+
+img {
+  display: block;
+  margin: 0 auto;
+  display: flex;
+}
+
+#menu {
+  width: 500px;
+   margin: 1px;
+  text-align: center;
+  padding: 10px;
+}
+
+
+/*Table section*/
+table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+  }
+
+  th {
+    background-color: #333;
+    color: white;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+
+.div-caption {
+  font-size: 30px;
+  color: white;
+  text-align: center;
+  font-weight: bold;
+  padding: 8px;
+  margin-bottom: 10px;
+  background: transparent;
+}
+
+.history-details h3{
+color: rgb(245, 241, 241);
+text-align: center;
+ font-size: 30px;
+}
+
+.history-details h2{
+  color: white;
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 25px;
+  background-color: #f64949;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  text-align:center;
+}
+
+.history-details p{
+font-size: 16px;
+  line-height: 1.6;
+  color: #0a0000;
+  margin-bottom: 15px;
+  font-weight: normal;
+  text-align: justify;
+}
+.history-details p{
+  margin: 40PX;
+}
+.history-details IMG{
+  max-width: 100%;
+  height: auto;
+}
+
+.player-table{
+  border-collapse: collapse;
+  width: 70%;
+}
+.ph1 h1{
+   color: white;
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 25px;
+  background-color: #f64949;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  text-align:center;
+
+}
+
+.player-table th,
+.player-table td{
+  border: 1px solid black;
+  padding: 10px;
+}
+
+.player-table th{
+  background-color: #ddd;
+  text-align: center;
+}
+
+.image-cell{
+  vertical-align: top;
+  text-align: left;
+}
+
+.player-table img{
+  display: block;
+  border: 5px solid red;
+  border-radius: 70px;
+}
+
+
+
+/* Container for all player cards */
+.players{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:25px;
+    margin:30px auto;
+    max-width:1400px;
+}
+
+/* Individual player card */
+.cliff{
+    width:220px;
+    min-height:310px;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+
+    padding:15px;
+
+    border-radius:18px;
+
+    background:linear-gradient(180deg,#d00027,#8b0000);
+
+    border:3px solid gold;
+
+    box-shadow:
+        0 8px 20px rgba(0,0,0,.45),
+        0 0 12px rgba(255,215,0,.25);
+
+    transition:
+        transform .35s,
+        box-shadow .35s,
+        background .35s;
+
+    overflow:hidden;
+}
+
+
+/* Hover effects */
+.cliff:hover{
+
+    transform:
+        translateY(-12px)
+        scale(1.05);
+
+    background:linear-gradient(180deg,#ff002f,#b1001f);
+
+    box-shadow:
+        0 15px 30px rgba(0,0,0,.55),
+        0 0 25px gold;
+}
+
+.cliff:active{
+
+    transform:scale(.97);
+
+}
+
+.cliff img{
+
+    width:200px;
+    height:150px;
+
+    object-fit:cover;
+
+    border-radius:12px;
+
+    border:3px solid white;
+
+    transition:.4s;
+
+}
+
+.cliff:hover img{
+
+    transform:scale(1.08);
+
+    border-color:gold;
+
+}
+
+.cliff a{
+
+    color:white;
+
+    text-decoration:none;
+
+    font-size:20px;
+
+    font-weight:bold;
+
+    margin-top:15px;
+
+    transition:.3s;
+
+}
+
+.cliff a:hover{
+
+    color:gold;
+
+}
+
+/* Every h1 starts on its own line */
+h1{
+
+    width:fit-content;
+
+    margin:60px auto 25px;
+
+    padding:18px 35px;
+
+    border-radius:18px;
+
+    color:white;
+
+    background:linear-gradient(to right,#d00027,#ff304f);
+
+    border:3px solid gold;
+
+    box-shadow:0 5px 18px rgba(0,0,0,.35);
+
+    clear:both;
+
+}
+
+
+@media(max-width:900px){
+
+.players{
+
+gap:18px;
+
+}
+
+.cliff{
+
+width:180px;
+
+}
+
+.cliff img{
+
+width:160px;
+
+height:120px;
+
+}
+
+}
+
+
+@media(max-width:600px){
+
+.players{
+
+flex-direction:column;
+
+align-items:center;
+
+}
+
+.cliff{
+
+width:90%;
+
+max-width:320px;
+
+}
+
+.cliff img{
+
+width:100%;
+
+height:220px;
+
+}
+
+}
+
+
+@keyframes glow{
+
+0%{
+
+box-shadow:
+0 0 10px gold;
+
+}
+
+50%{
+
+box-shadow:
+0 0 28px gold;
+
+}
+
+100%{
+
+box-shadow:
+0 0 10px gold;
+
+}
+
+}
+
+.cliff:hover{
+
+animation:glow 1.2s infinite;
+
+}
+
+/* h2 styling */
+h2 {
+  color: white;
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 25px;
+
+  background: linear-gradient(to right, red, rgb(242, 178, 178));
+
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  text-align: center;
+}
+a {
+  text-decoration: none;
+  color: white;
+}
+.logo-text{
+    background: linear-gradient(to right, red, rgb(242, 178, 178));
+  border: 2px solid rgb(252, 248, 248);
+  border-radius: 30px;
+    box-shadow: none;
+
+    margin: 0;
+    padding: 0;
+
+    width: auto;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+}
+
+.nl4 {
+    display: block;
+  font-size: 100px;
+  font-weight: bold;
+
+  background-image: url("https://i.postimg.cc/G2RQ7D4g/huy-phan-y4U1e-Kcz-OEo-unsplash-us-non-editorial-mcqmrl-a-BAVAZGDY0.jpg");
+  background-size: cover;
+  background-position: center;
+
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  font-size: 100px;
+  margin: 20px;
+}
+
+.north-london {
+  display: block;
+  font-size: 17px;
+  margin-top: 5px;
+  text-align: center;
+   margin-top: -27px;
+}
+
+/* Popup background */
+.popup {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.popup-content {
+    background: white;
+    color: black;
+    padding: 20px;
+    border-radius: 12px;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    cursor: pointer;
+    font-size: 28px;
+}
+button {
+  padding: 10px 20px;
+  background: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+/* ==========================================================
+   ARSENAL TREASURE ROOM
+   Master Stylesheet
+   ========================================================== */
+
+/* ==========================================================
+   RESET
+   ========================================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+/* ==========================================================
+   VARIABLES
+   ========================================================== */
+
+:root{
+
+    --arsenal-red:#d50032;
+    --arsenal-dark:#1b1b1b;
+    --arsenal-light:#f5f5f5;
+
+    --gold:#ffd700;
+    --gold-dark:#d4a300;
+
+    --stone:#4e4e4e;
+    --stone-dark:#262626;
+
+    --wood:#6b4226;
+    --wood-dark:#4b2e18;
+
+    --white:#ffffff;
+}
+
+/* ==========================================================
+   BODY
+   ========================================================== */
+
+body.treasure-room-body{
+
+    font-family:Arial, Helvetica, sans-serif;
+
+    min-height:100vh;
+
+    background:
+    linear-gradient(
+        to right,
+        #d50032,
+        #ffd0d0
+    );
+
+    color:white;
+
+    overflow-x:hidden;
+
+}
+
+/* ==========================================================
+   LINKS
+   ========================================================== */
+
+a{
+
+    text-decoration:none;
+
+}
+
+/* ==========================================================
+   HEADER
+   ========================================================== */
+
+header{
+
+    position:relative;
+
+    z-index:500;
+
+}
+
+/* ==========================================================
+   MOVING ARSENAL BANNER
+   ========================================================== */
+
+.arsenal-banner{
+
+    height:22px;
+
+    background-image:url("https://i.postimg.cc/dt5b72ss/Untitled-design.png");
+
+    background-repeat:repeat-x;
+
+    background-size:auto 22px;
+
+    animation:bannerMove 10s linear infinite;
+
+}
+
+@keyframes bannerMove{
+
+    from{
+
+        background-position-x:0;
+
+    }
+
+    to{
+
+        background-position-x:1000px;
+
+    }
+
+}
+
+/* ==========================================================
+   MAIN NAVIGATION
+   ========================================================== */
+
+.main-nav{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:40px;
+
+    padding:18px 40px;
+
+    background:
+    linear-gradient(
+        90deg,
+        white,
+        var(--arsenal-red)
+    );
+
+    box-shadow:
+    0 8px 20px rgba(0,0,0,.25);
+
+}
+
+/* ==========================================================
+   LOGO
+   ========================================================== */
+
+.logo{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.logo h1{
+
+    font-size:60px;
+
+    color:white;
+
+    line-height:1;
+
+    margin:0;
+
+    font-family:"Cinzel", serif;
+
+}
+
+.logo p{
+
+    font-size:15px;
+
+    color:white;
+
+    font-style:italic;
+
+}
+
+/* ==========================================================
+   MENU
+   ========================================================== */
+
+.menu{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    flex-wrap:wrap;
+
+}
+
+.menu a{
+
+    color:white;
+
+    padding:10px 22px;
+
+    border-radius:30px;
+
+    background:rgba(0,0,0,.25);
+
+    transition:.35s;
+
+    font-weight:bold;
+
+}
+
+.menu a:hover{
+
+    background:black;
+
+    transform:translateY(-2px);
+
+}
+
+.menu a.active{
+
+    background:gold;
+
+    color:black;
+
+}
+
+/* ==========================================================
+   SCOREBOARD
+   ========================================================== */
+
+.score-board{
+
+    position:fixed;
+
+    top:15px;
+
+    right:20px;
+
+    background:black;
+
+    color:gold;
+
+    padding:12px 20px;
+
+    border-radius:12px;
+
+    font-weight:bold;
+
+    z-index:9999;
+
+}
+/* ==========================================================
+   TREASURE ROOM
+   ========================================================== */
+
+.treasure-room{
+
+    position:relative;
+
+    min-height:100vh;
+
+    padding:80px 30px 220px;
+
+    overflow:hidden;
+
+    background:
+    linear-gradient(
+        to bottom,
+        #595959 0%,
+        #3b3b3b 45%,
+        #232323 100%
+    );
+
+}
+
+/* ==========================================================
+   STONE WALL TEXTURE
+   ========================================================== */
+
+.treasure-room::before{
+
+    content:"";
+
+    position:absolute;
+
+    inset:0;
+
+    background:
+    repeating-linear-gradient(
+        0deg,
+        rgba(255,255,255,.03),
+        rgba(255,255,255,.03) 4px,
+        transparent 4px,
+        transparent 55px
+    );
+
+    opacity:.45;
+
+    pointer-events:none;
+
+}
+
+/* ==========================================================
+   WOODEN FLOOR
+   ========================================================== */
+
+.treasure-room::after{
+
+    content:"";
+
+    position:absolute;
+
+    left:0;
+    right:0;
+    bottom:0;
+
+    height:180px;
+
+    background:
+    repeating-linear-gradient(
+        90deg,
+        var(--wood),
+        var(--wood) 40px,
+        var(--wood-dark) 40px,
+        var(--wood-dark) 80px
+    );
+
+    box-shadow:
+    inset 0 12px 20px rgba(255,255,255,.08),
+    0 -20px 30px rgba(0,0,0,.6);
+
+}
+
+/* ==========================================================
+   ROOM OVERLAY
+   ========================================================== */
+
+.room-overlay{
+
+    position:absolute;
+
+    inset:0;
+
+    background:
+    radial-gradient(
+        circle at center,
+        transparent 35%,
+        rgba(0,0,0,.35)
+    );
+
+    pointer-events:none;
+
+}
+
+/* ==========================================================
+   VAULT TITLE
+   ========================================================== */
+
+.vault-title{
+
+    position:relative;
+
+    z-index:20;
+
+    text-align:center;
+
+    margin-bottom:60px;
+
+    font-size:3rem;
+
+    color:var(--gold);
+
+    font-family:"Cinzel", serif;
+
+    text-shadow:
+        0 0 15px gold,
+        0 0 35px rgba(255,215,0,.6);
+        
+}
+
+.vault-titlee{
+
+    position:relative;
+
+    z-index:20;
+
+    text-align:center;
+
+    margin-bottom:60px;
+
+    font-size:3rem;
+
+    color:var(--gold);
+
+    font-family:"Cinzel", serif;
+
+    text-shadow:
+        0 0 15px gold,
+        0 0 35px rgba(255,215,0,.6);
+      background:
+    repeating-linear-gradient(
+        0deg,
+        rgba(255,255,255,.03),
+        rgba(255,255,255,.03) 4px,
+        transparent 4px,
+        transparent 55px
+    );
+
+
+}
+
+
+/* ==========================================================
+   STONE PILLARS
+   ========================================================== */
+
+.pillar{
+
+    position:absolute;
+
+    top:120px;
+
+    width:90px;
+
+    height:75%;
+
+    border-radius:8px;
+
+    border:4px solid #2d2d2d;
+
+    background:
+    linear-gradient(
+        90deg,
+        #3b3b3b,
+        #6a6a6a,
+        #3d3d3d
+    );
+
+    box-shadow:
+        inset -8px 0 15px rgba(0,0,0,.3),
+        inset 8px 0 15px rgba(255,255,255,.08);
+
+}
+
+.pillar-left{
+
+    left:40px;
+
+}
+
+.pillar-right{
+
+    right:40px;
+
+}
+
+/* ==========================================================
+   TORCHES
+   ========================================================== */
+
+.torch{
+
+    position:absolute;
+
+    width:26px;
+
+    height:110px;
+
+    border-radius:8px;
+
+    background:#3f2d17;
+
+    top:230px;
+
+}
+
+.left-torch{
+
+    left:145px;
+
+}
+
+.right-torch{
+
+    right:145px;
+
+}
+
+.torch::before{
+
+    content:"";
+
+    position:absolute;
+
+    left:50%;
+
+    top:-34px;
+
+    transform:translateX(-50%);
+
+    width:34px;
+
+    height:34px;
+
+    border-radius:50%;
+
+    background:
+    radial-gradient(
+        circle,
+        yellow,
+        orange,
+        red,
+        transparent
+    );
+
+    animation:flame 1s ease-in-out infinite alternate;
+
+}
+
+@keyframes flame{
+
+    from{
+
+        transform:translateX(-50%) scale(1);
+
+        filter:brightness(1);
+
+    }
+
+    to{
+
+        transform:translateX(-50%) scale(1.25);
+
+        filter:brightness(1.4);
+
+    }
+
+}
+
+/* ==========================================================
+   LIGHT BEAMS
+   ========================================================== */
+
+.light{
+
+    position:absolute;
+
+    width:360px;
+
+    height:360px;
+
+    border-radius:50%;
+
+    background:
+    radial-gradient(
+        circle,
+        rgba(255,255,180,.35),
+        transparent
+    );
+
+    animation:glow 4s ease-in-out infinite;
+
+}
+
+.light1{
+
+    left:15%;
+
+    top:100px;
+
+}
+
+.light2{
+
+    right:15%;
+
+    top:90px;
+
+    animation-delay:2s;
+
+}
+
+@keyframes glow{
+
+    50%{
+
+        transform:scale(1.2);
+
+    }
+
+}
+
+/* ==========================================================
+   CHEST AREA
+   ========================================================== */
+
+.chest-area{
+
+    position:relative;
+
+    z-index:50;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    margin-top:40px;
+
+}
+
+/* ==========================================================
+   TREASURE CHEST
+   ========================================================== */
+
+.chest{
+
+  display:block;
+
+    max-width:250px;
+
+    height:500px;  
+
+    width:230px;
+
+    cursor:pointer;
+
+    transition:
+        transform .35s,
+        filter .35s;
+
+}
+
+.chest:hover{
+
+    transform:
+        scale(1.08)
+        rotate(-2deg);
+
+    filter:
+        drop-shadow(0 0 18px gold);
+
+}
+
+.chest.opened{
+
+    animation:
+        chestShake .35s infinite alternate;
+
+}
+
+@keyframes chestShake{
+
+    from{
+
+        transform:
+        scale(1.12)
+        rotate(-3deg);
+
+    }
+
+    to{
+
+        transform:
+        scale(1.12)
+        rotate(3deg);
+
+    }
+
+}
+
+/* ==========================================================
+   OPEN BUTTON
+   ========================================================== */
+
+#openChest{
+
+    margin-top:25px;
+
+    padding:14px 34px;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    color:black;
+
+    background:linear-gradient(#ffe86b,var(--gold));
+
+    border:none;
+
+    border-radius:40px;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+    box-shadow:0 0 20px rgba(255,215,0,.45);
+
+}
+
+#openChest:hover{
+
+    transform:scale(1.08);
+
+    box-shadow:
+        0 0 30px gold;
+
+}
+
+/* ==========================================================
+   GOLD PILE
+   ========================================================== */
+
+.gold-pile{
+
+    width:340px;
+
+    height:90px;
+
+    margin:35px auto;
+
+    border-radius:50%;
+
+    background:
+    radial-gradient(
+        ellipse,
+        #fff5a0,
+        #ffd700,
+        #c99700
+    );
+
+    box-shadow:
+        0 0 35px gold,
+        0 0 70px rgba(255,215,0,.5);
+
+    animation:goldGlow 2.5s infinite;
+
+}
+
+@keyframes goldGlow{
+
+    50%{
+
+        transform:scale(1.04);
+
+        box-shadow:
+            0 0 60px gold,
+            0 0 90px rgba(255,215,0,.6);
+
+    }
+
+}
+/* ==========================================================
+   TROPHY GALLERY
+========================================================== */
+.trophy-background {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.55;
+    filter: brightness(0.65) saturate(0.75) blur(0.5px);
+}
+
+.trophy-background img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 800px;
+    object-fit: cover;
+    opacity: 1;
+    border-radius: 18px;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+}
+
+.trophy-gallery{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+
+    gap:35px;
+
+    max-width:1200px;
+
+    margin:90px auto;
+
+    position:relative;
+
+    z-index:100;
+
+}
+
+.trophy-card{
+
+    background:rgba(69, 2, 255, 0.08);
+
+    backdrop-filter:blur(10px);
+
+    border:2px solid rgba(255,215,0,.25);
+
+    border-radius:20px;
+
+    padding:25px;
+
+    text-align:center;
+
+    cursor:pointer;
+
+    transition:
+        transform .35s,
+        box-shadow .35s,
+        border-color .35s;
+
+    box-shadow:
+        0 10px 20px rgba(0,0,0,.35);
+
+}
+
+
+.trophy-card:hover{
+
+    transform:
+        translateY(-10px)
+        scale(1.05);
+
+    border-color:gold;
+
+    box-shadow:
+        0 0 30px gold;
+
+}
+
+.trophy-card.seen{
+
+    border-color:gold;
+
+    background:rgba(255,215,0,.12);
+
+}
+
+.trophy-card img{
+
+    width:150px;
+
+    height:150px;
+
+    object-fit:contain;
+
+    margin:auto;
+
+    opacity:1;
+
+}
+
+.trophy-card h3{
+
+    margin-top:20px;
+
+    font-size:22px;
+
+    color:gold;
+
+    font-family:"Cinzel", serif;
+
+}
+
+/* ==========================================================
+   SCORE BOARD
+========================================================== */
+
+.score-board{
+
+    position:fixed;
+
+    top:20px;
+
+    right:20px;
+
+    padding:14px 22px;
+
+    background:rgba(0,0,0,.8);
+
+    color:gold;
+
+    border:2px solid gold;
+
+    border-radius:15px;
+
+    font-weight:bold;
+
+    font-size:18px;
+
+    box-shadow:
+        0 0 18px rgba(255,215,0,.4);
+
+    z-index:9999;
+
+}
+
+/* ==========================================================
+   PLAYER
+========================================================== */
+
+#player{
+
+    position:absolute;
+
+    left:50%;
+
+    bottom:175px;
+
+    width:48px;
+
+    height:72px;
+
+    transform:translateX(-50%);
+
+    z-index:400;
+
+    transition:left .08s linear;
+
+}
+
+.head{
+
+    width:22px;
+
+    height:22px;
+
+    margin:auto;
+
+    border-radius:50%;
+
+    background:#ffe0bd;
+
+}
+
+.body{
+
+    width:28px;
+
+    height:42px;
+
+    margin:5px auto 0;
+
+    border-radius:8px;
+
+    background:var(--arsenal-red);
+
+}
+
+#player.walking{
+
+    animation:walk .35s infinite alternate;
+
+}
+
+@keyframes walk{
+
+    from{
+
+        transform:
+        translateX(-50%)
+        rotate(-2deg);
+
+    }
+
+    to{
+
+        transform:
+        translateX(-50%)
+        rotate(2deg);
+
+    }
+
+}
+
+/* ==========================================================
+   SECRET VAULT
+========================================================== */
+
+.secret-door{
+
+    position:absolute;
+
+    top:180px;
+
+    right:-360px;
+
+    width:300px;
+
+    padding:25px;
+
+    background:#222;
+
+    border:4px solid gold;
+
+    border-radius:20px;
+
+    box-shadow:
+        0 0 35px gold;
+
+    transition:right .8s ease;
+
+    z-index:300;
+
+}
+
+.secret-door.show{
+
+    right:40px;
+
+}
+
+.secret-door h2{
+
+    color:gold;
+
+    margin-bottom:15px;
+
+    text-align:center;
+
+    font-family:"Cinzel", serif;
+
+}
+
+.secret-door p{
+
+    color:white;
+
+    text-align:center;
+
+    line-height:1.6;
+
+}
+
+/* ==========================================================
+   POPUP
+========================================================== */
+
+.popup{
+
+    display:none;
+
+    position:fixed;
+
+    inset:0;
+
+    justify-content:center;
+
+    align-items:center;
+
+    background:rgba(0,0,0,.75);
+
+    z-index:99999;
+
+}
+
+.popup-box{
+
+    position:relative;
+
+    width:min(90%,600px);
+
+    padding:35px;
+
+    border-radius:20px;
+
+    background:#1b1b1b;
+
+    border:2px solid gold;
+
+    color:white;
+
+    text-align:center;
+
+    animation:popupOpen .35s ease;
+
+    box-shadow:
+        0 0 35px gold;
+
+}
+
+.popup-box h2{
+
+    color:gold;
+
+    margin-bottom:20px;
+
+    font-size:30px;
+
+    font-family:"Cinzel", serif;
+
+}
+
+.popup-box p{
+
+    font-size:17px;
+
+    line-height:1.8;
+
+}
+
+/* ==========================================================
+   CLOSE BUTTON
+========================================================== */
+
+.close{
+
+    position:absolute;
+
+    top:12px;
+
+    right:18px;
+
+    font-size:34px;
+
+    color:white;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.close:hover{
+
+    color:gold;
+
+    transform:rotate(90deg);
+
+}
+
+/* ==========================================================
+   POPUP ANIMATION
+========================================================== */
+
+@keyframes popupOpen{
+
+    from{
+
+        opacity:0;
+
+        transform:
+        scale(.75);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:
+        scale(1);
+
+    }
+
+}
+/* ==========================================================
+   COIN CONTAINER
+========================================================== */
+
+#coinContainer{
+
+    position:absolute;
+
+    inset:0;
+
+    overflow:hidden;
+
+    pointer-events:none;
+
+    z-index:200;
+
+}
+
+/* ==========================================================
+   REALISTIC GOLD COINS
+========================================================== */
+
+.coin{
+
+    position:absolute;
+
+    width:20px;
+    height:20px;
+
+    border-radius:50%;
+
+    background:
+    radial-gradient(
+        circle at 30% 30%,
+        #fff8a8,
+        #ffd700,
+        #c79200
+    );
+
+    box-shadow:
+        0 0 12px gold,
+        0 0 25px rgba(255,215,0,.45);
+
+    pointer-events:none;
+
+    will-change:transform;
+
+}
+
+/* ==========================================================
+   SPARKLES
+========================================================== */
+
+#sparkleContainer{
+
+    position:fixed;
+
+    top:0;
+    left:0;
+
+    width:100vw;
+    height:100vh;
+
+    overflow:visible;
+
+    pointer-events:none;
+
+    z-index:250;
+
+
+}
+
+.sparkle{
+
+    position:fixed;
+
+    width:14px;
+    height:14px;
+
+    border-radius:50%;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #ffffff 48%,
+            var(--arsenal-red) 48%,
+            var(--arsenal-red) 100%
+        );
+
+    box-shadow:
+        0 0 12px rgba(255,255,255,.9),
+        0 0 18px rgba(213,0,50,.7);
+
+    animation: sparkleFall 6s linear forwards;
+
+}
+
+@keyframes sparkleFall{
+
+    0%{
+        opacity:0;
+        transform:translateY(0);
+    }
+
+    15%{
+        opacity:1;
+    }
+
+    100%{
+        opacity:0;
+        transform:translateY(1500px);
+    }
+
+}
+
+/* ==========================================================
+   CONFETTI
+========================================================== */
+
+.confetti{
+
+    position:fixed;
+
+    width:12px;
+
+    height:12px;
+
+    border-radius:2px;
+
+    z-index:9999;
+
+    animation:
+        confettiFall linear forwards;
+
+}
+
+@keyframes confettiFall{
+
+    from{
+
+        transform:
+        translateY(-20px)
+        rotate(0deg);
+
+        opacity:1;
+
+    }
+
+    to{
+
+        transform:
+        translateY(110vh)
+        rotate(900deg);
+
+        opacity:0;
+
+    }
+
+}
+
+/* ==========================================================
+   CHEST OPEN ANIMATION
+========================================================== */
+
+.opened{
+
+    animation:
+        chestPulse .5s infinite alternate;
+
+}
+
+@keyframes chestPulse{
+
+    from{
+
+        transform:
+        scale(1.12)
+        rotate(-3deg);
+
+    }
+
+    to{
+
+        transform:
+        scale(1.12)
+        rotate(3deg);
+
+    }
+
+}
+
+/* ==========================================================
+   GOLD SHIMMER
+========================================================== */
+
+.gold-pile::before{
+
+    content:"";
+
+    position:absolute;
+
+    width:100%;
+
+    height:100%;
+
+    border-radius:inherit;
+
+    background:
+
+    linear-gradient(
+
+        120deg,
+
+        transparent,
+
+        rgba(255,255,255,.5),
+
+        transparent
+
+    );
+
+    animation:
+        shimmer 3s infinite;
+
+}
+
+@keyframes shimmer{
+
+    from{
+
+        transform:
+        translateX(-120%);
+
+    }
+
+    to{
+
+        transform:
+        translateX(120%);
+
+    }
+
+}
+
+/* ==========================================================
+   TROPHY HOVER GLOW
+========================================================== */
+
+.trophy-card:hover img{
+
+    animation:
+        trophyFloat .8s infinite alternate;
+
+}
+
+@keyframes trophyFloat{
+
+    from{
+
+        transform:
+        translateY(0);
+
+    }
+
+    to{
+
+        transform:
+        translateY(-8px);
+
+    }
+
+}
+
+/* ==========================================================
+   SECRET DOOR GLOW
+========================================================== */
+
+.secret-door.show{
+
+    animation:
+        vaultGlow 2s infinite;
+
+}
+
+@keyframes vaultGlow{
+
+    50%{
+
+        box-shadow:
+
+        0 0 45px gold,
+
+        0 0 90px rgba(255,215,0,.5);
+
+    }
+
+}
+
+/* ==========================================================
+   BUTTON EFFECT
+========================================================== */
+
+button{
+
+    transition:
+        transform .3s,
+        box-shadow .3s;
+
+}
+
+button:hover{
+
+    transform:
+        scale(1.08);
+
+    box-shadow:
+        0 0 25px gold;
+
+}
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
+
+@media (max-width:992px){
+
+.main-nav{
+
+    flex-direction:column;
+
+    gap:20px;
+
+    text-align:center;
+
+}
+
+.menu{
+
+    justify-content:center;
+
+}
+
+.pillar,
+.torch,
+.light{
+
+    display:none;
+
+}
+
+.chest{
+
+    width:180px;
+
+}
+
+.gold-pile{
+
+    width:250px;
+
+    height:70px;
+
+}
+
+.score-board{
+
+    top:10px;
+
+    right:10px;
+
+    font-size:15px;
+
+}
+
+}
+
+@media (max-width:768px){
+
+.vault-title{
+
+    font-size:2rem;
+
+}
+
+.menu a{
+
+    padding:10px 15px;
+
+    font-size:14px;
+
+}
+
+.trophy-gallery{
+
+    grid-template-columns:1fr;
+
+}
+
+.secret-door{
+
+    width:250px;
+
+}
+
+#player{
+
+    transform:
+    translateX(-50%) scale(.85);
+
+}
+
+}
+
+@media (max-width:480px){
+
+.logo h1{
+
+    font-size:34px;
+
+}
+
+.logo p{
+
+    font-size:13px;
+
+}
+
+.chest{
+
+    width:150px;
+
+}
+
+#openChest{
+
+    padding:12px 20px;
+
+    font-size:15px;
+
+}
+
+.gold-pile{
+
+    width:180px;
+
+    height:55px;
+
+}
+
+.score-board{
+
+    width:90%;
+
+    left:50%;
+
+    right:auto;
+
+    transform:translateX(-50%);
+
+    text-align:center;
+
+}
+
+.popup-box{
+
+    width:95%;
+
+    padding:20px;
+
+}
+
+}
+
+
+/* ==========================================
+   EXTRA RESPONSIVE FIXES
+   ========================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Navigation */
+.main-nav {
+    width: min(95%, 1200px);
+    margin: 30px auto;
+}
+
+.menu {
+    max-width: 100%;
+}
+
+/* Image gallery */
+.image-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    width: min(95%, 1200px);
+    margin: 20px auto;
+}
+
+.image-container figure {
+    width: 100%;
+    margin: 0;
+}
+
+.image-container img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+}
+
+/* Chest */
+.chest {
+    width: min(230px, 70vw);
+    height: auto;
+}
+
+/* Tables */
+.player-table {
+    width: 95%;
+    max-width: 100%;
+}
+
+@media (max-width: 768px) {
+
+    .main-nav {
+        width: 95%;
+        padding: 15px;
+        gap: 15px;
+    }
+
+    .menu {
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .menu a {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .nl4 {
+        font-size: 70px;
+    }
+
+    .north-london {
+        font-size: 14px;
+    }
+
+    .image-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .image-container img {
+        height: 180px;
+    }
+
+    .vault-title {
+        font-size: 2rem;
+    }
+
+    .treasure-room {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .main-nav {
+        width: 100%;
+        margin: 15px auto;
+        border-radius: 20px;
+    }
+
+    .menu {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .menu a {
+        width: 90%;
+        text-align: center;
+    }
+
+    .nl4 {
+        font-size: 50px;
+    }
+
+    .north-london {
+        font-size: 11px;
+    }
+
+    .image-container {
+        grid-template-columns: 1fr;
+    }
+
+    .image-container img {
+        height: 220px;
+    }
+
+    .player-table {
+        width: 100%;
+        font-size: 13px;
+    }
+
+    .player-table th,
+    .player-table td {
+        padding: 6px;
+    }
+
+    .vault-title {
+        font-size: 1.6rem;
+    }
+
+    .popup-box {
+        width: 92%;
+        padding: 20px;
+    }
+}
+
+
+
+/* ================================
+   FIRST DIVISION TROUGHY CARD BACKGROUND IMAGES
+===================================*/
+
+.trophy-card.first-division {
+    
+    background-image: url("https://i.postimg.cc/fT5CtDVY/images-q-tbn-ANd9Gc-Rz-Zj-ABWo-MZnv1Js-R3VCPz9rv-Wsdvk-Y5kvuvfvaq-Gu3I3SOeh2mg-Ib-IU4Ld-s-10.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division2 {
+    
+    background-image: url("https://i.postimg.cc/tTXZfXVj/Qxjx5Vz-Vl3-vgb8NW0Mx-Vm-Bt2-A-EYHr-Pp-QDLFx3-Wb1cwb5F4vxo-Esyfb-Hd-Qna-F0b-Kvrr-U077m1qww6j-KTEy-Sk.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division3 {
+    
+    background-image: url("https://i.postimg.cc/KzC8rxbs/E1X3Igrd3J-a-HJE3AUp2Krh-OIv-W6o-Iy-Rf-Y7lx-E3wsv-Wo-Ms1PQIx-CLSkcs-K-x-PKWHjm-Kuf2to-Qk-YNJb-UP9Htc.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division4 {
+    
+    background-image: url("https://i.postimg.cc/W1JLggzV/DEAIYrx-Os-IF0c2UHynkxz7SNQIho-70c1PBSP3Xl-Kx-H72D1VFHZv-OJlmw-Fmft-Dg-Gk-OOj-UXmt-SY9ig-Yuqnuiy-Qrp.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division5 {
+    
+    background-image: url("https://i.postimg.cc/908Pm4jF/7677f0dcb4d0-arsenal-1938.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+.trophy-card.first-division6 {
+    
+    background-image: url("https://i.postimg.cc/jdWt81vT/ISdvg-I0s-S9f-N2KEQq-Bz-ML06ILp-bu0Sk-Pe-QJAHTq1s-Oj4a7-a-G2gm-FJ8u7Zk-KRi-EV0s-KTZImi-D-mx-m-Upk-Jd.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division7 {
+    
+    background-image: url("https://i.postimg.cc/50BWdcTN/bqa-X8i-Fh-Sd-ZECh-Cs-Xu-Ym-Va5y-Jbzk-Ee-I3zc-R-k-Bd8-qhoh-Sz-Ujcl-Tc-Mzjmo-Ip-BAHL-MPp3u79xyd-JVIs.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division8 {
+    
+    background-image: url("https://i.postimg.cc/KzCXMGTP/G1Rme-L0Mj-AFYl-Ch1Rogf-Htn1v-LME9ytw-bzft829ORPok-T2IMVGTHH6ilz-D4UHX9u-Hft-Zv2No-XPf5qe-O6Py-Joh-B.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division9 {
+    
+    background-image: url("https://i.postimg.cc/yNXJTTzb/i-Yez2os-Mp-Ms-UP7mfvw-M8uz-Dn-Gxd4vqty5Eas-3l-Uk-CVliqidn1Lpl4Xv-S-y9dgxg-Z40xw-Uk-L2s-Jq-CGm-AY1NF.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division10 {
+    
+    background-image: url("https://i.postimg.cc/h40kqQKm/Gh3ir3qrg-Os-Em95BYLrnfawq0g-XZRzbyc-C2Rx-GSQo-Ox5CEO4Bz9Pak5Fvo5H1ZHm7SA1IKej7g-Hj00b-Hze5AOGzt-Mb.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division11 {
+    
+    background-image: url("https://i.postimg.cc/x1PzLbby/SOOMmy0zr-Gf7RPRWe-RCTh-LC0x-EDs-Exgp-St-UUl-Nw-Qc-Ez-MLh-JZUGXsa3ZPjw-Rj-J2Dmky-1Fr-Us-TV6b-Iw2yncw.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division12 {
+    
+    background-image: url("https://i.postimg.cc/MKT4Cyzv/lxul39j-SCKOhct-Jfk-I8q-Yr-C-Gc-IJMJlq4ywn-NAo-Vcwi-HVfop-Ywsh-Kgl-FT5m-IG5ohys-X5TYq-I2r-ANaf-K5y6m.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division13 {
+    
+    background-image: url("https://i.postimg.cc/nzNkNQ2t/QCeyfb-Ev-Lhv-Yh-Qj-Gl-Ee-LEuf-F8p265c-HCA5Hn-Gurg-J8x7f-TIRA8E4EBa-CWf-Y6Yx-OUq-UI-Ntm5f0fa1Wg7o-Vw.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division14 {
+    
+    background-image: url("https://i.postimg.cc/htC3pvkt/2025-2026-epl-photo.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+/* ================================
+   FA CUP TROUGHY CARD BACKGROUND IMAGES
+===================================*/
+
+.trophy-card.FA-cup1 {
+    
+    background-image: url("https://i.postimg.cc/Hnrnfg3L/6-Fl6U0r-ANl-Lq8Itvp9LA-FNe-Gflqss-HDO9q-G20Vak-KYBBrsbm0u-XHVkr3Gf-Lnxszl-PRq8CFNes-TESFNX50U7F9i-K.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+.trophy-card.FA-cup2 {
+    
+    background-image: url("https://i.postimg.cc/YqcpzVTm/0RAJ-k-Bc-BA-cv-Pb-Vt-u7Ts-Vy-i-NO7y-qdre-O5f-YUZh-JXBjw-ETJMLnu-O7ZZWi-S-hthnvc-Ef-J4yso74d-K0cwz-A.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+.trophy-card.FA-cup3 {
+    
+    background-image: url("https://i.postimg.cc/gJZ0YP1f/w3Ian6b-VOx6z2h-Ikzl-QJmzxt-CP55mm6T2Ee-Eyb8cqd-Zsoyfo54w1x-CL6N9O-4xljg21i-YIkh-Brp-C5CYWF9X3i-Xs-P.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.FA-cup4 {
+    
+    background-image: url("https://i.postimg.cc/L6dx4BgD/hl-X1Lyclx9JURMi-Q62G5FN69Wowj5N-q-JEwo-Rl-l-Lnrka-Epr-DEU681K-ZBJ8b-SHHFVHV2Mf-F54nxu-LQb-B8s-Mvy-M.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.FA-cup5 {
+    
+    background-image: url("https://i.postimg.cc/dVVHgQyd/l-QWc443PTc-JSo-Vg1Hv-b8zr-ZPk4o-Cy-Bv-So-PEKi-Stt7Bg-G2205mq-JNH8a-Jv-AQQRq-MVRHenvu-SVaxh-Uxd-UA-Q.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.FA-cup6 {
+    
+    background-image: url("https://i.postimg.cc/NFYT81FN/b14762030684bdd70169ced150ab2e20.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+.trophy-card.FA-cup7 {
+    
+    background-image: url("https://i.postimg.cc/YSDMzkSV/images-q-tbn-ANd9Gc-Rt4B6NUqy-Ljj0c32j-GHy-Sa-LOuh-Cj-GT3at4533-OCnv-NWTIb-Victh-Nw9q0-s-10.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+
+
+
+
+
+
+
+/* ---------- NL4 ARSENAL WEBSITE — RESPONSIVE PATCH
+   Add this AFTER your existing styles.css
+   ========================================================== */ ---------- */
+
+
+/* ---------- Global safety ---------- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+
+body {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+img,
+video,
+iframe {
+    max-width: 100%;
+}
+
+button,
+a {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ---------- Main navigation ---------- */
+/* Overrides the old fixed 150px side margin. */
+.main-nav {
+    width: min(95%, 1200px);
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 18px 28px;
+    min-width: 0;
+}
+
+.menu {
+    max-width: 100%;
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.menu a {
+    white-space: nowrap;
+}
+
+/* ---------- NL4 logo ---------- */
+.nl4 {
+    font-size: clamp(50px, 8vw, 100px);
+    margin: 12px 20px;
+}
+
+.north-london {
+    font-size: clamp(11px, 1.5vw, 17px);
+    margin-top: -18px;
+    white-space: nowrap;
+}
+
+/* ---------- General headings ---------- */
+h1,
+h2,
+h3 {
+    max-width: 95%;
+}
+
+h1 {
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    padding: 14px 22px;
+}
+
+h2 {
+    width: min(95%, 800px);
+    padding: clamp(15px, 3vw, 25px);
+    font-size: clamp(1.2rem, 3vw, 2rem);
+}
+
+.div-caption {
+    font-size: clamp(20px, 4vw, 30px);
+}
+
+/* ---------- Image gallery ---------- */
+.image-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    width: min(95%, 1200px);
+    margin: 20px auto;
+}
+
+.image-container figure {
+    width: 100%;
+    margin: 0;
+}
+
+.image-container img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.image-container figcaption {
+    text-align: center;
+    margin-top: 8px;
+}
+
+/* ---------- History content ---------- */
+.history-details {
+    width: min(95%, 1000px);
+    margin: 0 auto;
+}
+
+.history-details h2 {
+    width: 100%;
+    margin: 25px auto;
+}
+
+.history-details p {
+    margin: 20px 0;
+    font-size: clamp(14px, 2vw, 16px);
+    text-align: left;
+}
+
+/* ---------- Tables ---------- */
+/* Allows wide tables to scroll instead of breaking the page. */
+table {
+    max-width: 100%;
+}
+
+.player-table {
+    width: min(95%, 1000px);
+    max-width: 100%;
+}
+
+@media (max-width: 700px) {
+    .player-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .player-table img {
+        max-width: 120px;
+        height: auto;
+    }
+}
+
+/* ---------- Player cards ---------- */
+.players {
+    width: min(95%, 1400px);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.cliff {
+    max-width: 100%;
+}
+
+/* ---------- Treasure Room ---------- */
+.treasure-room {
+    width: 100%;
+    padding-left: clamp(12px, 4vw, 30px);
+    padding-right: clamp(12px, 4vw, 30px);
+}
+
+.vault-title,
+.vault-titlee {
+    width: 100%;
+    max-width: 100%;
+    font-size: clamp(1.6rem, 5vw, 3rem);
+    margin-left: auto;
+    margin-right: auto;
+    overflow-wrap: break-word;
+}
+
+/* ---------- Treasure chest ---------- */
+.chest {
+    width: min(230px, 70vw);
+    max-width: 230px;
+    height: auto;
+}
+
+.gold-pile {
+    width: min(340px, 80vw);
+    max-width: 340px;
+}
+
+/* ---------- Trophy gallery ---------- */
+.trophy-gallery {
+    width: min(95%, 1200px);
+    max-width: 1200px;
+    grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+    gap: clamp(15px, 3vw, 35px);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.trophy-card {
+    min-width: 0;
+    width: 100%;
+    padding: clamp(15px, 3vw, 25px);
+}
+
+.trophy-card img {
+    width: min(150px, 70vw);
+    height: min(150px, 70vw);
+}
+
+.trophy-card h3 {
+    font-size: clamp(17px, 3vw, 22px);
+    overflow-wrap: break-word;
+}
+
+/* ---------- Treasure-room scoreboard ---------- */
+.score-board {
+    max-width: calc(100vw - 20px);
+}
+
+/* ---------- Secret vault ---------- */
+.secret-door {
+    max-width: calc(100vw - 30px);
+}
+
+.secret-door.show {
+    right: 20px;
+}
+
+/* ---------- Popup ---------- */
+.popup {
+    padding: 15px;
+}
+
+.popup-box {
+    width: min(92vw, 600px);
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: clamp(20px, 5vw, 35px);
+}
+
+.popup-box h2 {
+    max-width: 100%;
+    font-size: clamp(20px, 5vw, 30px);
+}
+
+.popup-box p {
+    font-size: clamp(14px, 3vw, 17px);
+}
+
+/* ==========================================================
+   TABLET
+   ========================================================== */
+@media (max-width: 992px) {
+
+    .main-nav {
+        flex-direction: column;
+        width: min(94%, 800px);
+        gap: 18px;
+        text-align: center;
+    }
+
+    .logo-text {
+        max-width: 100%;
+    }
+
+    .menu {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .pillar,
+    .torch,
+    .light {
+        display: none;
+    }
+
+    .trophy-gallery {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .chest {
+        width: min(200px, 55vw);
+    }
+
+    .gold-pile {
+        width: min(280px, 70vw);
+    }
+}
+
+/* ==========================================================
+   PHONE / SMALL TABLET
+   ========================================================== */
+@media (max-width: 768px) {
+
+    .main-nav {
+        width: 96%;
+        padding: 14px;
+        margin: 15px auto;
+        border-radius: 24px;
+    }
+
+    .nl4 {
+        font-size: clamp(48px, 16vw, 70px);
+        margin: 8px 10px;
+    }
+
+    .north-london {
+        font-size: 12px;
+        margin-top: -12px;
+    }
+
+    .menu {
+        gap: 7px;
+    }
+
+    .menu a {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .image-container {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 94%;
+        gap: 12px;
+    }
+
+    .image-container img {
+        height: 180px;
+    }
+
+    .trophy-gallery {
+        grid-template-columns: 1fr;
+        width: 94%;
+    }
+
+    .trophy-card:hover {
+        transform: translateY(-5px) scale(1.02);
+    }
+
+    .secret-door {
+        width: min(250px, calc(100vw - 30px));
+    }
+
+    .secret-door.show {
+        right: 15px;
+    }
+
+    #player {
+        transform: translateX(-50%) scale(.85);
+    }
+
+    .treasure-room {
+        padding-top: 50px;
+        padding-bottom: 160px;
+    }
+}
+
+/* ==========================================================
+   PHONE
+   ========================================================== */
+@media (max-width: 480px) {
+
+    .main-nav {
+        width: 100%;
+        margin: 10px auto;
+        padding: 12px 8px;
+        border-radius: 18px;
+    }
+
+    .nl4 {
+        font-size: 50px;
+        margin: 6px;
+    }
+
+    .north-london {
+        font-size: 10px;
+        margin-top: -8px;
+    }
+
+    .menu {
+        flex-direction: column;
+        width: 100%;
+        gap: 6px;
+    }
+
+    .menu a {
+        width: min(90%, 300px);
+        text-align: center;
+        padding: 9px 12px;
+    }
+
+    .image-container {
+        grid-template-columns: 1fr;
+        width: 92%;
+    }
+
+    .image-container img {
+        height: 220px;
+    }
+
+    .history-details {
+        width: 92%;
+    }
+
+    .history-details p {
+        margin: 15px 0;
+        text-align: left;
+    }
+
+    .player-table {
+        width: 100%;
+        font-size: 12px;
+    }
+
+    .player-table th,
+    .player-table td {
+        padding: 6px;
+    }
+
+    .chest {
+        width: min(160px, 65vw);
+    }
+
+    #openChest {
+        padding: 11px 18px;
+        font-size: 14px;
+    }
+
+    .gold-pile {
+        width: min(190px, 70vw);
+        height: 55px;
+    }
+
+    .score-board {
+        width: calc(100% - 20px);
+        left: 10px;
+        right: 10px;
+        top: 10px;
+        transform: none;
+        padding: 9px 12px;
+        font-size: 13px;
+    }
+
+    .popup-box {
+        width: 94%;
+        padding: 20px 15px;
+    }
+
+    .popup-box p {
+        line-height: 1.6;
+    }
+
+    .close {
+        top: 8px;
+        right: 12px;
+        font-size: 28px;
+    }
+
+    .trophy-card {
+        padding: 15px;
+    }
+
+    .trophy-card img {
+        width: 130px;
+        height: 130px;
+    }
+}
+
+/* ==========================================================
+   VERY SMALL PHONES
+   ========================================================== */
+@media (max-width: 360px) {
+
+    .nl4 {
+        font-size: 42px;
+    }
+
+    .north-london {
+        font-size: 9px;
+    }
+
+    .menu a {
+        width: 95%;
+        font-size: 12px;
+    }
+
+    .image-container img {
+        height: 190px;
+    }
+
+    .vault-title,
+    .vault-titlee {
+        font-size: 1.35rem;
+    }
+
+    .chest {
+        width: 140px;
+    }
+
+    .gold-pile {
+        width: 160px;
+        height: 48px;
+    }
+}
+
+/* ---------- Reduce motion for accessibility ---------- */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+Library
+/
+styles.css
+body {
+ background: linear-gradient(to right, red, rgb(242, 178, 178)) ;
+  min-height:100vh;
+}
+
+.alt-bg {
+  background: linear-gradient(to right, #ff0303, #fdfbfb);
+}
+
+.figcaption{
+  text-align: center;
+}
+
+.image-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.image-container img {
+  width: 150px;
+  height: auto;
+  border-radius: 6px;
+  justify-content: center;
+}
+
+.arsenal-logo {
+  background: url("https://i.postimg.cc/dt5b72ss/Untitled-design.png");
+  background-repeat: repeat-x;
+  background-size: auto 20px;
+padding: 2px;
+  width: 100;
+
+  animation: moveLogo 10s linear infinite;
+}
+
+@keyframes moveLogo {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: 1000px;
+  }
+}
+
+
+.main-nav p{
+  font-size: 14px;
+  color: linear-gradient(to right, red, rgb(242, 178, 178));
+  border-radius: 40px;
+  display: flex;
+  margin-top: 50px;
+  justify-content: center;
+}
+
+
+.main-nav {
+  background: linear-gradient(to right, red, rgb(242, 178, 178));
+
+  width: fit-content;
+  padding: 10px 0;
+  border-radius: 40px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+
+  margin: 30px 150px;
+  overflow: visible;
+}
+
+img {
+  display: block;
+  margin: 0 auto;
+  display: flex;
+}
+
+#menu {
+  width: 500px;
+   margin: 1px;
+  text-align: center;
+  padding: 10px;
+}
+
+
+/*Table section*/
+table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+  }
+
+  th {
+    background-color: #333;
+    color: white;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+
+.div-caption {
+  font-size: 30px;
+  color: white;
+  text-align: center;
+  font-weight: bold;
+  padding: 8px;
+  margin-bottom: 10px;
+  background: transparent;
+}
+
+.history-details h3{
+color: rgb(245, 241, 241);
+text-align: center;
+ font-size: 30px;
+}
+
+.history-details h2{
+  color: white;
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 25px;
+  background-color: #f64949;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  text-align:center;
+}
+
+.history-details p{
+font-size: 16px;
+  line-height: 1.6;
+  color: #0a0000;
+  margin-bottom: 15px;
+  font-weight: normal;
+  text-align: justify;
+}
+.history-details p{
+  margin: 40PX;
+}
+.history-details IMG{
+  max-width: 100%;
+  height: auto;
+}
+
+.player-table{
+  border-collapse: collapse;
+  width: 70%;
+}
+.ph1 h1{
+   color: white;
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 25px;
+  background-color: #f64949;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  text-align:center;
+
+}
+
+.player-table th,
+.player-table td{
+  border: 1px solid black;
+  padding: 10px;
+}
+
+.player-table th{
+  background-color: #ddd;
+  text-align: center;
+}
+
+.image-cell{
+  vertical-align: top;
+  text-align: left;
+}
+
+.player-table img{
+  display: block;
+  border: 5px solid red;
+  border-radius: 70px;
+}
+
+
+
+/* Container for all player cards */
+.players{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:25px;
+    margin:30px auto;
+    max-width:1400px;
+}
+
+/* Individual player card */
+.cliff{
+    width:220px;
+    min-height:310px;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+
+    padding:15px;
+
+    border-radius:18px;
+
+    background:linear-gradient(180deg,#d00027,#8b0000);
+
+    border:3px solid gold;
+
+    box-shadow:
+        0 8px 20px rgba(0,0,0,.45),
+        0 0 12px rgba(255,215,0,.25);
+
+    transition:
+        transform .35s,
+        box-shadow .35s,
+        background .35s;
+
+    overflow:hidden;
+}
+
+
+/* Hover effects */
+.cliff:hover{
+
+    transform:
+        translateY(-12px)
+        scale(1.05);
+
+    background:linear-gradient(180deg,#ff002f,#b1001f);
+
+    box-shadow:
+        0 15px 30px rgba(0,0,0,.55),
+        0 0 25px gold;
+}
+
+.cliff:active{
+
+    transform:scale(.97);
+
+}
+
+.cliff img{
+
+    width:200px;
+    height:150px;
+
+    object-fit:cover;
+
+    border-radius:12px;
+
+    border:3px solid white;
+
+    transition:.4s;
+
+}
+
+.cliff:hover img{
+
+    transform:scale(1.08);
+
+    border-color:gold;
+
+}
+
+.cliff a{
+
+    color:white;
+
+    text-decoration:none;
+
+    font-size:20px;
+
+    font-weight:bold;
+
+    margin-top:15px;
+
+    transition:.3s;
+
+}
+
+.cliff a:hover{
+
+    color:gold;
+
+}
+
+/* Every h1 starts on its own line */
+h1{
+
+    width:fit-content;
+
+    margin:60px auto 25px;
+
+    padding:18px 35px;
+
+    border-radius:18px;
+
+    color:white;
+
+    background:linear-gradient(to right,#d00027,#ff304f);
+
+    border:3px solid gold;
+
+    box-shadow:0 5px 18px rgba(0,0,0,.35);
+
+    clear:both;
+
+}
+
+
+@media(max-width:900px){
+
+.players{
+
+gap:18px;
+
+}
+
+.cliff{
+
+width:180px;
+
+}
+
+.cliff img{
+
+width:160px;
+
+height:120px;
+
+}
+
+}
+
+
+@media(max-width:600px){
+
+.players{
+
+flex-direction:column;
+
+align-items:center;
+
+}
+
+.cliff{
+
+width:90%;
+
+max-width:320px;
+
+}
+
+.cliff img{
+
+width:100%;
+
+height:220px;
+
+}
+
+}
+
+
+@keyframes glow{
+
+0%{
+
+box-shadow:
+0 0 10px gold;
+
+}
+
+50%{
+
+box-shadow:
+0 0 28px gold;
+
+}
+
+100%{
+
+box-shadow:
+0 0 10px gold;
+
+}
+
+}
+
+.cliff:hover{
+
+animation:glow 1.2s infinite;
+
+}
+
+/* h2 styling */
+h2 {
+  color: white;
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 25px;
+
+  background: linear-gradient(to right, red, rgb(242, 178, 178));
+
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  text-align: center;
+}
+a {
+  text-decoration: none;
+  color: white;
+}
+.logo-text{
+    background: linear-gradient(to right, red, rgb(242, 178, 178));
+  border: 2px solid rgb(252, 248, 248);
+  border-radius: 30px;
+    box-shadow: none;
+
+    margin: 0;
+    padding: 0;
+
+    width: auto;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+}
+
+.nl4 {
+    display: block;
+  font-size: 100px;
+  font-weight: bold;
+
+  background-image: url("https://i.postimg.cc/G2RQ7D4g/huy-phan-y4U1e-Kcz-OEo-unsplash-us-non-editorial-mcqmrl-a-BAVAZGDY0.jpg");
+  background-size: cover;
+  background-position: center;
+
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  font-size: 100px;
+  margin: 20px;
+}
+
+.north-london {
+  display: block;
+  font-size: 17px;
+  margin-top: 5px;
+  text-align: center;
+   margin-top: -27px;
+}
+
+/* Popup background */
+.popup {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.popup-content {
+    background: white;
+    color: black;
+    padding: 20px;
+    border-radius: 12px;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    cursor: pointer;
+    font-size: 28px;
+}
+button {
+  padding: 10px 20px;
+  background: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+/* ==========================================================
+   ARSENAL TREASURE ROOM
+   Master Stylesheet
+   ========================================================== */
+
+/* ==========================================================
+   RESET
+   ========================================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+/* ==========================================================
+   VARIABLES
+   ========================================================== */
+
+:root{
+
+    --arsenal-red:#d50032;
+    --arsenal-dark:#1b1b1b;
+    --arsenal-light:#f5f5f5;
+
+    --gold:#ffd700;
+    --gold-dark:#d4a300;
+
+    --stone:#4e4e4e;
+    --stone-dark:#262626;
+
+    --wood:#6b4226;
+    --wood-dark:#4b2e18;
+
+    --white:#ffffff;
+}
+
+/* ==========================================================
+   BODY
+   ========================================================== */
+
+body.treasure-room-body{
+
+    font-family:Arial, Helvetica, sans-serif;
+
+    min-height:100vh;
+
+    background:
+    linear-gradient(
+        to right,
+        #d50032,
+        #ffd0d0
+    );
+
+    color:white;
+
+    overflow-x:hidden;
+
+}
+
+/* ==========================================================
+   LINKS
+   ========================================================== */
+
+a{
+
+    text-decoration:none;
+
+}
+
+/* ==========================================================
+   HEADER
+   ========================================================== */
+
+header{
+
+    position:relative;
+
+    z-index:500;
+
+}
+
+/* ==========================================================
+   MOVING ARSENAL BANNER
+   ========================================================== */
+
+.arsenal-banner{
+
+    height:22px;
+
+    background-image:url("https://i.postimg.cc/dt5b72ss/Untitled-design.png");
+
+    background-repeat:repeat-x;
+
+    background-size:auto 22px;
+
+    animation:bannerMove 10s linear infinite;
+
+}
+
+@keyframes bannerMove{
+
+    from{
+
+        background-position-x:0;
+
+    }
+
+    to{
+
+        background-position-x:1000px;
+
+    }
+
+}
+
+/* ==========================================================
+   MAIN NAVIGATION
+   ========================================================== */
+
+.main-nav{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:40px;
+
+    padding:18px 40px;
+
+    background:
+    linear-gradient(
+        90deg,
+        white,
+        var(--arsenal-red)
+    );
+
+    box-shadow:
+    0 8px 20px rgba(0,0,0,.25);
+
+}
+
+/* ==========================================================
+   LOGO
+   ========================================================== */
+
+.logo{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.logo h1{
+
+    font-size:60px;
+
+    color:white;
+
+    line-height:1;
+
+    margin:0;
+
+    font-family:"Cinzel", serif;
+
+}
+
+.logo p{
+
+    font-size:15px;
+
+    color:white;
+
+    font-style:italic;
+
+}
+
+/* ==========================================================
+   MENU
+   ========================================================== */
+
+.menu{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    flex-wrap:wrap;
+
+}
+
+.menu a{
+
+    color:white;
+
+    padding:10px 22px;
+
+    border-radius:30px;
+
+    background:rgba(0,0,0,.25);
+
+    transition:.35s;
+
+    font-weight:bold;
+
+}
+
+.menu a:hover{
+
+    background:black;
+
+    transform:translateY(-2px);
+
+}
+
+.menu a.active{
+
+    background:gold;
+
+    color:black;
+
+}
+
+/* ==========================================================
+   SCOREBOARD
+   ========================================================== */
+
+.score-board{
+
+    position:fixed;
+
+    top:15px;
+
+    right:20px;
+
+    background:black;
+
+    color:gold;
+
+    padding:12px 20px;
+
+    border-radius:12px;
+
+    font-weight:bold;
+
+    z-index:9999;
+
+}
+/* ==========================================================
+   TREASURE ROOM
+   ========================================================== */
+
+.treasure-room{
+
+    position:relative;
+
+    min-height:100vh;
+
+    padding:80px 30px 220px;
+
+    overflow:hidden;
+
+    background:
+    linear-gradient(
+        to bottom,
+        #595959 0%,
+        #3b3b3b 45%,
+        #232323 100%
+    );
+
+}
+
+/* ==========================================================
+   STONE WALL TEXTURE
+   ========================================================== */
+
+.treasure-room::before{
+
+    content:"";
+
+    position:absolute;
+
+    inset:0;
+
+    background:
+    repeating-linear-gradient(
+        0deg,
+        rgba(255,255,255,.03),
+        rgba(255,255,255,.03) 4px,
+        transparent 4px,
+        transparent 55px
+    );
+
+    opacity:.45;
+
+    pointer-events:none;
+
+}
+
+/* ==========================================================
+   WOODEN FLOOR
+   ========================================================== */
+
+.treasure-room::after{
+
+    content:"";
+
+    position:absolute;
+
+    left:0;
+    right:0;
+    bottom:0;
+
+    height:180px;
+
+    background:
+    repeating-linear-gradient(
+        90deg,
+        var(--wood),
+        var(--wood) 40px,
+        var(--wood-dark) 40px,
+        var(--wood-dark) 80px
+    );
+
+    box-shadow:
+    inset 0 12px 20px rgba(255,255,255,.08),
+    0 -20px 30px rgba(0,0,0,.6);
+
+}
+
+/* ==========================================================
+   ROOM OVERLAY
+   ========================================================== */
+
+.room-overlay{
+
+    position:absolute;
+
+    inset:0;
+
+    background:
+    radial-gradient(
+        circle at center,
+        transparent 35%,
+        rgba(0,0,0,.35)
+    );
+
+    pointer-events:none;
+
+}
+
+/* ==========================================================
+   VAULT TITLE
+   ========================================================== */
+
+.vault-title{
+
+    position:relative;
+
+    z-index:20;
+
+    text-align:center;
+
+    margin-bottom:60px;
+
+    font-size:3rem;
+
+    color:var(--gold);
+
+    font-family:"Cinzel", serif;
+
+    text-shadow:
+        0 0 15px gold,
+        0 0 35px rgba(255,215,0,.6);
+        
+}
+
+.vault-titlee{
+
+    position:relative;
+
+    z-index:20;
+
+    text-align:center;
+
+    margin-bottom:60px;
+
+    font-size:3rem;
+
+    color:var(--gold);
+
+    font-family:"Cinzel", serif;
+
+    text-shadow:
+        0 0 15px gold,
+        0 0 35px rgba(255,215,0,.6);
+      background:
+    repeating-linear-gradient(
+        0deg,
+        rgba(255,255,255,.03),
+        rgba(255,255,255,.03) 4px,
+        transparent 4px,
+        transparent 55px
+    );
+
+
+}
+
+
+/* ==========================================================
+   STONE PILLARS
+   ========================================================== */
+
+.pillar{
+
+    position:absolute;
+
+    top:120px;
+
+    width:90px;
+
+    height:75%;
+
+    border-radius:8px;
+
+    border:4px solid #2d2d2d;
+
+    background:
+    linear-gradient(
+        90deg,
+        #3b3b3b,
+        #6a6a6a,
+        #3d3d3d
+    );
+
+    box-shadow:
+        inset -8px 0 15px rgba(0,0,0,.3),
+        inset 8px 0 15px rgba(255,255,255,.08);
+
+}
+
+.pillar-left{
+
+    left:40px;
+
+}
+
+.pillar-right{
+
+    right:40px;
+
+}
+
+/* ==========================================================
+   TORCHES
+   ========================================================== */
+
+.torch{
+
+    position:absolute;
+
+    width:26px;
+
+    height:110px;
+
+    border-radius:8px;
+
+    background:#3f2d17;
+
+    top:230px;
+
+}
+
+.left-torch{
+
+    left:145px;
+
+}
+
+.right-torch{
+
+    right:145px;
+
+}
+
+.torch::before{
+
+    content:"";
+
+    position:absolute;
+
+    left:50%;
+
+    top:-34px;
+
+    transform:translateX(-50%);
+
+    width:34px;
+
+    height:34px;
+
+    border-radius:50%;
+
+    background:
+    radial-gradient(
+        circle,
+        yellow,
+        orange,
+        red,
+        transparent
+    );
+
+    animation:flame 1s ease-in-out infinite alternate;
+
+}
+
+@keyframes flame{
+
+    from{
+
+        transform:translateX(-50%) scale(1);
+
+        filter:brightness(1);
+
+    }
+
+    to{
+
+        transform:translateX(-50%) scale(1.25);
+
+        filter:brightness(1.4);
+
+    }
+
+}
+
+/* ==========================================================
+   LIGHT BEAMS
+   ========================================================== */
+
+.light{
+
+    position:absolute;
+
+    width:360px;
+
+    height:360px;
+
+    border-radius:50%;
+
+    background:
+    radial-gradient(
+        circle,
+        rgba(255,255,180,.35),
+        transparent
+    );
+
+    animation:glow 4s ease-in-out infinite;
+
+}
+
+.light1{
+
+    left:15%;
+
+    top:100px;
+
+}
+
+.light2{
+
+    right:15%;
+
+    top:90px;
+
+    animation-delay:2s;
+
+}
+
+@keyframes glow{
+
+    50%{
+
+        transform:scale(1.2);
+
+    }
+
+}
+
+/* ==========================================================
+   CHEST AREA
+   ========================================================== */
+
+.chest-area{
+
+    position:relative;
+
+    z-index:50;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    margin-top:40px;
+
+}
+
+/* ==========================================================
+   TREASURE CHEST
+   ========================================================== */
+
+.chest{
+
+  display:block;
+
+    max-width:250px;
+
+    height:500px;  
+
+    width:230px;
+
+    cursor:pointer;
+
+    transition:
+        transform .35s,
+        filter .35s;
+
+}
+
+.chest:hover{
+
+    transform:
+        scale(1.08)
+        rotate(-2deg);
+
+    filter:
+        drop-shadow(0 0 18px gold);
+
+}
+
+.chest.opened{
+
+    animation:
+        chestShake .35s infinite alternate;
+
+}
+
+@keyframes chestShake{
+
+    from{
+
+        transform:
+        scale(1.12)
+        rotate(-3deg);
+
+    }
+
+    to{
+
+        transform:
+        scale(1.12)
+        rotate(3deg);
+
+    }
+
+}
+
+/* ==========================================================
+   OPEN BUTTON
+   ========================================================== */
+
+#openChest{
+
+    margin-top:25px;
+
+    padding:14px 34px;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    color:black;
+
+    background:linear-gradient(#ffe86b,var(--gold));
+
+    border:none;
+
+    border-radius:40px;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+    box-shadow:0 0 20px rgba(255,215,0,.45);
+
+}
+
+#openChest:hover{
+
+    transform:scale(1.08);
+
+    box-shadow:
+        0 0 30px gold;
+
+}
+
+/* ==========================================================
+   GOLD PILE
+   ========================================================== */
+
+.gold-pile{
+
+    width:340px;
+
+    height:90px;
+
+    margin:35px auto;
+
+    border-radius:50%;
+
+    background:
+    radial-gradient(
+        ellipse,
+        #fff5a0,
+        #ffd700,
+        #c99700
+    );
+
+    box-shadow:
+        0 0 35px gold,
+        0 0 70px rgba(255,215,0,.5);
+
+    animation:goldGlow 2.5s infinite;
+
+}
+
+@keyframes goldGlow{
+
+    50%{
+
+        transform:scale(1.04);
+
+        box-shadow:
+            0 0 60px gold,
+            0 0 90px rgba(255,215,0,.6);
+
+    }
+
+}
+/* ==========================================================
+   TROPHY GALLERY
+========================================================== */
+.trophy-background {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.55;
+    filter: brightness(0.65) saturate(0.75) blur(0.5px);
+}
+
+.trophy-background img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 800px;
+    object-fit: cover;
+    opacity: 1;
+    border-radius: 18px;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+}
+
+.trophy-gallery{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+
+    gap:35px;
+
+    max-width:1200px;
+
+    margin:90px auto;
+
+    position:relative;
+
+    z-index:100;
+
+}
+
+.trophy-card{
+
+    background:rgba(69, 2, 255, 0.08);
+
+    backdrop-filter:blur(10px);
+
+    border:2px solid rgba(255,215,0,.25);
+
+    border-radius:20px;
+
+    padding:25px;
+
+    text-align:center;
+
+    cursor:pointer;
+
+    transition:
+        transform .35s,
+        box-shadow .35s,
+        border-color .35s;
+
+    box-shadow:
+        0 10px 20px rgba(0,0,0,.35);
+
+}
+
+
+.trophy-card:hover{
+
+    transform:
+        translateY(-10px)
+        scale(1.05);
+
+    border-color:gold;
+
+    box-shadow:
+        0 0 30px gold;
+
+}
+
+.trophy-card.seen{
+
+    border-color:gold;
+
+    background:rgba(255,215,0,.12);
+
+}
+
+.trophy-card img{
+
+    width:150px;
+
+    height:150px;
+
+    object-fit:contain;
+
+    margin:auto;
+
+    opacity:1;
+
+}
+
+.trophy-card h3{
+
+    margin-top:20px;
+
+    font-size:22px;
+
+    color:gold;
+
+    font-family:"Cinzel", serif;
+
+}
+
+/* ==========================================================
+   SCORE BOARD
+========================================================== */
+
+.score-board{
+
+    position:fixed;
+
+    top:20px;
+
+    right:20px;
+
+    padding:14px 22px;
+
+    background:rgba(0,0,0,.8);
+
+    color:gold;
+
+    border:2px solid gold;
+
+    border-radius:15px;
+
+    font-weight:bold;
+
+    font-size:18px;
+
+    box-shadow:
+        0 0 18px rgba(255,215,0,.4);
+
+    z-index:9999;
+
+}
+
+/* ==========================================================
+   PLAYER
+========================================================== */
+
+#player{
+
+    position:absolute;
+
+    left:50%;
+
+    bottom:175px;
+
+    width:48px;
+
+    height:72px;
+
+    transform:translateX(-50%);
+
+    z-index:400;
+
+    transition:left .08s linear;
+
+}
+
+.head{
+
+    width:22px;
+
+    height:22px;
+
+    margin:auto;
+
+    border-radius:50%;
+
+    background:#ffe0bd;
+
+}
+
+.body{
+
+    width:28px;
+
+    height:42px;
+
+    margin:5px auto 0;
+
+    border-radius:8px;
+
+    background:var(--arsenal-red);
+
+}
+
+#player.walking{
+
+    animation:walk .35s infinite alternate;
+
+}
+
+@keyframes walk{
+
+    from{
+
+        transform:
+        translateX(-50%)
+        rotate(-2deg);
+
+    }
+
+    to{
+
+        transform:
+        translateX(-50%)
+        rotate(2deg);
+
+    }
+
+}
+
+/* ==========================================================
+   SECRET VAULT
+========================================================== */
+
+.secret-door{
+
+    position:absolute;
+
+    top:180px;
+
+    right:-360px;
+
+    width:300px;
+
+    padding:25px;
+
+    background:#222;
+
+    border:4px solid gold;
+
+    border-radius:20px;
+
+    box-shadow:
+        0 0 35px gold;
+
+    transition:right .8s ease;
+
+    z-index:300;
+
+}
+
+.secret-door.show{
+
+    right:40px;
+
+}
+
+.secret-door h2{
+
+    color:gold;
+
+    margin-bottom:15px;
+
+    text-align:center;
+
+    font-family:"Cinzel", serif;
+
+}
+
+.secret-door p{
+
+    color:white;
+
+    text-align:center;
+
+    line-height:1.6;
+
+}
+
+/* ==========================================================
+   POPUP
+========================================================== */
+
+.popup{
+
+    display:none;
+
+    position:fixed;
+
+    inset:0;
+
+    justify-content:center;
+
+    align-items:center;
+
+    background:rgba(0,0,0,.75);
+
+    z-index:99999;
+
+}
+
+.popup-box{
+
+    position:relative;
+
+    width:min(90%,600px);
+
+    padding:35px;
+
+    border-radius:20px;
+
+    background:#1b1b1b;
+
+    border:2px solid gold;
+
+    color:white;
+
+    text-align:center;
+
+    animation:popupOpen .35s ease;
+
+    box-shadow:
+        0 0 35px gold;
+
+}
+
+.popup-box h2{
+
+    color:gold;
+
+    margin-bottom:20px;
+
+    font-size:30px;
+
+    font-family:"Cinzel", serif;
+
+}
+
+.popup-box p{
+
+    font-size:17px;
+
+    line-height:1.8;
+
+}
+
+/* ==========================================================
+   CLOSE BUTTON
+========================================================== */
+
+.close{
+
+    position:absolute;
+
+    top:12px;
+
+    right:18px;
+
+    font-size:34px;
+
+    color:white;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.close:hover{
+
+    color:gold;
+
+    transform:rotate(90deg);
+
+}
+
+/* ==========================================================
+   POPUP ANIMATION
+========================================================== */
+
+@keyframes popupOpen{
+
+    from{
+
+        opacity:0;
+
+        transform:
+        scale(.75);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:
+        scale(1);
+
+    }
+
+}
+/* ==========================================================
+   COIN CONTAINER
+========================================================== */
+
+#coinContainer{
+
+    position:absolute;
+
+    inset:0;
+
+    overflow:hidden;
+
+    pointer-events:none;
+
+    z-index:200;
+
+}
+
+/* ==========================================================
+   REALISTIC GOLD COINS
+========================================================== */
+
+.coin{
+
+    position:absolute;
+
+    width:20px;
+    height:20px;
+
+    border-radius:50%;
+
+    background:
+    radial-gradient(
+        circle at 30% 30%,
+        #fff8a8,
+        #ffd700,
+        #c79200
+    );
+
+    box-shadow:
+        0 0 12px gold,
+        0 0 25px rgba(255,215,0,.45);
+
+    pointer-events:none;
+
+    will-change:transform;
+
+}
+
+/* ==========================================================
+   SPARKLES
+========================================================== */
+
+#sparkleContainer{
+
+    position:fixed;
+
+    top:0;
+    left:0;
+
+    width:100vw;
+    height:100vh;
+
+    overflow:visible;
+
+    pointer-events:none;
+
+    z-index:250;
+
+
+}
+
+.sparkle{
+
+    position:fixed;
+
+    width:14px;
+    height:14px;
+
+    border-radius:50%;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #ffffff 48%,
+            var(--arsenal-red) 48%,
+            var(--arsenal-red) 100%
+        );
+
+    box-shadow:
+        0 0 12px rgba(255,255,255,.9),
+        0 0 18px rgba(213,0,50,.7);
+
+    animation: sparkleFall 6s linear forwards;
+
+}
+
+@keyframes sparkleFall{
+
+    0%{
+        opacity:0;
+        transform:translateY(0);
+    }
+
+    15%{
+        opacity:1;
+    }
+
+    100%{
+        opacity:0;
+        transform:translateY(1500px);
+    }
+
+}
+
+/* ==========================================================
+   CONFETTI
+========================================================== */
+
+.confetti{
+
+    position:fixed;
+
+    width:12px;
+
+    height:12px;
+
+    border-radius:2px;
+
+    z-index:9999;
+
+    animation:
+        confettiFall linear forwards;
+
+}
+
+@keyframes confettiFall{
+
+    from{
+
+        transform:
+        translateY(-20px)
+        rotate(0deg);
+
+        opacity:1;
+
+    }
+
+    to{
+
+        transform:
+        translateY(110vh)
+        rotate(900deg);
+
+        opacity:0;
+
+    }
+
+}
+
+/* ==========================================================
+   CHEST OPEN ANIMATION
+========================================================== */
+
+.opened{
+
+    animation:
+        chestPulse .5s infinite alternate;
+
+}
+
+@keyframes chestPulse{
+
+    from{
+
+        transform:
+        scale(1.12)
+        rotate(-3deg);
+
+    }
+
+    to{
+
+        transform:
+        scale(1.12)
+        rotate(3deg);
+
+    }
+
+}
+
+/* ==========================================================
+   GOLD SHIMMER
+========================================================== */
+
+.gold-pile::before{
+
+    content:"";
+
+    position:absolute;
+
+    width:100%;
+
+    height:100%;
+
+    border-radius:inherit;
+
+    background:
+
+    linear-gradient(
+
+        120deg,
+
+        transparent,
+
+        rgba(255,255,255,.5),
+
+        transparent
+
+    );
+
+    animation:
+        shimmer 3s infinite;
+
+}
+
+@keyframes shimmer{
+
+    from{
+
+        transform:
+        translateX(-120%);
+
+    }
+
+    to{
+
+        transform:
+        translateX(120%);
+
+    }
+
+}
+
+/* ==========================================================
+   TROPHY HOVER GLOW
+========================================================== */
+
+.trophy-card:hover img{
+
+    animation:
+        trophyFloat .8s infinite alternate;
+
+}
+
+@keyframes trophyFloat{
+
+    from{
+
+        transform:
+        translateY(0);
+
+    }
+
+    to{
+
+        transform:
+        translateY(-8px);
+
+    }
+
+}
+
+/* ==========================================================
+   SECRET DOOR GLOW
+========================================================== */
+
+.secret-door.show{
+
+    animation:
+        vaultGlow 2s infinite;
+
+}
+
+@keyframes vaultGlow{
+
+    50%{
+
+        box-shadow:
+
+        0 0 45px gold,
+
+        0 0 90px rgba(255,215,0,.5);
+
+    }
+
+}
+
+/* ==========================================================
+   BUTTON EFFECT
+========================================================== */
+
+button{
+
+    transition:
+        transform .3s,
+        box-shadow .3s;
+
+}
+
+button:hover{
+
+    transform:
+        scale(1.08);
+
+    box-shadow:
+        0 0 25px gold;
+
+}
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
+
+@media (max-width:992px){
+
+.main-nav{
+
+    flex-direction:column;
+
+    gap:20px;
+
+    text-align:center;
+
+}
+
+.menu{
+
+    justify-content:center;
+
+}
+
+.pillar,
+.torch,
+.light{
+
+    display:none;
+
+}
+
+.chest{
+
+    width:180px;
+
+}
+
+.gold-pile{
+
+    width:250px;
+
+    height:70px;
+
+}
+
+.score-board{
+
+    top:10px;
+
+    right:10px;
+
+    font-size:15px;
+
+}
+
+}
+
+@media (max-width:768px){
+
+.vault-title{
+
+    font-size:2rem;
+
+}
+
+.menu a{
+
+    padding:10px 15px;
+
+    font-size:14px;
+
+}
+
+.trophy-gallery{
+
+    grid-template-columns:1fr;
+
+}
+
+.secret-door{
+
+    width:250px;
+
+}
+
+#player{
+
+    transform:
+    translateX(-50%) scale(.85);
+
+}
+
+}
+
+@media (max-width:480px){
+
+.logo h1{
+
+    font-size:34px;
+
+}
+
+.logo p{
+
+    font-size:13px;
+
+}
+
+.chest{
+
+    width:150px;
+
+}
+
+#openChest{
+
+    padding:12px 20px;
+
+    font-size:15px;
+
+}
+
+.gold-pile{
+
+    width:180px;
+
+    height:55px;
+
+}
+
+.score-board{
+
+    width:90%;
+
+    left:50%;
+
+    right:auto;
+
+    transform:translateX(-50%);
+
+    text-align:center;
+
+}
+
+.popup-box{
+
+    width:95%;
+
+    padding:20px;
+
+}
+
+}
+
+
+/* ==========================================
+   EXTRA RESPONSIVE FIXES
+   ========================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Navigation */
+.main-nav {
+    width: min(95%, 1200px);
+    margin: 30px auto;
+}
+
+.menu {
+    max-width: 100%;
+}
+
+/* Image gallery */
+.image-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    width: min(95%, 1200px);
+    margin: 20px auto;
+}
+
+.image-container figure {
+    width: 100%;
+    margin: 0;
+}
+
+.image-container img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+}
+
+/* Chest */
+.chest {
+    width: min(230px, 70vw);
+    height: auto;
+}
+
+/* Tables */
+.player-table {
+    width: 95%;
+    max-width: 100%;
+}
+
+@media (max-width: 768px) {
+
+    .main-nav {
+        width: 95%;
+        padding: 15px;
+        gap: 15px;
+    }
+
+    .menu {
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .menu a {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .nl4 {
+        font-size: 70px;
+    }
+
+    .north-london {
+        font-size: 14px;
+    }
+
+    .image-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .image-container img {
+        height: 180px;
+    }
+
+    .vault-title {
+        font-size: 2rem;
+    }
+
+    .treasure-room {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .main-nav {
+        width: 100%;
+        margin: 15px auto;
+        border-radius: 20px;
+    }
+
+    .menu {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .menu a {
+        width: 90%;
+        text-align: center;
+    }
+
+    .nl4 {
+        font-size: 50px;
+    }
+
+    .north-london {
+        font-size: 11px;
+    }
+
+    .image-container {
+        grid-template-columns: 1fr;
+    }
+
+    .image-container img {
+        height: 220px;
+    }
+
+    .player-table {
+        width: 100%;
+        font-size: 13px;
+    }
+
+    .player-table th,
+    .player-table td {
+        padding: 6px;
+    }
+
+    .vault-title {
+        font-size: 1.6rem;
+    }
+
+    .popup-box {
+        width: 92%;
+        padding: 20px;
+    }
+}
+
+
+
+/* ================================
+   FIRST DIVISION TROUGHY CARD BACKGROUND IMAGES
+===================================*/
+
+.trophy-card.first-division {
+    
+    background-image: url("https://i.postimg.cc/fT5CtDVY/images-q-tbn-ANd9Gc-Rz-Zj-ABWo-MZnv1Js-R3VCPz9rv-Wsdvk-Y5kvuvfvaq-Gu3I3SOeh2mg-Ib-IU4Ld-s-10.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division2 {
+    
+    background-image: url("https://i.postimg.cc/tTXZfXVj/Qxjx5Vz-Vl3-vgb8NW0Mx-Vm-Bt2-A-EYHr-Pp-QDLFx3-Wb1cwb5F4vxo-Esyfb-Hd-Qna-F0b-Kvrr-U077m1qww6j-KTEy-Sk.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division3 {
+    
+    background-image: url("https://i.postimg.cc/KzC8rxbs/E1X3Igrd3J-a-HJE3AUp2Krh-OIv-W6o-Iy-Rf-Y7lx-E3wsv-Wo-Ms1PQIx-CLSkcs-K-x-PKWHjm-Kuf2to-Qk-YNJb-UP9Htc.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division4 {
+    
+    background-image: url("https://i.postimg.cc/W1JLggzV/DEAIYrx-Os-IF0c2UHynkxz7SNQIho-70c1PBSP3Xl-Kx-H72D1VFHZv-OJlmw-Fmft-Dg-Gk-OOj-UXmt-SY9ig-Yuqnuiy-Qrp.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division5 {
+    
+    background-image: url("https://i.postimg.cc/908Pm4jF/7677f0dcb4d0-arsenal-1938.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+.trophy-card.first-division6 {
+    
+    background-image: url("https://i.postimg.cc/jdWt81vT/ISdvg-I0s-S9f-N2KEQq-Bz-ML06ILp-bu0Sk-Pe-QJAHTq1s-Oj4a7-a-G2gm-FJ8u7Zk-KRi-EV0s-KTZImi-D-mx-m-Upk-Jd.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division7 {
+    
+    background-image: url("https://i.postimg.cc/50BWdcTN/bqa-X8i-Fh-Sd-ZECh-Cs-Xu-Ym-Va5y-Jbzk-Ee-I3zc-R-k-Bd8-qhoh-Sz-Ujcl-Tc-Mzjmo-Ip-BAHL-MPp3u79xyd-JVIs.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division8 {
+    
+    background-image: url("https://i.postimg.cc/KzCXMGTP/G1Rme-L0Mj-AFYl-Ch1Rogf-Htn1v-LME9ytw-bzft829ORPok-T2IMVGTHH6ilz-D4UHX9u-Hft-Zv2No-XPf5qe-O6Py-Joh-B.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division9 {
+    
+    background-image: url("https://i.postimg.cc/yNXJTTzb/i-Yez2os-Mp-Ms-UP7mfvw-M8uz-Dn-Gxd4vqty5Eas-3l-Uk-CVliqidn1Lpl4Xv-S-y9dgxg-Z40xw-Uk-L2s-Jq-CGm-AY1NF.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division10 {
+    
+    background-image: url("https://i.postimg.cc/h40kqQKm/Gh3ir3qrg-Os-Em95BYLrnfawq0g-XZRzbyc-C2Rx-GSQo-Ox5CEO4Bz9Pak5Fvo5H1ZHm7SA1IKej7g-Hj00b-Hze5AOGzt-Mb.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division11 {
+    
+    background-image: url("https://i.postimg.cc/x1PzLbby/SOOMmy0zr-Gf7RPRWe-RCTh-LC0x-EDs-Exgp-St-UUl-Nw-Qc-Ez-MLh-JZUGXsa3ZPjw-Rj-J2Dmky-1Fr-Us-TV6b-Iw2yncw.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division12 {
+    
+    background-image: url("https://i.postimg.cc/MKT4Cyzv/lxul39j-SCKOhct-Jfk-I8q-Yr-C-Gc-IJMJlq4ywn-NAo-Vcwi-HVfop-Ywsh-Kgl-FT5m-IG5ohys-X5TYq-I2r-ANaf-K5y6m.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division13 {
+    
+    background-image: url("https://i.postimg.cc/nzNkNQ2t/QCeyfb-Ev-Lhv-Yh-Qj-Gl-Ee-LEuf-F8p265c-HCA5Hn-Gurg-J8x7f-TIRA8E4EBa-CWf-Y6Yx-OUq-UI-Ntm5f0fa1Wg7o-Vw.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.first-division14 {
+    
+    background-image: url("https://i.postimg.cc/htC3pvkt/2025-2026-epl-photo.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+/* ================================
+   FA CUP TROUGHY CARD BACKGROUND IMAGES
+===================================*/
+
+.trophy-card.FA-cup1 {
+    
+    background-image: url("https://i.postimg.cc/Hnrnfg3L/6-Fl6U0r-ANl-Lq8Itvp9LA-FNe-Gflqss-HDO9q-G20Vak-KYBBrsbm0u-XHVkr3Gf-Lnxszl-PRq8CFNes-TESFNX50U7F9i-K.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+.trophy-card.FA-cup2 {
+    
+    background-image: url("https://i.postimg.cc/YqcpzVTm/0RAJ-k-Bc-BA-cv-Pb-Vt-u7Ts-Vy-i-NO7y-qdre-O5f-YUZh-JXBjw-ETJMLnu-O7ZZWi-S-hthnvc-Ef-J4yso74d-K0cwz-A.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+.trophy-card.FA-cup3 {
+    
+    background-image: url("https://i.postimg.cc/gJZ0YP1f/w3Ian6b-VOx6z2h-Ikzl-QJmzxt-CP55mm6T2Ee-Eyb8cqd-Zsoyfo54w1x-CL6N9O-4xljg21i-YIkh-Brp-C5CYWF9X3i-Xs-P.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.FA-cup4 {
+    
+    background-image: url("https://i.postimg.cc/L6dx4BgD/hl-X1Lyclx9JURMi-Q62G5FN69Wowj5N-q-JEwo-Rl-l-Lnrka-Epr-DEU681K-ZBJ8b-SHHFVHV2Mf-F54nxu-LQb-B8s-Mvy-M.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.FA-cup5 {
+    
+    background-image: url("https://i.postimg.cc/dVVHgQyd/l-QWc443PTc-JSo-Vg1Hv-b8zr-ZPk4o-Cy-Bv-So-PEKi-Stt7Bg-G2205mq-JNH8a-Jv-AQQRq-MVRHenvu-SVaxh-Uxd-UA-Q.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.FA-cup6 {
+    
+    background-image: url("https://i.postimg.cc/NFYT81FN/b14762030684bdd70169ced150ab2e20.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+.trophy-card.FA-cup7 {
+    
+    background-image: url("https://i.postimg.cc/YSDMzkSV/images-q-tbn-ANd9Gc-Rt4B6NUqy-Ljj0c32j-GHy-Sa-LOuh-Cj-GT3at4533-OCnv-NWTIb-Victh-Nw9q0-s-10.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+
+
+
+
+
+
+
+/* ---------- NL4 ARSENAL WEBSITE — RESPONSIVE PATCH
+   Add this AFTER your existing styles.css
+   ========================================================== */ ---------- */
+
+
+/* ---------- Global safety ---------- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+
+body {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+img,
+video,
+iframe {
+    max-width: 100%;
+}
+
+button,
+a {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ---------- Main navigation ---------- */
+/* Overrides the old fixed 150px side margin. */
+.main-nav {
+    width: min(95%, 1200px);
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 18px 28px;
+    min-width: 0;
+}
+
+.menu {
+    max-width: 100%;
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.menu a {
+    white-space: nowrap;
+}
+
+/* ---------- NL4 logo ---------- */
+.nl4 {
+    font-size: clamp(50px, 8vw, 100px);
+    margin: 12px 20px;
+}
+
+.north-london {
+    font-size: clamp(11px, 1.5vw, 17px);
+    margin-top: -18px;
+    white-space: nowrap;
+}
+
+/* ---------- General headings ---------- */
+h1,
+h2,
+h3 {
+    max-width: 95%;
+}
+
+h1 {
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    padding: 14px 22px;
+}
+
+h2 {
+    width: min(95%, 800px);
+    padding: clamp(15px, 3vw, 25px);
+    font-size: clamp(1.2rem, 3vw, 2rem);
+}
+
+.div-caption {
+    font-size: clamp(20px, 4vw, 30px);
+}
+
+/* ---------- Image gallery ---------- */
+.image-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    width: min(95%, 1200px);
+    margin: 20px auto;
+}
+
+.image-container figure {
+    width: 100%;
+    margin: 0;
+}
+
+.image-container img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.image-container figcaption {
+    text-align: center;
+    margin-top: 8px;
+}
+
+/* ---------- History content ---------- */
+.history-details {
+    width: min(95%, 1000px);
+    margin: 0 auto;
+}
+
+.history-details h2 {
+    width: 100%;
+    margin: 25px auto;
+}
+
+.history-details p {
+    margin: 20px 0;
+    font-size: clamp(14px, 2vw, 16px);
+    text-align: left;
+}
+
+/* ---------- Tables ---------- */
+/* Allows wide tables to scroll instead of breaking the page. */
+table {
+    max-width: 100%;
+}
+
+.player-table {
+    width: min(95%, 1000px);
+    max-width: 100%;
+}
+
+@media (max-width: 700px) {
+    .player-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .player-table img {
+        max-width: 120px;
+        height: auto;
+    }
+}
+
+/* ---------- Player cards ---------- */
+.players {
+    width: min(95%, 1400px);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.cliff {
+    max-width: 100%;
+}
+
+/* ---------- Treasure Room ---------- */
+.treasure-room {
+    width: 100%;
+    padding-left: clamp(12px, 4vw, 30px);
+    padding-right: clamp(12px, 4vw, 30px);
+}
+
+.vault-title,
+.vault-titlee {
+    width: 100%;
+    max-width: 100%;
+    font-size: clamp(1.6rem, 5vw, 3rem);
+    margin-left: auto;
+    margin-right: auto;
+    overflow-wrap: break-word;
+}
+
+/* ---------- Treasure chest ---------- */
+.chest {
+    width: min(230px, 70vw);
+    max-width: 230px;
+    height: auto;
+}
+
+.gold-pile {
+    width: min(340px, 80vw);
+    max-width: 340px;
+}
+
+/* ---------- Trophy gallery ---------- */
+.trophy-gallery {
+    width: min(95%, 1200px);
+    max-width: 1200px;
+    grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+    gap: clamp(15px, 3vw, 35px);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.trophy-card {
+    min-width: 0;
+    width: 100%;
+    padding: clamp(15px, 3vw, 25px);
+}
+
+.trophy-card img {
+    width: min(150px, 70vw);
+    height: min(150px, 70vw);
+}
+
+.trophy-card h3 {
+    font-size: clamp(17px, 3vw, 22px);
+    overflow-wrap: break-word;
+}
+
+/* ---------- Treasure-room scoreboard ---------- */
+.score-board {
+    max-width: calc(100vw - 20px);
+}
+
+/* ---------- Secret vault ---------- */
+.secret-door {
+    max-width: calc(100vw - 30px);
+}
+
+.secret-door.show {
+    right: 20px;
+}
+
+/* ---------- Popup ---------- */
+.popup {
+    padding: 15px;
+}
+
+.popup-box {
+    width: min(92vw, 600px);
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: clamp(20px, 5vw, 35px);
+}
+
+.popup-box h2 {
+    max-width: 100%;
+    font-size: clamp(20px, 5vw, 30px);
+}
+
+.popup-box p {
+    font-size: clamp(14px, 3vw, 17px);
+}
+
+/* ==========================================================
+   TABLET
+   ========================================================== */
+@media (max-width: 992px) {
+
+    .main-nav {
+        flex-direction: column;
+        width: min(94%, 800px);
+        gap: 18px;
+        text-align: center;
+    }
+
+    .logo-text {
+        max-width: 100%;
+    }
+
+    .menu {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .pillar,
+    .torch,
+    .light {
+        display: none;
+    }
+
+    .trophy-gallery {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .chest {
+        width: min(200px, 55vw);
+    }
+
+    .gold-pile {
+        width: min(280px, 70vw);
+    }
+}
+
+/* ==========================================================
+   PHONE / SMALL TABLET
+   ========================================================== */
+@media (max-width: 768px) {
+
+    .main-nav {
+        width: 96%;
+        padding: 14px;
+        margin: 15px auto;
+        border-radius: 24px;
+    }
+
+    .nl4 {
+        font-size: clamp(48px, 16vw, 70px);
+        margin: 8px 10px;
+    }
+
+    .north-london {
+        font-size: 12px;
+        margin-top: -12px;
+    }
+
+    .menu {
+        gap: 7px;
+    }
+
+    .menu a {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .image-container {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 94%;
+        gap: 12px;
+    }
+
+    .image-container img {
+        height: 180px;
+    }
+
+    .trophy-gallery {
+        grid-template-columns: 1fr;
+        width: 94%;
+    }
+
+    .trophy-card:hover {
+        transform: translateY(-5px) scale(1.02);
+    }
+
+    .secret-door {
+        width: min(250px, calc(100vw - 30px));
+    }
+
+    .secret-door.show {
+        right: 15px;
+    }
+
+    #player {
+        transform: translateX(-50%) scale(.85);
+    }
+
+    .treasure-room {
+        padding-top: 50px;
+        padding-bottom: 160px;
+    }
+}
+
+/* ==========================================================
+   PHONE
+   ========================================================== */
+@media (max-width: 480px) {
+
+    .main-nav {
+        width: 100%;
+        margin: 10px auto;
+        padding: 12px 8px;
+        border-radius: 18px;
+    }
+
+    .nl4 {
+        font-size: 50px;
+        margin: 6px;
+    }
+
+    .north-london {
+        font-size: 10px;
+        margin-top: -8px;
+    }
+
+    .menu {
+        flex-direction: column;
+        width: 100%;
+        gap: 6px;
+    }
+
+    .menu a {
+        width: min(90%, 300px);
+        text-align: center;
+        padding: 9px 12px;
+    }
+
+    .image-container {
+        grid-template-columns: 1fr;
+        width: 92%;
+    }
+
+    .image-container img {
+        height: 220px;
+    }
+
+    .history-details {
+        width: 92%;
+    }
+
+    .history-details p {
+        margin: 15px 0;
+        text-align: left;
+    }
+
+    .player-table {
+        width: 100%;
+        font-size: 12px;
+    }
+
+    .player-table th,
+    .player-table td {
+        padding: 6px;
+    }
+
+    .chest {
+        width: min(160px, 65vw);
+    }
+
+    #openChest {
+        padding: 11px 18px;
+        font-size: 14px;
+    }
+
+    .gold-pile {
+        width: min(190px, 70vw);
+        height: 55px;
+    }
+
+    .score-board {
+        width: calc(100% - 20px);
+        left: 10px;
+        right: 10px;
+        top: 10px;
+        transform: none;
+        padding: 9px 12px;
+        font-size: 13px;
+    }
+
+    .popup-box {
+        width: 94%;
+        padding: 20px 15px;
+    }
+
+    .popup-box p {
+        line-height: 1.6;
+    }
+
+    .close {
+        top: 8px;
+        right: 12px;
+        font-size: 28px;
+    }
+
+    .trophy-card {
+        padding: 15px;
+    }
+
+    .trophy-card img {
+        width: 130px;
+        height: 130px;
+    }
+}
+
+/* ==========================================================
+   VERY SMALL PHONES
+   ========================================================== */
+@media (max-width: 360px) {
+
+    .nl4 {
+        font-size: 42px;
+    }
+
+    .north-london {
+        font-size: 9px;
+    }
+
+    .menu a {
+        width: 95%;
+        font-size: 12px;
+    }
+
+    .image-container img {
+        height: 190px;
+    }
+
+    .vault-title,
+    .vault-titlee {
+        font-size: 1.35rem;
+    }
+
+    .chest {
+        width: 140px;
+    }
+
+    .gold-pile {
+        width: 160px;
+        height: 48px;
+    }
+}
+
+/* ---------- Reduce motion for accessibility ---------- */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+
+/* ==========================================================
+   COLLECTION PAGE — MATCHES TROPHIES.HTML SITE SHELL
+   Added without removing the original Trophy Vault styling.
+   ========================================================== */
+
+body.treasure-home.collection-page {
+  margin: 0;
+  min-height: 100vh;
+  background: #f4f1eb;
+  color: #171717;
+  font-family: "Inter", Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+.collection-page .app-shell { min-height: 100vh; }
+.collection-page .sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 260px;
+  z-index: 12000;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 18px 18px;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(213,0,50,.26), transparent 32%),
+    linear-gradient(180deg,#101010 0%,#080808 70%,#030303 100%);
+  border-right: 1px solid rgba(255,255,255,.08);
+  box-shadow: 16px 0 45px rgba(0,0,0,.18);
+}
+.collection-page .sidebar-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.collection-page .site-logo { display:flex; align-items:center; gap:12px; color:#fff; text-decoration:none; }
+.collection-page .site-logo > span:last-child { display:flex; flex-direction:column; line-height:1.05; }
+.collection-page .site-logo b { font-size:15px; letter-spacing:.13em; }
+.collection-page .site-logo small { margin-top:5px; color:#a9a9a9; font-size:9px; letter-spacing:.22em; }
+.collection-page .logo-box {
+  width:42px; height:42px; display:grid; place-items:center; border-radius:11px;
+  background:#d50032; color:#fff; font-family:"Cinzel",serif; font-size:24px; font-weight:700;
+  box-shadow:0 0 0 1px rgba(255,255,255,.12), 0 8px 24px rgba(213,0,50,.25);
+}
+.collection-page .close-menu { display:none; background:transparent; color:#fff; padding:4px; font-size:30px; box-shadow:none; }
+.collection-page .side-nav { margin-top:34px; display:flex; flex-direction:column; gap:6px; }
+.collection-page .nav-label { margin:22px 10px 7px; color:#666; font-size:10px; font-weight:800; letter-spacing:.19em; }
+.collection-page .nav-link { display:flex; align-items:center; gap:13px; padding:12px 13px; border-radius:11px; color:#bbb; font-size:14px; font-weight:600; transition:.2s; }
+.collection-page .nav-link:hover { background:rgba(255,255,255,.06); color:#fff; transform:none; }
+.collection-page .nav-link.active { background:linear-gradient(90deg,rgba(213,0,50,.28),rgba(213,0,50,.05)); color:#fff; box-shadow:inset 3px 0 #d50032; }
+.collection-page .nav-link span { width:20px; text-align:center; }
+.collection-page .nav-divider { height:1px; background:rgba(255,255,255,.08); margin:18px 8px; }
+.collection-page .treasure-link { display:grid; grid-template-columns:36px 1fr; padding:13px; border:1px solid rgba(255,215,0,.22); border-radius:14px; background:rgba(255,215,0,.06); color:#fff; }
+.collection-page .treasure-link > span { grid-row:1/3; font-size:22px; }
+.collection-page .treasure-link b { font-size:13px; }
+.collection-page .treasure-link small { margin-top:3px; color:#968f79; font-size:10px; }
+.collection-page .treasure-link.active-room { border-color:rgba(255,215,0,.45); box-shadow:0 0 22px rgba(255,215,0,.08); }
+.collection-page .sidebar-bottom { margin-top:auto; padding:16px 10px 0; display:flex; justify-content:space-between; color:#555; font-size:9px; font-weight:800; letter-spacing:.14em; }
+
+.collection-page .main { min-height:100vh; margin-left:260px; background:#f4f1eb; }
+.collection-page .topbar {
+  height:68px; padding:0 34px; display:flex; align-items:center; justify-content:space-between;
+  position:sticky; top:0; z-index:9000; background:rgba(255,255,255,.94); backdrop-filter:blur(14px);
+  border-bottom:1px solid #e7e1d8;
+}
+.collection-page .menu-btn { display:none; padding:8px 10px; background:transparent; color:#191919; font-size:23px; box-shadow:none; }
+.collection-page .crumb { color:#727272; font-size:11px; font-weight:800; letter-spacing:.11em; }
+.collection-page .crumb span { color:#d50032; }
+.collection-page .crumb b { margin:0 8px; color:#bbb; }
+.collection-page .top-actions { display:flex; align-items:center; gap:9px; color:#222; font-size:10px; font-weight:800; letter-spacing:.16em; }
+.collection-page .live-dot { width:7px; height:7px; border-radius:50%; background:#d50032; box-shadow:0 0 0 5px rgba(213,0,50,.1); }
+.collection-page .mobile-overlay { display:none; position:fixed; inset:0; z-index:11000; background:rgba(0,0,0,.58); }
+
+.collection-page .collection-hero {
+  min-height:390px; position:relative; overflow:hidden; display:flex; align-items:flex-end; padding:60px 58px;
+  background:#151515; color:#fff;
+}
+.collection-page .collection-hero-image {
+  position:absolute; inset:0;
+  background-image:url("https://i.postimg.cc/0y7cNbg2/emirate.jpg");
+  background-size:cover; background-position:center 48%; transform:scale(1.02);
+}
+.collection-page .collection-hero-overlay {
+  position:absolute; inset:0;
+  background:linear-gradient(90deg,rgba(5,5,5,.92) 0%,rgba(5,5,5,.76) 38%,rgba(5,5,5,.35) 70%,rgba(5,5,5,.52) 100%), linear-gradient(0deg,rgba(0,0,0,.72),transparent 70%);
+}
+.collection-page .collection-hero-content { position:relative; z-index:3; max-width:730px; }
+.collection-page .collection-hero .eyebrow { margin:0 0 13px; color:#d9b84d; font-size:11px; font-weight:800; letter-spacing:.22em; }
+.collection-page .collection-hero h1 {
+  width:auto; margin:0; padding:0; border:0; border-radius:0; background:none; box-shadow:none;
+  color:#fff; font-family:"Cinzel",serif; font-size:clamp(40px,6vw,74px); line-height:.98; text-align:left;
+}
+.collection-page .collection-hero h1 span { color:#d9b84d; }
+.collection-page .collection-hero p:not(.eyebrow) { max-width:620px; margin:20px 0 0; color:#d5d5d5; line-height:1.7; font-size:15px; }
+.collection-page .collection-hero-actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:27px; }
+.collection-page .gold-button,.collection-page .ghost-button { display:inline-flex; align-items:center; gap:10px; padding:13px 18px; border-radius:8px; font-size:12px; font-weight:800; letter-spacing:.04em; }
+.collection-page .gold-button { background:#d9b84d; color:#111; }
+.collection-page .ghost-button { border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.06); color:#fff; }
+.collection-page .score-board {
+  position:absolute; z-index:5; top:26px; right:34px; padding:11px 15px; background:rgba(10,10,10,.78); border:1px solid rgba(217,184,77,.55);
+  border-radius:10px; color:#d9b84d; box-shadow:0 10px 30px rgba(0,0,0,.25); font-size:13px;
+}
+
+.collection-page .vault-wrap { background:#111; }
+.collection-page .treasure-room {
+  margin:0; min-height:100vh; padding-top:75px;
+  background:
+    radial-gradient(circle at 50% 8%, rgba(213,0,50,.13), transparent 25%),
+    linear-gradient(rgba(12,12,12,.78),rgba(12,12,12,.94)),
+    url("https://i.postimg.cc/0y7cNbg2/emirate.jpg") center/cover fixed;
+}
+.collection-page .treasure-room::before { opacity:.32; }
+.collection-page .treasure-room::after { opacity:.78; }
+.collection-page .vault-title,.collection-page .vault-titlee { background:none; border:0; box-shadow:none; width:auto; }
+.collection-page .trophy-gallery { width:min(92%,1200px); }
+.collection-page .trophy-card {
+  background-color:rgba(13,13,13,.72);
+  border-color:rgba(217,184,77,.35);
+  overflow:hidden;
+}
+.collection-page .trophy-card::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.55)); pointer-events:none; z-index:0; }
+.collection-page .trophy-card img,.collection-page .trophy-card h3 { position:relative; z-index:1; }
+.collection-page .trophy-background { position:relative; left:auto; top:auto; transform:none; width:min(90%,1120px); margin:0 auto 20px; z-index:3; }
+.collection-page .trophy-background img { max-height:560px; }
+.collection-page .collection-footer { min-height:95px; padding:28px 42px; display:flex; align-items:center; justify-content:space-between; background:#080808; color:#fff; border-top:1px solid rgba(255,255,255,.08); }
+.collection-page .collection-footer div { display:flex; flex-direction:column; gap:5px; }
+.collection-page .collection-footer strong { font-size:12px; letter-spacing:.12em; }
+.collection-page .collection-footer span,.collection-page .collection-footer a { color:#777; font-size:11px; }
+
+@media (max-width: 900px) {
+  .collection-page .sidebar { transform:translateX(-100%); transition:transform .28s ease; }
+  .collection-page .sidebar.open { transform:translateX(0); }
+  .collection-page .close-menu { display:block; }
+  .collection-page .mobile-overlay.show { display:block; }
+  .collection-page .main { margin-left:0; }
+  .collection-page .menu-btn { display:block; }
+  .collection-page .topbar { padding:0 18px; }
+  .collection-page .collection-hero { padding:50px 25px; min-height:360px; }
+  .collection-page .score-board { top:18px; right:18px; left:auto; width:auto; transform:none; }
+}
+@media (max-width: 560px) {
+  .collection-page .top-actions { display:none; }
+  .collection-page .crumb { font-size:9px; }
+  .collection-page .collection-hero { min-height:430px; align-items:center; padding-top:100px; }
+  .collection-page .collection-hero h1 { font-size:43px; }
+  .collection-page .collection-hero-actions { flex-direction:column; align-items:stretch; }
+  .collection-page .collection-hero-actions a { justify-content:center; }
+  .collection-page .score-board { top:14px; left:18px; right:18px; text-align:center; }
+  .collection-page .collection-footer { padding:24px 20px; gap:18px; flex-direction:column; text-align:center; }
+}
