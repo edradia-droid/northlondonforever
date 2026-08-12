@@ -53,10 +53,16 @@ document.addEventListener("DOMContentLoaded", () => {
         "English First Division 1970-1971": "Arsenal beat Tottenham 1–0 away to secure the league title before completing the famous League and FA Cup Double under Bertie Mee.",
         "English First Division 1988-1989": "Arsenal won the title dramatically at Anfield, beating Liverpool 2–0 with Michael Thomas scoring the decisive late goal under George Graham.",
         "English First Division 1990-1991": "Arsenal lost only one league game all season and won the title with 83 points under George Graham.",
-        "English First Division 1997-1998": "Arsenal beat Everton 4–0 at Highbury to seal Arsène Wenger's first league title in his first full season, completing the Double shortly afterward.",
-        "English First Division 2001–2002": "Sylvain Wiltord's goal at Old Trafford secured a 1–0 win over Manchester United and the league title as Arsenal completed another League and FA Cup Double.",
-        "English First Division 2003–04 – The Invincibles": "Arsenal secured the title at White Hart Lane and completed the entire league season unbeaten: 26 wins, 12 draws and 0 defeats.",
-        "English First Division 2025-2026": "This card preserves the 2025–26 championship entry from your original collection design.",
+
+// ---------------- PREMIER LEAGUE SECTION ----------------
+
+        "English premier league 1997-1998": "Arsenal beat Everton 4–0 at Highbury to seal Arsène Wenger's first league title in his first full season, completing the Double shortly afterward.",
+        "English premier league 2001–2002": "Sylvain Wiltord's goal at Old Trafford secured a 1–0 win over Manchester United and the league title as Arsenal completed another League and FA Cup Double.",
+        "English premier league 2003–04 – The Invincibles": "Arsenal secured the title at White Hart Lane and completed the entire league season unbeaten: 26 wins, 12 draws and 0 defeats.",
+        "English premier league 2025-2026": "After 22 long years without a Premier League title, and three consecutive runners-up finishes, Mikel Arteta’s Arsenal finally turned years of rebuilding and heartbreak into glory in the 2025–26 season.",
+
+ // ---------------- FA CUP SECTION ----------------
+
         "FA cup 1929–1930": "Arsenal won their first-ever FA Cup under Herbert Chapman. Goals from Alex James and Jack Lambert secured victory at Wembley.",
         "FA cup 1935–1936": "Arsenal beat Sheffield United 1–0. Ted Drake scored the only goal as George Allison's side lifted the FA Cup.",
         "FA cup 1949–1950": "Arsenal beat Liverpool 2–0, with Reg Lewis scoring twice, to win the FA Cup under Tom Whittaker.",
@@ -67,7 +73,11 @@ document.addEventListener("DOMContentLoaded", () => {
         "FA cup 2001–2002": "Arsenal 2–0 Chelsea.	Spectacular goals by Ray Parlour and Freddie Ljungberg sealed victory and another League and FA Cup Double led by Arsène Wenger.",
         "FA cup 2002–2003": "Arsenal 1–0 Southampton.	Robert Pirès scored the only goal as Arsenal successfully defended the FA Cup",
         "FA cup 2004–2005": "Arsenal 0–0 Manchester United (5–4 pens).	After surviving heavy pressure, Arsenal won their first FA Cup on penalties, with Patrick Vieira scoring the decisive kick.)  ",
-        "FA cup 2013–2014": "Arsenal 3–2 Hull City (AET)	Arsenal recovered from 2–0 down through Santi Cazorla, Laurent Koscielny, and Aaron Ramsey, ending a nine-year trophy drought, during Arsène Wenger's tenure.",
+        "FA cup 2013–2014": "Arsenal 3–2 Hull City (AET).	Arsenal recovered from 2–0 down through Santi Cazorla, Laurent Koscielny, and Aaron Ramsey, ending a nine-year trophy drought, during Arsène Wenger's tenure.",
+        "FA cup 2014–2015": "Arsenal produced a dominant display with goals from Theo Walcott, Alexis Sánchez, Per Arsenal 4–0 Aston Villa Mertesacker, and Olivier Giroud)",
+        "FA cup 2016–2017": "Arsenal 2–1 Chelsea.	Alexis Sánchez opened the scoring before Aaron Ramsey headed the winner, giving Wenger a record seventh FA Cup as manager)",
+        "FA cup 2019–2020": "Arsenal 2–1 Chelsea.	After falling behind early, Pierre-Emerick Aubameyang scored twice to complete the comeback and give Arteta his first trophy as Arsenal manager)",
+        
     };
 
     // ---------------- Trophy popups + progress ----------------
