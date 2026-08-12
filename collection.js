@@ -78,6 +78,10 @@ document.addEventListener("DOMContentLoaded", () => {
         "FA cup 2016–2017": "Arsenal 2–1 Chelsea.	Alexis Sánchez opened the scoring before Aaron Ramsey headed the winner, giving Wenger a record seventh FA Cup as manager)",
         "FA cup 2019–2020": "Arsenal 2–1 Chelsea.	After falling behind early, Pierre-Emerick Aubameyang scored twice to complete the comeback and give Arteta his first trophy as Arsenal manager)",
         
+        // ---------------- ENGLISH LEAGUE CUP ----------------
+
+         "English league cup 1986–1987": "Arsenal faced defending league champions Liverpool in the final. Ian Rush put Liverpool ahead, but Charlie Nicholas equalised before half-time. Nicholas struck again late in the second half to complete a 2–1 comeback victory, giving George Graham his first major trophy as Arsenal manager, at the Wembley Stadium, London",
+         "English league cup 1992–1993": "Arsenal met Sheffield Wednesday in the final at the Wembley Stadium, London and again had to come from behind. John Harkes gave Wednesday the lead before Paul Merson equalised, and Steve Morrow scored the winning goal as Arsenal won 2–1. Arsenal subsequently won the FA Cup as well, becoming the first English club to complete the FA Cup–League Cup double in the same season.",
     };
 
     // ---------------- Trophy popups + progress ----------------
