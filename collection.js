@@ -63,7 +63,11 @@ document.addEventListener("DOMContentLoaded", () => {
         "FA cup 1970–1971": "Arsenal beat Liverpool 2–1 after extra time. Charlie George's winner completed the historic League and FA Cup Double under Bertie Mee.",
         "FA cup 1978–1979": "Arsenal beat Manchester United 3–2 in the famous Five-Minute Final, with Alan Sunderland scoring the dramatic late winner under Terry Neill.",
         "FA cup 1992–1993": "Arsenal beat Sheffield Wednesday 2–1 in the replay after extra time. Andy Linighan's header completed a historic domestic cup double under George Graham.",
-        "FA cup 1997–1998": "Arsenal beat Newcastle United 2–0 through goals from Marc Overmars and Nicolas Anelka, completing Arsène Wenger's first League and FA Cup Double."
+        "FA cup 1997–1998": "Arsenal beat Newcastle United 2–0 through goals from Marc Overmars and Nicolas Anelka, completing Arsène Wenger's first League and FA Cup Double.",
+        "FA cup 2001–2002": "Arsenal 2–0 Chelsea.	Spectacular goals by Ray Parlour and Freddie Ljungberg sealed victory and another League and FA Cup Double led by Arsène Wenger.",
+        "FA cup 2002–2003": "Arsenal 1–0 Southampton.	Robert Pirès scored the only goal as Arsenal successfully defended the FA Cup",
+        "FA cup 2004–2005": "Arsenal 0–0 Manchester United (5–4 pens).	After surviving heavy pressure, Arsenal won their first FA Cup on penalties, with Patrick Vieira scoring the decisive kick.)  ",
+        "FA cup 2013–2014": "Arsenal 3–2 Hull City (AET)	Arsenal recovered from 2–0 down through Santi Cazorla, Laurent Koscielny, and Aaron Ramsey, ending a nine-year trophy drought, during Arsène Wenger's tenure.",
     };
 
     // ---------------- Trophy popups + progress ----------------
