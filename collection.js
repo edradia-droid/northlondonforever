@@ -95,6 +95,16 @@ document.addEventListener("DOMContentLoaded", () => {
          "Community shield 1948": "Arsenal 4–3 Manchester United. Arsenal edged a seven-goal thriller against the FA Cup holders.	Highbury, London under Tom Whittaker.",
          "Community shield 1953": "Arsenal 3–1 Blackpool. The First Division champions defeated the famous FA Cup-winning Blackpool side.	Highbury, London under Tom Whittaker.",
          "Community shield 1991": "Arsenal 0–0 Tottenham Hotspur. With no penalty shootout under the rules of the time, the Shield was shared by the North London rivals.	Wembley Stadium, London under George Graham.",
+         "Community shield 1998": "Arsenal 3–0 Manchester United. Goals from Marc Overmars, Christopher Wreh and Nicolas Anelka secured a convincing victory.	Wembley Stadium, London under Arsène Wenger.",
+         "Community shield 1999": "Arsenal 2–1 Manchester United. Nwankwo Kanu and Ray Parlour overturned United's lead.	Wembley Stadium, London under Arsène Wenger.",
+         "Community shield 2002": "Arsenal 1–0 Liverpool. New signing Gilberto Silva scored the winner on his competitive Arsenal debut.	Millennium Stadium, Cardiff under Arsène Wenger.",
+         "Community shield 2004": "Arsenal 3–1 Manchester United. The Invincibles followed their unbeaten league campaign by defeating United to take the Shield.	Millennium Stadium, Cardiff under Arsène Wenger.", 
+         "Community shield 2014": "Arsenal 3–0 Manchester City. Santi Cazorla, Aaron Ramsey and Olivier Giroud scored in a dominant Wembley performance.	Wembley Stadium, London under Arsène Wenger.",
+         "Community shield 2015": "Arsenal 1–0 Chelsea. Alex Oxlade-Chamberlain scored the only goal as Arsenal successfully defended the Shield.	Wembley Stadium, London under Arsène Wenger.",
+         "Community shield 2017": "Arsenal 1–1 Chelsea, winning 4–1 on penalties after Sead Kolašinac's equaliser.	Wembley Stadium, London under Arsène Wenger.", 
+         "Community shield 2020": "Arsenal 1–1 Liverpool, winning 5–4 on penalties. Pierre-Emerick Aubameyang scored during the match and converted the decisive penalty.	Wembley Stadium, London under Mikel Arteta.",
+         "Community shield 2023": "Arsenal 1–1 Manchester City, winning 4–1 on penalties after Leandro Trossard's dramatic late equaliser. Fábio Vieira converted the winning penalty.	Wembley Stadium, London under Mikel Arteta.",
+
 
 
 
