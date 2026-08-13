@@ -5732,6 +5732,26 @@ background-position: center;
 }
 
 
+/* ================================
+   EUROPEAN CUP TROUGHY CARD BACKGROUND IMAGES
+===================================*/
+
+
+.trophy-card.European-trophies1 {
+    
+    background-image: url("https://i.postimg.cc/gJj25RDV/Ch-RFp-F9g2Hz-UCHFca-SL21vai-TAktz6ru6Yz8bt-Pd-LZImczfe-OQG-7BLnd7Vihx-LOql-REZxui-Ikj-K7X3t-Nm-L3S4.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.European-trophies2 {
+    
+    background-image: url("https://i.postimg.cc/j56YMjVJ/f-tq-Kg-CNhh6g7f-ANNOjzl-TKx-TLy-Hh1y4ASJIzo-Clo-Rnlz-BV-8z-Jj-M6w1HIp-M8ue-IPd-Bi-E9Kwf5A-Hqc-N6ug.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
 
 
 

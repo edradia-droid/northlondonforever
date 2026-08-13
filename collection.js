@@ -105,7 +105,10 @@ document.addEventListener("DOMContentLoaded", () => {
          "Community shield 2020": "Arsenal 1–1 Liverpool, winning 5–4 on penalties. Pierre-Emerick Aubameyang scored during the match and converted the decisive penalty.	Wembley Stadium, London under Mikel Arteta.",
          "Community shield 2023": "Arsenal 1–1 Manchester City, winning 4–1 on penalties after Leandro Trossard's dramatic late equaliser. Fábio Vieira converted the winning penalty.	Wembley Stadium, London under Mikel Arteta.",
 
+         // ---------------- EUROPEAN TROPHIS ----------------
 
+         "European trophies 1969–1970": "An Inter-Cities Fairs Cup, Arsenal lost the first leg of the final 3–1 away to Anderlecht but produced a famous comeback at Highbury, winning the second leg 3–0 to take the trophy 4–3 on aggregate. During Bertie Mee's tenure, Arsenal became the first English club to win a European trophy.", 
+         "European trophies 1993–1994": "European Cup Winners’ Cup, Arsenal defeated defending champions Parma 1–0 in the final. Alan Smith scored the decisive goal in the 20th minute, while Arsenal's defence protected the lead to secure the trophy. During George Graham's tenure, Arsenal became the first English club to win the European Cup Winners’ Cup twice.",
 
 
     };
