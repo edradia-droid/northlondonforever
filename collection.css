@@ -6418,13 +6418,20 @@ body.treasure-home.collection-page {
   .collection-page .collection-footer { padding:24px 20px; gap:18px; flex-direction:column; text-align:center; }
 }
 
-/* Mobile background clarity fix: keep the celebration image sharp like desktop */
+/* ==========================================================
+   MOBILE VAULT BACKGROUND SHARPNESS FIX
+   Keeps the celebration image at viewport scale instead of
+   stretching it across the full height of the trophy room.
+   ========================================================== */
 @media (max-width: 900px) {
   .collection-page .treasure-room {
-    background:
+    background-image:
       radial-gradient(circle at 50% 8%, rgba(213,0,50,.13), transparent 25%),
       linear-gradient(rgba(12,12,12,.78),rgba(12,12,12,.94)),
-      url("https://i.postimg.cc/vZpqtsdV/5a3d36cef7be-london-england-arsenal-captain-martin-odegaard-lifts-the-premier-league-trophy-a.jpg") center top / cover no-repeat;
-    background-attachment: scroll;
+      url("https://i.postimg.cc/vZpqtsdV/5a3d36cef7be-london-england-arsenal-captain-martin-odegaard-lifts-the-premier-league-trophy-a.jpg");
+    background-size: auto, auto, auto 100svh;
+    background-position: center, center, center top;
+    background-repeat: no-repeat, no-repeat, repeat-y;
+    background-attachment: scroll, scroll, scroll;
   }
 }
