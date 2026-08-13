@@ -9,10 +9,41 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-.secret-door{max-width:min(92vw,420px)}
-.secret-door-close{position:absolute;top:10px;right:12px;width:42px;height:42px;padding:0;display:grid;place-items:center;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;border:1px solid rgba(255,215,0,.55);font-size:28px;line-height:1;cursor:pointer;touch-action:manipulation;z-index:2}
-.secret-door-action{display:block;margin:18px auto 0;min-height:44px;padding:11px 22px;border-radius:999px;background:#ffd700;color:#111;font-weight:800;border:0;cursor:pointer;touch-action:manipulation}
-@media (max-width:600px){.secret-door.show{position:fixed;top:50%;left:50%;right:auto;width:min(92vw,380px);transform:translate(-50%,-50%);z-index:12000}.secret-door{right:auto}}
+/* Secret Vault: one modal, consistent on desktop/tablet/mobile */
+.secret-door{
+  position:fixed !important;
+  top:50% !important;
+  left:50% !important;
+  right:auto !important;
+  bottom:auto !important;
+  width:min(92vw,420px) !important;
+  max-width:420px !important;
+  transform:translate(-50%,-46%) scale(.96) !important;
+  opacity:0 !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+  z-index:200000 !important;
+  transition:opacity .22s ease, transform .22s ease, visibility .22s ease !important;
+}
+.secret-door.show{
+  transform:translate(-50%,-50%) scale(1) !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+}
+.secret-door-close{
+  position:absolute;top:10px;right:12px;width:42px;height:42px;padding:0;
+  display:grid;place-items:center;border-radius:50%;background:rgba(0,0,0,.55);
+  color:#fff;border:1px solid rgba(255,215,0,.55);font-size:28px;line-height:1;
+  cursor:pointer;touch-action:manipulation;z-index:2;
+}
+.secret-door-action{
+  display:block;margin:18px auto 0;min-height:44px;padding:11px 22px;border-radius:999px;
+  background:#ffd700;color:#111;font-weight:800;border:0;cursor:pointer;touch-action:manipulation;
+}
+@media (max-width:600px){
+  .secret-door{width:min(92vw,380px) !important;}
+}
 </style>
 
   <style>

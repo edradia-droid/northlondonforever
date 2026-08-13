@@ -146,6 +146,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const TOTAL_TROPHIES = 49;
     let secretVaultDismissed = false;
 
+    function openSecretVault() {
+        if (!secretDoor) return;
+        secretVaultDismissed = false;
+        secretDoor.classList.add("show");
+        secretDoor.setAttribute("aria-hidden", "false");
+
+        // Put keyboard focus inside the vault without causing page scrolling.
+        requestAnimationFrame(() => {
+            try { closeSecretDoorBtn?.focus({ preventScroll: true }); } catch (_) {}
+        });
+    }
+
     function closeSecretVaultPanel() {
         if (!secretDoor) return;
         secretDoor.classList.remove("show");
@@ -162,9 +174,8 @@ document.addEventListener("DOMContentLoaded", () => {
             else card.classList.remove("seen");
         });
 
-        if (count >= TOTAL_TROPHIES && !secretVaultDismissed && secretDoor) {
-            secretDoor.classList.add("show");
-            secretDoor.setAttribute("aria-hidden", "false");
+        if (count >= TOTAL_TROPHIES && !secretVaultDismissed) {
+            openSecretVault();
         }
     }
 
@@ -181,7 +192,15 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!seen.has(title)) {
                 seen.add(title);
                 try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...seen])); } catch (_) {}
-                if (seen.size >= TOTAL_TROPHIES) secretVaultDismissed = false;
+
+                const justCompletedCollection = seen.size >= TOTAL_TROPHIES;
+                if (justCompletedCollection) {
+                    // The 49th click should reveal the Secret Vault immediately,
+                    // not leave it hidden behind the ordinary trophy-details popup.
+                    hidePopup();
+                    secretVaultDismissed = false;
+                }
+
                 updateProgress();
             }
         };
