@@ -37,8 +37,31 @@ document.addEventListener("DOMContentLoaded", () => {
     const popupText = document.getElementById("popupText");
     const closePopup = document.querySelector("#popup .close");
     const trophies = [...document.querySelectorAll(".trophy-card")];
+
+    function ensureTrophyStatus(card) {
+        let status = card.querySelector(".trophy-status");
+
+        if (!status) {
+            status = document.createElement("span");
+            status.className = "trophy-status";
+            status.setAttribute("aria-hidden", "true");
+            card.appendChild(status);
+        }
+
+        const viewed = card.classList.contains("seen");
+        status.textContent = viewed ? "✓" : "☐";
+        card.setAttribute("aria-label",
+            `${card.dataset.title || "Arsenal trophy"} — ${viewed ? "viewed" : "not viewed"}`
+        );
+    }
+
+    trophies.forEach(ensureTrophyStatus);
+
     const score = document.getElementById("score");
+    const resetTrophyProgress = document.getElementById("resetTrophyProgress");
     const secretDoor = document.querySelector(".secret-door");
+    const closeSecretDoor = document.getElementById("closeSecretDoor");
+    const closeSecretDoorBtn = document.getElementById("closeSecretDoorBtn");
     const player = document.getElementById("player");
 
     // ---------------- Trophy information ----------------
@@ -120,13 +143,29 @@ document.addEventListener("DOMContentLoaded", () => {
         seen = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"));
     } catch (_) {}
 
+    const TOTAL_TROPHIES = 49;
+    let secretVaultDismissed = false;
+
+    function closeSecretVaultPanel() {
+        if (!secretDoor) return;
+        secretDoor.classList.remove("show");
+        secretDoor.setAttribute("aria-hidden", "true");
+        secretVaultDismissed = true;
+    }
+
     function updateProgress() {
-        const count = Math.min(seen.size, 4);
+        const count = Math.min(seen.size, TOTAL_TROPHIES);
         if (score) score.textContent = count;
-        if (secretDoor) secretDoor.classList.toggle("show", count >= 4);
+
         trophies.forEach(card => {
             if (seen.has(card.dataset.title)) card.classList.add("seen");
+            else card.classList.remove("seen");
         });
+
+        if (count >= TOTAL_TROPHIES && !secretVaultDismissed && secretDoor) {
+            secretDoor.classList.add("show");
+            secretDoor.setAttribute("aria-hidden", "false");
+        }
     }
 
     trophies.forEach(card => {
@@ -142,6 +181,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!seen.has(title)) {
                 seen.add(title);
                 try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...seen])); } catch (_) {}
+                if (seen.size >= TOTAL_TROPHIES) secretVaultDismissed = false;
                 updateProgress();
             }
         };
@@ -160,7 +200,35 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     closePopup?.addEventListener("click", hidePopup);
     popup?.addEventListener("click", e => { if (e.target === popup) hidePopup(); });
-    document.addEventListener("keydown", e => { if (e.key === "Escape") hidePopup(); });
+    document.addEventListener("keydown", e => {
+        if (e.key === "Escape") {
+            hidePopup();
+            closeSecretVaultPanel();
+        }
+    });
+    closeSecretDoor?.addEventListener("click", closeSecretVaultPanel);
+    closeSecretDoorBtn?.addEventListener("click", closeSecretVaultPanel);
+    resetTrophyProgress?.addEventListener("click", () => {
+        const confirmed = window.confirm("Reset all trophy progress back to 0 / 49?");
+        if (!confirmed) return;
+
+        seen.clear();
+        try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+
+        secretVaultDismissed = true;
+        if (secretDoor) {
+            secretDoor.classList.remove("show");
+            secretDoor.setAttribute("aria-hidden", "true");
+        }
+
+        trophies.forEach(card => {
+            card.classList.remove("seen");
+            ensureTrophyStatus(card);
+        });
+        if (score) score.textContent = "0";
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
     updateProgress();
 
     // ---------------- Treasure chest ----------------
