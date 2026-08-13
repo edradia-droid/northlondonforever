@@ -82,6 +82,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
          "English league cup 1986–1987": "Arsenal faced defending league champions Liverpool in the final. Ian Rush put Liverpool ahead, but Charlie Nicholas equalised before half-time. Nicholas struck again late in the second half to complete a 2–1 comeback victory, giving George Graham his first major trophy as Arsenal manager, at the Wembley Stadium, London",
          "English league cup 1992–1993": "Arsenal met Sheffield Wednesday in the final at the Wembley Stadium, London and again had to come from behind. John Harkes gave Wednesday the lead before Paul Merson equalised, and Steve Morrow scored the winning goal as Arsenal won 2–1. Arsenal subsequently won the FA Cup as well, becoming the first English club to complete the FA Cup–League Cup double in the same season.",
+
+
+
+         // ---------------- COMMUNITY SHIELD ----------------
+
+         "Community shield 1930": "Arsenal 2–1 Sheffield Wednesday. Arsenal entered as FA Cup holders and defeated the league champions to win their first Charity Shield UNDER Herbert Chapman at the Stamford Bridge, London.",
+         "Community shield 1931": "Arsenal 1–0 West Bromwich Albion. Cliff Bastin scored the decisive goal as Arsenal retained the Shield under Herbert Chapman at the Villa Park, Birmingham.",
+         "Community shield 1933": "Arsenal 3–0 Everton. Arsenal comfortably defeated the FA Cup holders to collect their third Shield atGoodison Park, Liverpool under Herbert Chapman.",
+         "Community shield 1934": "Arsenal 4–0 Manchester City. The Gunners produced a dominant display against the FA Cup winners.	Highbury, London under George Allison.",
+         "Community shield 1938": "Arsenal 2–1 Preston North End. The reigning First Division champions defeated the FA Cup holders.	Highbury, London under George Allison.",
+         "Community shield 1948": "Arsenal 4–3 Manchester United. Arsenal edged a seven-goal thriller against the FA Cup holders.	Highbury, London under Tom Whittaker.",
+         "Community shield 1953": "Arsenal 3–1 Blackpool. The First Division champions defeated the famous FA Cup-winning Blackpool side.	Highbury, London under Tom Whittaker.",
+         "Community shield 1991": "Arsenal 0–0 Tottenham Hotspur. With no penalty shootout under the rules of the time, the Shield was shared by the North London rivals.	Wembley Stadium, London under George Graham.",
+
+
+
     };
 
     // ---------------- Trophy popups + progress ----------------

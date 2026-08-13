@@ -5561,6 +5561,9 @@ background-repeat: no-repeat;
 background-position: center;
 }
 
+/* ==========================================
+   ENGLISH CUP BACKGROUND IMAGE
+   ========================================== */
 
 
 
@@ -5579,6 +5582,80 @@ background-position: center;
 background-repeat: no-repeat;
 background-position: center;
 }
+
+
+
+/* ==========================================
+   COMMUNITY SHIELD BACKGROUND IMAGE
+   ========================================== */
+
+   .trophy-card.Community-shield1 {
+    
+    background-image: url("https://i.postimg.cc/MGYZYWyg/arsenal-1931.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.Community-shield2 {
+    
+    background-image: url("https://i.postimg.cc/jdvGvL9t/images-q-tbn-ANd9Gc-Sx5YXq-OR0g8S97V-Nqdl-Mm01x-O4-LSXp-Anunzh-WW-I0D5E08Rqk-J-q8OI-s-10.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.Community-shield3 {
+    
+    background-image: url("https://i.postimg.cc/fTpT521K/Qxjx5Vz-Vl3-vgb8NW0Mx-Vm-Bt2-A-EYHr-Pp-QDLFx3-Wb1cwb5F4vxo-Esyfb-Hd-Qna-F0b-Kvrr-U077m1qww6j-KTEy-Sk.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.Community-shield4 {
+    
+    background-image: url("https://i.postimg.cc/0NxvHLnY/ssv5g-Lqzw-Oqa3MOKnny-J5a-Rn0T2g-SP5J6cx-j-Gu-Jx-Tp-E2wz-Tr93w-Okuh-LGAat2b2EJN5tt8p-Gq-pre6g-N9-xm.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+
+.trophy-card.Community-shield5 {
+    
+    background-image: url("https://i.postimg.cc/XXMmBCDy/l-XSg48Bd-Di-KTF-fu-I9D5ex-Nym-BSAJ90-RGCPBZR-k8g1JONPgc-D2Db-ZEM79w-E8bt-Udmz-PUsd-GXc-SQr-PRbo3Szp.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.Community-shield6 {
+    
+    background-image: url("https://i.postimg.cc/jdvGvL9t/images-q-tbn-ANd9Gc-Sx5YXq-OR0g8S97V-Nqdl-Mm01x-O4-LSXp-Anunzh-WW-I0D5E08Rqk-J-q8OI-s-10.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+
+.trophy-card.Community-shield7 {
+    
+    background-image: url("https://i.postimg.cc/MGYZYWyg/arsenal-1931.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+.trophy-card.Community-shield8 {
+    
+    background-image: url("https://i.postimg.cc/jdvGvL9t/images-q-tbn-ANd9Gc-Sx5YXq-OR0g8S97V-Nqdl-Mm01x-O4-LSXp-Anunzh-WW-I0D5E08Rqk-J-q8OI-s-10.jpg");
+    background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+
+
 
 
 
