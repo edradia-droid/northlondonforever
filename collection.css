@@ -6387,7 +6387,7 @@ body.treasure-home.collection-page {
   border-color:rgba(217,184,77,.35);
   overflow:hidden;
 }
-.collection-page .trophy-card::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.55)); pointer-events:none; z-index:0; }
+.collection-page .trophy-card::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,transparent 100%,rgba(0,0,0,.55)); pointer-events:none; z-index:0; }
 .collection-page .trophy-card img,.collection-page .trophy-card h3 { position:relative; z-index:1; }
 .collection-page .trophy-background { position:relative; left:auto; top:auto; transform:none; width:min(90%,1120px); margin:0 auto 20px; z-index:3; }
 .collection-page .trophy-background img { max-height:560px; }
@@ -6416,4 +6416,15 @@ body.treasure-home.collection-page {
   .collection-page .collection-hero-actions a { justify-content:center; }
   .collection-page .score-board { top:14px; left:18px; right:18px; text-align:center; }
   .collection-page .collection-footer { padding:24px 20px; gap:18px; flex-direction:column; text-align:center; }
+}
+
+/* Mobile background clarity fix: keep the celebration image sharp like desktop */
+@media (max-width: 900px) {
+  .collection-page .treasure-room {
+    background:
+      radial-gradient(circle at 50% 8%, rgba(213,0,50,.13), transparent 25%),
+      linear-gradient(rgba(12,12,12,.78),rgba(12,12,12,.94)),
+      url("https://i.postimg.cc/vZpqtsdV/5a3d36cef7be-london-england-arsenal-captain-martin-odegaard-lifts-the-premier-league-trophy-a.jpg") center top / cover no-repeat;
+    background-attachment: scroll;
+  }
 }
