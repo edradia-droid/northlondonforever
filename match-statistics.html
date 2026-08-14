@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<title>Match Statistics | NL4 Arsenal Fan Hub</title>
+<link href="styles.css" rel="stylesheet"/>
+<link href="shared-sidebar.css" rel="stylesheet"/>
+<link href="fixtures-3d.css?v=20260814-10" rel="stylesheet"/>
+</head>
+<body class="nl4-unified-sidebar">
+<button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button>
+<div class="app-shell">
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-top">
+<a class="logo" href="index.html">
+<span class="logo-box nl4-logo-box">
+<img alt="NL4" src="https://i.postimg.cc/GhGgj8G7/75c7b198-597a-4288-abae-723c809c34fa.png"/>
+</span>
+<span class="nl4-brand-text"><b>NORTH LONDON</b><small>FOREVER</small></span>
+</a>
+</div>
+<nav class="side-nav" id="sideNav">
+<p class="nav-label">FAN HUB</p>
+<a class="nav-link" href="index.html"><span>⌂</span> Home</a>
+<a class="nav-link active" href="fixtures.html"><span>◷</span> Fixtures</a>
+<a class="nav-link" href="index.html#calendar"><span>▣</span> Calendar</a>
+<p class="nav-label">COMPETITIONS</p>
+<a class="nav-link" href="index.html#premier-league"><span>🏆</span> Premier League</a>
+<a class="nav-link" href="index.html#champions-league"><span>★</span> Champions League</a>
+<a class="nav-link" href="index.html#fa-cup"><span>🏆</span> FA Cup</a>
+<a class="nav-link" href="index.html#carabao-cup"><span>🏆</span> Carabao Cup</a>
+<p class="nav-label">TEAM</p>
+<a class="nav-link" href="index.html#lineup"><span>⚽</span> Lineup</a>
+<a class="nav-link" href="index.html#news"><span>▤</span> Latest News</a>
+<div class="nav-divider"></div>
+<a class="treasure-link" href="trophies.html">
+<span>🔐</span><b>Treasure Room</b><small>Explore Arsenal history</small>
+</a>
+</nav>
+<div class="sidebar-bottom">
+<span>COYG</span>
+<span>1886 • FOREVER</span>
+</div>
+</aside>
+<div class="mobile-overlay" id="overlay"></div>
+
+<main class="main match-statistics-page">
+  <section class="detail-match-hero">
+    <div class="section-heading stats-page-heading">
+      <div>
+        <p class="eyebrow">NL4 • MATCH CENTRE</p>
+        <h1>MATCH <span>STATISTICS</span></h1>
+        <h2 id="statsMatchTitle">Loading match…</h2>
+      </div>
+      <div class="stats-page-actions">
+        <a id="backDetailsLink" class="ghost-btn stats-page-link" href="fixtures.html">← Match Details</a>
+        <a class="primary-btn stats-page-link" href="fixtures.html">All Fixtures →</a>
+      </div>
+    </div>
+
+    <div class="stats-compact-scoreboard" id="statsScoreboard">
+      <div class="stats-team-side">
+        <span class="stats-team-badge">H</span>
+        <div><strong>LOADING</strong><small>HOME</small></div>
+      </div>
+      <div class="stats-score-centre"><b>—</b><em>VS</em><b>—</b></div>
+      <div class="stats-team-side stats-away-side">
+        <div><strong>LOADING</strong><small>AWAY</small></div>
+        <span class="stats-team-badge">A</span>
+      </div>
+    </div>
+
+    <div class="stats-match-meta" id="statsMatchMeta">
+      <div><small>DATE</small><strong>Loading…</strong></div>
+      <div><small>VENUE</small><strong>Loading…</strong></div>
+      <div><small>REFEREE</small><strong>Loading…</strong></div>
+      <div><small>ATTENDANCE</small><strong>Loading…</strong></div>
+      <div><small>MAN OF THE MATCH</small><strong>Loading…</strong></div>
+      <div><small>HALF-TIME</small><strong>Loading…</strong></div>
+    </div>
+  </section>
+
+  <section class="section-block standalone-stats-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">MATCH DATA</p>
+        <h2>Team Comparison</h2>
+      </div>
+      <span class="status">HOME vs AWAY</span>
+    </div>
+
+    <div class="standalone-team-labels">
+      <strong id="standaloneHomeName">HOME</strong>
+      <span>STATISTICS</span>
+      <strong id="standaloneAwayName">AWAY</strong>
+    </div>
+
+    <div id="standaloneStats" class="standalone-stats-grid">
+      <div class="fixtures-loading">Loading match statistics from Supabase…</div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <b>NL4 MATCH STATISTICS</b>
+    <span>Arsenal • Match Centre • North London Forever</span>
+  </footer>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
+<script src="supabase-client.js?v=20260814-10"></script>
+<script src="nl4-data.js?v=20260814-10"></script>
+<script>
+(function(){
+  const params = new URLSearchParams(location.search);
+  const fixtureRef = params.get('fixture') || params.get('match');
+
+  const title = document.getElementById('statsMatchTitle');
+  const scoreboard = document.getElementById('statsScoreboard');
+  const meta = document.getElementById('statsMatchMeta');
+  const stats = document.getElementById('standaloneStats');
+  const homeNameEl = document.getElementById('standaloneHomeName');
+  const awayNameEl = document.getElementById('standaloneAwayName');
+  const backLink = document.getElementById('backDetailsLink');
+
+  if (backLink && fixtureRef) {
+    backLink.href = `match-details.html?fixture=${encodeURIComponent(fixtureRef)}`;
+  }
+
+  function client() {
+    return window.nl4Supabase || window.supabaseClient || window.NL4_SUPABASE ||
+           window.supabaseDb || window.db || null;
+  }
+
+  function esc(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+    })[char]);
+  }
+
+  function dateTime(iso) {
+    if (!iso) return 'TBA';
+    const d = new Date(iso);
+    const date = d.toLocaleDateString('en-GB', {
+      timeZone:'Europe/London', weekday:'short', day:'2-digit', month:'short', year:'numeric'
+    });
+    const time = d.toLocaleTimeString('en-GB', {
+      timeZone:'Europe/London', hour:'2-digit', minute:'2-digit', hour12:false
+    });
+    return `${date} • ${time}`;
+  }
+
+  function statusLabel(status) {
+    const s = String(status || 'scheduled').toLowerCase();
+    if (['fulltime','ft','finished'].includes(s)) return 'FT';
+    if (s === 'live') return 'LIVE';
+    return 'VS';
+  }
+
+  function renderStats(fixture, home, away) {
+    homeNameEl.textContent = home;
+    awayNameEl.textContent = away;
+
+    const rows = [
+      ['Possession', fixture.home_possession, fixture.away_possession, true],
+      ['Shots', fixture.home_shots, fixture.away_shots, false],
+      ['Shots on Target', fixture.home_shots_on_target, fixture.away_shots_on_target, false],
+      ['Corners', fixture.home_corners, fixture.away_corners, false],
+      ['Fouls', fixture.home_fouls, fixture.away_fouls, false],
+      ['Offsides', fixture.home_offsides, fixture.away_offsides, false],
+      ['Saves', fixture.home_saves, fixture.away_saves, false]
+    ];
+
+    if (!rows.some(row => row[1] !== null || row[2] !== null)) {
+      stats.innerHTML = '<div class="stats-empty-state">No statistics have been entered for this match yet.</div>';
+      return;
+    }
+
+    stats.innerHTML = rows.map(([label,hv,av,percent]) => {
+      const h = hv === null || hv === undefined ? 0 : Number(hv);
+      const a = av === null || av === undefined ? 0 : Number(av);
+      const total = h + a;
+      const hp = percent ? Math.max(0,Math.min(100,h)) : (total ? h / total * 100 : 50);
+      const ap = percent ? Math.max(0,Math.min(100,a)) : 100 - hp;
+      const hs = hv === null || hv === undefined ? '—' : `${hv}${percent ? '%' : ''}`;
+      const as = av === null || av === undefined ? '—' : `${av}${percent ? '%' : ''}`;
+
+      return `
+        <article class="standalone-stat-card">
+          <div class="standalone-stat-values">
+            <strong>${esc(hs)}</strong>
+            <span>${esc(label)}</span>
+            <strong>${esc(as)}</strong>
+          </div>
+          <div class="standalone-stat-track">
+            <i class="standalone-home-bar" style="width:${hp}%"></i>
+            <i class="standalone-away-bar" style="width:${ap}%"></i>
+          </div>
+        </article>`;
+    }).join('');
+  }
+
+  async function load() {
+    if (!fixtureRef) {
+      stats.innerHTML = '<div class="fixtures-error">No fixture selected. Return to Fixtures and choose Statistics.</div>';
+      return;
+    }
+
+    const db = client();
+    if (!db || typeof db.from !== 'function') {
+      stats.innerHTML = '<div class="fixtures-error">Supabase client was not found.</div>';
+      return;
+    }
+
+    try {
+      let result = await db.from('fixtures').select(
+        'id,external_fixture_id,competition,season,matchday,is_home,home_team,away_team,opponent,venue,kickoff_at,status,arsenal_score,opponent_score,halftime_arsenal_score,halftime_opponent_score,referee,attendance,man_of_the_match,home_possession,away_possession,home_shots,away_shots,home_shots_on_target,away_shots_on_target,home_corners,away_corners,home_fouls,away_fouls,home_offsides,away_offsides,home_saves,away_saves'
+      ).eq('external_fixture_id', fixtureRef).eq('is_published', true).maybeSingle();
+
+      if (!result.data && !result.error) {
+        result = await db.from('fixtures').select(
+          'id,external_fixture_id,competition,season,matchday,is_home,home_team,away_team,opponent,venue,kickoff_at,status,arsenal_score,opponent_score,halftime_arsenal_score,halftime_opponent_score,referee,attendance,man_of_the_match,home_possession,away_possession,home_shots,away_shots,home_shots_on_target,away_shots_on_target,home_corners,away_corners,home_fouls,away_fouls,home_offsides,away_offsides,home_saves,away_saves'
+        ).eq('id', fixtureRef).eq('is_published', true).maybeSingle();
+      }
+
+      if (result.error) throw result.error;
+      const f = result.data;
+      if (!f) throw new Error('Fixture not found.');
+
+      const home = f.home_team || (f.is_home ? 'Arsenal' : f.opponent);
+      const away = f.away_team || (f.is_home ? f.opponent : 'Arsenal');
+      const arsenalHome = home === 'Arsenal';
+      const homeScore = arsenalHome ? f.arsenal_score : f.opponent_score;
+      const awayScore = arsenalHome ? f.opponent_score : f.arsenal_score;
+      const showScore = homeScore !== null && homeScore !== undefined && awayScore !== null && awayScore !== undefined;
+
+      title.textContent = `${home} vs ${away}`;
+
+      scoreboard.innerHTML = `
+        <div class="stats-team-side">
+          <span class="stats-team-badge ${home === 'Arsenal' ? 'stats-arsenal-badge' : ''}">${home === 'Arsenal' ? 'ARS' : esc(home.slice(0,3).toUpperCase())}</span>
+          <div><strong>${esc(home)}</strong><small>HOME</small></div>
+        </div>
+        <div class="stats-score-centre">
+          <b>${showScore ? esc(homeScore) : '—'}</b>
+          <em>${esc(statusLabel(f.status))}</em>
+          <b>${showScore ? esc(awayScore) : '—'}</b>
+        </div>
+        <div class="stats-team-side stats-away-side">
+          <div><strong>${esc(away)}</strong><small>AWAY</small></div>
+          <span class="stats-team-badge ${away === 'Arsenal' ? 'stats-arsenal-badge' : ''}">${away === 'Arsenal' ? 'ARS' : esc(away.slice(0,3).toUpperCase())}</span>
+        </div>`;
+
+      const htA = f.halftime_arsenal_score;
+      const htO = f.halftime_opponent_score;
+      const htHome = arsenalHome ? htA : htO;
+      const htAway = arsenalHome ? htO : htA;
+      const ht = htHome !== null && htHome !== undefined && htAway !== null && htAway !== undefined ? `${htHome} : ${htAway}` : '— : —';
+
+      meta.innerHTML = `
+        <div><small>DATE</small><strong>${esc(dateTime(f.kickoff_at))}</strong></div>
+        <div><small>VENUE</small><strong>${esc(f.venue || 'TBA')}</strong></div>
+        <div><small>REFEREE</small><strong>${esc(f.referee || 'TBA')}</strong></div>
+        <div><small>ATTENDANCE</small><strong>${f.attendance !== null && f.attendance !== undefined ? Number(f.attendance).toLocaleString('en-GB') : 'TBA'}</strong></div>
+        <div><small>MAN OF THE MATCH</small><strong>${esc(f.man_of_the_match || 'TBA')}</strong></div>
+        <div><small>HALF-TIME</small><strong>${esc(ht)}</strong></div>`;
+
+      renderStats(f, home, away);
+      console.log(`NL4 statistics loaded: ${home} vs ${away}`);
+    } catch (error) {
+      console.error('NL4 statistics error:', error);
+      stats.innerHTML = `<div class="fixtures-error">${esc(error.message || 'Could not load match statistics.')}</div>`;
+    }
+  }
+
+  load();
+})();
+</script>
+
+<script>
+(function(){
+  const sidebar = document.getElementById('sidebar');
+  const toggle = document.getElementById('nl4MenuToggle');
+  const overlay = document.getElementById('overlay');
+  if (!sidebar || !toggle) return;
+
+  function isDesktop() { return window.innerWidth > 900; }
+  function isOpen() { return sidebar.classList.contains('open'); }
+
+  function applyState(open) {
+    sidebar.classList.toggle('open', open);
+    document.body.classList.toggle('sidebar-open', open);
+    if (overlay) overlay.classList.toggle('show', open && !isDesktop());
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+  }
+
+  applyState(isDesktop());
+
+  toggle.addEventListener('click', event => {
+    event.preventDefault();
+    event.stopPropagation();
+    applyState(!isOpen());
+  });
+
+  if (overlay) overlay.addEventListener('click', () => applyState(false));
+
+  document.querySelectorAll('#sideNav a').forEach(link => {
+    link.addEventListener('click', () => {
+      if (!isDesktop()) applyState(false);
+    });
+  });
+
+  let desktop = isDesktop();
+  window.addEventListener('resize', () => {
+    const now = isDesktop();
+    if (now !== desktop) {
+      applyState(now);
+      desktop = now;
+    }
+  });
+})();
+</script>
+</body>
+</html>

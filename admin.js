@@ -22,8 +22,6 @@ const schemas = {
       ["name","Name","text",true],["slug","Slug","text",true],["position","Position","text"],
       ["shirt_number","Shirt number","number"],["era","Era","text",true],["image_url","Image URL","url"],
       ["profile_url","Profile page URL","text"],["sort_order","Sort order","number"],
-      ["appearances","Appearances","number"],["goals","Goals","number"],
-      ["assists","Assists","number"],["clean_sheets","Clean sheets","number"],
       ["bio","Biography","textarea"],["is_published","Published","checkbox"]
     ]
   },
@@ -40,8 +38,10 @@ const schemas = {
     title: "Fixture",
     order: "kickoff_at",
     fields: [
-      ["opponent","Opponent","text",true],["competition","Competition","text"],["venue","Venue","text"],
-      ["kickoff_at","Kick-off","datetime-local",true],["status","Status","select",true,["scheduled","live","finished","postponed"]],
+      ["opponent","Opponent","text",true],["competition","Competition","text"],["season","Season","text"],
+      ["matchday","Matchday","number"],["is_home","Arsenal at home","checkbox"],["home_team","Home team","text"],["away_team","Away team","text"],
+      ["venue","Venue","text"],["kickoff_at","Kick-off","datetime-local",true],["kickoff_confirmed","Kick-off confirmed","checkbox"],
+      ["status","Status","select",true,["scheduled","live","fulltime","postponed","cancelled"]],
       ["arsenal_score","Arsenal score","number"],["opponent_score","Opponent score","number"],
       ["match_url","Match page URL","text"],["is_published","Published","checkbox"]
     ]
@@ -171,7 +171,291 @@ function cardHtml(table, row) {
   </article>`;
 }
 
+
+let fixtureRows = [];
+let currentFixture = null;
+let currentEventId = null;
+let currentMatchFilter = 'all';
+
+const matchDialog = document.getElementById('matchDialog');
+const eventDialog = document.getElementById('eventDialog');
+const matchDialogTitle = document.getElementById('matchDialogTitle');
+const matchAdminSummary = document.getElementById('matchAdminSummary');
+const matchEventsList = document.getElementById('matchEventsList');
+const matchSaveMessage = document.getElementById('matchSaveMessage');
+const eventMessage = document.getElementById('eventMessage');
+
+function fixtureStatusClass(status) {
+  const s = String(status || 'scheduled').toLowerCase();
+  if (['fulltime','finished','ft'].includes(s)) return 'fulltime';
+  if (s === 'live') return 'live';
+  return '';
+}
+
+function fixtureStatusLabel(status) {
+  const s = String(status || 'scheduled').toLowerCase();
+  if (['fulltime','finished','ft'].includes(s)) return 'FULL TIME';
+  if (s === 'live') return 'LIVE';
+  if (s === 'postponed') return 'POSTPONED';
+  if (s === 'cancelled') return 'CANCELLED';
+  return 'UPCOMING';
+}
+
+function isFinishedFixture(row) {
+  return ['fulltime','finished','ft'].includes(String(row.status || '').toLowerCase());
+}
+
+function renderFixtureAdminList() {
+  const holder = document.getElementById('fixturesList');
+  let rows = fixtureRows;
+  if (currentMatchFilter === 'upcoming') rows = rows.filter(r => !isFinishedFixture(r));
+  if (currentMatchFilter === 'finished') rows = rows.filter(isFinishedFixture);
+
+  document.getElementById('fixturesAdminStatus').textContent = `${rows.length} match${rows.length === 1 ? '' : 'es'}`;
+  holder.innerHTML = rows.length ? rows.map(row => {
+    const home = row.home_team || (row.is_home ? 'Arsenal' : row.opponent);
+    const away = row.away_team || (row.is_home ? row.opponent : 'Arsenal');
+    const hasScore = row.arsenal_score !== null && row.arsenal_score !== undefined && row.opponent_score !== null && row.opponent_score !== undefined;
+    const homeScore = row.is_home ? row.arsenal_score : row.opponent_score;
+    const awayScore = row.is_home ? row.opponent_score : row.arsenal_score;
+    const score = hasScore ? `${homeScore} — ${awayScore}` : 'VS';
+    return `<article class="admin-match-row">
+      <div class="admin-match-number">#${String(row.matchday || '—').padStart(2,'0')}</div>
+      <div class="admin-match-main">
+        <strong>${escapeHtml(home)} vs ${escapeHtml(away)}</strong>
+        <div class="admin-match-meta">${escapeHtml(row.venue || 'Venue TBC')} • ${escapeHtml(new Date(row.kickoff_at).toLocaleString())}</div>
+      </div>
+      <div class="admin-match-result">
+        <span class="admin-match-status ${fixtureStatusClass(row.status)}">${fixtureStatusLabel(row.status)}</span>
+        <span class="admin-match-score">${escapeHtml(score)}</span>
+        <button type="button" onclick="window.nl4ManageMatch('${row.id}')">Manage</button>
+      </div>
+    </article>`;
+  }).join('') : '<div class="match-empty">No matches in this view.</div>';
+}
+
+async function loadFixturesAdmin() {
+  const holder = document.getElementById('fixturesList');
+  holder.innerHTML = '<div class="match-empty">Loading fixtures…</div>';
+  let query = db.from('fixtures').select('*').order('matchday', { ascending:true });
+  const { data, error } = await query;
+  if (error) {
+    holder.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  fixtureRows = (data || []).sort((a,b) => {
+    const aPL = a.season === '2026/27' && a.competition === 'Premier League' ? 0 : 1;
+    const bPL = b.season === '2026/27' && b.competition === 'Premier League' ? 0 : 1;
+    return aPL - bPL || (a.matchday || 999) - (b.matchday || 999) || new Date(a.kickoff_at) - new Date(b.kickoff_at);
+  });
+  renderFixtureAdminList();
+}
+
+async function loadMatchEvents() {
+  if (!currentFixture) return;
+  matchEventsList.innerHTML = '<div class="match-empty">Loading events…</div>';
+  const { data, error } = await db.from('match_events').select('*').eq('fixture_id', currentFixture.id)
+    .order('minute', { ascending:true, nullsFirst:false }).order('stoppage_minute', { ascending:true, nullsFirst:false });
+  if (error) {
+    matchEventsList.innerHTML = `<div class="match-empty">${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  matchEventsList.innerHTML = data.length ? data.map(event => {
+    const minute = event.minute === null || event.minute === undefined ? '—' : `${event.minute}${event.stoppage_minute ? '+' + event.stoppage_minute : ''}'`;
+    const label = {goal:'GOAL',assist:'ASSIST',yellow_card:'YELLOW',red_card:'RED'}[event.event_type] || event.event_type;
+    return `<div class="admin-event-row">
+      <span class="admin-event-type">${escapeHtml(label)}</span>
+      <div class="admin-event-player"><strong>${escapeHtml(event.player_name)}</strong><small>${escapeHtml(event.team_name)}${event.related_player_name ? ' • Related: ' + escapeHtml(event.related_player_name) : ''}</small></div>
+      <span class="admin-event-minute">${minute}</span>
+      <div class="admin-event-actions">
+        <button type="button" onclick="window.nl4EditMatchEvent('${event.id}')">Edit</button>
+        <button class="danger" type="button" onclick="window.nl4DeleteMatchEvent('${event.id}')">Delete</button>
+      </div>
+    </div>`;
+  }).join('') : '<div class="match-empty">No match events recorded yet.</div>';
+}
+
+window.nl4ManageMatch = async function(id) {
+  const { data, error } = await db.from('fixtures').select('*').eq('id', id).single();
+  if (error) return alert(error.message);
+  currentFixture = data;
+  const home = data.home_team || (data.is_home ? 'Arsenal' : data.opponent);
+  const away = data.away_team || (data.is_home ? data.opponent : 'Arsenal');
+  matchDialogTitle.textContent = `${home} vs ${away}`;
+  matchAdminSummary.innerHTML = `<strong>${escapeHtml(home)} vs ${escapeHtml(away)}</strong><span>Match ${escapeHtml(data.matchday || '—')} • ${escapeHtml(data.competition || '')} • ${escapeHtml(data.season || '')}</span>`;
+  document.getElementById('matchStatus').value = isFinishedFixture(data) ? 'fulltime' : (data.status || 'scheduled');
+  document.getElementById('matchKickoff').value = toLocalInput(data.kickoff_at);
+  document.getElementById('matchVenue').value = data.venue || '';
+  document.getElementById('matchKickoffConfirmed').checked = data.kickoff_confirmed !== false;
+  document.getElementById('matchArsenalScore').value = data.arsenal_score ?? '';
+  document.getElementById('matchOpponentScore').value = data.opponent_score ?? '';
+  document.getElementById('matchHTArsenalScore').value = data.halftime_arsenal_score ?? '';
+  document.getElementById('matchHTOpponentScore').value = data.halftime_opponent_score ?? '';
+  document.getElementById('matchReferee').value = data.referee || '';
+  document.getElementById('matchAttendance').value = data.attendance ?? '';
+  document.getElementById('matchMOTM').value = data.man_of_the_match || '';
+  document.getElementById('statsHomeName').textContent = home;
+  document.getElementById('statsAwayName').textContent = away;
+  document.getElementById('statHomePossession').value = data.home_possession ?? '';
+  document.getElementById('statAwayPossession').value = data.away_possession ?? '';
+  document.getElementById('statHomeShots').value = data.home_shots ?? '';
+  document.getElementById('statAwayShots').value = data.away_shots ?? '';
+  document.getElementById('statHomeSOT').value = data.home_shots_on_target ?? '';
+  document.getElementById('statAwaySOT').value = data.away_shots_on_target ?? '';
+  document.getElementById('statHomeCorners').value = data.home_corners ?? '';
+  document.getElementById('statAwayCorners').value = data.away_corners ?? '';
+  document.getElementById('statHomeFouls').value = data.home_fouls ?? '';
+  document.getElementById('statAwayFouls').value = data.away_fouls ?? '';
+  document.getElementById('statHomeOffsides').value = data.home_offsides ?? '';
+  document.getElementById('statAwayOffsides').value = data.away_offsides ?? '';
+  document.getElementById('statHomeSaves').value = data.home_saves ?? '';
+  document.getElementById('statAwaySaves').value = data.away_saves ?? '';
+
+  setMessage(matchSaveMessage);
+  await loadMatchEvents();
+  matchDialog.showModal();
+};
+
+async function saveCurrentMatch() {
+  if (!currentFixture) return;
+  const status = document.getElementById('matchStatus').value;
+  const scoreA = document.getElementById('matchArsenalScore').value;
+  const scoreO = document.getElementById('matchOpponentScore').value;
+  const payload = {
+    status,
+    kickoff_at: new Date(document.getElementById('matchKickoff').value).toISOString(),
+    venue: document.getElementById('matchVenue').value.trim() || null,
+    kickoff_confirmed: document.getElementById('matchKickoffConfirmed').checked,
+    arsenal_score: scoreA === '' ? null : Number(scoreA),
+    opponent_score: scoreO === '' ? null : Number(scoreO),
+    halftime_arsenal_score: document.getElementById('matchHTArsenalScore').value === '' ? null : Number(document.getElementById('matchHTArsenalScore').value),
+    halftime_opponent_score: document.getElementById('matchHTOpponentScore').value === '' ? null : Number(document.getElementById('matchHTOpponentScore').value),
+    referee: document.getElementById('matchReferee').value.trim() || null,
+    attendance: document.getElementById('matchAttendance').value === '' ? null : Number(document.getElementById('matchAttendance').value),
+    man_of_the_match: document.getElementById('matchMOTM').value.trim() || null,
+    updated_at: new Date().toISOString()
+  };
+  setMessage(matchSaveMessage, 'Saving…');
+  const { data, error } = await db.from('fixtures').update(payload).eq('id', currentFixture.id).select('*').single();
+  if (error) return setMessage(matchSaveMessage, error.message, 'error');
+  currentFixture = data;
+  setMessage(matchSaveMessage, 'Match saved. Public fixtures will use this data.', 'success');
+  await loadFixturesAdmin();
+}
+
+document.getElementById('saveMatchBtn').addEventListener('click', saveCurrentMatch);
+document.getElementById('closeMatchDialog').addEventListener('click', () => matchDialog.close());
+document.getElementById('doneMatchDialog').addEventListener('click', () => matchDialog.close());
+
+document.querySelectorAll('[data-match-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-match-filter]').forEach(x => x.classList.remove('active'));
+    btn.classList.add('active');
+    currentMatchFilter = btn.dataset.matchFilter;
+    renderFixtureAdminList();
+  });
+});
+
+
+function adminStatValue(id, decimal = false) {
+  const value = document.getElementById(id).value;
+  if (value === '') return null;
+  return decimal ? Number.parseFloat(value) : Number.parseInt(value, 10);
+}
+
+document.getElementById('saveStatsBtn').addEventListener('click', async () => {
+  if (!currentFixture) return;
+  const msg = document.getElementById('statsSaveMessage');
+  const payload = {
+    home_possession: adminStatValue('statHomePossession', true),
+    away_possession: adminStatValue('statAwayPossession', true),
+    home_shots: adminStatValue('statHomeShots'),
+    away_shots: adminStatValue('statAwayShots'),
+    home_shots_on_target: adminStatValue('statHomeSOT'),
+    away_shots_on_target: adminStatValue('statAwaySOT'),
+    home_corners: adminStatValue('statHomeCorners'),
+    away_corners: adminStatValue('statAwayCorners'),
+    home_fouls: adminStatValue('statHomeFouls'),
+    away_fouls: adminStatValue('statAwayFouls'),
+    home_offsides: adminStatValue('statHomeOffsides'),
+    away_offsides: adminStatValue('statAwayOffsides'),
+    home_saves: adminStatValue('statHomeSaves'),
+    away_saves: adminStatValue('statAwaySaves'),
+    updated_at: new Date().toISOString()
+  };
+  if ((payload.home_possession !== null && (payload.home_possession < 0 || payload.home_possession > 100)) ||
+      (payload.away_possession !== null && (payload.away_possession < 0 || payload.away_possession > 100))) {
+    return setMessage(msg, 'Possession must be between 0 and 100.', 'error');
+  }
+  setMessage(msg, 'Saving…');
+  const { data, error } = await db.from('fixtures').update(payload).eq('id', currentFixture.id).select('*').single();
+  if (error) return setMessage(msg, error.message, 'error');
+  currentFixture = data;
+  setMessage(msg, 'Statistics saved.', 'success');
+});
+
+function openEventEditor(event = null) {
+  if (!currentFixture) return;
+  currentEventId = event?.id || null;
+  document.getElementById('eventDialogTitle').textContent = event ? 'Edit event' : 'Add event';
+  document.getElementById('eventType').value = event?.event_type || 'goal';
+  document.getElementById('eventPlayer').value = event?.player_name || '';
+  document.getElementById('eventMinute').value = event?.minute ?? '';
+  document.getElementById('eventStoppage').value = event?.stoppage_minute ?? '';
+  document.getElementById('eventRelatedPlayer').value = event?.related_player_name || '';
+  const home = currentFixture.home_team || (currentFixture.is_home ? 'Arsenal' : currentFixture.opponent);
+  const away = currentFixture.away_team || (currentFixture.is_home ? currentFixture.opponent : 'Arsenal');
+  const teamSelect = document.getElementById('eventTeam');
+  teamSelect.innerHTML = `<option value="${escapeHtml(home)}">${escapeHtml(home)}</option><option value="${escapeHtml(away)}">${escapeHtml(away)}</option>`;
+  teamSelect.value = event?.team_name || home;
+  setMessage(eventMessage);
+  eventDialog.showModal();
+}
+
+document.getElementById('addEventBtn').addEventListener('click', () => openEventEditor());
+document.getElementById('closeEventDialog').addEventListener('click', () => eventDialog.close());
+document.getElementById('cancelEventDialog').addEventListener('click', () => eventDialog.close());
+
+window.nl4EditMatchEvent = async function(id) {
+  const { data, error } = await db.from('match_events').select('*').eq('id', id).single();
+  if (error) return alert(error.message);
+  openEventEditor(data);
+};
+
+window.nl4DeleteMatchEvent = async function(id) {
+  if (!confirm('Delete this match event?')) return;
+  const { error } = await db.from('match_events').delete().eq('id', id);
+  if (error) return alert(error.message);
+  await loadMatchEvents();
+};
+
+document.getElementById('saveEventBtn').addEventListener('click', async () => {
+  if (!currentFixture) return;
+  const minute = document.getElementById('eventMinute').value;
+  const stoppage = document.getElementById('eventStoppage').value;
+  const payload = {
+    fixture_id: currentFixture.id,
+    event_type: document.getElementById('eventType').value,
+    player_name: document.getElementById('eventPlayer').value.trim(),
+    team_name: document.getElementById('eventTeam').value,
+    minute: minute === '' ? null : Number(minute),
+    stoppage_minute: stoppage === '' ? null : Number(stoppage),
+    related_player_name: document.getElementById('eventRelatedPlayer').value.trim() || null,
+    updated_at: new Date().toISOString()
+  };
+  if (!payload.player_name) return setMessage(eventMessage, 'Player name is required.', 'error');
+  setMessage(eventMessage, 'Saving…');
+  let response;
+  if (currentEventId) response = await db.from('match_events').update(payload).eq('id', currentEventId);
+  else response = await db.from('match_events').insert(payload);
+  if (response.error) return setMessage(eventMessage, response.error.message, 'error');
+  setMessage(eventMessage, 'Event saved.', 'success');
+  await loadMatchEvents();
+  setTimeout(() => eventDialog.close(), 250);
+});
+
 async function loadTable(table) {
+  if (table === "fixtures") return loadFixturesAdmin();
   const schema = schemas[table];
   const ascending = table !== "news";
   const { data, error } = await db.from(table).select("*").order(schema.order, { ascending });

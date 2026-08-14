@@ -3,11 +3,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <meta content="NL4 Arsenal fixtures and results 3D match centre." name="description"/>
 <title>Fixtures &amp; Results | NL4 Arsenal Fan Hub</title>
 <link href="styles.css" rel="stylesheet"/>
-<link href="shared-sidebar.css" rel="stylesheet"/><link href="fixtures-3d.css" rel="stylesheet"/></head>
+<link href="shared-sidebar.css" rel="stylesheet"/><link href="fixtures-3d.css?v=20260814-17" rel="stylesheet"/></head>
 <body class="nl4-unified-sidebar"><button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button>
 <div class="app-shell">
 <aside class="sidebar" id="sidebar">
@@ -58,18 +61,18 @@
 </div>
 <span class="status">38 MATCHES</span>
 </div><div class="fixture-update-note">
-<strong>Quick update system:</strong>
-  Edit each match once inside <code>fixtures-data.js</code>. The same card automatically changes
-  from an upcoming fixture to a full-time result when its status and scores are updated.
+<strong>Live fixture system:</strong>
+  Arsenal Premier League fixtures now load directly from <code>Supabase</code>. Dates, venues,
+  status and scores update on the same match card without editing <code>fixtures-data.js</code>.
 </div><div class="fixture-month-nav" id="fixtureMonthNav"></div><div class="unified-match-grid all-league-fixtures" id="matchesGrid"></div></section><footer class="footer">
 <b>ARSENAL MATCH CENTRE</b>
 <span>Fixtures • Results • Matchday • North London Forever</span>
 </footer></main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
-<script src="supabase-client.js"></script>
-<script src="nl4-data.js"></script>
-<script src="index.js"></script><script src="fixtures-data.js"></script><script src="fixtures-3d.js"></script>
+<script src="supabase-client.js?v=20260814-3"></script>
+<script src="nl4-data.js?v=20260814-3"></script>
+<script src="index.js?v=20260814-3"></script><script src="fixtures-3d.js?v=20260814-17"></script>
 <script>
 (function(){
   const sidebar = document.getElementById('sidebar');
@@ -127,132 +130,6 @@
       applyState(false);
     }
   });
-})();
-</script><script>
-(function(){
-  const matches = window.NL4_PREMIER_LEAGUE_FIXTURES || [];
-  const grid = document.getElementById('matchesGrid');
-  const monthNav = document.getElementById('fixtureMonthNav');
-  if (!grid) return;
-
-  const monthNames = [
-    'January','February','March','April','May','June',
-    'July','August','September','October','November','December'
-  ];
-
-  function escapeHtml(value){
-    return String(value ?? '').replace(/[&<>"']/g, char => ({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
-    })[char]);
-  }
-
-  function prettyDate(iso){
-    const d = new Date(iso + 'T12:00:00');
-    return d.toLocaleDateString('en-GB',{
-      weekday:'short', day:'2-digit', month:'short', year:'numeric'
-    }).toUpperCase();
-  }
-
-  function monthKey(iso){
-    const d = new Date(iso + 'T12:00:00');
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-  }
-
-  const groups = new Map();
-  matches.forEach(match => {
-    const key = monthKey(match.date);
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(match);
-  });
-
-  monthNav.innerHTML = [...groups.keys()].map(key => {
-    const [year,month] = key.split('-');
-    return `<a href="#month-${key}">${monthNames[Number(month)-1].slice(0,3).toUpperCase()} ${year}</a>`;
-  }).join('');
-
-  grid.innerHTML = [...groups.entries()].map(([key,items]) => {
-    const [year,month] = key.split('-');
-    const heading = `${monthNames[Number(month)-1]} ${year}`;
-
-    const cards = items.map(match => {
-      const fulltime = match.status === 'fulltime';
-      const score = fulltime
-        ? `<div class="result-score"><b>${match.homeScore ?? 0}</b><em>—</em><b>${match.awayScore ?? 0}</b></div>`
-        : `<span class="fixture-vs">VS</span>`;
-
-      return `
-        <article class="unified-match-card${fulltime ? ' result-card' : ''}" data-tilt-card data-match-id="${escapeHtml(match.id)}">
-          <div class="unified-card-top">
-            <span class="competition-pill">PREMIER LEAGUE</span>
-            <span class="match-status ${fulltime ? 'fulltime' : 'upcoming'}">${fulltime ? 'FULL TIME' : 'UPCOMING'}</span>
-          </div>
-
-          <div class="match-edit-fields">
-            <div class="match-edit-field">
-              <small>DATE</small>
-              <strong>${prettyDate(match.date)} • ${escapeHtml(match.time)}</strong>
-            </div>
-            <div class="match-edit-field">
-              <small>VENUE</small>
-              <strong>${escapeHtml(match.venue)}</strong>
-            </div>
-          </div>
-
-          <div class="unified-teams">
-            <div class="unified-team">
-              <div class="unified-badge ${match.home === 'Arsenal' ? 'arsenal-unified' : 'opponent-unified'}">${escapeHtml(match.homeCode)}</div>
-              <h3>${escapeHtml(match.home)}</h3>
-              <small>HOME</small>
-            </div>
-
-            <div class="unified-score">
-              ${score}
-              <small>${fulltime ? 'FULL TIME' : escapeHtml(match.time)}</small>
-            </div>
-
-            <div class="unified-team">
-              <div class="unified-badge ${match.away === 'Arsenal' ? 'arsenal-unified' : 'opponent-unified'}">${escapeHtml(match.awayCode)}</div>
-              <h3>${escapeHtml(match.away)}</h3>
-              <small>AWAY</small>
-            </div>
-          </div>
-
-          <div class="unified-card-bottom">
-            <span>MATCH ${String(match.matchday).padStart(2,'0')} / 38</span>
-            <a class="details-link" href="match-details.html?match=${encodeURIComponent(match.id)}">More Details →</a>
-          </div>
-        </article>
-      `;
-    }).join('');
-
-    return `
-      <section class="fixture-month-block" id="month-${key}">
-        <div class="fixture-month-heading">
-          <span>${heading}</span>
-          <small>${items.length} MATCH${items.length === 1 ? '' : 'ES'}</small>
-        </div>
-        <div class="fixture-month-cards">${cards}</div>
-      </section>
-    `;
-  }).join('');
-
-  // Re-apply lightweight tilt to dynamically-created cards.
-  if (window.matchMedia('(pointer:fine)').matches &&
-      !window.matchMedia('(prefers-reduced-motion:reduce)').matches) {
-    document.querySelectorAll('[data-tilt-card]').forEach(card => {
-      card.addEventListener('mousemove', event => {
-        const rect = card.getBoundingClientRect();
-        const x = (event.clientX - rect.left) / rect.width;
-        const y = (event.clientY - rect.top) / rect.height;
-        card.style.setProperty('--mini-rx', ((0.5-y)*4).toFixed(2)+'deg');
-        card.style.setProperty('--mini-ry', ((x-0.5)*6).toFixed(2)+'deg');
-      });
-      card.addEventListener('mouseleave', () => {
-        card.style.setProperty('--mini-rx','0deg');
-        card.style.setProperty('--mini-ry','0deg');
-      });
-    });
-  }
 })();
 </script></body>
 </html>

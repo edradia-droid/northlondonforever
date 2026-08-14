@@ -3,11 +3,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <meta content="NL4 Arsenal fixtures and results 3D match centre." name="description"/>
 <title>Match Details | NL4 Arsenal Fan Hub</title>
 <link href="styles.css" rel="stylesheet"/>
-<link href="shared-sidebar.css" rel="stylesheet"/><link href="fixtures-3d.css" rel="stylesheet"/></head>
+<link href="shared-sidebar.css" rel="stylesheet"/><link href="fixtures-3d.css?v=20260814-17" rel="stylesheet"/></head>
 <body class="nl4-unified-sidebar"><button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button>
 <div class="app-shell">
 <aside class="sidebar" id="sidebar">
@@ -47,19 +50,57 @@
 <div class="section-heading">
 <div>
 <p class="eyebrow">MATCH DETAILS</p>
-<h2>Arsenal vs Opponent</h2>
+<h2 id="matchTitle">Loading match…</h2>
 </div>
+<div class="match-detail-actions">
 <a href="fixtures.html">← Back to Fixtures &amp; Results</a>
+<a class="stats-jump-link" href="#match-statistics">Match Statistics ↓</a>
+</div>
 </div>
 <article class="detail-score-card">
-<div class="detail-meta"><div><small>COMPETITION</small><strong>PREMIER LEAGUE</strong></div><div><small>DATE</small><strong>DATE TBA</strong></div><div><small>VENUE</small><strong>VENUE TBA</strong></div></div>
-<div class="detail-score-line">
-<div><strong>ARSENAL</strong><small>HOME</small></div>
-<div class="detail-score"><b>—</b><em>VS</em><b>—</b></div>
-<div><strong>OPPONENT</strong><small>AWAY</small></div>
+<div class="detail-meta" id="matchMeta">
+<div><small>COMPETITION</small><strong>Loading…</strong></div>
+<div><small>DATE</small><strong>Loading…</strong></div>
+<div><small>VENUE</small><strong>Loading…</strong></div>
+</div>
+<div class="compact-scoreboard" id="detailScoreLine">
+  <div class="compact-team compact-home"><span class="compact-badge">H</span><div><strong>LOADING</strong><small>HOME</small></div></div>
+  <div class="compact-score"><b>—</b><em>VS</em><b>—</b></div>
+  <div class="compact-team compact-away"><div><strong>LOADING</strong><small>AWAY</small></div><span class="compact-badge">A</span></div>
+</div>
 </div>
 </article>
-</section><section class="section-block event-details-section">
+</section>
+
+<section class="section-block match-stats-section" id="match-statistics">
+  <div class="stats-title-row">
+    <div>
+      <p class="eyebrow">MATCH DATA</p>
+      <h2>Match Statistics</h2>
+      <p class="stats-inline-note">Home and away comparison from Supabase.</p>
+    </div>
+    <div class="stats-lane-header">
+      <strong id="publicStatsHome" class="stats-lane-team stats-home-lane">HOME</strong>
+      <span class="stats-lane-centre">STAT</span>
+      <strong id="publicStatsAway" class="stats-lane-team stats-away-lane">AWAY</strong>
+    </div>
+  </div>
+  <div id="matchStats" class="match-stats">
+    <div class="timeline-empty">Statistics will appear when added in Admin.</div>
+  </div>
+</section>
+
+<section class="timeline-section" id="match-timeline-section">
+  <div class="timeline-heading">
+    <p class="eyebrow">MATCH FLOW</p>
+    <h2>Event Timeline</h2>
+  </div>
+  <div id="matchTimeline" class="match-timeline">
+    <div class="timeline-empty">No match events recorded yet.</div>
+  </div>
+</section>
+
+<section class="section-block event-details-section">
 <div class="section-heading">
 <div>
 <p class="eyebrow">MATCH EVENTS</p>
@@ -68,70 +109,30 @@
 <span class="status">UPDATE AFTER MATCH</span>
 </div>
 <div class="event-grid">
-<article class="event-panel">
+<article class="event-panel" data-event-type="red_card" data-event-type="yellow_card" data-event-type="assist" data-event-type="goal">
 <div class="event-panel-head">
 <span class="event-icon">⚽</span>
 <h3>Goals</h3>
 </div>
-<div class="event-row">
-<span class="event-player">Scorer name</span>
-<span class="event-team">Arsenal / Opponent</span>
-<span class="event-minute">__'</span>
-</div>
-<div class="event-row placeholder-row">
-<span class="event-player">Add scorer</span>
-<span class="event-team">Team</span>
-<span class="event-minute">__'</span>
-</div>
-</article>
+<div class="event-rows" data-event-rows="goal"><div class="event-row placeholder-row"><span class="event-player">Loading…</span><span class="event-team">—</span><span class="event-minute">—</span></div></div></article>
 <article class="event-panel">
 <div class="event-panel-head">
 <span class="event-icon">A</span>
 <h3>Assists</h3>
 </div>
-<div class="event-row">
-<span class="event-player">Assister name</span>
-<span class="event-team">Arsenal / Opponent</span>
-<span class="event-minute">__'</span>
-</div>
-<div class="event-row placeholder-row">
-<span class="event-player">Add assister</span>
-<span class="event-team">Team</span>
-<span class="event-minute">__'</span>
-</div>
-</article>
+<div class="event-rows" data-event-rows="assist"><div class="event-row placeholder-row"><span class="event-player">Loading…</span><span class="event-team">—</span><span class="event-minute">—</span></div></div></article>
 <article class="event-panel yellow-panel">
 <div class="event-panel-head">
 <span class="event-icon card-icon yellow-card-icon"></span>
 <h3>Yellow Cards</h3>
 </div>
-<div class="event-row">
-<span class="event-player">Player name</span>
-<span class="event-team">Arsenal / Opponent</span>
-<span class="event-minute">__'</span>
-</div>
-<div class="event-row placeholder-row">
-<span class="event-player">Add yellow card</span>
-<span class="event-team">Team</span>
-<span class="event-minute">__'</span>
-</div>
-</article>
+<div class="event-rows" data-event-rows="yellow_card"><div class="event-row placeholder-row"><span class="event-player">Loading…</span><span class="event-team">—</span><span class="event-minute">—</span></div></div></article>
 <article class="event-panel red-panel">
 <div class="event-panel-head">
 <span class="event-icon card-icon red-card-icon"></span>
 <h3>Red Cards</h3>
 </div>
-<div class="event-row">
-<span class="event-player">Player name</span>
-<span class="event-team">Arsenal / Opponent</span>
-<span class="event-minute">__'</span>
-</div>
-<div class="event-row placeholder-row">
-<span class="event-player">Add red card</span>
-<span class="event-team">Team</span>
-<span class="event-minute">__'</span>
-</div>
-</article>
+<div class="event-rows" data-event-rows="red_card"><div class="event-row placeholder-row"><span class="event-player">Loading…</span><span class="event-team">—</span><span class="event-minute">—</span></div></div></article>
 </div>
 </section><section class="section-block event-details-section">
 <div class="section-heading">
@@ -141,20 +142,334 @@
 </div>
 </div>
 <div class="match-notes-grid">
-<div class="note-box"><small>HALF-TIME SCORE</small><strong>— : —</strong></div>
-<div class="note-box"><small>REFEREE</small><strong>TBA</strong></div>
-<div class="note-box"><small>ATTENDANCE</small><strong>TBA</strong></div>
-<div class="note-box"><small>MAN OF THE MATCH</small><strong>TBA</strong></div>
+<div class="note-box"><small>HALF-TIME SCORE</small><strong id="noteHalfTime">— : —</strong></div>
+<div class="note-box"><small>REFEREE</small><strong id="noteReferee">TBA</strong></div>
+<div class="note-box"><small>ATTENDANCE</small><strong id="noteAttendance">TBA</strong></div>
+<div class="note-box"><small>MAN OF THE MATCH</small><strong id="noteMOTM">TBA</strong></div>
 </div>
 </section><footer class="footer">
 <b>NL4 MATCH DETAILS</b>
 <span>Goals • Assists • Cards • Minutes • North London Forever</span>
 </footer></main>
 </div>
-<script src="fixtures-data.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
-<script src="supabase-client.js"></script>
-<script src="nl4-data.js"></script>
-<script src="index.js"></script><script src="fixtures-3d.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
+<script src="supabase-client.js?v=20260814-4"></script>
+<script src="nl4-data.js?v=20260814-4"></script>
+<script src="index.js?v=20260814-4"></script><script src="fixtures-3d.js?v=20260814-4"></script>
+
+<script>
+(function () {
+  const title = document.getElementById('matchTitle');
+  const meta = document.getElementById('matchMeta');
+  const scoreLine = document.getElementById('detailScoreLine');
+  const extraFacts = document.getElementById('matchExtraFacts');
+  const timeline = document.getElementById('matchTimeline');
+  const noteHalfTime = document.getElementById('noteHalfTime');
+  const noteReferee = document.getElementById('noteReferee');
+  const noteAttendance = document.getElementById('noteAttendance');
+  const noteMOTM = document.getElementById('noteMOTM');
+  const matchStats = document.getElementById('matchStats');
+  const publicStatsHome = document.getElementById('publicStatsHome');
+  const publicStatsAway = document.getElementById('publicStatsAway');
+  const params = new URLSearchParams(window.location.search);
+  const fixtureRef = params.get('fixture') || params.get('match');
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+    })[char]);
+  }
+
+  const TEAM_LOGOS = {
+    'AFC Bournemouth': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/AFC%20Bournemouth.png',
+    'Arsenal': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Arsenal%20FC.png',
+    'Aston Villa': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Aston%20Villa.png',
+    'Brentford': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Brentford%20FC.png',
+    'Brighton & Hove Albion': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Brighton%20%26%20Hove%20Albion.png',
+    'Chelsea': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Chelsea%20FC.png',
+    'Coventry City': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Coventry%20City.png',
+    'Crystal Palace': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Crystal%20Palace.png',
+    'Everton': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Everton%20FC.png',
+    'Fulham': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Fulham%20FC.png',
+    'Hull City': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Hull%20City.png',
+    'Ipswich Town': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Ipswich%20Town.png',
+    'Leeds United': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Leeds%20United.png',
+    'Liverpool': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Liverpool%20FC.png',
+    'Manchester City': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Manchester%20City.png',
+    'Manchester United': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Manchester%20United.png',
+    'Newcastle United': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Newcastle%20United.png',
+    'Nottingham Forest': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Nottingham%20Forest.png',
+    'Sunderland': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Sunderland%20AFC.png',
+    'Tottenham Hotspur': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Tottenham%20Hotspur.png'
+  };
+
+  function teamLogo(name) {
+    return TEAM_LOGOS[name] || '';
+  }
+
+  function crestMarkup(name) {
+    const logo = teamLogo(name);
+    if (!logo) return escapeHtml(String(name || '').slice(0,3).toUpperCase());
+    return `<img class="club-crest-img detail-club-crest" src="${escapeHtml(logo)}" alt="${escapeHtml(name)} crest" referrerpolicy="no-referrer">`;
+  }
+
+  function getClient() {
+    return window.nl4Supabase || window.supabaseClient || window.NL4_SUPABASE ||
+           window.supabaseDb || window.db || null;
+  }
+
+  function londonDateTime(iso) {
+    if (!iso) return 'DATE TBA';
+    const d = new Date(iso);
+    const date = d.toLocaleDateString('en-GB', {
+      timeZone:'Europe/London',
+      weekday:'long', day:'2-digit', month:'long', year:'numeric'
+    });
+    const time = d.toLocaleTimeString('en-GB', {
+      timeZone:'Europe/London',
+      hour:'2-digit', minute:'2-digit', hour12:false
+    });
+    return `${date} • ${time}`;
+  }
+
+  function statusLabel(status) {
+    const s = String(status || 'scheduled').toLowerCase();
+    if (['fulltime','ft','aet','pen'].includes(s)) return 'FT';
+    if (['live','1h','ht','2h','et'].includes(s)) return 'LIVE';
+    if (['postponed','pst'].includes(s)) return 'PST';
+    return 'VS';
+  }
+
+  function minuteLabel(event) {
+    if (event.minute === null || event.minute === undefined) return '—';
+    if (event.stoppage_minute !== null && event.stoppage_minute !== undefined) {
+      return `${event.minute}+${event.stoppage_minute}'`;
+    }
+    return `${event.minute}'`;
+  }
+
+  function emptyText(type) {
+    return {
+      goal: 'No goals recorded',
+      assist: 'No assists recorded',
+      yellow_card: 'No yellow cards recorded',
+      red_card: 'No red cards recorded'
+    }[type] || 'No events recorded';
+  }
+
+  function renderEvents(events) {
+    ['goal','assist','yellow_card','red_card'].forEach(type => {
+      const holder = document.querySelector(`[data-event-rows="${type}"]`);
+      if (!holder) return;
+      const rows = events.filter(event => event.event_type === type);
+
+      if (!rows.length) {
+        holder.innerHTML = `
+          <div class="event-row placeholder-row">
+            <span class="event-player">${emptyText(type)}</span>
+            <span class="event-team">—</span>
+            <span class="event-minute">—</span>
+          </div>`;
+        return;
+      }
+
+      holder.innerHTML = rows.map(event => `
+        <div class="event-row">
+          <span class="event-player">${escapeHtml(event.player_name)}</span>
+          <span class="event-team">${escapeHtml(event.team_name)}</span>
+          <span class="event-minute">${escapeHtml(minuteLabel(event))}</span>
+        </div>
+      `).join('');
+    });
+  }
+
+
+
+  function renderStats(fixture, home, away) {
+    if (!matchStats) return;
+    if (publicStatsHome) publicStatsHome.textContent = home;
+    if (publicStatsAway) publicStatsAway.textContent = away;
+    const rows = [
+      ['Possession', fixture.home_possession, fixture.away_possession, true],
+      ['Shots', fixture.home_shots, fixture.away_shots],
+      ['Shots on Target', fixture.home_shots_on_target, fixture.away_shots_on_target],
+      ['Corners', fixture.home_corners, fixture.away_corners],
+      ['Fouls', fixture.home_fouls, fixture.away_fouls],
+      ['Offsides', fixture.home_offsides, fixture.away_offsides],
+      ['Saves', fixture.home_saves, fixture.away_saves]
+    ];
+    const available = rows.filter(row => row[1] !== null || row[2] !== null);
+    if (!available.length) {
+      matchStats.innerHTML = '<div class="timeline-empty">Statistics will appear when added.</div>';
+      return;
+    }
+    matchStats.innerHTML = available.map(([label, hv, av, percent]) => {
+      const h = hv === null || hv === undefined ? 0 : Number(hv);
+      const a = av === null || av === undefined ? 0 : Number(av);
+      const total = h + a;
+      const hp = percent ? Math.max(0, Math.min(100, h)) : (total ? (h / total) * 100 : 50);
+      const ap = percent ? Math.max(0, Math.min(100, a)) : 100 - hp;
+      const hs = hv === null || hv === undefined ? '—' : `${hv}${percent ? '%' : ''}`;
+      const as = av === null || av === undefined ? '—' : `${av}${percent ? '%' : ''}`;
+      return `<div class="stat-row">
+        <div class="stat-values">
+          <strong class="stat-home-value">${escapeHtml(hs)}</strong>
+          <span class="stat-name">${escapeHtml(label)}</span>
+          <strong class="stat-away-value">${escapeHtml(as)}</strong>
+        </div>
+        <div class="stat-bars"><i class="home-stat-bar" style="width:${hp}%"></i><i class="away-stat-bar" style="width:${ap}%"></i></div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderTimeline(events) {
+    if (!timeline) return;
+    if (!events.length) {
+      timeline.innerHTML = '<div class="timeline-empty">No match events recorded yet.</div>';
+      return;
+    }
+    const icon = { goal:'⚽', assist:'A', yellow_card:'', red_card:'' };
+    const label = { goal:'GOAL', assist:'ASSIST', yellow_card:'YELLOW CARD', red_card:'RED CARD' };
+    const arsenalSide = event => String(event.team_name || '').toLowerCase() === 'arsenal' ? 'arsenal-event' : 'opponent-event';
+    timeline.innerHTML = events.map(event => `
+      <div class="timeline-item ${escapeHtml(event.event_type)} ${arsenalSide(event)}">
+        <div class="timeline-event-card">
+          <div class="timeline-event-icon">${icon[event.event_type] || '•'}</div>
+          <div class="timeline-content">
+            <strong>${escapeHtml(event.player_name)}</strong>
+            <span>${escapeHtml(label[event.event_type] || event.event_type)} • ${escapeHtml(event.team_name)}</span>
+            ${event.related_player_name ? `<small>Related: ${escapeHtml(event.related_player_name)}</small>` : ''}
+          </div>
+        </div>
+        <div class="timeline-centre">
+          <span class="timeline-minute">${escapeHtml(minuteLabel(event))}</span>
+          <i></i>
+        </div>
+      </div>`).join('');
+  }
+
+  function showError(message) {
+    if (title) title.textContent = 'Match details unavailable';
+    if (meta) {
+      meta.innerHTML = `<div class="match-details-error"><strong>${escapeHtml(message)}</strong></div>`;
+    }
+    if (scoreLine) {
+      scoreLine.innerHTML = `
+        <div><strong>—</strong><small>HOME</small></div>
+        <div class="detail-score"><b>—</b><em>VS</em><b>—</b></div>
+        <div><strong>—</strong><small>AWAY</small></div>`;
+    }
+    renderEvents([]);
+    renderTimeline([]);
+  }
+
+  async function loadMatch() {
+    if (!fixtureRef) {
+      showError('No fixture was selected. Return to Fixtures and choose More Details.');
+      return;
+    }
+
+    const client = getClient();
+    if (!client || typeof client.from !== 'function') {
+      showError('Supabase client was not found.');
+      return;
+    }
+
+    try {
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Match request timed out.')), 12000)
+      );
+
+      let fixtureRequest = client
+        .from('fixtures')
+        .select('id,external_fixture_id,opponent,competition,venue,kickoff_at,arsenal_score,opponent_score,status,season,matchday,is_home,home_team,away_team,kickoff_confirmed,referee,attendance,man_of_the_match,halftime_arsenal_score,halftime_opponent_score,home_possession,away_possession,home_shots,away_shots,home_shots_on_target,away_shots_on_target,home_corners,away_corners,home_fouls,away_fouls,home_offsides,away_offsides,home_saves,away_saves')
+        .eq('external_fixture_id', fixtureRef)
+        .eq('is_published', true)
+        .maybeSingle();
+
+      let fixtureResult = await Promise.race([fixtureRequest, timeout]);
+
+      // Fallback for older links that might pass the Supabase UUID itself.
+      if (!fixtureResult.data && !fixtureResult.error) {
+        fixtureResult = await client
+          .from('fixtures')
+          .select('id,external_fixture_id,opponent,competition,venue,kickoff_at,arsenal_score,opponent_score,status,season,matchday,is_home,home_team,away_team,kickoff_confirmed,referee,attendance,man_of_the_match,halftime_arsenal_score,halftime_opponent_score,home_possession,away_possession,home_shots,away_shots,home_shots_on_target,away_shots_on_target,home_corners,away_corners,home_fouls,away_fouls,home_offsides,away_offsides,home_saves,away_saves')
+          .eq('id', fixtureRef)
+          .eq('is_published', true)
+          .maybeSingle();
+      }
+
+      if (fixtureResult.error) throw fixtureResult.error;
+      const fixture = fixtureResult.data;
+      if (!fixture) throw new Error('This fixture was not found in Supabase.');
+
+      const home = fixture.home_team || (fixture.is_home ? 'Arsenal' : fixture.opponent);
+      const away = fixture.away_team || (fixture.is_home ? fixture.opponent : 'Arsenal');
+      const arsenalHome = home === 'Arsenal';
+      const homeScore = arsenalHome ? fixture.arsenal_score : fixture.opponent_score;
+      const awayScore = arsenalHome ? fixture.opponent_score : fixture.arsenal_score;
+      const label = statusLabel(fixture.status);
+      const showScores = homeScore !== null && homeScore !== undefined &&
+                         awayScore !== null && awayScore !== undefined;
+
+      if (title) title.textContent = `${home} vs ${away}`;
+
+      if (meta) {
+        const provisional = fixture.kickoff_confirmed === false ? ' • Time provisional' : '';
+        meta.innerHTML = `
+          <div><small>COMPETITION</small><strong>${escapeHtml(fixture.competition || 'Premier League')}</strong></div>
+          <div><small>DATE</small><strong>${escapeHtml(londonDateTime(fixture.kickoff_at) + provisional)}</strong></div>
+          <div><small>VENUE</small><strong>${escapeHtml(fixture.venue || 'Venue TBC')}</strong></div>`;
+      }
+
+
+      const htA = fixture.halftime_arsenal_score;
+      const htO = fixture.halftime_opponent_score;
+      if (noteHalfTime) noteHalfTime.textContent = (htA !== null && htA !== undefined && htO !== null && htO !== undefined) ? `${htA} : ${htO}` : '— : —';
+      if (noteReferee) noteReferee.textContent = fixture.referee || 'TBA';
+      if (noteAttendance) noteAttendance.textContent = (fixture.attendance !== null && fixture.attendance !== undefined) ? Number(fixture.attendance).toLocaleString('en-GB') : 'TBA';
+      if (noteMOTM) noteMOTM.textContent = fixture.man_of_the_match || 'TBA';
+
+      if (extraFacts) {
+        extraFacts.innerHTML = `
+          <div><small>REFEREE</small><strong>${escapeHtml(fixture.referee || 'TBA')}</strong></div>
+          <div><small>ATTENDANCE</small><strong>${fixture.attendance !== null && fixture.attendance !== undefined ? Number(fixture.attendance).toLocaleString('en-GB') : 'TBA'}</strong></div>
+          <div><small>MAN OF THE MATCH</small><strong>${escapeHtml(fixture.man_of_the_match || 'TBA')}</strong></div>`;
+      }
+
+      renderStats(fixture, home, away);
+
+      if (scoreLine) {
+        scoreLine.innerHTML = `
+          <div class="compact-team compact-home"><span class="compact-badge club-crest-badge">${crestMarkup(home)}</span><div><strong>${escapeHtml(home)}</strong><small>HOME</small></div></div>
+          <div class="compact-score"><b>${showScores ? escapeHtml(homeScore) : '—'}</b><em>${escapeHtml(label)}</em><b>${showScores ? escapeHtml(awayScore) : '—'}</b></div>
+          <div class="compact-team compact-away"><div><strong>${escapeHtml(away)}</strong><small>AWAY</small></div><span class="compact-badge club-crest-badge">${crestMarkup(away)}</span></div>`;
+      }
+
+      const eventResult = await client
+        .from('match_events')
+        .select('id,event_type,player_name,team_name,minute,stoppage_minute,related_player_name')
+        .eq('fixture_id', fixture.id)
+        .order('minute', { ascending:true, nullsFirst:false })
+        .order('stoppage_minute', { ascending:true, nullsFirst:false });
+
+      if (eventResult.error) throw eventResult.error;
+      renderEvents(eventResult.data || []);
+      renderTimeline(eventResult.data || []);
+
+      console.log(`NL4 match details loaded from Supabase: ${home} vs ${away}`);
+    } catch (error) {
+      console.error('NL4 match details error:', error);
+      showError(error.message || 'Could not load match details.');
+    }
+  }
+
+  loadMatch();
+})();
+</script>
+
+
+
 <script>
 (function(){
   const sidebar = document.getElementById('sidebar');
@@ -163,23 +478,28 @@
 
   if (!sidebar || !toggle) return;
 
+  function isDesktop(){
+    return window.innerWidth > 900;
+  }
+
   function isOpen(){
     return sidebar.classList.contains('open');
   }
 
   function applyState(open){
     sidebar.classList.toggle('open', open);
+    document.body.classList.toggle('sidebar-open', open);
 
     if (overlay) {
-      overlay.classList.toggle('show', open);
+      overlay.classList.toggle('show', open && !isDesktop());
     }
 
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    toggle.setAttribute(
-      'aria-label',
-      open ? 'Close navigation' : 'Open navigation'
-    );
+    toggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
   }
+
+  /* Desktop: visible by default. Phone/tablet: closed by default. */
+  applyState(isDesktop());
 
   toggle.addEventListener('click', function(event){
     event.preventDefault();
@@ -195,88 +515,25 @@
 
   document.querySelectorAll('#sideNav a').forEach(function(link){
     link.addEventListener('click', function(){
-      if (window.innerWidth <= 900) {
-        applyState(false);
-      }
+      if (!isDesktop()) applyState(false);
     });
   });
 
   window.addEventListener('keydown', function(event){
-    if (event.key === 'Escape' && isOpen()) {
-      applyState(false);
-    }
+    if (event.key === 'Escape' && isOpen()) applyState(false);
   });
 
+  let lastDesktop = isDesktop();
   window.addEventListener('resize', function(){
-    if (window.innerWidth > 900 && isOpen()) {
-      applyState(false);
+    const desktopNow = isDesktop();
+    if (desktopNow !== lastDesktop) {
+      applyState(desktopNow);
+      lastDesktop = desktopNow;
     }
   });
 })();
-</script><script>
-(function(){
-  const matches = window.NL4_PREMIER_LEAGUE_FIXTURES || [];
-  const id = new URLSearchParams(location.search).get('match');
-  const match = matches.find(m => m.id === id) || matches[0];
-  if (!match) return;
+</script>
 
-  function prettyDate(iso){
-    const d = new Date(iso + 'T12:00:00');
-    return d.toLocaleDateString('en-GB',{
-      weekday:'long', day:'2-digit', month:'long', year:'numeric'
-    });
-  }
 
-  const heading = document.querySelector('.detail-match-hero .section-heading h2');
-  if (heading) heading.textContent = `${match.home} vs ${match.away}`;
-
-  const meta = document.querySelector('.detail-meta');
-  if (meta) {
-    meta.innerHTML = `
-      <div><small>COMPETITION</small><strong>Premier League</strong></div>
-      <div><small>DATE</small><strong>${prettyDate(match.date)} • ${match.time}</strong></div>
-      <div><small>VENUE</small><strong>${match.venue}</strong></div>
-    `;
-  }
-
-  const scoreLine = document.querySelector('.detail-score-line');
-  if (scoreLine) {
-    const homeScore = match.status === 'fulltime' ? match.homeScore : '—';
-    const awayScore = match.status === 'fulltime' ? match.awayScore : '—';
-    scoreLine.innerHTML = `
-      <div><strong>${match.home}</strong><small>HOME</small></div>
-      <div class="detail-score"><b>${homeScore}</b><em>${match.status === 'fulltime' ? 'FT' : 'VS'}</em><b>${awayScore}</b></div>
-      <div><strong>${match.away}</strong><small>AWAY</small></div>
-    `;
-  }
-
-  const eventMap = [
-    ['Goals','goals','⚽'],
-    ['Assists','assists','A'],
-    ['Yellow Cards','yellowCards',''],
-    ['Red Cards','redCards','']
-  ];
-
-  document.querySelectorAll('.event-panel').forEach((panel,index) => {
-    const config = eventMap[index];
-    if (!config) return;
-    const events = match.events?.[config[1]] || [];
-    panel.querySelectorAll('.event-row').forEach(row => row.remove());
-
-    if (!events.length) {
-      const row = document.createElement('div');
-      row.className = 'event-row placeholder-row';
-      row.innerHTML = `<span class="event-player">No ${config[0].toLowerCase()} added yet</span><span class="event-team">—</span><span class="event-minute">—</span>`;
-      panel.appendChild(row);
-    } else {
-      events.forEach(event => {
-        const row = document.createElement('div');
-        row.className = 'event-row';
-        row.innerHTML = `<span class="event-player">${event.player}</span><span class="event-team">${event.team}</span><span class="event-minute">${event.minute}'</span>`;
-        panel.appendChild(row);
-      });
-    }
-  });
-})();
-</script></body>
+</body>
 </html>
