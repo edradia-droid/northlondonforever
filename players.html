@@ -17,7 +17,6 @@
         href="players-archive.css"
     >
 
-    <script src="index.js" defer></script>
 </head>
 <body>
 
@@ -385,6 +384,132 @@
     </section>
 
 
+
+    <!-- =========================
+         ADMIN ADDED PLAYERS
+    ========================== -->
+
+    <section class="supabase-player-area" aria-labelledby="adminPlayersTitle">
+
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">LIVE FROM THE ADMIN DATABASE</p>
+                <h2 id="adminPlayersTitle">
+                    Admin Added <span>Players.</span>
+                </h2>
+            </div>
+
+            <p>
+                Players published from the NL4 Admin dashboard
+                appear here automatically.
+            </p>
+        </div>
+
+        <div class="supabase-player-grid" id="supabasePlayers">
+            <p id="supabasePlayersStatus">Loading players…</p>
+        </div>
+
+    </section>
+
+    <style>
+      .supabase-player-area {
+        margin: 40px 0 70px;
+      }
+
+      .supabase-player-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 20px;
+        margin-top: 24px;
+      }
+
+      .supabase-db-card {
+        overflow: hidden;
+        border-radius: 18px;
+        border: 1px solid rgba(255,255,255,.12);
+        background: #111;
+        color: #fff;
+        box-shadow: 0 14px 36px rgba(0,0,0,.22);
+      }
+
+      .supabase-db-card .player-image-wrap {
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        overflow: hidden;
+        background: #1b1b1b;
+      }
+
+      .supabase-db-card img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .supabase-db-card .player-placeholder {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        place-items: center;
+        font-size: 2rem;
+        font-weight: 900;
+        letter-spacing: .12em;
+        color: #fff;
+        background: linear-gradient(135deg, #151515, #2a2a2a);
+      }
+
+      .supabase-db-card .player-card-body {
+        padding: 18px;
+      }
+
+      .supabase-db-card .player-card-tag {
+        display: inline-block;
+        margin-bottom: 8px;
+        color: #ef3340;
+        font-size: .72rem;
+        font-weight: 900;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+      }
+
+      .supabase-db-card h3 {
+        margin: 0 0 8px;
+        font-size: 1.35rem;
+      }
+
+      .supabase-db-card .player-meta {
+        margin: 0 0 14px;
+        color: #aaa;
+        font-size: .88rem;
+      }
+
+      .supabase-db-card .more-details {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        font-weight: 800;
+      }
+
+      #supabasePlayersStatus {
+        grid-column: 1 / -1;
+        color: #888;
+      }
+
+      @media (max-width: 900px) {
+        .supabase-player-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 600px) {
+        .supabase-player-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+
+
     <!-- =========================
          QUOTE SECTION
     ========================== -->
@@ -427,6 +552,83 @@
 
 </footer>
 
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
+<script src="supabase-client.js"></script>
+<script src="nl4-data.js"></script>
 
+<script>
+  function escapePlayerText(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    })[char]);
+  }
+
+  async function loadPlayers() {
+    const grid = document.getElementById("supabasePlayers");
+    const status = document.getElementById("supabasePlayersStatus");
+
+    try {
+      const players = await NL4Data.players();
+
+      console.log("Players from Supabase:", players);
+
+      if (!players.length) {
+        status.textContent = "No published Admin players yet.";
+        return;
+      }
+
+      grid.innerHTML = players.map(player => {
+        const name = escapePlayerText(player.name);
+        const position = escapePlayerText(player.position || "Arsenal Player");
+        const era = escapePlayerText(
+          (player.era || "Current Generation")
+            .replace(/[-_]/g, " ")
+        );
+        const number = player.shirt_number
+          ? ` • #${escapePlayerText(player.shirt_number)}`
+          : "";
+        const profile = player.profile_url
+          ? escapePlayerText(player.profile_url)
+          : "#";
+        const image = player.image_url
+          ? `<img src="${escapePlayerText(player.image_url)}" alt="${name}" loading="lazy">`
+          : `<div class="player-placeholder" aria-label="${name}">NL4</div>`;
+
+        return `
+          <article class="supabase-db-card" data-player-id="${escapePlayerText(player.id)}">
+            <div class="player-image-wrap">
+              ${image}
+            </div>
+
+            <div class="player-card-body">
+              <span class="player-card-tag">${era}</span>
+              <h3>${name}</h3>
+              <p class="player-meta">${position}${number}</p>
+
+              <a class="more-details" href="${profile}">
+                More Details →
+              </a>
+            </div>
+          </article>
+        `;
+      }).join("");
+
+    } catch (error) {
+      console.error("Could not load players:", error);
+      status.textContent = "Could not load Admin players.";
+    }
+  }
+
+  loadPlayers();
+</script>
+
+<!-- Your existing JavaScript -->
+<script src="index.js"></script>
 </body>
+
 </html>

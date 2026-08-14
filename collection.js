@@ -399,3 +399,33 @@ document.addEventListener("DOMContentLoaded", () => {
     overlay.addEventListener("click", closeSidebar);
     window.addEventListener("keydown", e => { if (e.key === "Escape") closeSidebar(); });
 });
+
+// =====================================================
+// NL4 SUPABASE TROPHY DATA HOOK
+// Requires these scripts to load before collection.js:
+// 1. @supabase/supabase-js
+// 2. supabase-client.js
+// 3. nl4-data.js
+// =====================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (!window.NL4Data) {
+    console.warn("NL4Data is not available. Load supabase-client.js and nl4-data.js before collection.js.");
+    return;
+  }
+
+  async function loadNL4Trophies() {
+    try {
+      const trophies = await window.NL4Data.trophies();
+      window.nl4Trophies = trophies;
+      console.log("NL4 trophies loaded from Supabase:", trophies);
+      document.dispatchEvent(new CustomEvent("nl4:trophies-loaded", { detail: trophies }));
+    } catch (error) {
+      console.error("Could not load NL4 trophies from Supabase:", error);
+    }
+  }
+
+  loadNL4Trophies();
+  window.loadNL4Trophies = loadNL4Trophies;
+});
+

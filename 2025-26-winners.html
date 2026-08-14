@@ -174,7 +174,7 @@
      PLAYER CARDS
 ========================== -->
 
-<section class="player-cards">
+<section class="player-cards" id="winnersPlayers">
 
 
     <!-- MARTIN ODEGAARD -->
@@ -1902,6 +1902,207 @@
 
 
 </footer>
+
+<!-- =========================
+     SUPABASE • 2025/2026 WINNERS
+========================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
+<script src="supabase-client.js"></script>
+<script src="nl4-data.js"></script>
+
+<script>
+(function () {
+    function escapeHtml(value) {
+        return String(value ?? "").replace(/[&<>"']/g, function (char) {
+            return {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#039;"
+            }[char];
+        });
+    }
+
+    function isWinnerEra(eraValue) {
+        const era = String(eraValue || "")
+            .toLowerCase()
+            .trim()
+            .replace(/[–—]/g, "-")
+            .replace(/\s+/g, " ");
+
+        return [
+            "2025/2026 winners",
+            "2025-26 winners",
+            "2025/26 winners",
+            "2025/2026",
+            "2025-26",
+            "2025/26",
+            "winners"
+        ].includes(era);
+    }
+
+    async function loadWinnerPlayers() {
+        const grid = document.getElementById("winnersPlayers");
+
+        if (!grid || !window.NL4Data) {
+            console.warn("NL4 Winners: player grid or NL4Data was not found.");
+            return;
+        }
+
+        try {
+            const players = await NL4Data.players();
+            const winners = players.filter(function (player) {
+                return isWinnerEra(player.era);
+            });
+
+            const existingNames = new Set(
+                [...grid.querySelectorAll(".player-card h3")]
+                    .map(function (el) {
+                        return el.textContent.trim().toLowerCase();
+                    })
+            );
+
+            let nextNumber = grid.querySelectorAll(".player-card").length + 1;
+
+            winners.forEach(function (player) {
+                const name = String(player.name || "").trim();
+
+                if (!name || existingNames.has(name.toLowerCase())) {
+                    return;
+                }
+
+                const card = document.createElement("article");
+                card.className = "player-card supabase-winner-card";
+                card.dataset.supabaseId = player.id || "";
+
+                const image = player.image_url
+                    ? `<img src="${escapeHtml(player.image_url)}" alt="${escapeHtml(name)}" loading="lazy">`
+                    : `<div class="winner-player-placeholder">NL4</div>`;
+
+                const description = player.bio
+                    ? escapeHtml(player.bio)
+                    : `${escapeHtml(player.position || "Arsenal player")} added through the NL4 Admin dashboard.`;
+
+                const appearances =
+                    player.appearances ?? player.apps ?? "—";
+                const goals =
+                    player.goals ?? "—";
+                const assists =
+                    player.assists ?? "—";
+
+                card.innerHTML = `
+                    <div class="player-img">
+                        ${image}
+                    </div>
+
+                    <div class="player-number">
+                        ${nextNumber}
+                    </div>
+
+                    <div class="player-body">
+
+                        <div class="player-role">
+                            2025/2026 • WINNER
+                        </div>
+
+                        <h3>${escapeHtml(name)}</h3>
+
+                        <p>${description}</p>
+
+                        <button
+                            class="stats-btn openBtn"
+                            type="button"
+                        >
+                            View Stats →
+                        </button>
+
+                    </div>
+
+                    <div class="popup">
+
+                        <div class="popup-content">
+
+                            <button
+                                class="close"
+                                type="button"
+                                aria-label="Close"
+                            >
+                                &times;
+                            </button>
+
+                            <h2>
+                                2025/2026 EPL STATS
+                            </h2>
+
+                            <p>
+                                APPEARANCES: ${escapeHtml(appearances)}<br>
+                                GOALS: ${escapeHtml(goals)}<br>
+                                ASSISTS: ${escapeHtml(assists)}
+                            </p>
+
+                        </div>
+
+                    </div>
+                `;
+
+                grid.appendChild(card);
+                existingNames.add(name.toLowerCase());
+                nextNumber += 1;
+            });
+
+            console.log(
+                "2025/2026 Winners rendered from Supabase:",
+                winners
+            );
+
+        } catch (error) {
+            console.error(
+                "Could not load 2025/2026 Winners from Supabase:",
+                error
+            );
+        }
+    }
+
+    // Delegated handlers also work for cards inserted after page load.
+    document.addEventListener("click", function (event) {
+        const openButton = event.target.closest(".supabase-winner-card .openBtn");
+
+        if (openButton) {
+            const card = openButton.closest(".player-card");
+            const popup = card && card.querySelector(".popup");
+
+            if (popup) popup.classList.add("show");
+            return;
+        }
+
+        const closeButton = event.target.closest(".supabase-winner-card .close");
+
+        if (closeButton) {
+            const popup = closeButton.closest(".popup");
+            if (popup) popup.classList.remove("show");
+        }
+    });
+
+    document.addEventListener("DOMContentLoaded", loadWinnerPlayers);
+})();
+</script>
+
+<style>
+.winner-player-placeholder {
+    width: 100%;
+    min-height: 230px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, #111, #2a2a2a);
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: .14em;
+}
+</style>
+
 
 <!-- =========================
      JAVASCRIPT

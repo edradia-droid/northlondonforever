@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NL4 Admin | North London Forever</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark">NL4</span>
+      <div>
+        <strong>North London Forever</strong>
+        <small>Content Administration</small>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span id="adminEmail" class="admin-email"></span>
+      <button id="logoutBtn" class="ghost-btn" type="button" hidden>Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="loginView" class="auth-shell">
+      <form id="loginForm" class="auth-card">
+        <p class="eyebrow">SECURE ADMIN ACCESS</p>
+        <h1>NL4 Control Room</h1>
+        <p class="muted">Only Supabase users listed in the NL4 <code>admins</code> table can manage website content.</p>
+
+        <label>Email
+          <input id="email" type="email" autocomplete="username" required>
+        </label>
+
+        <label>Password
+          <input id="password" type="password" autocomplete="current-password" required>
+        </label>
+
+        <button class="primary-btn" type="submit">Sign in</button>
+        <p id="loginMessage" class="message" role="status"></p>
+      </form>
+    </section>
+
+    <section id="adminView" class="dashboard" hidden>
+      <aside class="side-nav">
+        <p class="nav-label">CONTENT</p>
+        <button class="nav-link active" data-panel="playersPanel">Players</button>
+        <button class="nav-link" data-panel="newsPanel">News</button>
+        <button class="nav-link" data-panel="fixturesPanel">Fixtures</button>
+        <button class="nav-link" data-panel="trophiesPanel">Trophies</button>
+        <button class="nav-link" data-panel="mediaPanel">Media</button>
+        <a class="nav-link back-link" href="index.html">← Back to website</a>
+      </aside>
+
+      <div class="workspace">
+        <section id="playersPanel" class="panel active-panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">SQUAD & ARCHIVE</p><h2>Players</h2></div>
+            <button class="primary-btn" data-new="players">+ Add player</button>
+          </div>
+          <div id="playersList" class="content-grid"></div>
+        </section>
+
+        <section id="newsPanel" class="panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">EDITORIAL</p><h2>News</h2></div>
+            <button class="primary-btn" data-new="news">+ Add story</button>
+          </div>
+          <div id="newsList" class="content-grid"></div>
+        </section>
+
+        <section id="fixturesPanel" class="panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">MATCH CENTRE</p><h2>Fixtures</h2></div>
+            <button class="primary-btn" data-new="fixtures">+ Add fixture</button>
+          </div>
+          <div id="fixturesList" class="content-grid"></div>
+        </section>
+
+        <section id="trophiesPanel" class="panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">TREASURE ROOM</p><h2>Trophies</h2></div>
+            <button class="primary-btn" data-new="trophies">+ Add trophy</button>
+          </div>
+          <div id="trophiesList" class="content-grid"></div>
+        </section>
+
+        <section id="mediaPanel" class="panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">NL4 MEDIA</p><h2>Upload images</h2></div>
+          </div>
+          <form id="mediaForm" class="editor-card">
+            <label>Choose image
+              <input id="mediaFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif" required>
+            </label>
+            <button class="primary-btn" type="submit">Upload image</button>
+            <p id="mediaMessage" class="message" role="status"></p>
+            <div id="mediaResult" class="media-result"></div>
+          </form>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="editorDialog">
+    <form id="editorForm" method="dialog">
+      <div class="dialog-head">
+        <div><p class="eyebrow" id="editorEyebrow">EDIT CONTENT</p><h2 id="editorTitle">Editor</h2></div>
+        <button id="closeDialog" class="icon-btn" type="button" aria-label="Close">×</button>
+      </div>
+      <div id="editorFields" class="form-grid"></div>
+      <div class="dialog-actions">
+        <button class="ghost-btn" id="cancelDialog" type="button">Cancel</button>
+        <button class="primary-btn" id="saveBtn" type="submit">Save</button>
+      </div>
+      <p id="editorMessage" class="message" role="status"></p>
+    </form>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
+  <script src="supabase-client.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

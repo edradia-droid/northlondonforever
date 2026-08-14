@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NL4 Supabase Example</title>
+  <style>
+    body{font-family:Arial,sans-serif;background:#0b0b0b;color:white;padding:30px}
+    #latestNews{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+    article{background:#171717;border:1px solid #333;border-radius:16px;padding:16px}
+    img{width:100%;height:150px;object-fit:cover;border-radius:10px}
+  </style>
+</head>
+<body>
+  <h1>Latest NL4 News</h1>
+  <div id="latestNews"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
+  <script src="supabase-client.js"></script>
+  <script src="nl4-data.js"></script>
+  <script>
+    (async () => {
+      const holder = document.getElementById("latestNews");
+      try {
+        const stories = await NL4Data.news(6);
+        holder.innerHTML = stories.map(story => `
+          <article>
+            ${story.image_url ? `<img src="${story.image_url}" alt="">` : ""}
+            <h2>${story.title}</h2>
+            <p>${story.summary || ""}</p>
+          </article>
+        `).join("") || "<p>No published stories yet.</p>";
+      } catch (error) {
+        holder.textContent = error.message;
+      }
+    })();
+  </script>
+</body>
+</html>

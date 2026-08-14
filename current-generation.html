@@ -21,7 +21,6 @@
     href="players-archive.css"
 >
 
-<script src="index.js" defer></script>
 
 
 </head>
@@ -177,7 +176,7 @@
      PLAYER CARDS
 ========================== -->
 
-<section class="player-cards">
+<section class="player-cards" id="currentGenerationPlayers">
 
 
     <!-- =========================
@@ -546,6 +545,135 @@
 
 
 </footer>
+
+
+<!-- =========================
+     SUPABASE CURRENT GENERATION
+========================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
+<script src="supabase-client.js"></script>
+<script src="nl4-data.js"></script>
+
+<script>
+(function () {
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    })[char]);
+  }
+
+  async function loadAdminCurrentGenerationPlayers() {
+    const grid = document.getElementById("currentGenerationPlayers");
+    if (!grid || !window.NL4Data) return;
+
+    try {
+      const players = await NL4Data.players();
+
+      const currentPlayers = players.filter(player => {
+        const era = String(player.era || "").toLowerCase().trim();
+
+        return (
+          era === "current" ||
+          era === "current generation" ||
+          era === "current-generation" ||
+          era === "2020-present" ||
+          era === "2020–present"
+        );
+      });
+
+      const existingNames = new Set(
+        [...grid.querySelectorAll(".player-card h3")]
+          .map(el => el.textContent.trim().toLowerCase())
+      );
+
+      let nextNumber = grid.querySelectorAll(".player-card").length + 1;
+
+      currentPlayers.forEach(player => {
+        const name = String(player.name || "").trim();
+        if (!name || existingNames.has(name.toLowerCase())) return;
+
+        const card = document.createElement("article");
+        card.className = "player-card supabase-player-card";
+        card.dataset.supabaseId = player.id || "";
+
+        const image = player.image_url
+          ? `<img src="${escapeHtml(player.image_url)}" alt="${escapeHtml(name)}" loading="lazy">`
+          : `<div class="supabase-player-placeholder">NL4</div>`;
+
+        const profile = player.profile_url || "#";
+        const position = player.position
+          ? `<strong>${escapeHtml(player.position)}</strong><br>`
+          : "";
+        const number = player.shirt_number
+          ? `Shirt #${escapeHtml(player.shirt_number)}`
+          : "Added from NL4 Admin";
+
+        card.innerHTML = `
+          <div class="player-img">
+            ${image}
+          </div>
+
+          <div class="player-number">
+            ${nextNumber}
+          </div>
+
+          <div class="player-body">
+            <div class="player-role">
+              ARSENAL PLAYER
+            </div>
+
+            <h3>${escapeHtml(name)}</h3>
+
+            <p>
+              ${position}
+              ${escapeHtml(number)}
+            </p>
+
+            <a
+              class="read"
+              href="${escapeHtml(profile)}"
+            >
+              More Details →
+            </a>
+          </div>
+        `;
+
+        grid.appendChild(card);
+        existingNames.add(name.toLowerCase());
+        nextNumber += 1;
+      });
+
+      console.log("Current Generation players rendered from Supabase:", currentPlayers);
+
+    } catch (error) {
+      console.error("Could not render Current Generation players from Supabase:", error);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", loadAdminCurrentGenerationPlayers);
+})();
+</script>
+
+<style>
+.supabase-player-placeholder{
+  width:100%;
+  min-height:230px;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(135deg,#111,#2a2a2a);
+  color:#fff;
+  font-size:2rem;
+  font-weight:900;
+  letter-spacing:.14em;
+}
+</style>
+
+<script src="index.js"></script>
 
 </body>
 
