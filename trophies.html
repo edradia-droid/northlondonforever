@@ -1,161 +1,214 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Arsenal Treasure Room — explore Arsenal history, trophies, legends and unforgettable moments.">
-  <title>Arsenal Treasure Room | North London Forever</title>
-  <link rel="stylesheet" href="./styles.css">
-</head>
-<body class="treasure-home">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="Arsenal Treasure Room — explore Arsenal history, trophies, legends and unforgettable moments." name="description"/>
+<title>Arsenal Treasure Room | North London Forever</title>
+<link href="./styles.css" rel="stylesheet"/>
+<link href="shared-sidebar.css" rel="stylesheet"/></head>
+<body class="treasure-home nl4-unified-sidebar"><button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button>
 <div class="app-shell">
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-top">
-      <a class="logo" href="index.html">
-        <span class="logo-box">A</span>
-        <span><b>ARSENAL</b><small>THE GUNNERS</small></span>
-      </a>
-      <button class="close-menu" id="closeMenu" type="button" aria-label="Close menu">×</button>
-    </div>
-    <nav class="side-nav" id="sideNav">
-      <p class="nav-label">CLUB HUB</p>
-      <a class="nav-link" href="index.html"><span>⌂</span> Home</a>
-      <a class="nav-link" href="history.html"><span>◷</span> History</a>
-      <a class="nav-link" href="players.html"><span>♟</span> Players</a>
-      <p class="nav-label">TREASURE</p>
-      <a class="nav-link active" href="trophies.html"><span>🏆</span> Treasures</a>
-      <a class="nav-link" href="legends.html"><span>★</span> Legends</a>
-      <div class="nav-divider"></div>
-      <a class="treasure-link" href="trophies.html"><span>🔐</span><b>Treasure Room</b><small>Explore Arsenal history</small></a>
-    </nav>
-    <div class="sidebar-bottom"><span>COYG</span><span>1886 • FOREVER</span></div>
-  </aside>
-
-  <div class="mobile-overlay" id="overlay"></div>
-
-  <main class="main">
-    <header class="topbar">
-      <button class="menu-btn" id="menuBtn" type="button" aria-label="Open menu" aria-controls="sidebar" aria-expanded="false">☰</button>
-      <div class="crumb"><span>ARSENAL</span><b>/</b> TREASURE ROOM</div>
-      <div class="top-actions"><span class="live-dot"></span><span>THE COLLECTION</span></div>
-    </header>
-
-    <section class="hero" aria-labelledby="heroTitle">
-      <div class="hero-image"></div>
-      <div class="hero-overlay"></div>
-      <div class="hero-content reveal">
-        <p class="eyebrow">THE ARSENAL TREASURE ROOM</p>
-        <h1 id="heroTitle">Where Arsenal<br><span>History Becomes Treasure.</span></h1>
-        <p class="hero-copy">Discover the trophies, legends and unforgettable moments that shaped Arsenal Football Club.</p>
-        <div class="hero-actions">
-          <a class="gold-button" href="#treasures">Explore the treasures <span>→</span></a>
-          <a class="ghost-button" href="history.html">Explore the history</a>
-        </div>
-        <div class="hero-stats">
-          <div><strong>1886</strong><span>Founded</span></div>
-          <div><strong>2003–04</strong><span>The Invincibles</span></div>
-          <div><strong>🏆</strong><span>Greatest Treasures</span></div>
-        </div>
-      </div>
-      <a class="scroll-cue" href="#treasures" aria-label="Scroll to treasures"><span></span> SCROLL TO DISCOVER</a>
-    </section>
-
-    <section class="featured section-shell" id="treasures">
-      <div class="section-heading reveal">
-        <p class="eyebrow">FEATURED TREASURE</p>
-        <h2>A moment worth remembering.</h2>
-        <p>Step closer to one of the defining chapters in Arsenal's story.</p>
-      </div>
-      <article class="featured-card reveal">
-        <div class="featured-image">
-          <img src="https://i.postimg.cc/0y7cNbg2/emirate.jpg" alt="Emirates Stadium">
-          <div class="image-badge">ARSENAL</div>
-        </div>
-        <div class="featured-content">
-          <span class="featured-year">2003–04</span>
-          <h3>The Invincibles</h3>
-          <p>Arsenal completed an unbeaten league campaign, finishing with 26 wins, 12 draws and 0 defeats.</p>
-          <a href="#timeline" class="text-link">Discover the treasures <span>→</span></a>
-        </div>
-      </article>
-    </section>
-
-    <section class="category-section section-shell">
-      <div class="section-heading reveal">
-        <p class="eyebrow">THE COLLECTION</p>
-        <h2>Explore Arsenal's treasures.</h2>
-        <p>Choose a room and start your journey.</p>
-      </div>
-      <div class="category-grid">
-        <a class="category-card category-trophy reveal" href="collection.html"><span class="category-icon">🏆</span><div><span class="card-kicker">THE COLLECTION</span><h3>Trophies</h3><p>Relive the league titles, FA Cup triumphs and defining victories.</p></div><span class="card-arrow">↗</span></a>
-        <a class="category-card category-history reveal" href="history.html"><span class="category-icon">⌛</span><div><span class="card-kicker">THE STORY</span><h3>History</h3><p>Travel through the eras that built Arsenal's identity.</p></div><span class="card-arrow">↗</span></a>
-        <a class="category-card category-players reveal" href="players.html"><span class="category-icon">👑</span><div><span class="card-kicker">THE LEGENDS</span><h3>Players</h3><p>Meet the names and personalities who left their mark.</p></div><span class="card-arrow">↗</span></a>
-      </div>
-    </section>
-
-    <section class="timeline-section" id="timeline">
-      <div class="section-shell">
-        <div class="section-heading light reveal">
-          <p class="eyebrow">THE ARSENAL TIMELINE</p>
-          <h2>Moments that became history.</h2>
-          <p>Tap a milestone to reveal its story.</p>
-        </div>
-        <div class="timeline">
-          <button class="timeline-item reveal" type="button" data-title="1930–31" data-text="Arsenal won the English First Division under Herbert Chapman."><span class="timeline-dot"></span><span class="timeline-year">1930–31</span><span class="timeline-name">First Division triumph</span></button>
-          <button class="timeline-item reveal" type="button" data-title="1970–71" data-text="Arsenal completed the famous League and FA Cup Double."><span class="timeline-dot"></span><span class="timeline-year">1970–71</span><span class="timeline-name">League & FA Cup Double</span></button>
-          <button class="timeline-item reveal" type="button" data-title="1988–89" data-text="Arsenal won the title dramatically by beating Liverpool 2–0 at Anfield."><span class="timeline-dot"></span><span class="timeline-year">1988–89</span><span class="timeline-name">Anfield — the final day</span></button>
-          <button class="timeline-item reveal" type="button" data-title="1997–98" data-text="Arsenal won the league and FA Cup Double in Arsène Wenger's first full season."><span class="timeline-dot"></span><span class="timeline-year">1997–98</span><span class="timeline-name">Wenger's first Double</span></button>
-          <button class="timeline-item reveal" type="button" data-title="2003–04" data-text="Arsenal went unbeaten throughout the league season: 26 wins, 12 draws and 0 defeats."><span class="timeline-dot"></span><span class="timeline-year">2003–04</span><span class="timeline-name">The Invincibles</span></button>
-        </div>
-      </div>
-    </section>
-
-    <section class="legends section-shell">
-      <div class="section-heading reveal"><p class="eyebrow">ARSENAL LEGENDS</p><h2>The people behind the memories.</h2><p>Explore the players and managers who shaped different Arsenal eras.</p></div>
-      <div class="legend-grid">
-        <article class="legend-card reveal"><div class="legend-avatar">TH</div><div><span class="card-kicker">LEGEND</span><h3>Thierry Henry</h3><p>The Invincibles era icon.</p></div></article>
-        <article class="legend-card reveal"><div class="legend-avatar">DB</div><div><span class="card-kicker">LEGEND</span><h3>Dennis Bergkamp</h3><p>One of Arsenal's most celebrated creative players.</p></div></article>
-        <article class="legend-card reveal"><div class="legend-avatar">PV</div><div><span class="card-kicker">LEGEND</span><h3>Patrick Vieira</h3><p>Captain of the great Wenger-era side.</p></div></article>
-      </div>
-      <div class="center-action reveal"><a class="dark-button" href="players.html">Meet the players →</a></div>
-    </section>
-
-    <section class="fact-section section-shell">
-      <div class="fact-card reveal">
-        <div class="fact-number">01</div>
-        <div><p class="eyebrow">DID YOU KNOW?</p><h2 id="factTitle">An unbeaten season became a piece of Arsenal folklore.</h2><p id="factText">In 2003–04, Arsenal finished the league season with 26 wins, 12 draws and 0 defeats.</p></div>
-        <button class="fact-button" id="nextFact" type="button">Next fact ↻</button>
-      </div>
-    </section>
-
-    <section class="vault-section" id="vault">
-      <div class="vault-glow"></div>
-      <div class="vault-content reveal">
-        <p class="eyebrow">YOUR FINAL CHALLENGE</p>
-        <div class="vault-lock">🔐</div>
-        <h2>Can you unlock the Secret Vault?</h2>
-        <p>Discover four treasures and return here to reveal the hidden room.</p>
-        <div class="vault-progress"><span id="vaultProgress">0 / 4</span><div class="progress-track"><span id="progressFill"></span></div></div>
-        <a class="gold-button" href="trophies.html">Start collecting <span>→</span></a>
-      </div>
-    </section>
-
-    <footer class="site-footer">
-      <div><strong>ARSENAL TREASURE ROOM</strong><span>North London Forever.</span></div>
-      <a href="#">Back to top ↑</a>
-    </footer>
-  </main>
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-top">
+<a class="logo" href="index.html">
+<span class="logo-box nl4-logo-box">
+<img alt="NL4" src="https://i.postimg.cc/GhGgj8G7/75c7b198-597a-4288-abae-723c809c34fa.png"/>
+</span>
+<span class="nl4-brand-text"><b>NORTH LONDON</b><small>FOREVER</small></span>
+</a>
 </div>
-
-<div class="home-modal" id="homeModal" aria-hidden="true" role="dialog" aria-modal="true">
-  <div class="home-modal-box">
-    <button class="modal-close" id="modalClose" type="button" aria-label="Close">×</button>
-    <p class="eyebrow">ARSENAL MOMENT</p>
-    <h2 id="modalTitle"></h2>
-    <p id="modalText"></p>
-  </div>
+<nav class="side-nav" id="sideNav">
+<p class="nav-label">EXPLORE NL4</p>
+<a class="nav-link" href="index.html"><span>⌂</span> Home</a>
+<a class="nav-link" href="players.html"><span>♟</span> Players</a>
+<a class="nav-link" href="history.html"><span>◷</span> History</a>
+<a class="nav-link" href="legends.html"><span>★</span> Legends</a>
+<div class="nav-divider"></div>
+<a class="treasure-link" href="trophies.html">
+<span>🔐</span>
+<b>Treasure Room</b>
+<small>Explore Arsenal history</small>
+</a>
+</nav>
+<div class="sidebar-bottom">
+<span>COYG</span>
+<span>1886 • FOREVER</span>
 </div>
-
+</aside>
+<div class="mobile-overlay" id="overlay"></div>
+<main class="main">
+<header class="topbar">
+<button aria-controls="sidebar" aria-expanded="false" aria-label="Toggle menu" class="menu-btn" id="legacyMenuBtn" style="display:none !important" type="button">☰</button>
+<div class="crumb"><span>ARSENAL</span><b>/</b> TREASURE ROOM</div>
+<div class="top-actions"><span class="live-dot"></span><span>THE COLLECTION</span></div>
+</header>
+<section aria-labelledby="heroTitle" class="hero">
+<div class="hero-image"></div>
+<div class="hero-overlay"></div>
+<div class="hero-content reveal">
+<p class="eyebrow">THE ARSENAL TREASURE ROOM</p>
+<h1 id="heroTitle">Where Arsenal<br/><span>History Becomes Treasure.</span></h1>
+<p class="hero-copy">Discover the trophies, legends and unforgettable moments that shaped Arsenal Football Club.</p>
+<div class="hero-actions">
+<a class="gold-button" href="#treasures">Explore the treasures <span>→</span></a>
+<a class="ghost-button" href="history.html">Explore the history</a>
+</div>
+<div class="hero-stats">
+<div><strong>1886</strong><span>Founded</span></div>
+<div><strong>2003–04</strong><span>The Invincibles</span></div>
+<div><strong>🏆</strong><span>Greatest Treasures</span></div>
+</div>
+</div>
+<a aria-label="Scroll to treasures" class="scroll-cue" href="#treasures"><span></span> SCROLL TO DISCOVER</a>
+</section>
+<section class="featured section-shell" id="treasures">
+<div class="section-heading reveal">
+<p class="eyebrow">FEATURED TREASURE</p>
+<h2>A moment worth remembering.</h2>
+<p>Step closer to one of the defining chapters in Arsenal's story.</p>
+</div>
+<article class="featured-card reveal">
+<div class="featured-image">
+<img alt="Emirates Stadium" src="https://i.postimg.cc/0y7cNbg2/emirate.jpg"/>
+<div class="image-badge">ARSENAL</div>
+</div>
+<div class="featured-content">
+<span class="featured-year">2003–04</span>
+<h3>The Invincibles</h3>
+<p>Arsenal completed an unbeaten league campaign, finishing with 26 wins, 12 draws and 0 defeats.</p>
+<a class="text-link" href="#timeline">Discover the treasures <span>→</span></a>
+</div>
+</article>
+</section>
+<section class="category-section section-shell">
+<div class="section-heading reveal">
+<p class="eyebrow">THE COLLECTION</p>
+<h2>Explore Arsenal's treasures.</h2>
+<p>Choose a room and start your journey.</p>
+</div>
+<div class="category-grid">
+<a class="category-card category-trophy reveal" href="collection.html"><span class="category-icon">🏆</span><div><span class="card-kicker">THE COLLECTION</span><h3>Trophies</h3><p>Relive the league titles, FA Cup triumphs and defining victories.</p></div><span class="card-arrow">↗</span></a>
+<a class="category-card category-history reveal" href="history.html"><span class="category-icon">⌛</span><div><span class="card-kicker">THE STORY</span><h3>History</h3><p>Travel through the eras that built Arsenal's identity.</p></div><span class="card-arrow">↗</span></a>
+<a class="category-card category-players reveal" href="players.html"><span class="category-icon">👑</span><div><span class="card-kicker">THE LEGENDS</span><h3>Players</h3><p>Meet the names and personalities who left their mark.</p></div><span class="card-arrow">↗</span></a>
+</div>
+</section>
+<section class="timeline-section" id="timeline">
+<div class="section-shell">
+<div class="section-heading light reveal">
+<p class="eyebrow">THE ARSENAL TIMELINE</p>
+<h2>Moments that became history.</h2>
+<p>Tap a milestone to reveal its story.</p>
+</div>
+<div class="timeline">
+<button class="timeline-item reveal" data-text="Arsenal won the English First Division under Herbert Chapman." data-title="1930–31" type="button"><span class="timeline-dot"></span><span class="timeline-year">1930–31</span><span class="timeline-name">First Division triumph</span></button>
+<button class="timeline-item reveal" data-text="Arsenal completed the famous League and FA Cup Double." data-title="1970–71" type="button"><span class="timeline-dot"></span><span class="timeline-year">1970–71</span><span class="timeline-name">League &amp; FA Cup Double</span></button>
+<button class="timeline-item reveal" data-text="Arsenal won the title dramatically by beating Liverpool 2–0 at Anfield." data-title="1988–89" type="button"><span class="timeline-dot"></span><span class="timeline-year">1988–89</span><span class="timeline-name">Anfield — the final day</span></button>
+<button class="timeline-item reveal" data-text="Arsenal won the league and FA Cup Double in Arsène Wenger's first full season." data-title="1997–98" type="button"><span class="timeline-dot"></span><span class="timeline-year">1997–98</span><span class="timeline-name">Wenger's first Double</span></button>
+<button class="timeline-item reveal" data-text="Arsenal went unbeaten throughout the league season: 26 wins, 12 draws and 0 defeats." data-title="2003–04" type="button"><span class="timeline-dot"></span><span class="timeline-year">2003–04</span><span class="timeline-name">The Invincibles</span></button>
+</div>
+</div>
+</section>
+<section class="legends section-shell">
+<div class="section-heading reveal"><p class="eyebrow">ARSENAL LEGENDS</p><h2>The people behind the memories.</h2><p>Explore the players and managers who shaped different Arsenal eras.</p></div>
+<div class="legend-grid">
+<article class="legend-card reveal"><div class="legend-avatar">TH</div><div><span class="card-kicker">LEGEND</span><h3>Thierry Henry</h3><p>The Invincibles era icon.</p></div></article>
+<article class="legend-card reveal"><div class="legend-avatar">DB</div><div><span class="card-kicker">LEGEND</span><h3>Dennis Bergkamp</h3><p>One of Arsenal's most celebrated creative players.</p></div></article>
+<article class="legend-card reveal"><div class="legend-avatar">PV</div><div><span class="card-kicker">LEGEND</span><h3>Patrick Vieira</h3><p>Captain of the great Wenger-era side.</p></div></article>
+</div>
+<div class="center-action reveal"><a class="dark-button" href="players.html">Meet the players →</a></div>
+</section>
+<section class="fact-section section-shell">
+<div class="fact-card reveal">
+<div class="fact-number">01</div>
+<div><p class="eyebrow">DID YOU KNOW?</p><h2 id="factTitle">An unbeaten season became a piece of Arsenal folklore.</h2><p id="factText">In 2003–04, Arsenal finished the league season with 26 wins, 12 draws and 0 defeats.</p></div>
+<button class="fact-button" id="nextFact" type="button">Next fact ↻</button>
+</div>
+</section>
+<section class="vault-section" id="vault">
+<div class="vault-glow"></div>
+<div class="vault-content reveal">
+<p class="eyebrow">YOUR FINAL CHALLENGE</p>
+<div class="vault-lock">🔐</div>
+<h2>Can you unlock the Secret Vault?</h2>
+<p>Discover four treasures and return here to reveal the hidden room.</p>
+<div class="vault-progress"><span id="vaultProgress">0 / 4</span><div class="progress-track"><span id="progressFill"></span></div></div>
+<a class="gold-button" href="trophies.html">Start collecting <span>→</span></a>
+</div>
+</section>
+<footer class="site-footer">
+<div><strong>ARSENAL TREASURE ROOM</strong><span>North London Forever.</span></div>
+<a href="#">Back to top ↑</a>
+</footer>
+</main>
+</div>
+<div aria-hidden="true" aria-modal="true" class="home-modal" id="homeModal" role="dialog">
+<div class="home-modal-box">
+<button aria-label="Close" class="modal-close" id="modalClose" type="button">×</button>
+<p class="eyebrow">ARSENAL MOMENT</p>
+<h2 id="modalTitle"></h2>
+<p id="modalText"></p>
+</div>
+</div>
 <script src="./index.js"></script>
-</body>
+<script>
+(function(){
+  const sidebar = document.getElementById('sidebar');
+  const toggle = document.getElementById('nl4MenuToggle');
+  const overlay = document.getElementById('overlay');
+
+  if (!sidebar || !toggle) return;
+
+  function isOpen(){
+    return sidebar.classList.contains('open');
+  }
+
+  function applyState(open){
+    sidebar.classList.toggle('open', open);
+
+    if (overlay) {
+      overlay.classList.toggle('show', open);
+    }
+
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute(
+      'aria-label',
+      open ? 'Close navigation' : 'Open navigation'
+    );
+  }
+
+  toggle.addEventListener('click', function(event){
+    event.preventDefault();
+    event.stopPropagation();
+    applyState(!isOpen());
+  });
+
+  if (overlay) {
+    overlay.addEventListener('click', function(){
+      applyState(false);
+    });
+  }
+
+  document.querySelectorAll('#sideNav a').forEach(function(link){
+    link.addEventListener('click', function(){
+      if (window.innerWidth <= 900) {
+        applyState(false);
+      }
+    });
+  });
+
+  window.addEventListener('keydown', function(event){
+    if (event.key === 'Escape' && isOpen()) {
+      applyState(false);
+    }
+  });
+
+  window.addEventListener('resize', function(){
+    if (window.innerWidth > 900 && isOpen()) {
+      applyState(false);
+    }
+  });
+})();
+</script></body>
 </html>

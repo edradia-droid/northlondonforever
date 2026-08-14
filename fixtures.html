@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="NL4 Arsenal fixtures and results 3D match centre." name="description"/>
+<title>Fixtures &amp; Results | NL4 Arsenal Fan Hub</title>
+<link href="styles.css" rel="stylesheet"/>
+<link href="shared-sidebar.css" rel="stylesheet"/><link href="fixtures-3d.css" rel="stylesheet"/></head>
+<body class="nl4-unified-sidebar"><button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button>
+<div class="app-shell">
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-top">
+<a class="logo" href="index.html">
+<span class="logo-box nl4-logo-box">
+<img alt="NL4" src="https://i.postimg.cc/GhGgj8G7/75c7b198-597a-4288-abae-723c809c34fa.png"/>
+</span>
+<span class="nl4-brand-text"><b>NORTH LONDON</b><small>FOREVER</small></span>
+</a>
+</div>
+<nav class="side-nav" id="sideNav">
+<p class="nav-label">FAN HUB</p>
+<a class="nav-link" href="index.html"><span>⌂</span> Home</a>
+<a class="nav-link active" href="fixtures.html"><span>◷</span> Fixtures</a>
+<a class="nav-link" href="index.html#calendar"><span>▣</span> Calendar</a>
+<p class="nav-label">COMPETITIONS</p>
+<a class="nav-link" href="index.html#premier-league"><span>🏆</span> Premier League</a>
+<a class="nav-link" href="index.html#champions-league"><span>★</span> Champions League</a>
+<a class="nav-link" href="index.html#fa-cup"><span>🏆</span> FA Cup</a>
+<a class="nav-link" href="index.html#carabao-cup"><span>🏆</span> Carabao Cup</a>
+<p class="nav-label">TEAM</p>
+<a class="nav-link" href="index.html#lineup"><span>⚽</span> Lineup</a>
+<a class="nav-link" href="index.html#news"><span>▤</span> Latest News</a>
+<div class="nav-divider"></div>
+<a class="treasure-link" href="trophies.html">
+<span>🔐</span><b>Treasure Room</b><small>Explore Arsenal history</small>
+</a>
+</nav>
+<div class="sidebar-bottom">
+<span>COYG</span>
+<span>1886 • FOREVER</span>
+</div>
+</aside>
+<div class="mobile-overlay" id="overlay"></div>
+<main class="main"><section class="hero" id="fixture-home">
+<div class="hero-content">
+<p class="eyebrow">NL4 • MATCH CENTRE</p>
+<h1>FIXTURES<br/><span>&amp; RESULTS</span></h1>
+<p>Arsenal matchdays in one place — upcoming fixtures, kick-off information and results presented in the NL4 3D match centre.</p>
+<a class="primary-btn" href="#fixtures">View Next Fixture →</a>
+<div class="match-centre-shortcuts"><a href="#fixtures">Fixtures &amp; Results</a><a href="match-details.html">Match Details</a></div></div>
+<div class="hero-art"><div class="cannon">⚽</div></div>
+</section><section class="section-block unified-match-centre" id="fixtures"><div class="section-heading">
+<div>
+<p class="eyebrow">PREMIER LEAGUE • 2026/27</p>
+<h2>Arsenal Fixtures &amp; Results</h2>
+</div>
+<span class="status">38 MATCHES</span>
+</div><div class="fixture-update-note">
+<strong>Quick update system:</strong>
+  Edit each match once inside <code>fixtures-data.js</code>. The same card automatically changes
+  from an upcoming fixture to a full-time result when its status and scores are updated.
+</div><div class="fixture-month-nav" id="fixtureMonthNav"></div><div class="unified-match-grid all-league-fixtures" id="matchesGrid"></div></section><footer class="footer">
+<b>ARSENAL MATCH CENTRE</b>
+<span>Fixtures • Results • Matchday • North London Forever</span>
+</footer></main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
+<script src="supabase-client.js"></script>
+<script src="nl4-data.js"></script>
+<script src="index.js"></script><script src="fixtures-data.js"></script><script src="fixtures-3d.js"></script>
+<script>
+(function(){
+  const sidebar = document.getElementById('sidebar');
+  const toggle = document.getElementById('nl4MenuToggle');
+  const overlay = document.getElementById('overlay');
+
+  if (!sidebar || !toggle) return;
+
+  function isOpen(){
+    return sidebar.classList.contains('open');
+  }
+
+  function applyState(open){
+    sidebar.classList.toggle('open', open);
+
+    if (overlay) {
+      overlay.classList.toggle('show', open);
+    }
+
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute(
+      'aria-label',
+      open ? 'Close navigation' : 'Open navigation'
+    );
+  }
+
+  toggle.addEventListener('click', function(event){
+    event.preventDefault();
+    event.stopPropagation();
+    applyState(!isOpen());
+  });
+
+  if (overlay) {
+    overlay.addEventListener('click', function(){
+      applyState(false);
+    });
+  }
+
+  document.querySelectorAll('#sideNav a').forEach(function(link){
+    link.addEventListener('click', function(){
+      if (window.innerWidth <= 900) {
+        applyState(false);
+      }
+    });
+  });
+
+  window.addEventListener('keydown', function(event){
+    if (event.key === 'Escape' && isOpen()) {
+      applyState(false);
+    }
+  });
+
+  window.addEventListener('resize', function(){
+    if (window.innerWidth > 900 && isOpen()) {
+      applyState(false);
+    }
+  });
+})();
+</script><script>
+(function(){
+  const matches = window.NL4_PREMIER_LEAGUE_FIXTURES || [];
+  const grid = document.getElementById('matchesGrid');
+  const monthNav = document.getElementById('fixtureMonthNav');
+  if (!grid) return;
+
+  const monthNames = [
+    'January','February','March','April','May','June',
+    'July','August','September','October','November','December'
+  ];
+
+  function escapeHtml(value){
+    return String(value ?? '').replace(/[&<>"']/g, char => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+    })[char]);
+  }
+
+  function prettyDate(iso){
+    const d = new Date(iso + 'T12:00:00');
+    return d.toLocaleDateString('en-GB',{
+      weekday:'short', day:'2-digit', month:'short', year:'numeric'
+    }).toUpperCase();
+  }
+
+  function monthKey(iso){
+    const d = new Date(iso + 'T12:00:00');
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  }
+
+  const groups = new Map();
+  matches.forEach(match => {
+    const key = monthKey(match.date);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(match);
+  });
+
+  monthNav.innerHTML = [...groups.keys()].map(key => {
+    const [year,month] = key.split('-');
+    return `<a href="#month-${key}">${monthNames[Number(month)-1].slice(0,3).toUpperCase()} ${year}</a>`;
+  }).join('');
+
+  grid.innerHTML = [...groups.entries()].map(([key,items]) => {
+    const [year,month] = key.split('-');
+    const heading = `${monthNames[Number(month)-1]} ${year}`;
+
+    const cards = items.map(match => {
+      const fulltime = match.status === 'fulltime';
+      const score = fulltime
+        ? `<div class="result-score"><b>${match.homeScore ?? 0}</b><em>—</em><b>${match.awayScore ?? 0}</b></div>`
+        : `<span class="fixture-vs">VS</span>`;
+
+      return `
+        <article class="unified-match-card${fulltime ? ' result-card' : ''}" data-tilt-card data-match-id="${escapeHtml(match.id)}">
+          <div class="unified-card-top">
+            <span class="competition-pill">PREMIER LEAGUE</span>
+            <span class="match-status ${fulltime ? 'fulltime' : 'upcoming'}">${fulltime ? 'FULL TIME' : 'UPCOMING'}</span>
+          </div>
+
+          <div class="match-edit-fields">
+            <div class="match-edit-field">
+              <small>DATE</small>
+              <strong>${prettyDate(match.date)} • ${escapeHtml(match.time)}</strong>
+            </div>
+            <div class="match-edit-field">
+              <small>VENUE</small>
+              <strong>${escapeHtml(match.venue)}</strong>
+            </div>
+          </div>
+
+          <div class="unified-teams">
+            <div class="unified-team">
+              <div class="unified-badge ${match.home === 'Arsenal' ? 'arsenal-unified' : 'opponent-unified'}">${escapeHtml(match.homeCode)}</div>
+              <h3>${escapeHtml(match.home)}</h3>
+              <small>HOME</small>
+            </div>
+
+            <div class="unified-score">
+              ${score}
+              <small>${fulltime ? 'FULL TIME' : escapeHtml(match.time)}</small>
+            </div>
+
+            <div class="unified-team">
+              <div class="unified-badge ${match.away === 'Arsenal' ? 'arsenal-unified' : 'opponent-unified'}">${escapeHtml(match.awayCode)}</div>
+              <h3>${escapeHtml(match.away)}</h3>
+              <small>AWAY</small>
+            </div>
+          </div>
+
+          <div class="unified-card-bottom">
+            <span>MATCH ${String(match.matchday).padStart(2,'0')} / 38</span>
+            <a class="details-link" href="match-details.html?match=${encodeURIComponent(match.id)}">More Details →</a>
+          </div>
+        </article>
+      `;
+    }).join('');
+
+    return `
+      <section class="fixture-month-block" id="month-${key}">
+        <div class="fixture-month-heading">
+          <span>${heading}</span>
+          <small>${items.length} MATCH${items.length === 1 ? '' : 'ES'}</small>
+        </div>
+        <div class="fixture-month-cards">${cards}</div>
+      </section>
+    `;
+  }).join('');
+
+  // Re-apply lightweight tilt to dynamically-created cards.
+  if (window.matchMedia('(pointer:fine)').matches &&
+      !window.matchMedia('(prefers-reduced-motion:reduce)').matches) {
+    document.querySelectorAll('[data-tilt-card]').forEach(card => {
+      card.addEventListener('mousemove', event => {
+        const rect = card.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width;
+        const y = (event.clientY - rect.top) / rect.height;
+        card.style.setProperty('--mini-rx', ((0.5-y)*4).toFixed(2)+'deg');
+        card.style.setProperty('--mini-ry', ((x-0.5)*6).toFixed(2)+'deg');
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.setProperty('--mini-rx','0deg');
+        card.style.setProperty('--mini-ry','0deg');
+      });
+    });
+  }
+})();
+</script></body>
+</html>

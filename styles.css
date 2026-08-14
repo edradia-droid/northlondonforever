@@ -1436,3 +1436,54 @@ footer{border-top:1px solid var(--line);padding:28px 5%;display:flex;justify-con
 .player-card{position:relative;display:flex;flex-direction:column;min-height:390px;overflow:hidden;border:1px solid rgba(20,20,20,.09);border-radius:20px;background:#fff;box-shadow:0 12px 28px rgba(0,0,0,.07);transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease}.player-card:before{content:"";position:absolute;inset:0 0 auto;height:5px;background:linear-gradient(90deg,var(--arsenal-red),var(--gold));z-index:2}.player-card:hover{transform:translateY(-8px) rotate(-.3deg);box-shadow:0 22px 45px rgba(0,0,0,.15);border-color:rgba(215,25,32,.25)}.player-media{position:relative;height:235px;overflow:hidden;background:linear-gradient(145deg,#211416,#d71920)}.player-media:after{content:"";position:absolute;inset:auto -25px -60px auto;width:150px;height:150px;border:1px solid rgba(255,255,255,.25);border-radius:50%}.player-media img{width:100%;height:100%;display:block;object-fit:cover;transition:transform .5s ease;filter:saturate(.9) contrast(1.04)}.player-card:hover .player-media img{transform:scale(1.06)}.player-badge{position:absolute;top:15px;left:15px;padding:6px 9px;border-radius:5px;background:rgba(12,12,12,.78);color:#fff;font-size:.58rem;font-weight:900;letter-spacing:.15em}.player-info{display:flex;flex:1;flex-direction:column;padding:19px 18px 17px}.player-info h3{margin:0 0 8px;font-size:1.25rem;line-height:1.1}.player-tag{align-self:flex-start;margin-bottom:17px;padding:5px 8px;border-radius:4px;background:#f1ede6;color:#6b6258;font-size:.58rem;font-weight:900;letter-spacing:.14em}.more-details{display:flex;align-items:center;justify-content:center;width:100%;margin-top:auto;padding:11px 14px;border-radius:10px;background:#171717;color:#fff;text-decoration:none;font-weight:800;font-size:.82rem;letter-spacing:.04em;transition:.2s}.more-details:after{content:" →";color:var(--gold)}.more-details:hover{background:var(--arsenal-red);transform:translateY(-2px)}
 .openBtn{align-self:flex-start;margin-bottom:12px;border:0;background:transparent;color:var(--arsenal-red);font-weight:900;cursor:pointer;padding:0;font-size:.78rem}.openBtn:hover{text-decoration:underline}.popup{display:none;position:fixed;inset:0;z-index:2000;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.72)}.popup.show{display:flex}.popup-content{position:relative;width:min(430px,100%);padding:35px;border-radius:20px;background:#fff;box-shadow:0 25px 70px rgba(0,0,0,.35)}.popup-content h2{margin:0 0 16px;color:var(--arsenal-red);font-size:1.1rem}.popup-content p{line-height:1.9;font-weight:700}.close{position:absolute;top:12px;right:16px;font-size:28px;cursor:pointer;color:#555}.players-footer{max-width:1180px;margin:85px auto 0;padding:35px 20px 45px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:20px}.players-footer span{color:#777}
 @media(max-width:1000px){.players{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:720px){.players-header{padding:12px 16px}.players-nav{gap:0}.players-nav a{padding:9px 8px;font-size:.8rem}.players-hero{padding:80px 18px}.players-hero h1{font-size:clamp(2.8rem,13vw,5rem)}.player-era{padding-top:55px}.era-heading{display:block}.era-heading h2{margin-top:7px}.players{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.player-card{min-height:350px;border-radius:16px}.player-media{height:190px}.player-info{padding:15px}.player-info h3{font-size:1.08rem}.players-footer{display:block}.players-footer span{display:block;margin-top:8px}}@media(max-width:460px){.players-nav a:nth-child(2){display:none}.players-nav a{font-size:.72rem}.players{grid-template-columns:1fr}.player-card{max-width:360px;width:100%;margin:auto}.player-media{height:230px}}
+
+
+
+ /* NL4 header only */
+    .sidebar-top .logo {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: nowrap;
+    }
+
+    .logo-box.nl4-logo-box {
+      width: 90px;
+      height: 90px;
+      min-width: 90px;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nl4-logo-box img {
+      width: 90px;
+      height: 90px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .sidebar-top .logo > span:last-child {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .sidebar-top .logo > span:last-child b {
+      font-size: 10px;
+      line-height: 1;
+      letter-spacing: 1.5px;
+      white-space: nowrap;
+    }
+
+    .sidebar-top .logo > span:last-child small {
+      font-size: 9px;
+      line-height: 1.2;
+      letter-spacing: 1.6px;
+      margin-top: 7px;
+      white-space: nowrap;
+    }

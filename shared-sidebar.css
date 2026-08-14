@@ -1,0 +1,552 @@
+
+/* =========================================================
+   NL4 SHARED SIDEBAR
+   Keeps the same sidebar, logo, Fan Hub links and mobile behavior
+   across index, trophies, players, history and collection.
+   ========================================================= */
+
+:root{
+  --nl4-side-width: 300px;
+  --nl4-gold: #e7bd58;
+  --nl4-red: #d8001f;
+  --nl4-red-dark: #970016;
+  --nl4-bg: #0b0b0b;
+  --nl4-line: rgba(255,255,255,.10);
+}
+
+.sidebar{
+  position:fixed !important;
+  z-index:1000 !important;
+  left:0 !important;
+  top:0 !important;
+  width:var(--nl4-side-width) !important;
+  height:100vh !important;
+  padding:22px 18px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  background:#0b0b0b !important;
+  border-right:1px solid var(--nl4-line) !important;
+  box-sizing:border-box !important;
+}
+
+.sidebar-top{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:10px !important;
+  margin-bottom:26px !important;
+}
+
+.sidebar .logo{
+  display:flex !important;
+  align-items:center !important;
+  gap:14px !important;
+  min-width:0 !important;
+  text-decoration:none !important;
+  color:#fff !important;
+}
+
+.sidebar .logo-box.nl4-logo-box{
+  width:86px !important;
+  height:86px !important;
+  min-width:86px !important;
+  border:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  padding:0 !important;
+}
+
+.sidebar .nl4-logo-box img{
+  display:block !important;
+  width:86px !important;
+  height:86px !important;
+  object-fit:contain !important;
+}
+
+.sidebar .nl4-brand-text{
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+  min-width:0 !important;
+}
+
+.sidebar .nl4-brand-text b{
+  display:block !important;
+  margin:0 !important;
+  color:#f5f5f2 !important;
+  font-size:18px !important;
+  line-height:1.05 !important;
+  font-weight:800 !important;
+  letter-spacing:1.2px !important;
+  white-space:nowrap !important;
+}
+
+.sidebar .nl4-brand-text small{
+  display:block !important;
+  margin-top:7px !important;
+  color:#8b8b8b !important;
+  font-size:9px !important;
+  line-height:1.1 !important;
+  font-weight:700 !important;
+  letter-spacing:2.2px !important;
+  white-space:nowrap !important;
+}
+
+.close-menu{
+  display:none;
+  background:none !important;
+  border:0 !important;
+  color:#fff !important;
+  font-size:30px !important;
+  cursor:pointer !important;
+}
+
+.side-nav{
+  overflow:auto !important;
+  padding-right:2px !important;
+}
+
+.side-nav .nav-label{
+  margin:18px 12px 8px !important;
+  color:#606060 !important;
+  font-size:8px !important;
+  font-weight:800 !important;
+  letter-spacing:2.5px !important;
+}
+
+.side-nav .nav-link{
+  display:flex !important;
+  align-items:center !important;
+  gap:13px !important;
+  margin:2px 0 !important;
+  padding:11px 12px !important;
+  border-radius:7px !important;
+  color:#aaa !important;
+  background:transparent !important;
+  text-decoration:none !important;
+  font-size:12px !important;
+  font-weight:600 !important;
+  transition:.2s !important;
+}
+
+.side-nav .nav-link > span{
+  width:18px !important;
+  text-align:center !important;
+  font-size:15px !important;
+}
+
+.side-nav .nav-link:hover{
+  background:#171717 !important;
+  color:#fff !important;
+}
+
+.side-nav .nav-link.active{
+  background:linear-gradient(90deg,var(--nl4-red-dark),#5f0010) !important;
+  color:#fff !important;
+  box-shadow:inset 3px 0 var(--nl4-gold) !important;
+}
+
+.side-nav .nav-divider{
+  height:1px !important;
+  margin:18px 8px !important;
+  background:var(--nl4-line) !important;
+}
+
+.side-nav .treasure-link{
+  display:grid !important;
+  grid-template-columns:auto 1fr !important;
+  column-gap:8px !important;
+  align-items:center !important;
+  padding:15px !important;
+  border:1px solid rgba(231,189,88,.30) !important;
+  border-radius:8px !important;
+  color:var(--nl4-gold) !important;
+  background:linear-gradient(135deg,#211a0b,#0f0f0f) !important;
+  text-decoration:none !important;
+}
+
+.side-nav .treasure-link > span{
+  grid-row:1 / span 2 !important;
+}
+
+.side-nav .treasure-link b{
+  font-size:11px !important;
+  letter-spacing:1px !important;
+}
+
+.side-nav .treasure-link small{
+  display:block !important;
+  margin-top:5px !important;
+  color:#777 !important;
+  font-size:9px !important;
+}
+
+.sidebar-bottom{
+  margin-top:auto !important;
+  padding:15px 10px 0 !important;
+  border-top:1px solid var(--nl4-line) !important;
+  display:flex !important;
+  justify-content:space-between !important;
+  color:#555 !important;
+  font-size:8px !important;
+  letter-spacing:1px !important;
+}
+
+/* pages that already use .app-shell/.main */
+.nl4-unified-sidebar .app-shell > .main{
+  margin-left:var(--nl4-side-width) !important;
+  width:calc(100% - var(--nl4-side-width)) !important;
+  min-width:0 !important;
+}
+
+/* players page keeps its original content structure */
+.nl4-unified-sidebar.nl4-players-page{
+  padding-left:var(--nl4-side-width) !important;
+}
+
+.nl4-unified-sidebar.nl4-players-page > .topbar{
+  left:var(--nl4-side-width) !important;
+  width:calc(100% - var(--nl4-side-width)) !important;
+}
+
+.mobile-overlay{
+  display:none;
+}
+
+@media (max-width:900px){
+  .sidebar{
+    transform:translateX(-105%) !important;
+    transition:transform .25s ease !important;
+    box-shadow:20px 0 50px rgba(0,0,0,.45) !important;
+  }
+
+  .sidebar.open{
+    transform:translateX(0) !important;
+  }
+
+  .close-menu{
+    display:block !important;
+  }
+
+  .mobile-overlay{
+    position:fixed !important;
+    inset:0 !important;
+    z-index:999 !important;
+    display:none !important;
+    background:rgba(0,0,0,.62) !important;
+    backdrop-filter:blur(2px) !important;
+  }
+
+  .mobile-overlay.show{
+    display:block !important;
+  }
+
+  .nl4-unified-sidebar .app-shell > .main{
+    margin-left:0 !important;
+    width:100% !important;
+  }
+
+  .nl4-unified-sidebar.nl4-players-page{
+    padding-left:0 !important;
+  }
+
+  .nl4-unified-sidebar.nl4-players-page > .topbar{
+    left:0 !important;
+    width:100% !important;
+  }
+
+  #menuBtn{
+    display:block !important;
+  }
+}
+
+
+/* =========================================================
+   NL4 SIDEBAR HEADER VISIBILITY + SINGLE TOGGLE BUTTON FIX
+   ========================================================= */
+
+/* Make room for the larger logo/brand so nothing is clipped */
+.sidebar{
+  overflow:visible !important;
+}
+
+.sidebar-top{
+  min-height:96px !important;
+  overflow:visible !important;
+  padding-right:0 !important;
+}
+
+.sidebar .logo{
+  flex:1 1 auto !important;
+  max-width:calc(100% - 52px) !important;
+  overflow:visible !important;
+}
+
+.sidebar .logo-box.nl4-logo-box{
+  width:78px !important;
+  height:78px !important;
+  min-width:78px !important;
+  overflow:visible !important;
+}
+
+.sidebar .nl4-logo-box img{
+  width:78px !important;
+  height:78px !important;
+  object-fit:contain !important;
+  object-position:center !important;
+}
+
+.sidebar .nl4-brand-text{
+  overflow:visible !important;
+  flex:1 1 auto !important;
+}
+
+.sidebar .nl4-brand-text b{
+  font-size:16px !important;
+  letter-spacing:1px !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+}
+
+.sidebar .nl4-brand-text small{
+  font-size:9px !important;
+  letter-spacing:1.8px !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+}
+
+/* Do not use an X button anymore */
+.close-menu{
+  display:none !important;
+}
+
+/* One button controls both open + close */
+#menuBtn{
+  position:relative;
+  z-index:1102 !important;
+  cursor:pointer !important;
+}
+
+/* Keep the same button visible while sidebar is open on mobile */
+@media (max-width:900px){
+  #menuBtn{
+    display:block !important;
+  }
+
+  .sidebar{
+    padding-top:18px !important;
+  }
+
+  .sidebar-top{
+    padding-top:44px !important;
+  }
+}
+
+/* Slightly smaller brand on narrow phones */
+@media (max-width:420px){
+  .sidebar .logo-box.nl4-logo-box,
+  .sidebar .nl4-logo-box img{
+    width:68px !important;
+    height:68px !important;
+    min-width:68px !important;
+  }
+
+  .sidebar .nl4-brand-text b{
+    font-size:14px !important;
+  }
+
+  .sidebar .nl4-brand-text small{
+    font-size:8px !important;
+    letter-spacing:1.4px !important;
+  }
+}
+
+
+/* =========================================================
+   FINAL NL4 SIDEBAR FIX
+   - Brand never covered
+   - One independent toggle button
+   - No #menuBtn conflict with old index.js
+   ========================================================= */
+
+:root{
+  --nl4-side-width: 300px;
+}
+
+/* Sidebar always above page content */
+.sidebar{
+  z-index:5000 !important;
+  overflow:hidden !important;
+}
+
+/* Brand area gets its own protected space */
+.sidebar-top{
+  min-height:112px !important;
+  height:auto !important;
+  padding:8px 0 14px !important;
+  margin:0 0 18px !important;
+  overflow:visible !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+}
+
+.sidebar .logo{
+  width:100% !important;
+  max-width:none !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:12px !important;
+  overflow:visible !important;
+}
+
+.sidebar .logo-box.nl4-logo-box{
+  width:74px !important;
+  height:74px !important;
+  min-width:74px !important;
+  flex:0 0 74px !important;
+  overflow:visible !important;
+}
+
+.sidebar .nl4-logo-box img{
+  width:74px !important;
+  height:74px !important;
+  max-width:74px !important;
+  max-height:74px !important;
+  object-fit:contain !important;
+  display:block !important;
+}
+
+.sidebar .nl4-brand-text{
+  flex:1 1 auto !important;
+  min-width:0 !important;
+  overflow:visible !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+}
+
+.sidebar .nl4-brand-text b{
+  display:block !important;
+  margin:0 !important;
+  font-size:15px !important;
+  line-height:1.1 !important;
+  letter-spacing:.8px !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+}
+
+.sidebar .nl4-brand-text small{
+  display:block !important;
+  margin-top:6px !important;
+  font-size:8px !important;
+  line-height:1.1 !important;
+  letter-spacing:1.5px !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+}
+
+/* Old close button is never used */
+.close-menu{
+  display:none !important;
+}
+
+/* Completely independent toggle button */
+#nl4MenuToggle{
+  display:none;
+  position:fixed !important;
+  top:14px !important;
+  left:14px !important;
+  z-index:7000 !important;
+  width:46px !important;
+  height:46px !important;
+  border:1px solid rgba(231,189,88,.55) !important;
+  border-radius:10px !important;
+  background:#0b0b0b !important;
+  color:#e7bd58 !important;
+  font-size:25px !important;
+  line-height:1 !important;
+  cursor:pointer !important;
+  box-shadow:0 8px 24px rgba(0,0,0,.35) !important;
+}
+
+/* Overlay stays below sidebar and toggle */
+.mobile-overlay{
+  z-index:4000 !important;
+}
+
+/* Mobile only */
+@media (max-width:900px){
+  #nl4MenuToggle{
+    display:grid !important;
+    place-items:center !important;
+  }
+
+  .sidebar{
+    transform:translateX(-105%) !important;
+    transition:transform .25s ease !important;
+    box-shadow:20px 0 55px rgba(0,0,0,.55) !important;
+    padding-top:76px !important; /* button sits above brand, never over it */
+  }
+
+  .sidebar.open{
+    transform:translateX(0) !important;
+  }
+
+  .sidebar-top{
+    min-height:96px !important;
+    padding-top:0 !important;
+  }
+
+  .mobile-overlay{
+    position:fixed !important;
+    inset:0 !important;
+    display:none !important;
+    background:rgba(0,0,0,.66) !important;
+    backdrop-filter:blur(2px) !important;
+  }
+
+  .mobile-overlay.show{
+    display:block !important;
+  }
+
+  /* Hide any legacy menu button so it cannot intercept clicks */
+  #menuBtn{
+    display:none !important;
+  }
+}
+
+/* Narrow phones */
+@media (max-width:420px){
+  :root{
+    --nl4-side-width: 280px;
+  }
+
+  .sidebar{
+    width:280px !important;
+  }
+
+  .sidebar .logo-box.nl4-logo-box,
+  .sidebar .nl4-logo-box img{
+    width:66px !important;
+    height:66px !important;
+    min-width:66px !important;
+    max-width:66px !important;
+    max-height:66px !important;
+  }
+
+  .sidebar .nl4-brand-text b{
+    font-size:13px !important;
+  }
+
+  .sidebar .nl4-brand-text small{
+    font-size:7px !important;
+    letter-spacing:1.2px !important;
+  }
+}
