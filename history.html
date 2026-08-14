@@ -6,7 +6,7 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Arsenal History | From Woolwich to North London</title>
 <link href="styles.css" rel="stylesheet"/>
-<link href="shared-sidebar.css" rel="stylesheet"/></head>
+<link href="shared-sidebar.css" rel="stylesheet"/><link href="sidebar-toggle-fix.css" rel="stylesheet"/></head>
 <body class="nl4-unified-sidebar"><button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button>
 <div class="app-shell">
 <aside class="sidebar" id="sidebar">
@@ -90,63 +90,5 @@
 </main>
 </div>
 <script src="index.js"></script>
-<script>
-(function(){
-  const sidebar = document.getElementById('sidebar');
-  const toggle = document.getElementById('nl4MenuToggle');
-  const overlay = document.getElementById('overlay');
-
-  if (!sidebar || !toggle) return;
-
-  function isOpen(){
-    return sidebar.classList.contains('open');
-  }
-
-  function applyState(open){
-    sidebar.classList.toggle('open', open);
-
-    if (overlay) {
-      overlay.classList.toggle('show', open);
-    }
-
-    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    toggle.setAttribute(
-      'aria-label',
-      open ? 'Close navigation' : 'Open navigation'
-    );
-  }
-
-  toggle.addEventListener('click', function(event){
-    event.preventDefault();
-    event.stopPropagation();
-    applyState(!isOpen());
-  });
-
-  if (overlay) {
-    overlay.addEventListener('click', function(){
-      applyState(false);
-    });
-  }
-
-  document.querySelectorAll('#sideNav a').forEach(function(link){
-    link.addEventListener('click', function(){
-      if (window.innerWidth <= 900) {
-        applyState(false);
-      }
-    });
-  });
-
-  window.addEventListener('keydown', function(event){
-    if (event.key === 'Escape' && isOpen()) {
-      applyState(false);
-    }
-  });
-
-  window.addEventListener('resize', function(){
-    if (window.innerWidth > 900 && isOpen()) {
-      applyState(false);
-    }
-  });
-})();
-</script></body>
+<script src="shared-sidebar.js"></script></body>
 </html>

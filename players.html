@@ -6,7 +6,8 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Arsenal Players | Arsenal Treasure Room</title>
 <link href="players-archive.css" rel="stylesheet"/>
-<link href="shared-sidebar.css" rel="stylesheet"/><style>
+<link href="shared-sidebar.css" rel="stylesheet"/>
+<link href="sidebar-toggle-fix.css" rel="stylesheet"/><style>
 /* =========================================================
    PLAYERS PAGE — EXACT NL4 SIDEBAR MATCH
    This isolates the sidebar from players-archive.css.
@@ -347,7 +348,32 @@ body.nl4-standard-page #overlay.mobile-overlay{
     letter-spacing:1.2px !important;
   }
 }
-</style></head>
+</style>
+<style>
+/* PLAYERS PAGE: allow the shared sidebar toggle to control desktop + mobile */
+body.nl4-standard-page #nl4MenuToggle{
+  display:grid !important;
+  place-items:center !important;
+}
+
+@media (min-width:901px){
+  body.nl4-standard-page #sidebar.sidebar{
+    transform:translateX(-105%) !important;
+    transition:transform .25s ease !important;
+  }
+
+  body.nl4-standard-page #sidebar.sidebar.open{
+    transform:translateX(0) !important;
+  }
+
+  body.nl4-standard-page.sidebar-closed .main-shell{
+    margin-left:0 !important;
+    width:100% !important;
+  }
+}
+</style>
+
+</head>
 <body class="nl4-unified-sidebar nl4-standard-page"><button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button><aside class="sidebar" id="sidebar">
 <div class="sidebar-top">
 <a class="logo" href="index.html">
@@ -792,46 +818,7 @@ body.nl4-standard-page #overlay.mobile-overlay{
 <span>
         History • Heritage • Legends • North London Forever
     </span>
-</footer></div><script>
-(function(){
-  const sidebar = document.getElementById('sidebar');
-  const toggle = document.getElementById('nl4MenuToggle');
-  const overlay = document.getElementById('overlay');
-
-  if (!sidebar || !toggle) return;
-
-  function setOpen(open){
-    sidebar.classList.toggle('open', open);
-    if (overlay) overlay.classList.toggle('show', open);
-    toggle.setAttribute('aria-expanded', String(open));
-    toggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
-  }
-
-  toggle.onclick = function(event){
-    event.preventDefault();
-    event.stopPropagation();
-    setOpen(!sidebar.classList.contains('open'));
-  };
-
-  if (overlay){
-    overlay.onclick = function(){
-      setOpen(false);
-    };
-  }
-
-  document.querySelectorAll('#sideNav a').forEach(function(link){
-    link.addEventListener('click', function(){
-      if (window.innerWidth <= 900) setOpen(false);
-    });
-  });
-
-  window.addEventListener('keydown', function(event){
-    if (event.key === 'Escape') setOpen(false);
-  });
-
-  window.addEventListener('resize', function(){
-    if (window.innerWidth > 900) setOpen(false);
-  });
-})();
-</script></body>
+</footer></div>
+<script src="shared-sidebar.js"></script>
+</body>
 </html>

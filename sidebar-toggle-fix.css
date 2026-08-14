@@ -1,0 +1,73 @@
+/* =========================================================
+   NL4 SHARED SIDEBAR — MOBILE STACKING FIX
+   Keeps sidebar clickable above the dark overlay.
+   ========================================================= */
+
+body.nl4-unified-sidebar #nl4MenuToggle{
+  display:grid !important;
+  place-items:center !important;
+  position:fixed !important;
+  top:14px !important;
+  left:14px !important;
+  z-index:7000 !important;
+  width:46px !important;
+  height:46px !important;
+  padding:0 !important;
+  cursor:pointer !important;
+}
+
+/* Sidebar must always sit above the overlay */
+body.nl4-unified-sidebar #sidebar.sidebar{
+  z-index:6000 !important;
+  transition:transform .25s ease !important;
+}
+
+@media (max-width:900px){
+  body.nl4-unified-sidebar #sidebar.sidebar{
+    transform:translateX(-105%) !important;
+  }
+
+  body.nl4-unified-sidebar #sidebar.sidebar.open{
+    transform:translateX(0) !important;
+  }
+
+  /* Overlay darkens only the content area and stays BELOW sidebar */
+  body.nl4-unified-sidebar #overlay.mobile-overlay{
+    display:block !important;
+    position:fixed !important;
+    inset:0 !important;
+    z-index:4000 !important;
+    opacity:0 !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+    background:rgba(0,0,0,.66) !important;
+    transition:opacity .25s ease, visibility .25s ease !important;
+  }
+
+  body.nl4-unified-sidebar #overlay.mobile-overlay.show{
+    opacity:1 !important;
+    visibility:visible !important;
+    pointer-events:auto !important;
+  }
+}
+
+@media (min-width:901px){
+  body.nl4-unified-sidebar #sidebar.sidebar{
+    transform:translateX(0) !important;
+  }
+
+  body.nl4-unified-sidebar.sidebar-closed #sidebar.sidebar{
+    transform:translateX(-105%) !important;
+  }
+
+  body.nl4-unified-sidebar.sidebar-closed .app-shell > .main,
+  body.nl4-unified-sidebar.sidebar-closed .main-shell{
+    margin-left:0 !important;
+    width:100% !important;
+  }
+
+  body.nl4-unified-sidebar #overlay.mobile-overlay{
+    display:none !important;
+    pointer-events:none !important;
+  }
+}

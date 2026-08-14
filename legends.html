@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Arsenal Legends | Treasure Room</title><link href="styles.css" rel="stylesheet"/>
-<link href="shared-sidebar.css" rel="stylesheet"/><style>
+<link href="shared-sidebar.css" rel="stylesheet"/><link href="sidebar-toggle-fix.css" rel="stylesheet"/><style>
 /* Legends page bridge: preserve existing legend design while matching shared sidebar layout */
 .nl4-legends-page .main-shell{
   margin-left:var(--nl4-side-width, 300px);
@@ -147,62 +147,4 @@
 <h2>Some players wear the shirt.<br/>Legends <span>become the shirt.</span></h2>
 <p>Thierry Henry, Dennis Bergkamp, Tony Adams and Ian Wright represent different sides of Arsenal heritage — goals, artistry, leadership and personality.</p>
 </section>
-</main><footer><b>ARSENAL TREASURE ROOM</b><span>History • Heritage • Legends • North London Forever</span></footer></div><script>
-(function(){
-  const sidebar = document.getElementById('sidebar');
-  const toggle = document.getElementById('nl4MenuToggle');
-  const overlay = document.getElementById('overlay');
-
-  if (!sidebar || !toggle) return;
-
-  function isOpen(){
-    return sidebar.classList.contains('open');
-  }
-
-  function applyState(open){
-    sidebar.classList.toggle('open', open);
-
-    if (overlay) {
-      overlay.classList.toggle('show', open);
-    }
-
-    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    toggle.setAttribute(
-      'aria-label',
-      open ? 'Close navigation' : 'Open navigation'
-    );
-  }
-
-  toggle.addEventListener('click', function(event){
-    event.preventDefault();
-    event.stopPropagation();
-    applyState(!isOpen());
-  });
-
-  if (overlay) {
-    overlay.addEventListener('click', function(){
-      applyState(false);
-    });
-  }
-
-  document.querySelectorAll('#sideNav a').forEach(function(link){
-    link.addEventListener('click', function(){
-      if (window.innerWidth <= 900) {
-        applyState(false);
-      }
-    });
-  });
-
-  window.addEventListener('keydown', function(event){
-    if (event.key === 'Escape' && isOpen()) {
-      applyState(false);
-    }
-  });
-
-  window.addEventListener('resize', function(){
-    if (window.innerWidth > 900 && isOpen()) {
-      applyState(false);
-    }
-  });
-})();
-</script></body></html>
+</main><footer><b>ARSENAL TREASURE ROOM</b><span>History • Heritage • Legends • North London Forever</span></footer></div><script src="shared-sidebar.js"></script></body></html>
