@@ -124,6 +124,66 @@
     .pl-player-stats-toolbar{align-items:flex-start;flex-direction:column}
   }
 </style>
+
+
+<style>
+  .pl-lineup-card{
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:22px;
+    background:rgba(10,10,10,.82);
+    overflow:hidden;
+  }
+  .pl-lineup-match-head{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:space-between;
+    gap:12px;
+    padding:16px 18px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .pl-lineup-match-head strong{color:#fff}
+  .pl-lineup-match-head span{color:#888;font-size:11px}
+  .pl-lineup-columns{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    padding:18px;
+  }
+  .pl-lineup-column h3{
+    margin:0 0 12px;
+    color:#d8ad45;
+    font-size:13px;
+    letter-spacing:.8px;
+  }
+  .pl-lineup-list{display:grid;gap:8px}
+  .pl-lineup-player{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:12px;
+    align-items:center;
+    padding:11px 12px;
+    border:1px solid rgba(255,255,255,.07);
+    border-radius:12px;
+    background:#111;
+  }
+  .pl-lineup-player strong{display:block;color:#fff}
+  .pl-lineup-player small{display:block;color:#777;margin-top:3px;font-size:10px}
+  .pl-lineup-minutes{
+    color:#d8ad45;
+    font-size:11px;
+    font-weight:900;
+    white-space:nowrap;
+  }
+  .pl-lineup-empty{
+    padding:18px;
+    color:#777;
+    text-align:center;
+  }
+  @media(max-width:720px){
+    .pl-lineup-columns{grid-template-columns:1fr}
+  }
+</style>
+
 </head>
 
 <body class="nl4-unified-sidebar premier-league-page">
@@ -439,10 +499,53 @@
           <div class="pl-results-empty">No completed Arsenal league matches yet.</div>
         </div>
       </section>
-<section class="pl-section pl-title-race-section">
+
+
+
+      <section class="pl-section pl-lineup-section" id="latestArsenalLineup">
         <div class="pl-section-head">
           <div>
-            <p class="pl-kicker">06 / TITLE RACE</p>
+            <p class="pl-kicker">06 / TEAM SHEET</p>
+            <h2>LATEST ARSENAL LINEUP &amp; SUBSTITUTIONS</h2>
+          </div>
+          <span class="pl-table-note">AUTO FROM MATCH ADMIN</span>
+        </div>
+
+        <div class="pl-lineup-card">
+          <div class="pl-lineup-match-head">
+            <div>
+              <strong id="latestLineupMatch">Loading latest completed league match…</strong>
+              <span id="latestLineupMeta"></span>
+            </div>
+            <span id="latestLineupScore"></span>
+          </div>
+
+          <div class="pl-lineup-columns">
+            <div class="pl-lineup-column">
+              <h3>STARTING XI</h3>
+              <div id="latestStartingXI" class="pl-lineup-list">
+                <div class="pl-lineup-empty">Loading starters…</div>
+              </div>
+            </div>
+
+            <div class="pl-lineup-column">
+              <h3>SUBSTITUTES USED</h3>
+              <div id="latestSubstitutes" class="pl-lineup-list">
+                <div class="pl-lineup-empty">Loading substitutes…</div>
+              </div>
+            </div>
+          </div>
+
+          <p id="latestLineupStatus" class="pl-player-stats-note">
+            Lineup data is loaded from the same Supabase records entered in Admin.
+          </p>
+        </div>
+      </section>
+
+      <section class="pl-section pl-title-race-section">
+        <div class="pl-section-head">
+          <div>
+            <p class="pl-kicker">07 / TITLE RACE</p>
             <h2>THE RACE AT THE TOP</h2>
           </div>
           <span class="pl-table-note">LIVE FROM STANDINGS</span>
@@ -1223,5 +1326,124 @@
     setTimeout(loadFullSquadStats, 400);
   })();
   </script>
+
+
+  <script>
+  (function(){
+    const db = window.nl4Supabase;
+    const matchEl = document.getElementById("latestLineupMatch");
+    const metaEl = document.getElementById("latestLineupMeta");
+    const scoreEl = document.getElementById("latestLineupScore");
+    const startersEl = document.getElementById("latestStartingXI");
+    const subsEl = document.getElementById("latestSubstitutes");
+    const statusEl = document.getElementById("latestLineupStatus");
+
+    if (!db || !matchEl || !startersEl || !subsEl) return;
+
+    const escape = value => String(value ?? "")
+      .replace(/[&<>"']/g, ch => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"
+      }[ch]));
+
+    function playerRow(row){
+      const end = row.minute_off ?? 90;
+      const start = row.minute_on ?? 0;
+      const mins = Math.max(0, Math.min(90,end) - Math.min(90,start));
+
+      let timing = row.is_starter ? `${mins} min` : `ON ${start}'`;
+      if (row.minute_off !== null && row.minute_off !== undefined) {
+        timing += ` • OFF ${row.minute_off}'`;
+      }
+
+      return `<div class="pl-lineup-player">
+        <div>
+          <strong>${escape(row.player_name)}</strong>
+          <small>${escape(row.position || "Arsenal player")}</small>
+        </div>
+        <span class="pl-lineup-minutes">${escape(timing)}</span>
+      </div>`;
+    }
+
+    async function loadLatestArsenalLineup(){
+      const { data: fixtures, error: fixtureError } = await db
+        .from("fixtures")
+        .select("id,opponent,home_team,away_team,is_home,kickoff_at,venue,arsenal_score,opponent_score,status,competition,season,is_published")
+        .eq("season","2026/27")
+        .ilike("competition","%Premier%")
+        .eq("is_published",true)
+        .in("status",["fulltime","finished","ft"])
+        .order("kickoff_at",{ ascending:false })
+        .limit(1);
+
+      if (fixtureError) {
+        matchEl.textContent = "Could not load latest Arsenal match";
+        startersEl.innerHTML = "";
+        subsEl.innerHTML = "";
+        statusEl.textContent = fixtureError.message;
+        return;
+      }
+
+      const fixture = fixtures?.[0];
+      if (!fixture) {
+        matchEl.textContent = "No completed Premier League match yet";
+        metaEl.textContent = "";
+        scoreEl.textContent = "";
+        startersEl.innerHTML = '<div class="pl-lineup-empty">No starting XI available yet.</div>';
+        subsEl.innerHTML = '<div class="pl-lineup-empty">No substitutions available yet.</div>';
+        return;
+      }
+
+      const home = fixture.home_team || (fixture.is_home ? "Arsenal" : fixture.opponent);
+      const away = fixture.away_team || (fixture.is_home ? fixture.opponent : "Arsenal");
+      const homeScore = fixture.is_home ? fixture.arsenal_score : fixture.opponent_score;
+      const awayScore = fixture.is_home ? fixture.opponent_score : fixture.arsenal_score;
+
+      matchEl.textContent = `${home} vs ${away}`;
+      metaEl.textContent = [
+        fixture.kickoff_at ? new Date(fixture.kickoff_at).toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"}) : "",
+        fixture.venue || ""
+      ].filter(Boolean).join(" • ");
+      scoreEl.textContent =
+        homeScore !== null && homeScore !== undefined &&
+        awayScore !== null && awayScore !== undefined
+          ? `FULL TIME • ${homeScore}–${awayScore}`
+          : "FULL TIME";
+
+      const { data: lineup, error: lineupError } = await db
+        .from("match_lineups")
+        .select("player_name,position,is_starter,minute_on,minute_off")
+        .eq("fixture_id",fixture.id)
+        .order("is_starter",{ascending:false})
+        .order("minute_on",{ascending:true});
+
+      if (lineupError) {
+        startersEl.innerHTML = '<div class="pl-lineup-empty">Could not load lineup.</div>';
+        subsEl.innerHTML = '<div class="pl-lineup-empty">Could not load substitutions.</div>';
+        statusEl.textContent = lineupError.message;
+        return;
+      }
+
+      const starters = (lineup || []).filter(row => row.is_starter);
+      const subs = (lineup || []).filter(row => !row.is_starter);
+
+      startersEl.innerHTML = starters.length
+        ? starters.map(playerRow).join("")
+        : '<div class="pl-lineup-empty">No starters recorded for this match.</div>';
+
+      subsEl.innerHTML = subs.length
+        ? subs.map(playerRow).join("")
+        : '<div class="pl-lineup-empty">No substitutes recorded for this match.</div>';
+
+      statusEl.textContent =
+        `${starters.length} starter${starters.length === 1 ? "" : "s"} • ` +
+        `${subs.length} substitute${subs.length === 1 ? "" : "s"} used • ` +
+        "Live from Supabase";
+    }
+
+    window.addEventListener("load", loadLatestArsenalLineup);
+    setTimeout(loadLatestArsenalLineup,500);
+  })();
+  </script>
+
 </body>
 </html>

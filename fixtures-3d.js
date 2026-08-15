@@ -189,7 +189,7 @@
             </div>
             <div class="unified-card-bottom">
               <span>MATCH ${String(match.matchday || '').padStart(2,'0')} / 38</span>
-              <a class="details-link" href="match-details.html?fixture=${encodeURIComponent(match.id)}">More Details →</a>
+              <a class="details-link" href="match-details.html?fixture=${encodeURIComponent(match.dbId || match.id)}">More Details →</a>
             </div>
           </article>`;
       }).join('');

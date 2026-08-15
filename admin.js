@@ -1,3 +1,8 @@
+console.log("NL4 ADMIN BUILD: 20260815-0518 LINEUPS AUTO STATS");
+console.log("NL4 ADMIN BUILD: 20260815-0422 GROUPED PLAYER STATS");
+console.log("NL4 ADMIN BUILD: 20260815-0358 FULL PLAYER STATS");
+console.log("NL4 ADMIN BUILD: 20260815-0332 CLEAR TEST SCORES");
+console.log("NL4 ADMIN BUILD: 20260815-0318 CLEAN STANDINGS REBUILD");
 const db = window.nl4Supabase;
 
 const loginView = document.getElementById("loginView");
@@ -50,32 +55,30 @@ const schemas = {
 
 
   premier_league_player_stats: {
-    title: "Arsenal Premier League player",
-    order: "player_name",
+    label: "Arsenal Player Stat",
+    order: "goals",
+    descending: true,
     fields: [
-      ["season","Season","text",true],
-      ["player_name","Player name","text",true],
-      ["position","Position","text"],
-      ["image_url","Player image URL","url"],
-      ["profile_url","Profile page URL","text"],
-      ["appearances","Appearances","number",true],
-      ["goals","Goals","number",true],
-      ["assists","Assists","number",true],
-      ["clean_sheets","Clean sheets","number",true]
-    ]
-  },
-  premier_league_matches: {
-    title: "Premier League match",
-    order: "kickoff_at",
-    fields: [
-      ["season","Season","text",true],
-      ["matchday","Matchday","number",true],
-      ["home_team","Home team","text",true],
-      ["away_team","Away team","text",true],
-      ["home_score","Home score","number"],
-      ["away_score","Away score","number"],
-      ["status","Status","select",true,["scheduled","fulltime","postponed","cancelled"]],
-      ["kickoff_at","Kick-off","datetime-local"]
+      ["season", "Season", "text", true],
+      ["player_name", "Player name", "text", true],
+      ["position", "Position", "text", false],
+      ["image_url", "Image URL", "url", false],
+      ["profile_url", "Profile URL", "url", false],
+      ["appearances", "Appearances", "number", false],
+      ["starts", "Starts", "number", false],
+      ["minutes", "Minutes", "number", false],
+      ["goals", "Goals", "number", false],
+      ["assists", "Assists", "number", false],
+      ["clean_sheets", "Clean sheets", "number", false],
+      ["yellow_cards", "Yellow cards", "number", false],
+      ["red_cards", "Red cards", "number", false],
+      ["man_of_the_match", "Man of the Match", "number", false],
+      ["shots", "Shots", "number", false],
+      ["shots_on_target", "Shots on target", "number", false],
+      ["chances_created", "Chances created", "number", false],
+      ["tackles", "Tackles", "number", false],
+      ["interceptions", "Interceptions", "number", false],
+      ["saves", "Saves", "number", false]
     ]
   },
   premier_league_standings: {
@@ -105,6 +108,234 @@ const schemas = {
     ]
   }
 };
+
+const PREMIER_LEAGUE_2026_27_CLUBS = [
+  "Arsenal",
+  "Aston Villa",
+  "AFC Bournemouth",
+  "Brentford",
+  "Brighton & Hove Albion",
+  "Chelsea",
+  "Coventry City",
+  "Crystal Palace",
+  "Everton",
+  "Fulham",
+  "Hull City",
+  "Ipswich Town",
+  "Leeds United",
+  "Liverpool",
+  "Manchester City",
+  "Manchester United",
+  "Newcastle United",
+  "Nottingham Forest",
+  "Sunderland",
+  "Tottenham Hotspur"
+];
+
+async function ensurePremierLeagueStandingsClubs() {
+  const season = "2026/27";
+
+  const { data: existing, error: readError } = await db
+    .from("premier_league_standings")
+    .select("club,position")
+    .eq("season", season);
+
+  if (readError) {
+    console.warn("Could not check Premier League clubs:", readError.message);
+    return;
+  }
+
+  const normalizeClub = value => String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+
+  const existingNames = new Set(
+    (existing || []).map(row => normalizeClub(row.club))
+  );
+
+  const missingClubs = PREMIER_LEAGUE_2026_27_CLUBS.filter(
+    club => !existingNames.has(normalizeClub(club))
+  );
+
+  if (!missingClubs.length) return;
+
+  const usedPositions = new Set(
+    (existing || [])
+      .map(row => Number(row.position))
+      .filter(position => Number.isInteger(position) && position >= 1 && position <= 20)
+  );
+
+  const freePositions = [];
+  for (let position = 1; position <= 20; position++) {
+    if (!usedPositions.has(position)) freePositions.push(position);
+  }
+
+  for (let index = 0; index < missingClubs.length; index++) {
+    const club = missingClubs[index];
+    const position = freePositions[index] ?? ((existing || []).length + index + 1);
+
+    const row = {
+      season,
+      position,
+      club,
+      played: 0,
+      wins: 0,
+      draws: 0,
+      losses: 0,
+      goals_for: 0,
+      goals_against: 0,
+      goal_difference: 0,
+      points: 0
+    };
+
+    const { error: insertError } = await db
+      .from("premier_league_standings")
+      .insert(row);
+
+    if (insertError) {
+      console.warn(`Could not add ${club}:`, insertError.message);
+    }
+  }
+}
+
+
+async function recalculatePremierLeagueStandings() {
+  const season = "2026/27";
+
+  const normalizeClubName = value => String(value || "")
+    .trim()
+    .replace(/\s+/g, " ");
+
+  const blankRow = club => ({
+    season,
+    club,
+    played: 0,
+    wins: 0,
+    draws: 0,
+    losses: 0,
+    goals_for: 0,
+    goals_against: 0,
+    goal_difference: 0,
+    points: 0
+  });
+
+  const table = new Map();
+
+  function ensureClub(name) {
+    const club = normalizeClubName(name);
+    if (!club) return null;
+
+    let key = club.toLowerCase();
+    if (!table.has(key)) table.set(key, blankRow(club));
+    return table.get(key);
+  }
+
+  function applyResult(homeName, awayName, homeScore, awayScore) {
+    if (homeScore === null || homeScore === undefined ||
+        awayScore === null || awayScore === undefined) return;
+
+    const home = ensureClub(homeName);
+    const away = ensureClub(awayName);
+    if (!home || !away) return;
+
+    const hs = Number(homeScore);
+    const as = Number(awayScore);
+    if (!Number.isFinite(hs) || !Number.isFinite(as)) return;
+
+    home.played++;
+    away.played++;
+
+    home.goals_for += hs;
+    home.goals_against += as;
+    away.goals_for += as;
+    away.goals_against += hs;
+
+    if (hs > as) {
+      home.wins++;
+      away.losses++;
+      home.points += 3;
+    } else if (hs < as) {
+      away.wins++;
+      home.losses++;
+      away.points += 3;
+    } else {
+      home.draws++;
+      away.draws++;
+      home.points++;
+      away.points++;
+    }
+  }
+
+  // Start with every 2026/27 club so the table always remains complete.
+  PREMIER_LEAGUE_2026_27_CLUBS.forEach(ensureClub);
+
+  const [{ data: arsenalFixtures, error: fixtureError },
+         { data: leagueMatches, error: matchesError }] = await Promise.all([
+    db.from("fixtures")
+      .select("home_team,away_team,is_home,opponent,arsenal_score,opponent_score,status,competition,season")
+      .eq("season", season),
+    db.from("premier_league_matches")
+      .select("home_team,away_team,home_score,away_score,status,season")
+      .eq("season", season)
+  ]);
+
+  if (fixtureError) throw fixtureError;
+  if (matchesError) throw matchesError;
+
+  (arsenalFixtures || []).forEach(row => {
+    const competitionName = String(row.competition || "").trim().toLowerCase();
+
+    if (!competitionName.includes("premier")) return;
+    if (!["fulltime","finished","ft"].includes(String(row.status || "").toLowerCase())) return;
+
+    const home = row.home_team || (row.is_home ? "Arsenal" : row.opponent);
+    const away = row.away_team || (row.is_home ? row.opponent : "Arsenal");
+    const homeScore = row.is_home ? row.arsenal_score : row.opponent_score;
+    const awayScore = row.is_home ? row.opponent_score : row.arsenal_score;
+
+    applyResult(home, away, homeScore, awayScore);
+  });
+
+  (leagueMatches || []).forEach(row => {
+    if (!["fulltime","finished","ft"].includes(String(row.status || "").toLowerCase())) return;
+    applyResult(row.home_team, row.away_team, row.home_score, row.away_score);
+  });
+
+  let rows = [...table.values()].map(row => ({
+    ...row,
+    goal_difference: row.goals_for - row.goals_against
+  }));
+
+  rows.sort((a, b) =>
+    b.points - a.points ||
+    b.goal_difference - a.goal_difference ||
+    b.goals_for - a.goals_for ||
+    a.club.localeCompare(b.club)
+  );
+
+  rows = rows.slice(0, 20).map((row, index) => ({
+    ...row,
+    position: index + 1
+  }));
+
+  // Rebuild the current season table in one clean pass.
+  // This avoids position collisions and invalid temporary positions.
+  const { error: deleteError } = await db
+    .from("premier_league_standings")
+    .delete()
+    .eq("season", season);
+
+  if (deleteError) throw deleteError;
+
+  const { error: insertError } = await db
+    .from("premier_league_standings")
+    .insert(rows);
+
+  if (insertError) throw insertError;
+
+  await loadTable("premier_league_standings");
+}
 
 function setMessage(el, text = "", type = "") {
   el.textContent = text;
@@ -194,6 +425,22 @@ document.querySelectorAll("[data-new]").forEach(button => {
   button.addEventListener("click", () => openEditor(button.dataset.new));
 });
 
+const recalculateStandingsBtn = document.getElementById("recalculateStandingsBtn");
+if (recalculateStandingsBtn) {
+  recalculateStandingsBtn.addEventListener("click", async () => {
+    const msg = document.getElementById("standingsRecalcMessage");
+    setMessage(msg, "Recalculating Premier League standings…");
+
+    try {
+      await recalculatePremierLeagueStandings();
+      setMessage(msg, "Premier League standings recalculated successfully.", "success");
+    } catch (error) {
+      console.error("Manual standings recalculation failed:", error);
+      setMessage(msg, `Standings update failed: ${error.message}`, "error");
+    }
+  });
+}
+
 function cardHtml(table, row) {
   const image = row.image_url
     ? `<img src="${escapeHtml(row.image_url)}" alt="">`
@@ -249,6 +496,13 @@ const eventDialog = document.getElementById('eventDialog');
 const matchDialogTitle = document.getElementById('matchDialogTitle');
 const matchAdminSummary = document.getElementById('matchAdminSummary');
 const matchEventsList = document.getElementById('matchEventsList');
+const lineupPlayer = document.getElementById('lineupPlayer');
+const lineupRole = document.getElementById('lineupRole');
+const lineupMinuteOn = document.getElementById('lineupMinuteOn');
+const lineupMinuteOff = document.getElementById('lineupMinuteOff');
+const lineupMessage = document.getElementById('lineupMessage');
+const lineupList = document.getElementById('lineupList');
+
 const matchSaveMessage = document.getElementById('matchSaveMessage');
 const eventMessage = document.getElementById('eventMessage');
 
@@ -301,6 +555,21 @@ function renderFixtureAdminList() {
   }).join('') : '<div class="match-empty">No matches in this view.</div>';
 }
 
+
+
+const clearEditorBtn = document.getElementById('clearEditorBtn');
+if (clearEditorBtn) {
+  clearEditorBtn.addEventListener('click', () => {
+    if (!confirm('Clear all fields in this editor? This does not delete the saved record until you save the cleared values.')) return;
+    editorFields.querySelectorAll('input, textarea, select').forEach(field => {
+      if (field.type === 'checkbox') field.checked = false;
+      else if (field.tagName === 'SELECT') field.selectedIndex = 0;
+      else field.value = '';
+    });
+    setMessage(editorMessage, 'Fields cleared. Save only if you want to keep these cleared values.', 'success');
+  });
+}
+
 async function loadFixturesAdmin() {
   const holder = document.getElementById('fixturesList');
   holder.innerHTML = '<div class="match-empty">Loading fixtures…</div>';
@@ -317,6 +586,130 @@ async function loadFixturesAdmin() {
   });
   renderFixtureAdminList();
 }
+
+
+async function populateLineupPlayers() {
+  const { data, error } = await db.from('premier_league_player_stats')
+    .select('player_name,position').eq('season','2026/27').order('player_name');
+
+  if (error) {
+    lineupPlayer.innerHTML = '<option value="">Could not load squad</option>';
+    return;
+  }
+
+  lineupPlayer.innerHTML = '<option value="">Select Arsenal player</option>' +
+    (data || []).map(p =>
+      `<option value="${escapeHtml(p.player_name)}" data-position="${escapeHtml(p.position || '')}">${escapeHtml(p.player_name)} — ${escapeHtml(p.position || 'Player')}</option>`
+    ).join('');
+}
+
+async function loadMatchLineup() {
+  if (!currentFixture) return;
+  lineupList.innerHTML = '<div class="match-empty">Loading lineup…</div>';
+
+  const { data, error } = await db.from('match_lineups').select('*')
+    .eq('fixture_id', currentFixture.id)
+    .order('is_starter', { ascending:false })
+    .order('minute_on', { ascending:true });
+
+  if (error) {
+    lineupList.innerHTML = `<div class="match-empty">${escapeHtml(error.message)}</div>`;
+    return;
+  }
+
+  lineupList.innerHTML = (data || []).length ? data.map(row => {
+    const end = row.minute_off ?? 90;
+    const mins = Math.max(0, Math.min(90,end) - Math.min(90,row.minute_on ?? 0));
+    return `<div class="admin-event-row">
+      <span class="admin-event-type">${row.is_starter ? 'START' : 'SUB'}</span>
+      <div class="admin-event-player"><strong>${escapeHtml(row.player_name)}</strong><small>${escapeHtml(row.position || 'Player')} • ${mins} min</small></div>
+      <span class="admin-event-minute">${row.is_starter ? "0'" : `${row.minute_on}'`}${row.minute_off != null ? ` → ${row.minute_off}'` : ''}</span>
+      <div class="admin-event-actions">
+        <button class="danger" type="button" onclick="window.nl4DeleteLineupPlayer('${row.id}')">Delete</button>
+      </div>
+    </div>`;
+  }).join('') : '<div class="match-empty">No Arsenal lineup recorded yet.</div>';
+}
+
+lineupRole.addEventListener('change', () => {
+  const starter = lineupRole.value === 'starter';
+  lineupMinuteOn.disabled = starter;
+  lineupMinuteOn.value = starter ? '0' : '';
+});
+lineupMinuteOn.disabled = true;
+
+
+document.getElementById('clearLineupBtn').addEventListener('click', async () => {
+  if (!currentFixture) return;
+  if (!confirm('Clear the entire Arsenal lineup and substitutions for this fixture? This deletes the saved lineup from Supabase.')) return;
+
+  setMessage(lineupMessage, 'Clearing lineup…');
+  const { error } = await db.from('match_lineups').delete().eq('fixture_id', currentFixture.id);
+  if (error) return setMessage(lineupMessage, error.message, 'error');
+
+  lineupPlayer.value = '';
+  lineupRole.value = 'starter';
+  lineupMinuteOn.value = '0';
+  lineupMinuteOn.disabled = true;
+  lineupMinuteOff.value = '';
+
+  setMessage(lineupMessage, 'Lineup and substitutions cleared.', 'success');
+  await loadMatchLineup();
+  await loadTable('premier_league_player_stats');
+});
+
+document.getElementById('saveLineupPlayerBtn').addEventListener('click', async () => {
+  if (!currentFixture) return;
+  const playerName = lineupPlayer.value;
+  if (!playerName) return setMessage(lineupMessage,'Select a player.','error');
+
+  const selected = lineupPlayer.options[lineupPlayer.selectedIndex];
+  const isStarter = lineupRole.value === 'starter';
+  const minuteOn = isStarter ? 0 : Number(lineupMinuteOn.value);
+  const minuteOff = lineupMinuteOff.value === '' ? null : Number(lineupMinuteOff.value);
+
+  if (!isStarter && (!Number.isFinite(minuteOn) || minuteOn < 0))
+    return setMessage(lineupMessage,'Enter minute on for the substitute.','error');
+  if (minuteOff !== null && minuteOff < minuteOn)
+    return setMessage(lineupMessage,'Minute off cannot be before minute on.','error');
+
+  const payload = {
+    fixture_id: currentFixture.id,
+    player_name: playerName,
+    position: selected.dataset.position || null,
+    is_starter: isStarter,
+    minute_on: minuteOn,
+    minute_off: minuteOff,
+    updated_at: new Date().toISOString()
+  };
+
+  const { data: existing, error: findError } = await db.from('match_lineups')
+    .select('id').eq('fixture_id',currentFixture.id).eq('player_name',playerName).maybeSingle();
+  if (findError) return setMessage(lineupMessage,findError.message,'error');
+
+  const response = existing?.id
+    ? await db.from('match_lineups').update(payload).eq('id',existing.id)
+    : await db.from('match_lineups').insert(payload);
+
+  if (response.error) return setMessage(lineupMessage,response.error.message,'error');
+
+  setMessage(lineupMessage,`${playerName} saved.`, 'success');
+  lineupPlayer.value = '';
+  lineupRole.value = 'starter';
+  lineupMinuteOn.value = '0';
+  lineupMinuteOn.disabled = true;
+  lineupMinuteOff.value = '';
+  await loadMatchLineup();
+  await loadTable('premier_league_player_stats');
+});
+
+window.nl4DeleteLineupPlayer = async id => {
+  if (!confirm('Remove this player from the lineup?')) return;
+  const { error } = await db.from('match_lineups').delete().eq('id',id);
+  if (error) return setMessage(lineupMessage,error.message,'error');
+  await loadMatchLineup();
+  await loadTable('premier_league_player_stats');
+};
 
 async function loadMatchEvents() {
   if (!currentFixture) return;
@@ -379,6 +772,9 @@ window.nl4ManageMatch = async function(id) {
   document.getElementById('statAwaySaves').value = data.away_saves ?? '';
 
   setMessage(matchSaveMessage);
+  setMessage(lineupMessage);
+  await populateLineupPlayers();
+  await loadMatchLineup();
   await loadMatchEvents();
   matchDialog.showModal();
 };
@@ -406,13 +802,139 @@ async function saveCurrentMatch() {
   const { data, error } = await db.from('fixtures').update(payload).eq('id', currentFixture.id).select('*').single();
   if (error) return setMessage(matchSaveMessage, error.message, 'error');
   currentFixture = data;
-  setMessage(matchSaveMessage, 'Match saved. Public fixtures will use this data.', 'success');
+
+  const isPremierLeague =
+    String(data.competition || '').trim().toLowerCase().includes('premier') &&
+    String(data.season || '').trim() === '2026/27';
+
+  if (isPremierLeague) {
+    const hasFullTimeScore =
+      payload.arsenal_score !== null &&
+      payload.opponent_score !== null;
+
+    setMessage(
+      matchSaveMessage,
+      hasFullTimeScore && status === 'fulltime'
+        ? 'Match saved. Recalculating Premier League standings…'
+        : 'Match saved. Removing any cleared/test result from the standings…',
+      'success'
+    );
+
+    try {
+      await recalculatePremierLeagueStandings();
+
+      if (hasFullTimeScore && status === 'fulltime') {
+        setMessage(
+          matchSaveMessage,
+          'Match saved and Premier League standings updated.',
+          'success'
+        );
+      } else if (!hasFullTimeScore) {
+        setMessage(
+          matchSaveMessage,
+          'Scores cleared and Premier League standings recalculated.',
+          'success'
+        );
+      } else {
+        setMessage(
+          matchSaveMessage,
+          'Score saved, but it will not count in the table until Status is Full Time.',
+          'success'
+        );
+      }
+    } catch (standingsError) {
+      console.error('Standings recalculation failed:', standingsError);
+      setMessage(
+        matchSaveMessage,
+        `Match saved, but standings update failed: ${standingsError.message}`,
+        'error'
+      );
+    }
+  } else {
+    setMessage(
+      matchSaveMessage,
+      'Match saved. Public fixtures will use this data.',
+      'success'
+    );
+  }
+
   await loadFixturesAdmin();
+  if (isPremierLeague) await loadTable('premier_league_player_stats');
 }
 
 document.getElementById('saveMatchBtn').addEventListener('click', saveCurrentMatch);
+
+document.getElementById('clearMatchScoresBtn').addEventListener('click', async () => {
+  if (!currentFixture) return;
+
+  if (!confirm('Clear the full-time and half-time scores for this fixture?')) return;
+
+  setMessage(matchSaveMessage, 'Clearing scores…');
+
+  const payload = {
+    arsenal_score: null,
+    opponent_score: null,
+    halftime_arsenal_score: null,
+    halftime_opponent_score: null,
+    status: 'scheduled',
+    updated_at: new Date().toISOString()
+  };
+
+  const { data, error } = await db
+    .from('fixtures')
+    .update(payload)
+    .eq('id', currentFixture.id)
+    .select('*')
+    .single();
+
+  if (error) {
+    setMessage(matchSaveMessage, `Could not clear scores: ${error.message}`, 'error');
+    return;
+  }
+
+  currentFixture = data;
+
+  document.getElementById('matchStatus').value = 'scheduled';
+  document.getElementById('matchArsenalScore').value = '';
+  document.getElementById('matchOpponentScore').value = '';
+  document.getElementById('matchHTArsenalScore').value = '';
+  document.getElementById('matchHTOpponentScore').value = '';
+
+  const isPremierLeague =
+    String(data.competition || '').trim().toLowerCase().includes('premier') &&
+    String(data.season || '').trim() === '2026/27';
+
+  if (isPremierLeague) {
+    try {
+      await recalculatePremierLeagueStandings();
+      setMessage(
+        matchSaveMessage,
+        'Test scores cleared. Premier League standings recalculated.',
+        'success'
+      );
+    } catch (standingsError) {
+      console.error('Standings recalculation after clearing scores failed:', standingsError);
+      setMessage(
+        matchSaveMessage,
+        `Scores cleared, but standings update failed: ${standingsError.message}`,
+        'error'
+      );
+    }
+  } else {
+    setMessage(matchSaveMessage, 'Scores cleared.', 'success');
+  }
+
+  await loadFixturesAdmin();
+});
 document.getElementById('closeMatchDialog').addEventListener('click', () => matchDialog.close());
-document.getElementById('doneMatchDialog').addEventListener('click', () => matchDialog.close());
+document.getElementById('doneMatchDialog').addEventListener('click', async () => {
+  if (currentFixture &&
+      String(currentFixture.competition || '').trim().toLowerCase() === 'premier league' &&
+      String(currentFixture.season || '').trim() === '2026/27') {
+    await loadTable('premier_league_standings');
+  }
+  matchDialog.close();
+});
 
 document.querySelectorAll('[data-match-filter]').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -461,6 +983,34 @@ document.getElementById('saveStatsBtn').addEventListener('click', async () => {
   setMessage(msg, 'Statistics saved.', 'success');
 });
 
+
+document.getElementById('clearStatsBtn').addEventListener('click', async () => {
+  if (!currentFixture) return;
+  const msg = document.getElementById('statsSaveMessage');
+  if (!confirm('Clear all saved match statistics for this fixture?')) return;
+
+  const payload = {
+    home_possession:null, away_possession:null,
+    home_shots:null, away_shots:null,
+    home_shots_on_target:null, away_shots_on_target:null,
+    home_corners:null, away_corners:null,
+    home_fouls:null, away_fouls:null,
+    home_offsides:null, away_offsides:null,
+    home_saves:null, away_saves:null,
+    updated_at:new Date().toISOString()
+  };
+
+  setMessage(msg, 'Clearing statistics…');
+  const { data, error } = await db.from('fixtures').update(payload).eq('id', currentFixture.id).select('*').single();
+  if (error) return setMessage(msg, error.message, 'error');
+  currentFixture = data;
+
+  ['statHomePossession','statAwayPossession','statHomeShots','statAwayShots','statHomeSOT','statAwaySOT','statHomeCorners','statAwayCorners','statHomeFouls','statAwayFouls','statHomeOffsides','statAwayOffsides','statHomeSaves','statAwaySaves']
+    .forEach(id => { const el=document.getElementById(id); if (el) el.value=''; });
+
+  setMessage(msg, 'Match statistics cleared.', 'success');
+});
+
 function openEventEditor(event = null) {
   if (!currentFixture) return;
   currentEventId = event?.id || null;
@@ -482,6 +1032,28 @@ function openEventEditor(event = null) {
 document.getElementById('addEventBtn').addEventListener('click', () => openEventEditor());
 document.getElementById('closeEventDialog').addEventListener('click', () => eventDialog.close());
 document.getElementById('cancelEventDialog').addEventListener('click', () => eventDialog.close());
+
+document.getElementById('clearEventBtn').addEventListener('click', () => {
+  if (!confirm('Clear the event editor fields?')) return;
+  currentEventId = null;
+  document.getElementById('eventDialogTitle').textContent = 'Add event';
+  document.getElementById('eventType').value = 'goal';
+  document.getElementById('eventPlayer').value = '';
+  document.getElementById('eventMinute').value = '';
+  document.getElementById('eventStoppage').value = '';
+  document.getElementById('eventRelatedPlayer').value = '';
+  if (document.getElementById('eventTeam').options.length) document.getElementById('eventTeam').selectedIndex = 0;
+  setMessage(eventMessage, 'Event fields cleared.', 'success');
+});
+
+document.getElementById('clearAllEventsBtn').addEventListener('click', async () => {
+  if (!currentFixture) return;
+  if (!confirm('Clear ALL goals, assists and cards saved for this fixture? This deletes them from Supabase.')) return;
+  const { error } = await db.from('match_events').delete().eq('fixture_id', currentFixture.id);
+  if (error) return alert(error.message);
+  await loadMatchEvents();
+});
+
 
 window.nl4EditMatchEvent = async function(id) {
   const { data, error } = await db.from('match_events').select('*').eq('id', id).single();
@@ -521,17 +1093,112 @@ document.getElementById('saveEventBtn').addEventListener('click', async () => {
   setTimeout(() => eventDialog.close(), 250);
 });
 
+
+let plPlayerStatsRows = [];
+let plPlayerStatsPositionFilter = "all";
+let plPlayerStatsSearch = "";
+
+function renderPremierLeaguePlayerStatsAdmin() {
+  const holder = document.getElementById("premier_league_player_statsGrouped");
+  if (!holder) return;
+
+  const query = plPlayerStatsSearch.trim().toLowerCase();
+  const groups = ["Goalkeeper", "Defender", "Midfielder", "Forward"];
+
+  let filtered = plPlayerStatsRows.filter(row => {
+    const matchesPosition =
+      plPlayerStatsPositionFilter === "all" ||
+      String(row.position || "") === plPlayerStatsPositionFilter;
+
+    const matchesSearch =
+      !query ||
+      String(row.player_name || "").toLowerCase().includes(query);
+
+    return matchesPosition && matchesSearch;
+  });
+
+  if (!filtered.length) {
+    holder.innerHTML = '<div class="pl-admin-empty">No Arsenal players match this view.</div>';
+    return;
+  }
+
+  holder.innerHTML = groups.map(group => {
+    const rows = filtered.filter(row => String(row.position || "") === group);
+    if (!rows.length) return "";
+
+    return `<section class="pl-player-group">
+      <div class="pl-player-group-head">
+        <h3>${escapeHtml(group)}s</h3>
+        <span>${rows.length} player${rows.length === 1 ? "" : "s"}</span>
+      </div>
+      <div class="pl-admin-player-grid">
+        ${rows.map(row => `
+          <article class="pl-admin-player-card">
+            <h4>${escapeHtml(row.player_name || "Unnamed player")}</h4>
+            <div class="meta">${escapeHtml(row.position || "Player")} • ${escapeHtml(row.season || "")}</div>
+
+            <div class="pl-admin-player-stats">
+              <div class="pl-admin-mini-stat"><strong>${row.appearances ?? 0}</strong><span>APP</span></div>
+              <div class="pl-admin-mini-stat"><strong>${row.goals ?? 0}</strong><span>GOALS</span></div>
+              <div class="pl-admin-mini-stat"><strong>${row.assists ?? 0}</strong><span>ASSISTS</span></div>
+              <div class="pl-admin-mini-stat"><strong>${row.man_of_the_match ?? 0}</strong><span>MOTM</span></div>
+            </div>
+
+            <div class="card-actions">
+              <button class="primary-btn" type="button" onclick="window.nl4Edit('premier_league_player_stats','${row.id}')">
+                Edit Stats
+              </button>
+            </div>
+          </article>
+        `).join("")}
+      </div>
+    </section>`;
+  }).join("");
+}
+
+const plPlayerSearch = document.getElementById("plPlayerSearch");
+if (plPlayerSearch) {
+  plPlayerSearch.addEventListener("input", event => {
+    plPlayerStatsSearch = event.target.value || "";
+    renderPremierLeaguePlayerStatsAdmin();
+  });
+}
+
+document.querySelectorAll("[data-pl-position]").forEach(button => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll("[data-pl-position]").forEach(x => x.classList.remove("active"));
+    button.classList.add("active");
+    plPlayerStatsPositionFilter = button.dataset.plPosition;
+    renderPremierLeaguePlayerStatsAdmin();
+  });
+});
+
 async function loadTable(table) {
   if (table === "fixtures") return loadFixturesAdmin();
+  if (table === "premier_league_standings") await ensurePremierLeagueStandingsClubs();
   const schema = schemas[table];
   const ascending = table !== "news";
-  const { data, error } = await db.from(table).select("*").order(schema.order, { ascending });
+  let query = db.from(table).select("*");
+  if (table === "premier_league_standings") query = query.eq("season", "2026/27");
+  const { data, error } = await query.order(schema.order, { ascending });
 
   const holder = document.getElementById(`${table}List`);
   if (error) {
-    holder.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+    if (holder) holder.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+    if (table === "premier_league_player_stats") {
+      const grouped = document.getElementById("premier_league_player_statsGrouped");
+      if (grouped) grouped.innerHTML = `<div class="pl-admin-empty">${escapeHtml(error.message)}</div>`;
+    }
     return;
   }
+
+  if (table === "premier_league_player_stats") {
+    plPlayerStatsRows = data || [];
+    renderPremierLeaguePlayerStatsAdmin();
+    if (holder) holder.innerHTML = "";
+    return;
+  }
+
   holder.innerHTML = data.length ? data.map(row => cardHtml(table,row)).join("") : `<div class="empty">No ${table} yet.</div>`;
 }
 
@@ -650,7 +1317,16 @@ editorForm.addEventListener("submit", async (event) => {
   await loadTable(table);
 
   if (table === "premier_league_matches") {
-    await loadTable("premier_league_standings");
+    try {
+      await recalculatePremierLeagueStandings();
+    } catch (standingsError) {
+      console.error("Standings recalculation failed:", standingsError);
+      setMessage(
+        editorMessage,
+        `Result saved, but standings update failed: ${standingsError.message}`,
+        "error"
+      );
+    }
   }
 
   setTimeout(() => dialog.close(), 300);
@@ -664,7 +1340,12 @@ window.nl4Delete = async (table, id) => {
   await loadTable(table);
 
   if (table === "premier_league_matches") {
-    await loadTable("premier_league_standings");
+    try {
+      await recalculatePremierLeagueStandings();
+    } catch (standingsError) {
+      console.error("Standings recalculation failed:", standingsError);
+      alert(`Result deleted, but standings update failed: ${standingsError.message}`);
+    }
   }
 };
 

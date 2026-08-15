@@ -12,6 +12,30 @@
 
 .stats-admin-table{display:grid;gap:7px}.stats-admin-head,.stats-admin-row{display:grid;grid-template-columns:minmax(80px,1fr) minmax(120px,1.4fr) minmax(80px,1fr);gap:10px;align-items:center}.stats-admin-head{padding:0 4px 5px;color:#d8ad45;text-align:center;font-size:9px;letter-spacing:1px}.stats-admin-row{padding:8px;border:1px solid rgba(255,255,255,.07);border-radius:11px;background:#101010}.stats-admin-row span{text-align:center;color:#999;font-size:10px;font-weight:800}.stats-admin-row input{text-align:center;min-width:0}.stats-admin-row input:first-child{border-left:2px solid #d8001f}.stats-admin-row input:last-child{border-right:2px solid #d8ad45}@media(max-width:520px){.stats-admin-head,.stats-admin-row{grid-template-columns:70px 1fr 70px;gap:6px}.stats-admin-row{padding:6px}.stats-admin-row span{font-size:8px}}
 </style>
+
+<style>
+  .pl-admin-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 16px}
+  .pl-admin-search{flex:1 1 240px;min-width:220px}
+  .pl-admin-search input{width:100%}
+  .pl-pos-filter{border:1px solid rgba(255,255,255,.12);background:#151515;color:#aaa;border-radius:999px;padding:8px 12px;cursor:pointer;font-weight:800}
+  .pl-pos-filter.active{background:#d8ad45;color:#111;border-color:#d8ad45}
+  .pl-player-groups{display:grid;gap:22px}
+  .pl-player-group{display:grid;gap:12px}
+  .pl-player-group-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .pl-player-group-head h3{margin:0;color:#fff}
+  .pl-player-group-head span{color:#777;font-size:11px}
+  .pl-admin-player-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+  .pl-admin-player-card{border:1px solid rgba(255,255,255,.08);border-radius:16px;background:#111;padding:14px}
+  .pl-admin-player-card h4{margin:0;color:#fff;font-size:15px}
+  .pl-admin-player-card .meta{margin-top:5px;color:#888;font-size:11px}
+  .pl-admin-player-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:12px 0}
+  .pl-admin-mini-stat{padding:8px;border:1px solid rgba(255,255,255,.07);border-radius:10px;text-align:center}
+  .pl-admin-mini-stat strong{display:block;color:#fff}
+  .pl-admin-mini-stat span{display:block;color:#777;font-size:8px;letter-spacing:.7px;margin-top:2px}
+  .pl-admin-player-card .card-actions{display:flex;justify-content:flex-end}
+  .pl-admin-empty{padding:18px;border:1px dashed rgba(255,255,255,.12);border-radius:12px;color:#777;text-align:center}
+</style>
+
 </head>
 <body>
   <header class="topbar">
@@ -105,8 +129,12 @@
               <h2>Premier League Standings</h2>
               <p class="muted">Manage the 2026/27 table shown on premier-league.html. Arsenal's hero statistics are calculated from the Arsenal row.</p>
             </div>
-            <button class="primary-btn" data-new="premier_league_standings">+ Add club</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button id="recalculateStandingsBtn" class="ghost-btn" type="button">↻ Recalculate table</button>
+              <button class="primary-btn" data-new="premier_league_standings">+ Add club</button>
+            </div>
           </div>
+          <p id="standingsRecalcMessage" class="message" role="status"></p>
           <div id="premier_league_standingsList" class="content-grid"></div>
         </section>
 
@@ -137,7 +165,19 @@
             </div>
             <button class="primary-btn" data-new="premier_league_player_stats">+ Add player stats</button>
           </div>
-          <div id="premier_league_player_statsList" class="content-grid"></div>
+          <div class="pl-admin-tools">
+              <label class="pl-admin-search">
+                Search players
+                <input id="plPlayerSearch" type="search" placeholder="Search by player name">
+              </label>
+              <button class="pl-pos-filter active" type="button" data-pl-position="all">All</button>
+              <button class="pl-pos-filter" type="button" data-pl-position="Goalkeeper">Goalkeepers</button>
+              <button class="pl-pos-filter" type="button" data-pl-position="Defender">Defenders</button>
+              <button class="pl-pos-filter" type="button" data-pl-position="Midfielder">Midfielders</button>
+              <button class="pl-pos-filter" type="button" data-pl-position="Forward">Forwards</button>
+            </div>
+            <div id="premier_league_player_statsGrouped" class="pl-player-groups"></div>
+            <div id="premier_league_player_statsList" class="content-grid" hidden></div>
         </section>
 
         <section id="trophiesPanel" class="panel">
@@ -174,6 +214,7 @@
       <div id="editorFields" class="form-grid"></div>
       <div class="dialog-actions">
         <button class="ghost-btn" id="cancelDialog" type="button">Cancel</button>
+        <button class="ghost-btn" id="clearEditorBtn" type="button">Clear Fields</button>
         <button class="primary-btn" id="saveBtn" type="submit">Save</button>
       </div>
       <p id="editorMessage" class="message" role="status"></p>
@@ -216,10 +257,10 @@
           <label class="check-label">Kick-off confirmed
             <input id="matchKickoffConfirmed" type="checkbox">
           </label>
-          <label>Arsenal score
+          <label>Full-time Arsenal score
             <input id="matchArsenalScore" type="number" min="0" max="30">
           </label>
-          <label>Opponent score
+          <label>Full-time opponent score
             <input id="matchOpponentScore" type="number" min="0" max="30">
           </label>
           <label>Half-time Arsenal score
@@ -240,6 +281,7 @@
         </div>
         <div class="dialog-actions match-save-row">
           <span id="matchSaveMessage" class="message" role="status"></span>
+          <button id="clearMatchScoresBtn" class="ghost-btn" type="button">Clear Scores</button>
           <button id="saveMatchBtn" class="primary-btn" type="button">Save Match</button>
         </div>
       </section>
@@ -264,14 +306,51 @@
         </div>
         <div class="dialog-actions match-save-row">
           <span id="statsSaveMessage" class="message" role="status"></span>
+          <button id="clearStatsBtn" class="ghost-btn" type="button">Clear Statistics</button>
           <button id="saveStatsBtn" class="primary-btn" type="button">Save Statistics</button>
         </div>
       </section>
 
       <section class="match-admin-section">
         <div class="match-admin-section-head">
+          <div>
+            <p class="eyebrow">ARSENAL LINEUP</p>
+            <h3>Starters &amp; Substitutes</h3>
+          </div>
+        </div>
+        <p class="muted">Record every Arsenal player who appeared. Starters begin at 0'. For substitutes, enter the minute they came on. Add minute off when applicable.</p>
+        <div class="form-grid">
+          <label>Player
+            <select id="lineupPlayer"></select>
+          </label>
+          <label>Role
+            <select id="lineupRole">
+              <option value="starter">Starter</option>
+              <option value="substitute">Substitute</option>
+            </select>
+          </label>
+          <label>Minute on
+            <input id="lineupMinuteOn" type="number" min="0" max="130" value="0">
+          </label>
+          <label>Minute off
+            <input id="lineupMinuteOff" type="number" min="0" max="130" placeholder="90">
+          </label>
+        </div>
+        <div class="dialog-actions match-save-row">
+          <span id="lineupMessage" class="message" role="status"></span>
+          <button id="clearLineupBtn" class="ghost-btn" type="button">Clear Lineup</button>
+          <button id="saveLineupPlayerBtn" class="primary-btn" type="button">Add / Update Player</button>
+        </div>
+        <div id="lineupList" class="match-events-admin-list"></div>
+      </section>
+
+      <section class="match-admin-section">
+        <div class="match-admin-section-head">
           <div><p class="eyebrow">MATCH EVENTS</p><h3>Goals, Assists &amp; Cards</h3></div>
-          <button id="addEventBtn" class="primary-btn" type="button">+ Add event</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button id="clearAllEventsBtn" class="ghost-btn" type="button">Clear Events</button>
+            <button id="addEventBtn" class="primary-btn" type="button">+ Add event</button>
+          </div>
         </div>
         <div id="matchEventsList" class="match-events-admin-list"></div>
       </section>
@@ -315,6 +394,7 @@
       </div>
       <div class="dialog-actions">
         <button id="cancelEventDialog" class="ghost-btn" type="button">Cancel</button>
+        <button id="clearEventBtn" class="ghost-btn" type="button">Clear Event</button>
         <button id="saveEventBtn" class="primary-btn" type="button">Save Event</button>
       </div>
       <p id="eventMessage" class="message" role="status"></p>
@@ -323,6 +403,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
   <script src="supabase-client.js"></script>
-  <script src="admin.js?v=20260814-12"></script>
+  <script src="admin.js?v=20260815-clear-buttons"></script>
 </body>
 </html>
