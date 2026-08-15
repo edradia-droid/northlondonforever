@@ -496,132 +496,23 @@ const eventDialog = document.getElementById('eventDialog');
 const matchDialogTitle = document.getElementById('matchDialogTitle');
 const matchAdminSummary = document.getElementById('matchAdminSummary');
 const matchEventsList = document.getElementById('matchEventsList');
-const lineupFormation = document.getElementById('lineupFormation');
-const lineupPitchSlot = document.getElementById('lineupPitchSlot');
 const lineupPlayer = document.getElementById('lineupPlayer');
+const lineupFormation = document.getElementById('lineupFormation');
+const lineupSlot = document.getElementById('lineupSlot');
+const FORMATION_SLOTS={
+ '4-3-3':['GK','LB','LCB','RCB','RB','LCM','CM','RCM','LW','ST','RW'],
+ '4-2-3-1':['GK','LB','LCB','RCB','RB','LDM','RDM','LAM','CAM','RAM','ST'],
+ '4-4-2':['GK','LB','LCB','RCB','RB','LM','LCM','RCM','RM','LST','RST'],
+ '3-4-3':['GK','LCB','CB','RCB','LM','LCM','RCM','RM','LW','ST','RW'],
+ '3-5-2':['GK','LCB','CB','RCB','LWB','LCM','CM','RCM','RWB','LST','RST'],
+ '4-1-4-1':['GK','LB','LCB','RCB','RB','DM','LM','LCM','RCM','RM','ST']};
+function refreshLineupSlots(){ if(!lineupSlot)return; lineupSlot.innerHTML=(FORMATION_SLOTS[lineupFormation?.value]||FORMATION_SLOTS['4-3-3']).map(x=>`<option value="${x}">${x}</option>`).join(''); }
+lineupFormation?.addEventListener('change',refreshLineupSlots); refreshLineupSlots();
 const lineupRole = document.getElementById('lineupRole');
 const lineupMinuteOn = document.getElementById('lineupMinuteOn');
 const lineupMinuteOff = document.getElementById('lineupMinuteOff');
 const lineupMessage = document.getElementById('lineupMessage');
 const lineupList = document.getElementById('lineupList');
-
-
-const NL4_FORMATION_SLOTS = {
-  '4-3-3': ['GK','LB','LCB','RCB','RB','LCM','CM','RCM','LW','ST','RW'],
-  '4-2-3-1': ['GK','LB','LCB','RCB','RB','LDM','RDM','LAM','CAM','RAM','ST'],
-  '4-4-2': ['GK','LB','LCB','RCB','RB','LM','LCM','RCM','RM','LST','RST'],
-  '3-4-3': ['GK','LCB','CB','RCB','LWB','LCM','RCM','RWB','LW','ST','RW'],
-  '3-5-2': ['GK','LCB','CB','RCB','LWB','LCM','CAM','RCM','RWB','LST','RST'],
-  '4-1-4-1': ['GK','LB','LCB','RCB','RB','DM','LM','LCM','RCM','RM','ST']
-};
-
-function updatePitchSlotOptions() {
-  if (!lineupPitchSlot || !lineupFormation || !lineupRole) return;
-  if (lineupRole.value !== 'starter') {
-    lineupPitchSlot.innerHTML = '<option value="">Not required for substitute</option>';
-    lineupPitchSlot.disabled = true;
-    return;
-  }
-  lineupPitchSlot.disabled = false;
-  const formation = lineupFormation.value || '4-3-3';
-  const slots = NL4_FORMATION_SLOTS[formation] || NL4_FORMATION_SLOTS['4-3-3'];
-  lineupPitchSlot.innerHTML = '<option value="">Select pitch slot</option>' +
-    slots.map(slot => `<option value="${slot}">${slot}</option>`).join('');
-}
-
-
-const NL4_SLOT_COORDS = {
-  GK:[50,92],
-  LB:[16,76], LCB:[38,78], CB:[50,78], RCB:[62,78], RB:[84,76],
-  LWB:[13,63], RWB:[87,63],
-  DM:[50,62], LDM:[37,62], RDM:[63,62],
-  LM:[17,50], LCM:[37,52], CM:[50,52], RCM:[63,52], RM:[83,50],
-  LAM:[28,39], CAM:[50,38], RAM:[72,39],
-  LW:[18,24], LST:[40,20], ST:[50,18], RST:[60,20], RW:[82,24]
-};
-
-function slotDistance(fromSlot, toSlot) {
-  const a = NL4_SLOT_COORDS[fromSlot] || [50,50];
-  const b = NL4_SLOT_COORDS[toSlot] || [50,50];
-  const dx = a[0] - b[0];
-  const dy = a[1] - b[1];
-  return Math.sqrt(dx * dx + dy * dy);
-}
-
-function autoRemapStarterSlots(starters, formation) {
-  const available = [...(NL4_FORMATION_SLOTS[formation] || NL4_FORMATION_SLOTS['4-3-3'])];
-  const assignments = [];
-
-  // Goalkeeper is always kept in goal first.
-  const keeper = starters.find(row => row.pitch_slot === 'GK' || /goalkeeper/i.test(row.position || ''));
-  if (keeper && available.includes('GK')) {
-    assignments.push([keeper, 'GK']);
-    available.splice(available.indexOf('GK'), 1);
-  }
-
-  const remaining = starters.filter(row => row !== keeper);
-
-  // Players with the clearest current tactical position are assigned first.
-  remaining.sort((a,b) => {
-    const ac = NL4_SLOT_COORDS[a.pitch_slot] || [50,50];
-    const bc = NL4_SLOT_COORDS[b.pitch_slot] || [50,50];
-    return Math.abs(ac[0]-50) - Math.abs(bc[0]-50) || bc[1] - ac[1];
-  });
-
-  remaining.forEach(row => {
-    if (!available.length) return;
-    const from = row.pitch_slot || 'CM';
-    let bestIndex = 0;
-    let bestScore = Infinity;
-    available.forEach((slot, index) => {
-      let score = slotDistance(from, slot);
-      const pos = String(row.position || '').toLowerCase();
-      if (pos.includes('defender') && ['LW','RW','ST','LST','RST','CAM','LAM','RAM'].includes(slot)) score += 55;
-      if (pos.includes('forward') && ['LB','LCB','CB','RCB','RB','LWB','RWB'].includes(slot)) score += 55;
-      if (pos.includes('midfield') && ['LB','LCB','CB','RCB','RB','ST','LST','RST'].includes(slot)) score += 25;
-      if (score < bestScore) { bestScore = score; bestIndex = index; }
-    });
-    const target = available.splice(bestIndex,1)[0];
-    assignments.push([row,target]);
-  });
-
-  return assignments;
-}
-
-async function applyFormationChange() {
-  updatePitchSlotOptions();
-  if (!currentFixture || !lineupFormation) return;
-
-  const formation = lineupFormation.value || '4-3-3';
-  setMessage(lineupMessage, `Switching lineup to ${formation}…`);
-
-  const { data: starters, error } = await db.from('match_lineups')
-    .select('id,player_name,position,pitch_slot,formation')
-    .eq('fixture_id', currentFixture.id)
-    .eq('is_starter', true);
-
-  if (error) return setMessage(lineupMessage, error.message, 'error');
-  if (!starters?.length) {
-    setMessage(lineupMessage, `${formation} selected. Add the Starting XI and their slots.`, 'success');
-    return;
-  }
-
-  const assignments = autoRemapStarterSlots(starters, formation);
-  const now = new Date().toISOString();
-  const results = await Promise.all(assignments.map(([row, slot]) =>
-    db.from('match_lineups')
-      .update({ formation, pitch_slot: slot, updated_at: now })
-      .eq('id', row.id)
-  ));
-
-  const failed = results.find(result => result.error);
-  if (failed?.error) return setMessage(lineupMessage, failed.error.message, 'error');
-
-  setMessage(lineupMessage, `${formation} applied — all ${assignments.length} starters were repositioned automatically.`, 'success');
-  await loadMatchLineup();
-}
-
-if (lineupFormation) lineupFormation.addEventListener('change', applyFormationChange);
 
 const matchSaveMessage = document.getElementById('matchSaveMessage');
 const eventMessage = document.getElementById('eventMessage');
@@ -737,18 +628,12 @@ async function loadMatchLineup() {
     return;
   }
 
-  const savedStarter = (data || []).find(row => row.is_starter && row.formation);
-  if (savedStarter?.formation && lineupFormation && NL4_FORMATION_SLOTS[savedStarter.formation]) {
-    lineupFormation.value = savedStarter.formation;
-    updatePitchSlotOptions();
-  }
-
   lineupList.innerHTML = (data || []).length ? data.map(row => {
     const end = row.minute_off ?? 90;
     const mins = Math.max(0, Math.min(90,end) - Math.min(90,row.minute_on ?? 0));
     return `<div class="admin-event-row">
       <span class="admin-event-type">${row.is_starter ? 'START' : 'SUB'}</span>
-      <div class="admin-event-player"><strong>${escapeHtml(row.player_name)}</strong><small>${escapeHtml(row.position || 'Player')}${row.pitch_slot ? ` • ${escapeHtml(row.pitch_slot)}` : ''}${row.formation ? ` • ${escapeHtml(row.formation)}` : ''} • ${mins} min</small></div>
+      <div class="admin-event-player"><strong>${escapeHtml(row.player_name)}</strong><small>${escapeHtml(row.position || 'Player')} • ${mins} min</small></div>
       <span class="admin-event-minute">${row.is_starter ? "0'" : `${row.minute_on}'`}${row.minute_off != null ? ` → ${row.minute_off}'` : ''}</span>
       <div class="admin-event-actions">
         <button class="danger" type="button" onclick="window.nl4DeleteLineupPlayer('${row.id}')">Delete</button>
@@ -761,10 +646,8 @@ lineupRole.addEventListener('change', () => {
   const starter = lineupRole.value === 'starter';
   lineupMinuteOn.disabled = starter;
   lineupMinuteOn.value = starter ? '0' : '';
-  updatePitchSlotOptions();
 });
 lineupMinuteOn.disabled = true;
-updatePitchSlotOptions();
 
 
 document.getElementById('clearLineupBtn').addEventListener('click', async () => {
@@ -780,7 +663,6 @@ document.getElementById('clearLineupBtn').addEventListener('click', async () => 
   lineupMinuteOn.value = '0';
   lineupMinuteOn.disabled = true;
   lineupMinuteOff.value = '';
-  updatePitchSlotOptions();
 
   setMessage(lineupMessage, 'Lineup and substitutions cleared.', 'success');
   await loadMatchLineup();
@@ -794,13 +676,9 @@ document.getElementById('saveLineupPlayerBtn').addEventListener('click', async (
 
   const selected = lineupPlayer.options[lineupPlayer.selectedIndex];
   const isStarter = lineupRole.value === 'starter';
-  const formation = lineupFormation?.value || '4-3-3';
-  const pitchSlot = isStarter ? (lineupPitchSlot?.value || '') : null;
   const minuteOn = isStarter ? 0 : Number(lineupMinuteOn.value);
   const minuteOff = lineupMinuteOff.value === '' ? null : Number(lineupMinuteOff.value);
 
-  if (isStarter && !pitchSlot)
-    return setMessage(lineupMessage,'Select a pitch slot for the starter.','error');
   if (!isStarter && (!Number.isFinite(minuteOn) || minuteOn < 0))
     return setMessage(lineupMessage,'Enter minute on for the substitute.','error');
   if (minuteOff !== null && minuteOff < minuteOn)
@@ -810,8 +688,8 @@ document.getElementById('saveLineupPlayerBtn').addEventListener('click', async (
     fixture_id: currentFixture.id,
     player_name: playerName,
     position: selected.dataset.position || null,
-    formation: isStarter ? formation : null,
-    pitch_slot: isStarter ? pitchSlot : null,
+    formation: lineupFormation?.value || '4-3-3',
+    pitch_slot: isStarter ? (lineupSlot?.value || null) : null,
     is_starter: isStarter,
     minute_on: minuteOn,
     minute_off: minuteOff,
@@ -834,7 +712,6 @@ document.getElementById('saveLineupPlayerBtn').addEventListener('click', async (
   lineupMinuteOn.value = '0';
   lineupMinuteOn.disabled = true;
   lineupMinuteOff.value = '';
-  updatePitchSlotOptions();
   await loadMatchLineup();
   await loadTable('premier_league_player_stats');
 });

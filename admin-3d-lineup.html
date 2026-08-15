@@ -318,29 +318,22 @@
             <h3>Starters &amp; Substitutes</h3>
           </div>
         </div>
-        <p class="muted">Choose the formation, then assign each starter to a pitch slot. The Match Details page uses these slots to build the 3D team shape before kick-off. Substitutes remain separate and appear during the match.</p>
+        <p class="muted">Record every Arsenal player who appeared. Starters begin at 0'. For substitutes, enter the minute they came on. Add minute off when applicable.</p>
         <div class="form-grid">
           <label>Formation
-            <select id="lineupFormation">
-              <option value="4-3-3">4-3-3</option>
-              <option value="4-2-3-1">4-2-3-1</option>
-              <option value="4-4-2">4-4-2</option>
-              <option value="3-4-3">3-4-3</option>
-              <option value="3-5-2">3-5-2</option>
-              <option value="4-1-4-1">4-1-4-1</option>
-            </select>
+            <select id="lineupFormation"><option>4-3-3</option><option>4-2-3-1</option><option>4-4-2</option><option>3-4-3</option><option>3-5-2</option><option>4-1-4-1</option></select>
           </label>
           <label>Player
             <select id="lineupPlayer"></select>
+          </label>
+          <label>Pitch slot
+            <select id="lineupSlot"></select>
           </label>
           <label>Role
             <select id="lineupRole">
               <option value="starter">Starter</option>
               <option value="substitute">Substitute</option>
             </select>
-          </label>
-          <label>Pitch slot
-            <select id="lineupPitchSlot"></select>
           </label>
           <label>Minute on
             <input id="lineupMinuteOn" type="number" min="0" max="130" value="0">
