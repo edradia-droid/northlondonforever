@@ -54,6 +54,9 @@
         <button class="nav-link active" data-panel="playersPanel">Players</button>
         <button class="nav-link" data-panel="newsPanel">News</button>
         <button class="nav-link" data-panel="fixturesPanel">Fixtures</button>
+        <button class="nav-link" data-panel="premierLeaguePanel">Premier League</button>
+        <button class="nav-link" data-panel="premierLeagueResultsPanel">PL Results</button>
+        <button class="nav-link" data-panel="plPlayerStatsPanel">PL Player Stats</button>
         <button class="nav-link" data-panel="trophiesPanel">Trophies</button>
         <button class="nav-link" data-panel="mediaPanel">Media</button>
         <a class="nav-link back-link" href="index.html">← Back to website</a>
@@ -92,6 +95,49 @@
             <span id="fixturesAdminStatus" class="muted"></span>
           </div>
           <div id="fixturesList" class="match-admin-list"></div>
+        </section>
+
+
+        <section id="premierLeaguePanel" class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">COMPETITION HUB</p>
+              <h2>Premier League Standings</h2>
+              <p class="muted">Manage the 2026/27 table shown on premier-league.html. Arsenal's hero statistics are calculated from the Arsenal row.</p>
+            </div>
+            <button class="primary-btn" data-new="premier_league_standings">+ Add club</button>
+          </div>
+          <div id="premier_league_standingsList" class="content-grid"></div>
+        </section>
+
+
+        <section id="premierLeagueResultsPanel" class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">AUTOMATIC STANDINGS</p>
+              <h2>Premier League Results</h2>
+              <p class="muted">
+                Add completed non-Arsenal Premier League matches here.
+                Arsenal matches are managed from Fixtures and sync automatically.
+                Saving a Full Time result recalculates the league table.
+              </p>
+            </div>
+            <button class="primary-btn" data-new="premier_league_matches">+ Add league match</button>
+          </div>
+          <div id="premier_league_matchesList" class="content-grid"></div>
+        </section>
+
+
+        <section id="plPlayerStatsPanel" class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">ARSENAL ONLY</p>
+              <h2>Premier League Player Stats</h2>
+              <p class="muted">Manage Arsenal players used by the Player Leaders section on premier-league.html.</p>
+            </div>
+            <button class="primary-btn" data-new="premier_league_player_stats">+ Add player stats</button>
+          </div>
+          <div id="premier_league_player_statsList" class="content-grid"></div>
         </section>
 
         <section id="trophiesPanel" class="panel">
@@ -277,6 +323,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
   <script src="supabase-client.js"></script>
-  <script src="admin.js?v=20260814-7"></script>
+  <script src="admin.js?v=20260814-12"></script>
 </body>
 </html>

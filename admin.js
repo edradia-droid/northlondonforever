@@ -46,6 +46,55 @@ const schemas = {
       ["match_url","Match page URL","text"],["is_published","Published","checkbox"]
     ]
   },
+
+
+
+  premier_league_player_stats: {
+    title: "Arsenal Premier League player",
+    order: "player_name",
+    fields: [
+      ["season","Season","text",true],
+      ["player_name","Player name","text",true],
+      ["position","Position","text"],
+      ["image_url","Player image URL","url"],
+      ["profile_url","Profile page URL","text"],
+      ["appearances","Appearances","number",true],
+      ["goals","Goals","number",true],
+      ["assists","Assists","number",true],
+      ["clean_sheets","Clean sheets","number",true]
+    ]
+  },
+  premier_league_matches: {
+    title: "Premier League match",
+    order: "kickoff_at",
+    fields: [
+      ["season","Season","text",true],
+      ["matchday","Matchday","number",true],
+      ["home_team","Home team","text",true],
+      ["away_team","Away team","text",true],
+      ["home_score","Home score","number"],
+      ["away_score","Away score","number"],
+      ["status","Status","select",true,["scheduled","fulltime","postponed","cancelled"]],
+      ["kickoff_at","Kick-off","datetime-local"]
+    ]
+  },
+  premier_league_standings: {
+    title: "Premier League club",
+    order: "position",
+    fields: [
+      ["season","Season","text",true],
+      ["position","Position","number",true],
+      ["club","Club","text",true],
+      ["played","Played","number",true],
+      ["wins","Wins","number",true],
+      ["draws","Draws","number",true],
+      ["losses","Losses","number",true],
+      ["goals_for","Goals for","number",true],
+      ["goals_against","Goals against","number",true],
+      ["goal_difference","Goal difference","number",true],
+      ["points","Points","number",true]
+    ]
+  },
   trophies: {
     title: "Trophy",
     order: "sort_order",
@@ -150,19 +199,37 @@ function cardHtml(table, row) {
     ? `<img src="${escapeHtml(row.image_url)}" alt="">`
     : `<div style="height:180px;display:grid;place-items:center;background:#1c1c1c;color:#555">NL4</div>`;
 
-  let title = row.name || row.title || row.opponent || "Untitled";
+  let title = row.name || row.title || row.opponent || row.club || "Untitled";
   let meta = "";
+
+  if (table === "premier_league_matches") {
+    title = `${row.home_team || "Home"} vs ${row.away_team || "Away"}`;
+  }
+
+  if (table === "premier_league_player_stats") {
+    title = row.player_name || "Arsenal player";
+    meta = `${row.position || "Player"} • ${row.appearances ?? 0} apps • ${row.goals ?? 0} goals • ${row.assists ?? 0} assists • ${row.clean_sheets ?? 0} clean sheets`;
+  }
   if (table === "players") meta = [row.position,row.era,row.shirt_number ? `#${row.shirt_number}` : ""].filter(Boolean).join(" • ");
   if (table === "news") meta = row.published_at ? new Date(row.published_at).toLocaleString() : "No publish date";
   if (table === "fixtures") meta = `${row.competition || "Fixture"} • ${new Date(row.kickoff_at).toLocaleString()}`;
   if (table === "trophies") meta = [row.season,row.trophy_year].filter(Boolean).join(" • ");
+  if (table === "premier_league_standings") meta = `#${row.position ?? "—"} • ${row.points ?? 0} pts • P${row.played ?? 0} W${row.wins ?? 0} D${row.draws ?? 0} L${row.losses ?? 0} • GD ${Number(row.goal_difference || 0) > 0 ? "+" : ""}${row.goal_difference ?? 0}`;
+  if (table === "premier_league_matches") {
+    const hasScore = row.home_score !== null && row.home_score !== undefined &&
+                     row.away_score !== null && row.away_score !== undefined;
+    const score = hasScore ? `${row.home_score}–${row.away_score}` : "VS";
+    meta = `MD ${row.matchday ?? "—"} • ${score} • ${String(row.status || "scheduled").toUpperCase()}`;
+  }
 
   return `<article class="content-card">
     ${image}
     <div class="card-body">
       <h3>${escapeHtml(title)}</h3>
       <div class="meta">${escapeHtml(meta)}</div>
-      <span class="status ${row.is_published ? "live" : ""}">${row.is_published ? "Published" : "Draft"}</span>
+      ${(table === "premier_league_standings" || table === "premier_league_matches")
+        ? ""
+        : `<span class="status ${row.is_published ? "live" : ""}">${row.is_published ? "Published" : "Draft"}</span>`}
       <div class="card-actions">
         <button onclick="window.nl4Edit('${table}','${row.id}')">Edit</button>
         <button class="danger" onclick="window.nl4Delete('${table}','${row.id}')">Delete</button>
@@ -483,6 +550,12 @@ async function openEditor(table, id = null) {
     row = data;
   } else {
     if ("is_published" in Object.fromEntries(schema.fields.map(f => [f[0],true]))) row.is_published = true;
+    if (table === "premier_league_standings") row.season = "2026/27";
+    if (table === "premier_league_player_stats") row.season = "2026/27";
+    if (table === "premier_league_matches") {
+      row.season = "2026/27";
+      row.status = "fulltime";
+    }
   }
 
   editorTitle.textContent = `${id ? "Edit" : "Add"} ${schema.title}`;
@@ -526,6 +599,36 @@ editorForm.addEventListener("submit", async (event) => {
     payload[name] = normalizeValue(type, formData.get(name), el?.checked);
   });
 
+  if (table === "premier_league_matches") {
+    const home = String(payload.home_team || "").trim();
+    const away = String(payload.away_team || "").trim();
+
+    if (!home || !away) {
+      return setMessage(editorMessage, "Home team and away team are required.", "error");
+    }
+
+    if (home.toLowerCase() === away.toLowerCase()) {
+      return setMessage(editorMessage, "Home team and away team cannot be the same.", "error");
+    }
+
+    if (home.toLowerCase() === "arsenal" || away.toLowerCase() === "arsenal") {
+      return setMessage(
+        editorMessage,
+        "Manage Arsenal Premier League matches in the Fixtures panel. They sync automatically.",
+        "error"
+      );
+    }
+
+    if (payload.status === "fulltime" &&
+        (payload.home_score === null || payload.away_score === null)) {
+      return setMessage(
+        editorMessage,
+        "Enter both scores before saving a Full Time result.",
+        "error"
+      );
+    }
+  }
+
   setMessage(editorMessage, "Saving…");
   let response;
   if (id) response = await db.from(table).update(payload).eq("id", id);
@@ -536,8 +639,20 @@ editorForm.addEventListener("submit", async (event) => {
     return;
   }
 
-  setMessage(editorMessage, "Saved.", "success");
+  setMessage(
+    editorMessage,
+    table === "premier_league_matches"
+      ? "Result saved. League standings recalculated automatically."
+      : "Saved.",
+    "success"
+  );
+
   await loadTable(table);
+
+  if (table === "premier_league_matches") {
+    await loadTable("premier_league_standings");
+  }
+
   setTimeout(() => dialog.close(), 300);
 });
 
@@ -547,6 +662,10 @@ window.nl4Delete = async (table, id) => {
   const { error } = await db.from(table).delete().eq("id", id);
   if (error) return alert(error.message);
   await loadTable(table);
+
+  if (table === "premier_league_matches") {
+    await loadTable("premier_league_standings");
+  }
 };
 
 document.getElementById("closeDialog").addEventListener("click", () => dialog.close());

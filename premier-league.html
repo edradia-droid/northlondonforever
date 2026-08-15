@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="description" content="NL4 Arsenal Premier League 2026/27 campaign hub.">
+  <title>Premier League | NL4 Arsenal Fan Hub</title>
+
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="shared-sidebar.css">
+  <link rel="stylesheet" href="sidebar-toggle-fix.css">
+  <link rel="stylesheet" href="premier-league.css">
+</head>
+
+<body class="nl4-unified-sidebar premier-league-page">
+  <button
+    id="nl4MenuToggle"
+    type="button"
+    aria-controls="sidebar"
+    aria-expanded="false"
+    aria-label="Open or close navigation"
+  >☰</button>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-top">
+        <a class="logo" href="index.html">
+          <span class="logo-box nl4-logo-box">
+            <img
+              src="https://i.postimg.cc/GhGgj8G7/75c7b198-597a-4288-abae-723c809c34fa.png"
+              alt="NL4"
+            >
+          </span>
+
+          <span class="nl4-brand-text">
+            <b>NORTH LONDON</b>
+            <small>FOREVER</small>
+          </span>
+        </a>
+      </div>
+
+      <nav class="side-nav" id="sideNav">
+        <p class="nav-label">FAN HUB</p>
+
+        <a class="nav-link" href="index.html">
+          <span>⌂</span> Home
+        </a>
+
+        <a class="nav-link" href="fixtures.html">
+          <span>◷</span> Fixtures
+        </a>
+
+        <a class="nav-link" href="index.html#calendar">
+          <span>▣</span> Calendar
+        </a>
+
+        <p class="nav-label">COMPETITIONS</p>
+
+        <a class="nav-link active" href="premier-league.html">
+          <span>🏆</span> Premier League
+        </a>
+
+        <a class="nav-link" href="index.html#champions-league">
+          <span>★</span> Champions League
+        </a>
+
+        <a class="nav-link" href="index.html#fa-cup">
+          <span>🏆</span> FA Cup
+        </a>
+
+        <a class="nav-link" href="index.html#carabao-cup">
+          <span>◈</span> Carabao Cup
+        </a>
+
+        <p class="nav-label">TEAM</p>
+
+        <a class="nav-link" href="index.html#lineup">
+          <span>⚽</span> Lineup
+        </a>
+
+        <a class="nav-link" href="index.html#news">
+          <span>▤</span> Latest News
+        </a>
+
+        <div class="nav-divider"></div>
+
+        <a class="treasure-link" href="trophies.html">
+          <span>🔐</span>
+          <b>Treasure Room</b>
+          <small>Explore Arsenal history</small>
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <span>COYG</span>
+        <span>1886 • FOREVER</span>
+      </div>
+    </aside>
+
+    <div class="mobile-overlay" id="overlay"></div>
+
+    <main class="main">
+      <section class="pl-hero">
+        <div class="pl-hero-glow"></div>
+
+        <div class="pl-hero-copy">
+          <p class="pl-kicker">PREMIER LEAGUE • 2026/27</p>
+
+          <h1>
+            THE LEAGUE
+            <span>CAMPAIGN.</span>
+          </h1>
+
+          <p class="pl-hero-text">
+            Follow Arsenal's Premier League season from one place —
+            standings, form, results, next fixtures and the race at the top.
+          </p>
+
+          <div class="pl-hero-actions">
+            <a href="#leagueTable" class="pl-primary-btn">View League Table ↓</a>
+            <a href="fixtures.html" class="pl-secondary-btn">All Fixtures →</a>
+          </div>
+        </div>
+
+        <div class="pl-hero-card">
+          <span class="pl-season-label">ARSENAL • 2026/27</span>
+
+          <div class="pl-position-wrap">
+            <strong id="heroPosition">—</strong>
+            <span>CURRENT POSITION</span>
+          </div>
+
+          <div class="pl-hero-stat-grid">
+            <div>
+              <strong id="heroPoints">—</strong>
+              <span>POINTS</span>
+            </div>
+
+            <div>
+              <strong id="heroPlayed">—</strong>
+              <span>PLAYED</span>
+            </div>
+
+            <div>
+              <strong id="heroWins">—</strong>
+              <span>WINS</span>
+            </div>
+
+            <div>
+              <strong id="heroGD">—</strong>
+              <span>GOAL DIFF.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="pl-section pl-overview">
+        <div class="pl-section-head">
+          <div>
+            <p class="pl-kicker">01 / SEASON OVERVIEW</p>
+            <h2>ARSENAL AT A GLANCE</h2>
+          </div>
+
+          <span class="pl-live-pill">
+            <i></i>
+            LIVE CAMPAIGN
+          </span>
+        </div>
+
+        <div class="pl-stat-grid">
+          <article class="pl-stat-card">
+            <small>POSITION</small>
+            <strong id="statPosition">—</strong>
+            <span>Premier League</span>
+          </article>
+
+          <article class="pl-stat-card">
+            <small>POINTS</small>
+            <strong id="statPoints">—</strong>
+            <span>Current total</span>
+          </article>
+
+          <article class="pl-stat-card">
+            <small>PLAYED</small>
+            <strong id="statPlayed">—</strong>
+            <span>League matches</span>
+          </article>
+
+          <article class="pl-stat-card">
+            <small>WINS</small>
+            <strong id="statWins">—</strong>
+            <span>League victories</span>
+          </article>
+
+          <article class="pl-stat-card">
+            <small>GOALS</small>
+            <strong id="statGF">—</strong>
+            <span>Goals scored</span>
+          </article>
+
+          <article class="pl-stat-card">
+            <small>GOAL DIFF.</small>
+            <strong id="statGD">—</strong>
+            <span>Season balance</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="pl-section" id="leagueTable">
+        <div class="pl-section-head">
+          <div>
+            <p class="pl-kicker">02 / STANDINGS</p>
+            <h2>PREMIER LEAGUE TABLE</h2>
+          </div>
+
+          <span class="pl-table-note">ARSENAL HIGHLIGHTED</span>
+        </div>
+
+        <div class="pl-table-shell">
+          <div class="pl-table-scroll">
+            <table class="pl-table">
+              <thead>
+                <tr>
+                  <th>POS</th>
+                  <th class="club-col">CLUB</th>
+                  <th>P</th>
+                  <th>W</th>
+                  <th>D</th>
+                  <th>L</th>
+                  <th>GF</th>
+                  <th>GA</th>
+                  <th>GD</th>
+                  <th>PTS</th>
+                </tr>
+              </thead>
+
+              <tbody id="leagueTableBody">
+                <tr class="loading-row">
+                  <td colspan="10">Loading Premier League standings…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="pl-table-status" id="leagueTableStatus">
+            Waiting for Premier League standings data.
+          </p>
+        </div>
+      </section>
+
+      <section class="pl-section pl-next-section">
+        <div class="pl-section-head">
+          <div>
+            <p class="pl-kicker">03 / MATCH CENTRE</p>
+            <h2>NEXT LEAGUE MATCH</h2>
+          </div>
+
+          <a class="pl-section-link" href="fixtures.html">
+            View all fixtures →
+          </a>
+        </div>
+
+        <article class="pl-next-card" id="nextFixtureCard">
+          <div class="pl-next-top">
+            <span>PREMIER LEAGUE</span>
+            <b>UPCOMING</b>
+          </div>
+
+          <div class="pl-next-main">
+            <div class="pl-team">
+              <div class="pl-team-badge" id="nextHomeCode">ARS</div>
+              <h3 id="nextHomeTeam">Arsenal</h3>
+              <small>HOME</small>
+            </div>
+
+            <div class="pl-match-centre">
+              <span id="nextFixtureDate">DATE TBC</span>
+              <strong>VS</strong>
+              <b id="nextFixtureTime">TBA</b>
+              <small id="nextFixtureVenue">Venue TBC</small>
+            </div>
+
+            <div class="pl-team">
+              <div class="pl-team-badge" id="nextAwayCode">—</div>
+              <h3 id="nextAwayTeam">Opponent</h3>
+              <small>AWAY</small>
+            </div>
+          </div>
+
+          <div class="pl-next-bottom">
+            <span id="nextMatchday">MATCHDAY —</span>
+            <a id="nextFixtureDetails" href="fixtures.html">Match Centre →</a>
+          </div>
+        </article>
+      </section>
+
+
+      <section class="pl-section pl-form-section">
+        <div class="pl-section-head">
+          <div>
+            <p class="pl-kicker">04 / CURRENT FORM</p>
+            <h2>LAST FIVE LEAGUE MATCHES</h2>
+          </div>
+          <span class="pl-table-note">AUTO FROM RESULTS</span>
+        </div>
+
+        <div class="pl-form-strip" id="arsenalFormStrip">
+          <span class="pl-form-empty">No completed league matches yet.</span>
+        </div>
+      </section>
+
+      <section class="pl-section pl-results-section">
+        <div class="pl-section-head">
+          <div>
+            <p class="pl-kicker">05 / RECENT RESULTS</p>
+            <h2>ARSENAL RESULTS</h2>
+          </div>
+
+          <a class="pl-section-link" href="fixtures.html">
+            Full match centre →
+          </a>
+        </div>
+
+        <div class="pl-results-list" id="recentResultsList">
+          <div class="pl-results-empty">No completed Arsenal league matches yet.</div>
+        </div>
+      </section>
+
+
+      <section class="pl-section pl-title-race-section">
+        <div class="pl-section-head">
+          <div>
+            <p class="pl-kicker">06 / TITLE RACE</p>
+            <h2>THE RACE AT THE TOP</h2>
+          </div>
+          <span class="pl-table-note">LIVE FROM STANDINGS</span>
+        </div>
+
+        <div class="pl-title-race-grid" id="titleRaceGrid">
+          <div class="pl-results-empty">Loading title race…</div>
+        </div>
+      </section>
+
+
+      <section class="pl-section pl-leaders-section">
+        <div class="pl-section-head">
+          <div>
+            <p class="pl-kicker">07 / ARSENAL LEADERS</p>
+            <h2>PREMIER LEAGUE SEASON STORY</h2>
+          </div>
+          <span class="pl-table-note">ARSENAL ONLY</span>
+        </div>
+
+        <div class="pl-leaders-grid" id="playerLeadersGrid">
+          <div class="pl-results-empty">Add Arsenal Premier League player stats in Admin to populate this section.</div>
+        </div>
+      </section>
+
+      <section class="pl-coming">
+        <p class="pl-kicker">COMING NEXT</p>
+        <h2>SEASON STORY</h2>
+        <p>
+          The next build will extend this competition hub without changing
+          the structure already created here.
+        </p>
+      </section>
+
+      <footer class="pl-footer">
+        <b>NL4 PREMIER LEAGUE HUB</b>
+        <span>Arsenal • 2026/27 • North London Forever</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
+  <script src="supabase-client.js"></script>
+  <script src="nl4-data.js"></script>
+  <script src="shared-sidebar.js"></script>
+  <script src="premier-league.js?v=20260814-2"></script>
+</body>
+</html>
