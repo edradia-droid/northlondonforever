@@ -1,3 +1,4 @@
+console.log("NL4 ADMIN BUILD: 20260815 V2 REAL LEAGUE FIXTURES");
 console.log("NL4 ADMIN BUILD: 20260815-0518 LINEUPS AUTO STATS");
 console.log("NL4 ADMIN BUILD: 20260815-0422 GROUPED PLAYER STATS");
 console.log("NL4 ADMIN BUILD: 20260815-0358 FULL PLAYER STATS");
@@ -18,6 +19,29 @@ const editorTitle = document.getElementById("editorTitle");
 const editorMessage = document.getElementById("editorMessage");
 
 let editorState = { table: null, id: null };
+
+const PREMIER_LEAGUE_2026_27_CLUBS = [
+  "Arsenal",
+  "Aston Villa",
+  "AFC Bournemouth",
+  "Brentford",
+  "Brighton & Hove Albion",
+  "Chelsea",
+  "Coventry City",
+  "Crystal Palace",
+  "Everton",
+  "Fulham",
+  "Hull City",
+  "Ipswich Town",
+  "Leeds United",
+  "Liverpool",
+  "Manchester City",
+  "Manchester United",
+  "Newcastle United",
+  "Nottingham Forest",
+  "Sunderland",
+  "Tottenham Hotspur"
+];
 
 const schemas = {
   players: {
@@ -54,8 +78,22 @@ const schemas = {
 
 
 
+  premier_league_matches: {
+    title: "Premier League fixture",
+    order: "matchday",
+    fields: [
+      ["season","Season","text",true],
+      ["matchday","Matchday","number",true],
+      ["home_team","Home team","select",true,PREMIER_LEAGUE_2026_27_CLUBS],
+      ["away_team","Away team","select",true,PREMIER_LEAGUE_2026_27_CLUBS],
+      ["status","Status","select",true,["scheduled","fulltime","postponed","cancelled"]],
+      ["home_score","Home score","number"],
+      ["away_score","Away score","number"]
+    ]
+  },
+
   premier_league_player_stats: {
-    label: "Arsenal Player Stat",
+    title: "Arsenal Player Stat",
     order: "goals",
     descending: true,
     fields: [
@@ -109,28 +147,7 @@ const schemas = {
   }
 };
 
-const PREMIER_LEAGUE_2026_27_CLUBS = [
-  "Arsenal",
-  "Aston Villa",
-  "AFC Bournemouth",
-  "Brentford",
-  "Brighton & Hove Albion",
-  "Chelsea",
-  "Coventry City",
-  "Crystal Palace",
-  "Everton",
-  "Fulham",
-  "Hull City",
-  "Ipswich Town",
-  "Leeds United",
-  "Liverpool",
-  "Manchester City",
-  "Manchester United",
-  "Newcastle United",
-  "Nottingham Forest",
-  "Sunderland",
-  "Tottenham Hotspur"
-];
+
 
 async function ensurePremierLeagueStandingsClubs() {
   const season = "2026/27";
@@ -1173,13 +1190,45 @@ document.querySelectorAll("[data-pl-position]").forEach(button => {
   });
 });
 
+
+let plLeagueMatchFilter = "all";
+let plLeagueMatchRows = [];
+
+function renderPremierLeagueMatchesAdmin() {
+  const holder = document.getElementById("premier_league_matchesList");
+  if (!holder) return;
+
+  let rows = plLeagueMatchRows;
+  if (plLeagueMatchFilter === "scheduled") {
+    rows = rows.filter(r => !["fulltime","finished","ft"].includes(String(r.status || "").toLowerCase()));
+  } else if (plLeagueMatchFilter === "fulltime") {
+    rows = rows.filter(r => ["fulltime","finished","ft"].includes(String(r.status || "").toLowerCase()));
+  }
+
+  const status = document.getElementById("plLeagueMatchStatus");
+  if (status) status.textContent = `${rows.length} league match${rows.length === 1 ? "" : "es"}`;
+
+  holder.innerHTML = rows.length
+    ? rows.map(row => cardHtml("premier_league_matches", row)).join("")
+    : '<div class="empty">No league fixtures in this view.</div>';
+}
+
+document.querySelectorAll("[data-pl-match-filter]").forEach(button => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll("[data-pl-match-filter]").forEach(x => x.classList.remove("active"));
+    button.classList.add("active");
+    plLeagueMatchFilter = button.dataset.plMatchFilter;
+    renderPremierLeagueMatchesAdmin();
+  });
+});
+
 async function loadTable(table) {
   if (table === "fixtures") return loadFixturesAdmin();
   if (table === "premier_league_standings") await ensurePremierLeagueStandingsClubs();
   const schema = schemas[table];
   const ascending = table !== "news";
   let query = db.from(table).select("*");
-  if (table === "premier_league_standings") query = query.eq("season", "2026/27");
+  if (table === "premier_league_standings" || table === "premier_league_matches") query = query.eq("season", "2026/27");
   const { data, error } = await query.order(schema.order, { ascending });
 
   const holder = document.getElementById(`${table}List`);
@@ -1196,6 +1245,12 @@ async function loadTable(table) {
     plPlayerStatsRows = data || [];
     renderPremierLeaguePlayerStatsAdmin();
     if (holder) holder.innerHTML = "";
+    return;
+  }
+
+  if (table === "premier_league_matches") {
+    plLeagueMatchRows = data || [];
+    renderPremierLeagueMatchesAdmin();
     return;
   }
 
@@ -1221,7 +1276,7 @@ async function openEditor(table, id = null) {
     if (table === "premier_league_player_stats") row.season = "2026/27";
     if (table === "premier_league_matches") {
       row.season = "2026/27";
-      row.status = "fulltime";
+      row.status = "scheduled";
     }
   }
 
@@ -1294,6 +1349,11 @@ editorForm.addEventListener("submit", async (event) => {
         "error"
       );
     }
+
+    if (payload.status !== "fulltime") {
+      payload.home_score = null;
+      payload.away_score = null;
+    }
   }
 
   setMessage(editorMessage, "Saving…");
@@ -1309,7 +1369,7 @@ editorForm.addEventListener("submit", async (event) => {
   setMessage(
     editorMessage,
     table === "premier_league_matches"
-      ? "Result saved. League standings recalculated automatically."
+      ? (payload.status === "fulltime" ? "Result saved. League standings recalculated automatically." : "League fixture saved for the V2 schedule model.")
       : "Saved.",
     "success"
   );

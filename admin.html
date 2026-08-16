@@ -201,16 +201,24 @@
         <section id="premierLeagueResultsPanel" class="panel">
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">AUTOMATIC STANDINGS</p>
-              <h2>Premier League Results</h2>
+              <p class="eyebrow">V2 • FULL LEAGUE SCHEDULE</p>
+              <h2>Premier League Fixtures &amp; Results</h2>
               <p class="muted">
-                Add completed non-Arsenal Premier League matches here.
-                Arsenal matches are managed from Fixtures and sync automatically.
-                Saving a Full Time result recalculates the league table.
+                Manage every non-Arsenal 2026/27 Premier League fixture here — scheduled and completed.
+                Arsenal matches remain in Fixtures. The V2 title model can use these real remaining opponents
+                instead of generating random opponents.
               </p>
             </div>
-            <button class="primary-btn" data-new="premier_league_matches">+ Add league match</button>
+            <button class="primary-btn" data-new="premier_league_matches">+ Add league fixture</button>
           </div>
+
+          <div class="match-admin-toolbar">
+            <button class="match-filter active" type="button" data-pl-match-filter="all">All</button>
+            <button class="match-filter" type="button" data-pl-match-filter="scheduled">Upcoming</button>
+            <button class="match-filter" type="button" data-pl-match-filter="fulltime">Results</button>
+            <span id="plLeagueMatchStatus" class="muted"></span>
+          </div>
+
           <div id="premier_league_matchesList" class="content-grid"></div>
         </section>
 
@@ -508,7 +516,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
   <script src="supabase-client.js"></script>
-  <script src="admin.js?v=20260815-clear-buttons"></script>
-<script src="admin.js"></script>
+  <script src="admin.js?v=20260815-v2-league-fixtures"></script>
 </body>
 </html>
