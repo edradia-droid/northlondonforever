@@ -193,7 +193,7 @@
 .nl4-probability-main{padding:22px 0 18px}
 .nl4-probability-main strong{display:block;font-size:clamp(54px,8vw,92px);line-height:.9;font-weight:1000;color:#fff;letter-spacing:-4px}
 .nl4-probability-main span{display:block;margin-top:10px;color:#aaa;font-size:9px;font-weight:1000;letter-spacing:1.2px}
-.nl4-probability-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.nl4-probability-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .nl4-probability-grid div{border:1px solid rgba(255,255,255,.08);border-radius:11px;background:#111;padding:10px}
 .nl4-probability-grid strong{display:block;color:#d8ad45;font-size:18px}.nl4-probability-grid span{display:block;color:#777;font-size:7px;margin-top:4px;font-weight:900}
 .nl4-model-note{margin:15px 0 0;color:#777;font-size:9px;line-height:1.5}
@@ -224,13 +224,14 @@
 
 <style>
 .nl4-v3-diagnostics{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px
+  display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:10px
 }
 .nl4-v3-diagnostics div{
   border:1px solid rgba(255,255,255,.06);border-radius:8px;background:#0f0f0f;padding:8px
 }
 .nl4-v3-diagnostics span{display:block;color:#666;font-size:6px;font-weight:1000;letter-spacing:.8px}
 .nl4-v3-diagnostics strong{display:block;color:#fff;font-size:8px;margin-top:3px}
+@media(max-width:900px){.nl4-v3-diagnostics{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:520px){.nl4-v3-diagnostics{grid-template-columns:1fr}}
 </style>
 
@@ -319,7 +320,7 @@
 .nl4-scenario-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
 .nl4-scenario-head h3{margin:4px 0 0;color:#fff;font-size:16px}
 .nl4-scenario-head>strong{color:#d8ad45;font-size:9px;text-align:right;max-width:220px}
-.nl4-scenario-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px}
+.nl4-scenario-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:14px}
 .nl4-scenario-card{border:1px solid rgba(255,255,255,.08);border-radius:12px;background:#151515;padding:13px}
 .nl4-scenario-card span{display:block;color:#777;font-size:7px;font-weight:1000;letter-spacing:.8px}
 .nl4-scenario-card strong{display:block;color:#fff;font-size:25px;margin-top:5px}
@@ -408,7 +409,7 @@
 
 <style>
 .nl4-race-momentum{margin-top:14px;border:1px solid rgba(255,255,255,.09);border-radius:18px;background:linear-gradient(145deg,#121212,#0b0b0b);padding:16px}
-.nl4-race-momentum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:13px}
+.nl4-race-momentum-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:13px}
 .nl4-race-momentum-grid article{border:1px solid rgba(255,255,255,.07);border-radius:11px;background:#111;padding:11px}
 .nl4-race-momentum-grid span{display:block;color:#666;font-size:6px;font-weight:1000;letter-spacing:.8px}
 .nl4-race-momentum-grid strong{display:block;color:#fff;font-size:18px;margin-top:5px}
@@ -417,6 +418,35 @@
 .nl4-race-momentum-grid strong.falling{color:#ff7185}
 .nl4-race-momentum-grid strong.steady{color:#d8ad45}
 @media(max-width:600px){.nl4-race-momentum-grid{grid-template-columns:1fr}}
+</style>
+
+
+<style>
+/* =========================
+   V12.9 • SIMULATION RELIABILITY + TAIL DIAGNOSTICS
+========================= */
+.nl4-v11-explainer{
+  margin-top:14px;border:1px solid rgba(216,173,69,.18);border-radius:20px;
+  background:radial-gradient(circle at 90% 0,rgba(216,173,69,.12),transparent 34%),linear-gradient(145deg,#121212,#090909);
+  padding:16px;overflow:hidden
+}
+.nl4-v11-explainer-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.nl4-v11-explainer-head h3{margin:4px 0 0;color:#fff;font-size:18px}
+.nl4-v11-change-pill{border:1px solid rgba(255,255,255,.08);border-radius:999px;background:#111;padding:8px 11px;color:#d8ad45;font-size:10px;font-weight:1000;white-space:nowrap}
+.nl4-v11-change-pill.rising{color:#6fd58e;border-color:rgba(111,213,142,.25)}
+.nl4-v11-change-pill.falling{color:#ff7185;border-color:rgba(255,113,133,.25)}
+.nl4-v11-summary{margin:13px 0 0;color:#aaa;font-size:10px;line-height:1.6}
+.nl4-v11-driver-list{display:grid;gap:8px;margin-top:14px}
+.nl4-v11-driver{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid rgba(255,255,255,.07);border-radius:12px;background:#111;padding:10px 11px}
+.nl4-v11-driver-icon{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:#191919;color:#d8ad45;font-size:15px;font-weight:1000}
+.nl4-v11-driver-copy b{display:block;color:#fff;font-size:10px}.nl4-v11-driver-copy span{display:block;color:#777;font-size:8px;line-height:1.45;margin-top:3px}
+.nl4-v11-driver-signal{font-size:7px;font-weight:1000;letter-spacing:.8px;color:#d8ad45;text-align:right}
+.nl4-v11-driver.positive .nl4-v11-driver-signal{color:#6fd58e}.nl4-v11-driver.negative .nl4-v11-driver-signal{color:#ff7185}.nl4-v11-driver.neutral .nl4-v11-driver-signal{color:#d8ad45}
+.nl4-v11-race-outlook{display:grid;grid-template-columns:1.2fr .8fr .8fr;gap:8px;margin-top:12px}
+.nl4-v11-race-outlook article{border:1px solid rgba(255,255,255,.07);border-radius:11px;background:#0e0e0e;padding:11px}
+.nl4-v11-race-outlook span{display:block;color:#666;font-size:6px;font-weight:1000;letter-spacing:.8px}.nl4-v11-race-outlook strong{display:block;color:#fff;font-size:15px;margin-top:5px}.nl4-v11-race-outlook small{display:block;color:#666;font-size:7px;margin-top:3px}
+.nl4-v11-race-outlook article:first-child strong{color:#d8ad45}
+@media(max-width:700px){.nl4-v11-explainer-head{flex-direction:column}.nl4-v11-race-outlook{grid-template-columns:1fr}.nl4-v11-driver{grid-template-columns:34px minmax(0,1fr)}.nl4-v11-driver-signal{grid-column:2;text-align:left}}
 </style>
 
 <style>
@@ -429,7 +459,7 @@
 }
 .nl4-title-target-grid{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:repeat(4,1fr);
   gap:8px;
   margin-top:13px;
 }
@@ -506,7 +536,150 @@
   .nl4-title-target-grid{grid-template-columns:1fr}
 }
 </style>
-</head>
+
+<style>
+.nl4-v115-prior-source{
+  margin-top:10px;
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:12px;
+  background:#0d0d0d;
+  padding:11px;
+}
+.nl4-v115-prior-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:7px;
+}
+.nl4-v115-prior-grid div{
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:8px;
+  background:#111;
+  padding:8px;
+}
+.nl4-v115-prior-grid span{display:block;color:#666;font-size:6px;font-weight:1000;letter-spacing:.8px}
+.nl4-v115-prior-grid strong{display:block;color:#fff;font-size:8px;margin-top:3px;line-height:1.35}
+#previousSeasonWarning{margin:8px 0 0;color:#777;font-size:7px;line-height:1.45}
+#previousSeasonWarning.warning{color:#ffbf69}
+@media(max-width:600px){.nl4-v115-prior-grid{grid-template-columns:1fr}}
+</style>
+
+
+<style>
+.v12-matchday-tracker{
+  margin-top:14px;border:1px solid rgba(255,255,255,.1);border-radius:18px;
+  background:linear-gradient(145deg,#121212,#0a0a0a);padding:16px;overflow:hidden
+}
+.v12-tracker-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.v12-tracker-head h3{margin:4px 0 0;color:#fff;font-size:17px}
+.v12-tracker-head>strong{font-size:18px;color:#d8ad45}
+.v12-tracker-head>strong.rising{color:#6fd58e}.v12-tracker-head>strong.falling{color:#ff7185}
+.v12-tracker-head>strong.steady{color:#d8ad45}
+.v12-before-after{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:14px}
+.v12-prob-card{border:1px solid rgba(255,255,255,.07);background:#111;border-radius:12px;padding:13px}
+.v12-prob-card span{display:block;color:#666;font-size:7px;font-weight:1000;letter-spacing:.8px}
+.v12-prob-card strong{display:block;color:#fff;font-size:26px;margin-top:5px}
+.v12-arrow{color:#d8ad45;font-weight:1000;font-size:22px}
+.v12-delta-note{text-align:center;color:#777;font-size:7px;margin-top:7px}
+.v12-evidence-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:13px}
+.v12-evidence-card{border:1px solid rgba(255,255,255,.07);border-radius:11px;background:#0d0d0d;padding:11px}
+.v12-evidence-top{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.v12-evidence-top span{color:#777;font-size:7px;font-weight:1000}.v12-evidence-top strong{color:#fff;font-size:11px}
+.v12-weight-track{height:6px;background:#242424;border-radius:999px;overflow:hidden;margin-top:7px}
+.v12-weight-fill{height:100%;width:0;background:#d8ad45;border-radius:999px;transition:width .3s ease}
+.v12-impact-list{display:grid;gap:8px;margin-top:13px}
+.v12-impact-card{display:grid;grid-template-columns:minmax(180px,.8fr) minmax(0,1.2fr);gap:13px;align-items:center;border:1px solid rgba(255,255,255,.07);border-radius:11px;background:#111;padding:11px}
+.v12-impact-card.positive{border-color:rgba(111,213,142,.25)}.v12-impact-card.negative{border-color:rgba(255,113,133,.25)}
+.v12-impact-card span{display:block;color:#d8ad45;font-size:6px;font-weight:1000;letter-spacing:.8px}
+.v12-impact-card strong{display:block;color:#fff;font-size:10px;margin-top:4px}
+.v12-impact-card small{display:block;color:#777;font-size:7px;margin-top:3px}
+.v12-impact-card p{margin:0;color:#777;font-size:8px;line-height:1.5}
+#v12MatchdaySummary{margin:12px 0 0;color:#aaa;font-size:9px;line-height:1.55}
+@media(max-width:600px){
+ .v12-tracker-head{flex-direction:column}.v12-before-after{grid-template-columns:1fr}.v12-arrow{text-align:center;transform:rotate(90deg)}
+ .v12-evidence-grid{grid-template-columns:1fr}.v12-impact-card{grid-template-columns:1fr}
+}
+</style>
+
+
+<style>
+.v122-counterfactual{
+  margin-top:14px;border:1px solid rgba(255,255,255,.1);border-radius:18px;
+  background:linear-gradient(145deg,#111,#090909);padding:16px
+}
+.v122-cf-title{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.v122-cf-title h3{margin:4px 0 0;color:#fff;font-size:17px}
+.v122-cf-title>strong{color:#d8ad45;font-size:8px;text-align:right}
+.v122-cf-list{display:grid;gap:10px;margin-top:14px}
+.v122-cf-card{border:1px solid rgba(255,255,255,.07);border-radius:13px;background:#101010;padding:13px}
+.v122-cf-head{display:grid;grid-template-columns:minmax(0,1fr) 160px;gap:12px;align-items:center}
+.v122-cf-head>div:first-child span{display:block;color:#d8ad45;font-size:6px;font-weight:1000;letter-spacing:.8px}
+.v122-cf-head>div:first-child strong{display:block;color:#fff;font-size:11px;margin-top:4px}
+.v122-cf-head>div:first-child small{display:block;color:#777;font-size:7px;margin-top:3px}
+.v122-actual{border-left:1px solid rgba(255,255,255,.08);padding-left:12px;text-align:right}
+.v122-actual span{display:block;color:#666;font-size:6px;font-weight:1000;line-height:1.35}
+.v122-actual strong{display:block;color:#d8ad45;font-size:23px;margin-top:4px}
+.v122-alt-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:11px}
+.v122-alt-row{border:1px solid rgba(255,255,255,.06);border-radius:9px;background:#151515;padding:9px}
+.v122-alt-row span{display:block;color:#777;font-size:6px;font-weight:1000}
+.v122-alt-row strong{display:block;color:#fff;font-size:16px;margin-top:4px}
+.v122-alt-row b{display:block;font-size:7px;margin-top:3px;color:#aaa}
+.v122-alt-row b.positive{color:#6fd58e}.v122-alt-row b.negative{color:#ff7185}
+.v122-cf-card p{margin:10px 0 0;color:#666;font-size:7px;line-height:1.5}
+@media(max-width:600px){
+ .v122-cf-title{flex-direction:column}.v122-cf-title>strong{text-align:left}
+ .v122-cf-head{grid-template-columns:1fr}.v122-actual{border-left:0;border-top:1px solid rgba(255,255,255,.08);padding:10px 0 0;text-align:left}
+ .v122-alt-grid{grid-template-columns:1fr}
+}
+</style>
+
+
+<style>
+.v123-timeline{
+  margin-top:14px;border:1px solid rgba(255,255,255,.1);border-radius:18px;
+  background:linear-gradient(145deg,#121212,#090909);padding:16px
+}
+.v123-timeline-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.v123-timeline-head h3{margin:4px 0 0;color:#fff;font-size:17px}
+.v123-timeline-head>strong{color:#d8ad45;font-size:8px;text-align:right}
+.v123-timeline-scroll{overflow-x:auto;margin-top:14px;padding-bottom:4px}
+.v123-timeline-list{display:flex;gap:8px;min-width:max-content}
+.v123-timeline-item{
+  min-width:112px;border:1px solid rgba(255,255,255,.07);border-radius:11px;background:#111;
+  padding:10px;text-align:left;cursor:pointer;color:inherit
+}
+.v123-timeline-item:hover,.v123-timeline-item.active{border-color:rgba(216,173,69,.5);background:rgba(216,173,69,.08)}
+.v123-timeline-item span{display:block;color:#666;font-size:6px;font-weight:1000;letter-spacing:.8px}
+.v123-timeline-item strong{display:block;color:#fff;font-size:18px;margin-top:5px}
+.v123-timeline-item b{display:block;font-size:8px;margin-top:3px}
+.v123-timeline-item b.rising,.v123-detail-head b.rising{color:#6fd58e}
+.v123-timeline-item b.falling,.v123-detail-head b.falling{color:#ff7185}
+.v123-timeline-item b.steady,.v123-detail-head b.steady{color:#d8ad45}
+.v123-detail{margin-top:12px;border:1px solid rgba(255,255,255,.07);border-radius:13px;background:#0d0d0d;padding:13px}
+.v123-detail-head{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.v123-detail-head span{display:block;color:#d8ad45;font-size:7px;font-weight:1000;letter-spacing:.8px}
+.v123-detail-head strong{display:block;color:#fff;font-size:32px;margin-top:4px}
+.v123-detail-head small{display:block;color:#666;font-size:7px;margin-top:3px}
+.v123-detail-head>b{font-size:13px}
+.v123-detail-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:7px;margin-top:12px}
+.v123-detail-grid div{border:1px solid rgba(255,255,255,.06);border-radius:9px;background:#111;padding:9px}
+.v123-detail-grid span{display:block;color:#666;font-size:6px;font-weight:1000}
+.v123-detail-grid strong{display:block;color:#fff;font-size:11px;margin-top:4px}
+.v123-detail-drivers{margin-top:12px}
+.v123-detail-drivers>span{display:block;color:#777;font-size:6px;font-weight:1000;letter-spacing:.8px;margin-bottom:6px}
+.v123-detail-drivers>div{display:flex;gap:8px;align-items:center;padding:7px 0;border-top:1px solid rgba(255,255,255,.05)}
+.v123-detail-drivers>div b{width:18px;text-align:center}.v123-detail-drivers>div strong{font-size:8px;color:#aaa}
+.v123-detail-drivers>div.positive b{color:#6fd58e}.v123-detail-drivers>div.negative b{color:#ff7185}
+.v123-detail-drivers p{margin:0;color:#666;font-size:7px}
+#titleHistoryChart .v123-history-point{transition:r .15s ease,stroke-width .15s ease}
+#titleHistoryChart .v123-history-point.active{r:8px;stroke:#d8ad45;stroke-width:4}
+@media(max-width:700px){
+ .v123-timeline-head,.v123-detail-head{align-items:flex-start;flex-direction:column}
+ .v123-timeline-head>strong{text-align:left}
+ .v123-detail-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+
+<style>.v128-validation{margin:22px 0;padding:18px;border:1px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(12,17,28,.96)}.v128-head{display:flex;justify-content:space-between;gap:15px}.v128-head h3{margin:5px 0}.v128-head p{opacity:.7}.v128-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin:14px 0}.v128-grid article,.v128-panel{padding:12px;border-radius:12px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08)}.v128-grid strong{display:block;font-size:1.35rem;margin-top:5px}.v128-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.v128-panel{margin-top:10px}.v128-panel p{display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.07);padding:7px 0;margin:0}.v128-winner-row{display:grid;grid-template-columns:130px 1fr 55px;gap:9px;align-items:center;padding:5px 0}.v128-winner-row>div{height:7px;background:rgba(255,255,255,.08);border-radius:9px;overflow:hidden}.v128-winner-row i{display:block;height:100%;background:currentColor}.v128-winner-row strong{text-align:right}@media(max-width:750px){.v128-grid{grid-template-columns:repeat(2,1fr)}.v128-two{grid-template-columns:1fr}.v128-head{display:block}}@media(max-width:450px){.v128-grid{grid-template-columns:1fr}}</style><style>.v129-reliability{margin:18px 0;padding:18px;border:1px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(18,15,28,.96)}.v129-head{display:flex;justify-content:space-between;gap:16px}.v129-head h3{margin:5px 0}.v129-head p{margin:0;opacity:.72}.v129-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:14px 0}.v129-grid article,.v129-panel{padding:12px;border-radius:12px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08)}.v129-grid strong{display:block;font-size:1.35rem;margin-top:5px}.v129-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.v129-panel h4{margin:0 0 8px}.v129-panel>div{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid rgba(255,255,255,.07)}.v129-mc{margin-top:10px}.v129-mc p{opacity:.65;font-size:.8rem}@media(max-width:760px){.v129-grid{grid-template-columns:repeat(2,1fr)}.v129-two{grid-template-columns:1fr}.v129-head{display:block}}@media(max-width:450px){.v129-grid{grid-template-columns:1fr}}</style></head>
 
 <body class="nl4-unified-sidebar premier-league-page">
   <button
@@ -885,7 +1058,7 @@
       <p class="pl-kicker">08 / NL4 FORECAST</p>
       <h2>PREMIER LEAGUE TITLE PROBABILITY</h2>
     </div>
-    <span class="pl-table-note" id="titleModelRunLabel">25,000 V10 SIMULATIONS</span>
+    <span class="pl-table-note" id="titleModelRunLabel">25,000 V12.9 SIMULATIONS</span>
   </div>
 
   <div class="nl4-title-forecast-shell">
@@ -910,9 +1083,16 @@
         <small id="titleFixtureCoverageNote">Checking league-wide schedule…</small>
       </div>
       <div class="nl4-v3-diagnostics">
-        <div><span>MODEL</span><strong id="titleModelVersion">V10 • TITLE TARGET</strong></div>
+        <div><span>MODEL</span><strong id="titleModelVersion">V12.9 • SIMULATION RELIABILITY + TAIL DIAGNOSTICS</strong></div>
         <div><span>COMPLETED MATCHES</span><strong id="titleCompletedMatches">—</strong></div>
         <div><span>ARSENAL FORM</span><strong id="titleArsenalForm">—</strong></div>
+        <div><span>HISTORICAL PTS ANCHOR</span><strong id="arsenalHistoricalPointsAnchor">—</strong></div>
+        <div><span>HISTORY WEIGHT</span><strong id="arsenalHistoricalPointsWeight">—</strong></div>
+        <div><span>PRIOR DE-DUP</span><strong id="arsenalPriorDedupStatus">—</strong></div>
+        <div><span>HISTORICAL EFFECT</span><strong id="arsenalHistoricalEffect">—</strong></div>
+        <div><span>CALIBRATION CHECK</span><strong id="arsenalCalibrationBand">—</strong></div>
+        <div><span>SCORING BASELINE</span><strong id="leagueScoringBaseline">—</strong></div>
+        <div><span>DECISIVENESS</span><strong id="leagueDecisivenessMode">—</strong></div>
       </div>
       <div class="nl4-model-confidence">
         <div class="nl4-confidence-top">
@@ -929,13 +1109,23 @@
           Confidence increases as real 2026/27 Premier League results are recorded.
         </p>
       </div>
+
+      <div class="nl4-v115-prior-source">
+        <div class="nl4-v115-prior-grid">
+          <div><span>2025/26 DATA SOURCE</span><strong id="previousSeasonSource">CHECKING…</strong></div>
+          <div><span>2025/26 COVERAGE</span><strong id="previousSeasonCoverage">—</strong></div>
+          <div><span>2024/25 COVERAGE</span><strong id="secondPreviousSeasonCoverage">—</strong></div>
+          <div><span>AUTO-DETECTED PROMOTED</span><strong id="previousSeasonPromoted">—</strong></div>
+        </div>
+        <p id="previousSeasonWarning">Loading previous-season standings…</p>
+      </div>
     </article>
 
     <div class="nl4-title-probability-table-wrap">
       <div class="nl4-title-probability-head">
         <span>CLUB</span><span>TITLE</span><span>TOP 4</span><span>TOP 5</span><span>RELEG.</span><span>EXP PTS</span>
       </div>
-      <div id="titleProbabilityTable" class="nl4-title-probability-table">
+      <section class="v128-validation"><div class="v128-head"><div><small>V12.9 • 25,000-SIMULATION AUDIT</small><h3>Monte Carlo Validation Dashboard</h3><p>The V12.7 match engine is frozen while this panel audits the distribution behind the forecast.</p></div><b>MATCH ENGINE FROZEN</b></div><div class="v128-grid"><article><small>ARSENAL MEDIAN</small><strong id="v128ArsenalMedian">—</strong></article><article><small>10TH PERCENTILE</small><strong id="v128ArsenalP10">—</strong></article><article><small>25TH PERCENTILE</small><strong id="v128ArsenalP25">—</strong></article><article><small>75TH PERCENTILE</small><strong id="v128ArsenalP75">—</strong></article><article><small>90TH PERCENTILE</small><strong id="v128ArsenalP90">—</strong></article></div><div class="v128-two"><article class="v128-panel"><h4>When Arsenal Win the League</h4><p>Title-winning simulations <strong id="v128TitleSamples">—</strong></p><p>Average points <strong id="v128TitleAvg">—</strong></p><p>Lowest title total <strong id="v128TitleMin">—</strong></p><p>Highest title total <strong id="v128TitleMax">—</strong></p><p>Average when Arsenal don't win <strong id="v128NonTitleAvg">—</strong></p></article><article class="v128-panel"><h4>League Champion Points</h4><p>Average <strong id="v128ChampionAvg">—</strong></p><p>Median <strong id="v128ChampionMedian">—</strong></p><p>10th percentile <strong id="v128ChampionP10">—</strong></p><p>90th percentile <strong id="v128ChampionP90">—</strong></p></article></div><article class="v128-panel"><h4>Share of Simulated Titles</h4><div id="v128TitleWinnerShare"></div></article></section><section class="v129-reliability"><div class="v129-head"><div><small>V12.9 • RELIABILITY AUDIT</small><h3>Simulation Reliability & Tail Diagnostics</h3><p>The match engine remains frozen. This panel measures rare outcomes and Monte Carlo sampling noise.</p></div><b>STATISTICS ONLY</b></div><div class="v129-grid"><article><small>1ST PERCENTILE</small><strong id="v129ArsenalP01">—</strong></article><article><small>5TH PERCENTILE</small><strong id="v129ArsenalP05">—</strong></article><article><small>95TH PERCENTILE</small><strong id="v129ArsenalP95">—</strong></article><article><small>99TH PERCENTILE</small><strong id="v129ArsenalP99">—</strong></article></div><div class="v129-two"><article class="v129-panel"><h4>Arsenal Points Thresholds</h4><div><span>80+ points</span><strong id="v129Arsenal80">—</strong></div><div><span>85+ points</span><strong id="v129Arsenal85">—</strong></div><div><span>90+ points</span><strong id="v129Arsenal90">—</strong></div><div><span>95+ points</span><strong id="v129Arsenal95">—</strong></div><div><span>100+ points</span><strong id="v129Arsenal100">—</strong></div></article><article class="v129-panel"><h4>Champion Tail Frequency</h4><div><span>Champion below 75</span><strong id="v129ChampionBelow75">—</strong></div><div><span>Champion above 95</span><strong id="v129ChampionAbove95">—</strong></div><div><span>100+ point champion</span><strong id="v129Champion100">—</strong></div></article></div><article class="v129-panel v129-mc"><h4>Monte Carlo Sampling Uncertainty</h4><div><span>Approx. 95% sampling margin</span><strong id="v129MonteCarloSE">—</strong></div><div><span>Approx. 95% interval for Arsenal title estimate</span><strong id="v129MonteCarloCI">—</strong></div><p>This interval measures simulation noise only, not real football uncertainty.</p></article></section><div id="titleProbabilityTable" class="nl4-title-probability-table">
         <div class="nl4-title-model-loading">Running title simulations…</div>
       </div>
     </div>
@@ -946,7 +1136,109 @@
   
   
   
-  <div class="nl4-title-target">
+  
+  
+  <div class="v123-timeline">
+    <div class="v123-timeline-head">
+      <div>
+        <span class="nl4-model-label">V12.9 • MATCHDAY PROBABILITY TIMELINE</span>
+        <h3>Arsenal's Title Race, Update by Update</h3>
+      </div>
+      <strong id="v123TimelineStatus">LOADING SAVED FORECASTS…</strong>
+    </div>
+
+    <div class="v123-timeline-scroll">
+      <div id="v123TimelineList" class="v123-timeline-list">
+        <div class="nl4-title-model-loading">Loading title-race timeline…</div>
+      </div>
+    </div>
+
+    <div id="v123TimelineDetail" class="v123-detail">
+      <div class="nl4-title-model-loading">Select a saved forecast to inspect it.</div>
+    </div>
+
+    <p class="nl4-model-note">
+      Every timeline stop comes from a saved NL4 probability snapshot. Select a card—or a point on the probability chart—to inspect
+      Arsenal's title chance, expected points, expected finish, model confidence and the important new Arsenal/rival results associated with that update.
+    </p>
+  </div>
+
+<div class="v12-matchday-tracker">
+    <div class="v12-tracker-head">
+      <div>
+        <span class="nl4-model-label">V12.9 • LIVE MATCHDAY TRACKER</span>
+        <h3>What Did the Latest Results Do to Arsenal's Title Chance?</h3>
+      </div>
+      <strong id="v12MatchdayChange">BASELINE</strong>
+    </div>
+
+    <div class="v12-before-after">
+      <div class="v12-prob-card">
+        <span>BEFORE LATEST SAVED UPDATE</span>
+        <strong id="v12BeforeProbability">—</strong>
+      </div>
+      <div class="v12-arrow">→</div>
+      <div class="v12-prob-card">
+        <span>CURRENT TITLE CHANCE</span>
+        <strong id="v12AfterProbability">—</strong>
+      </div>
+    </div>
+    <div id="v12CompletedDelta" class="v12-delta-note">Waiting for league results…</div>
+
+    <p id="v12MatchdaySummary">Preparing live probability comparison…</p>
+
+    <div class="v12-evidence-grid">
+      <div class="v12-evidence-card">
+        <div class="v12-evidence-top"><span>PRESEASON / HISTORICAL PRIOR</span><strong id="v12PriorWeight">—</strong></div>
+        <div class="v12-weight-track"><div id="v12PriorBar" class="v12-weight-fill"></div></div>
+      </div>
+      <div class="v12-evidence-card">
+        <div class="v12-evidence-top"><span>2026/27 CURRENT-SEASON EVIDENCE</span><strong id="v12SeasonEvidence">—</strong></div>
+        <div class="v12-weight-track"><div id="v12EvidenceBar" class="v12-weight-fill"></div></div>
+      </div>
+    </div>
+
+    <div id="v12ResultImpactList" class="v12-impact-list">
+      <div class="nl4-title-model-loading">Waiting for completed league results…</div>
+    </div>
+
+    <p class="nl4-model-note">
+      The before/after probability change is exact from saved NL4 forecasts. The result cards are evidence-based drivers:
+      they explain which new Arsenal and leading-rival results entered the model, but do not falsely assign an isolated causal percentage to one match.
+    </p>
+  </div>
+
+
+  <div class="v122-counterfactual">
+    <div class="v122-cf-title">
+      <div>
+        <span class="nl4-model-label">V12.9 • TRUE RESULT IMPACT</span>
+        <h3>What If That Result Had Been Different?</h3>
+      </div>
+      <strong id="v122CounterfactualStatus">WAITING FOR RESULTS</strong>
+    </div>
+
+    <div id="v122CounterfactualList" class="v122-cf-list">
+      <div class="nl4-title-model-loading">Counterfactual simulations will appear after completed league results.</div>
+    </div>
+
+    <p class="nl4-model-note">
+      Each card removes one finished match from the current table and model evidence, keeps every other completed result fixed,
+      then re-runs 8,000 season simulations with that match unresolved. Arsenal's title probability is measured separately when
+      the selected club wins, draws or loses. This is a true conditional counterfactual rather than a guessed impact number.
+    </p>
+  </div>
+
+
+  <div class="nl4-model-method" style="margin-top:14px">
+    <strong>V12.9 LEAGUE POINTS CALIBRATION RANGES</strong>
+    <p>
+      Calibration checks only — not forced totals: champion roughly 82–90+, second 78–86,
+      third 70–82, fourth 65–75, mid-table 45–55, relegation battle 30–40.
+      The simulation remains free to finish outside these bands.
+    </p>
+  </div>
+<div class="nl4-title-target">
     <div class="nl4-scenario-head">
       <div>
         <span class="nl4-model-label">TITLE-WINNING POINTS</span>
@@ -1015,6 +1307,43 @@
       </article>
     </div>
   </div>
+
+
+<div class="nl4-v11-explainer" id="titleChangeExplainer">
+  <div class="nl4-v11-explainer-head">
+    <div>
+      <span class="nl4-model-label">V12.9 • SIMULATION RELIABILITY + TAIL DIAGNOSTICS</span>
+      <h3>Why Did Arsenal's Title Chance Change?</h3>
+    </div>
+    <strong id="v11ProbabilityChange" class="nl4-v11-change-pill">WAITING FOR HISTORY</strong>
+  </div>
+  <p id="v11ChangeSummary" class="nl4-v11-summary">
+    NL4 is comparing the latest simulation with the previous saved forecast and reading the newest league results.
+  </p>
+  <div id="v11DriverList" class="nl4-v11-driver-list">
+    <div class="nl4-title-model-loading">Building football-friendly title-race explanation…</div>
+  </div>
+  <div class="nl4-v11-race-outlook">
+    <article>
+      <span>TITLE RACE STATUS</span>
+      <strong id="v11RaceStatus">CALCULATING…</strong>
+      <small id="v11RaceStatusNote">Reading the full 20-team simulation.</small>
+    </article>
+    <article>
+      <span>CREDIBLE TITLE THREAT</span>
+      <strong id="v11ClosestChallenger">—</strong>
+      <small id="v11ChallengerChance">Title probability —</small>
+    </article>
+    <article>
+      <span>PROBABILITY GAP</span>
+      <strong id="v11ProbabilityGap">—</strong>
+      <small>Arsenal vs credible rival</small>
+    </article>
+  </div>
+  <p class="nl4-model-note">
+    V12.9 separates the raw simulation runner-up from a credible title threat. V12.9 reads the 2025/26 Premier League table from Supabase and derives preseason strength from points, goal difference, goals for/against and final position. Arsenal's championship is therefore model evidence, not just a manual Elo label. Promoted clubs are detected by comparing the two seasons. “Likely drivers” remain evidence signals, not isolated causal percentages.
+  </p>
+</div>
 
 <div class="nl4-history-card">
     <div class="nl4-history-head">
@@ -1114,8 +1443,7 @@
   <div class="nl4-model-method">
     <strong>HOW NL4 CALCULATES THIS</strong>
     <p>
-      V7 team strength blends current performance with Elo-style ratings and strong early-season regression toward league average.
-      The rest of the season is simulated 25,000 times using every real remaining Premier League fixture currently stored in Supabase. Home advantage and exact opponent strength are applied. If the full 380-match schedule is not loaded yet, NL4 completes only the missing schedule slots with a neutral strength-based fallback.
+      V12.9 blends current performance with calibrated preseason club-strength priors, Elo-style ratings, recent form and home/away evidence. Newly promoted clubs start from a lower strength prior than established title contenders, but that prior fades continuously and reaches zero after roughly 20 league matches per club, so exceptional real performance can fully take over. The rest of the season is simulated 25,000 times using every real remaining Premier League fixture currently stored in Supabase. Home advantage and exact opponent strength are applied.
     </p>
   </div>
 </section>
@@ -1816,7 +2144,7 @@
   <script src="nl4-data.js"></script>
   <script src="shared-sidebar.js"></script>
   <script src="premier-league.js?v=20260814-2"></script>
-  <script src="title-probability.js?v=20260815-10"></script>
+  <script src="title-probability.js?v=20260816-11-1"></script>
 
   <script>
   (function(){
