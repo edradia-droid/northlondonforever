@@ -95,6 +95,27 @@
 .admin-prediction-type-counts span{border:1px solid rgba(255,255,255,.08);border-radius:8px;background:#171717;padding:8px;color:#777;font-size:7px;font-weight:900}
 .admin-prediction-type-counts b{display:block;color:#fff;font-size:15px;margin-bottom:2px}
 </style>
+
+<style>
+/* Mobile admin navigation: keep every admin page, including Fan Predictions, reachable */
+@media (max-width: 760px){
+  #adminView.dashboard{display:block;}
+  #adminView .side-nav{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    white-space:nowrap;
+    padding:10px 4px 12px;
+    scrollbar-width:thin;
+  }
+  #adminView .side-nav .nav-label{display:none;}
+  #adminView .side-nav .nav-link{flex:0 0 auto;}
+  #adminView .workspace{min-width:0;width:100%;}
+  #fanPredictionsPanel .section-heading{align-items:flex-start;flex-direction:column;gap:10px;}
+  #fanPredictionsPanel .fan-prediction-actions{width:100%;}
+}
+</style>
 </head>
 <body>
   <header class="topbar">
@@ -138,8 +159,9 @@
         <button class="nav-link" data-panel="newsPanel">News</button>
         <button class="nav-link" data-panel="fixturesPanel">Fixtures</button>
         <button class="nav-link" data-panel="premierLeaguePanel">Premier League</button>
-        <button class="nav-link" data-panel="premierLeagueResultsPanel">PL Results</button>
+        <button class="nav-link" data-panel="premierLeagueResultsPanel">Other Teams Results</button>
         <button class="nav-link" data-panel="plPlayerStatsPanel">PL Player Stats</button>
+        <button class="nav-link" data-panel="fanPredictionsPanel">Fan Predictions</button>
         <button class="nav-link" data-panel="trophiesPanel">Trophies</button>
         <button class="nav-link" data-panel="mediaPanel">Media</button>
         <a class="nav-link back-link" href="index.html">← Back to website</a>
@@ -201,24 +223,18 @@
         <section id="premierLeagueResultsPanel" class="panel">
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">V2 • FULL LEAGUE SCHEDULE</p>
-              <h2>Premier League Fixtures &amp; Results</h2>
+              <p class="eyebrow">OTHER 19 TEAMS • 2026/27</p>
+              <h2>Premier League Results</h2>
               <p class="muted">
-                Manage every non-Arsenal 2026/27 Premier League fixture here — scheduled and completed.
-                Arsenal matches remain in Fixtures. The V2 title model can use these real remaining opponents
-                instead of generating random opponents.
+                All 342 non-Arsenal league fixtures are already loaded. Choose a matchday, then press Edit on a fixture to enter the final score and set it to Full Time. Arsenal matches stay in the Fixtures panel. Every saved result recalculates the table and feeds the V12.9 title model.
               </p>
             </div>
-            <button class="primary-btn" data-new="premier_league_matches">+ Add league fixture</button>
+            <button class="primary-btn" data-new="premier_league_matches">+ Add missing result</button>
           </div>
-
-          <div class="match-admin-toolbar">
-            <button class="match-filter active" type="button" data-pl-match-filter="all">All</button>
-            <button class="match-filter" type="button" data-pl-match-filter="scheduled">Upcoming</button>
-            <button class="match-filter" type="button" data-pl-match-filter="fulltime">Results</button>
-            <span id="plLeagueMatchStatus" class="muted"></span>
+          <div class="match-admin-toolbar" style="max-height:126px;overflow:auto;padding-bottom:4px">
+            <button class="match-filter active" type="button" data-pl-results-matchday="all">All 342</button><button class="match-filter" type="button" data-pl-results-matchday="1">MD 1</button><button class="match-filter" type="button" data-pl-results-matchday="2">MD 2</button><button class="match-filter" type="button" data-pl-results-matchday="3">MD 3</button><button class="match-filter" type="button" data-pl-results-matchday="4">MD 4</button><button class="match-filter" type="button" data-pl-results-matchday="5">MD 5</button><button class="match-filter" type="button" data-pl-results-matchday="6">MD 6</button><button class="match-filter" type="button" data-pl-results-matchday="7">MD 7</button><button class="match-filter" type="button" data-pl-results-matchday="8">MD 8</button><button class="match-filter" type="button" data-pl-results-matchday="9">MD 9</button><button class="match-filter" type="button" data-pl-results-matchday="10">MD 10</button><button class="match-filter" type="button" data-pl-results-matchday="11">MD 11</button><button class="match-filter" type="button" data-pl-results-matchday="12">MD 12</button><button class="match-filter" type="button" data-pl-results-matchday="13">MD 13</button><button class="match-filter" type="button" data-pl-results-matchday="14">MD 14</button><button class="match-filter" type="button" data-pl-results-matchday="15">MD 15</button><button class="match-filter" type="button" data-pl-results-matchday="16">MD 16</button><button class="match-filter" type="button" data-pl-results-matchday="17">MD 17</button><button class="match-filter" type="button" data-pl-results-matchday="18">MD 18</button><button class="match-filter" type="button" data-pl-results-matchday="19">MD 19</button><button class="match-filter" type="button" data-pl-results-matchday="20">MD 20</button><button class="match-filter" type="button" data-pl-results-matchday="21">MD 21</button><button class="match-filter" type="button" data-pl-results-matchday="22">MD 22</button><button class="match-filter" type="button" data-pl-results-matchday="23">MD 23</button><button class="match-filter" type="button" data-pl-results-matchday="24">MD 24</button><button class="match-filter" type="button" data-pl-results-matchday="25">MD 25</button><button class="match-filter" type="button" data-pl-results-matchday="26">MD 26</button><button class="match-filter" type="button" data-pl-results-matchday="27">MD 27</button><button class="match-filter" type="button" data-pl-results-matchday="28">MD 28</button><button class="match-filter" type="button" data-pl-results-matchday="29">MD 29</button><button class="match-filter" type="button" data-pl-results-matchday="30">MD 30</button><button class="match-filter" type="button" data-pl-results-matchday="31">MD 31</button><button class="match-filter" type="button" data-pl-results-matchday="32">MD 32</button><button class="match-filter" type="button" data-pl-results-matchday="33">MD 33</button><button class="match-filter" type="button" data-pl-results-matchday="34">MD 34</button><button class="match-filter" type="button" data-pl-results-matchday="35">MD 35</button><button class="match-filter" type="button" data-pl-results-matchday="36">MD 36</button><button class="match-filter" type="button" data-pl-results-matchday="37">MD 37</button><button class="match-filter" type="button" data-pl-results-matchday="38">MD 38</button>
+            <span id="plResultsAdminStatus" class="muted"></span>
           </div>
-
           <div id="premier_league_matchesList" class="content-grid"></div>
         </section>
 
@@ -247,6 +263,24 @@
             <div id="premier_league_player_statsList" class="content-grid" hidden></div>
         </section>
 
+<section id="fanPredictionsPanel" class="panel fan-predictions-admin">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">NL4 FAN VOTE</p>
+      <h2>Fan Predictions</h2>
+      <p class="muted">See prediction totals, the most popular formation and the community Most Selected XI for every published fixture.</p>
+    </div>
+    <div class="fan-prediction-actions">
+      <span class="status" id="fanPredictionTotal">0 PREDICTIONS</span>
+      <button type="button" class="ghost-btn" id="refreshFanPredictionsBtn">Refresh</button>
+    </div>
+  </div>
+
+  <div id="fanPredictionFixtureList" class="fan-prediction-fixtures">
+    <p class="muted">Loading fan predictions…</p>
+  </div>
+</section>
+
         <section id="trophiesPanel" class="panel">
           <div class="panel-heading">
             <div><p class="eyebrow">TREASURE ROOM</p><h2>Trophies</h2></div>
@@ -273,23 +307,7 @@
   </main>
 
   
-<section class="admin-section fan-predictions-admin" id="fanPredictionsAdmin">
-  <div class="section-heading">
-    <div>
-      <p class="eyebrow">NL4 FAN VOTE</p>
-      <h2>Fan Predictions</h2>
-      <p class="muted">See prediction totals, the most popular formation and the community Most Selected XI for every published fixture.</p>
-    </div>
-    <div class="fan-prediction-actions">
-      <span class="status" id="fanPredictionTotal">0 PREDICTIONS</span>
-      <button type="button" class="ghost-btn" id="refreshFanPredictionsBtn">Refresh</button>
-    </div>
-  </div>
 
-  <div id="fanPredictionFixtureList" class="fan-prediction-fixtures">
-    <p class="muted">Loading fan predictions…</p>
-  </div>
-</section>
 
 <dialog id="fanPredictionDialog" class="match-dialog fan-prediction-dialog">
   <div class="dialog-head">
@@ -516,6 +534,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
   <script src="supabase-client.js"></script>
-  <script src="admin.js?v=20260815-v2-league-fixtures"></script>
+  <script src="admin.js?v=20260815-clear-buttons"></script>
+<script src="admin.js"></script>
 </body>
 </html>

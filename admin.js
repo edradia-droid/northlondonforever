@@ -1,4 +1,3 @@
-console.log("NL4 ADMIN BUILD: 20260815 V2 REAL LEAGUE FIXTURES");
 console.log("NL4 ADMIN BUILD: 20260815-0518 LINEUPS AUTO STATS");
 console.log("NL4 ADMIN BUILD: 20260815-0422 GROUPED PLAYER STATS");
 console.log("NL4 ADMIN BUILD: 20260815-0358 FULL PLAYER STATS");
@@ -19,29 +18,6 @@ const editorTitle = document.getElementById("editorTitle");
 const editorMessage = document.getElementById("editorMessage");
 
 let editorState = { table: null, id: null };
-
-const PREMIER_LEAGUE_2026_27_CLUBS = [
-  "Arsenal",
-  "Aston Villa",
-  "AFC Bournemouth",
-  "Brentford",
-  "Brighton & Hove Albion",
-  "Chelsea",
-  "Coventry City",
-  "Crystal Palace",
-  "Everton",
-  "Fulham",
-  "Hull City",
-  "Ipswich Town",
-  "Leeds United",
-  "Liverpool",
-  "Manchester City",
-  "Manchester United",
-  "Newcastle United",
-  "Nottingham Forest",
-  "Sunderland",
-  "Tottenham Hotspur"
-];
 
 const schemas = {
   players: {
@@ -78,22 +54,33 @@ const schemas = {
 
 
 
+
   premier_league_matches: {
-    title: "Premier League fixture",
+    title: "Other Teams Premier League Result",
     order: "matchday",
     fields: [
       ["season","Season","text",true],
       ["matchday","Matchday","number",true],
-      ["home_team","Home team","select",true,PREMIER_LEAGUE_2026_27_CLUBS],
-      ["away_team","Away team","select",true,PREMIER_LEAGUE_2026_27_CLUBS],
-      ["status","Status","select",true,["scheduled","fulltime","postponed","cancelled"]],
-      ["home_score","Home score","number"],
-      ["away_score","Away score","number"]
+      ["home_team","Home team","select",true,[
+        "AFC Bournemouth","Aston Villa","Brentford","Brighton & Hove Albion","Chelsea",
+        "Coventry City","Crystal Palace","Everton","Fulham","Hull City","Ipswich Town",
+        "Leeds United","Liverpool","Manchester City","Manchester United","Newcastle United",
+        "Nottingham Forest","Sunderland","Tottenham Hotspur"
+      ]],
+      ["away_team","Away team","select",true,[
+        "AFC Bournemouth","Aston Villa","Brentford","Brighton & Hove Albion","Chelsea",
+        "Coventry City","Crystal Palace","Everton","Fulham","Hull City","Ipswich Town",
+        "Leeds United","Liverpool","Manchester City","Manchester United","Newcastle United",
+        "Nottingham Forest","Sunderland","Tottenham Hotspur"
+      ]],
+      ["kickoff_at","Kick-off","datetime-local",false],
+      ["status","Status","select",true,["scheduled","live","fulltime","postponed","cancelled"]],
+      ["home_score","Home score","number",false],
+      ["away_score","Away score","number",false]
     ]
   },
-
   premier_league_player_stats: {
-    title: "Arsenal Player Stat",
+    label: "Arsenal Player Stat",
     order: "goals",
     descending: true,
     fields: [
@@ -147,7 +134,28 @@ const schemas = {
   }
 };
 
-
+const PREMIER_LEAGUE_2026_27_CLUBS = [
+  "Arsenal",
+  "Aston Villa",
+  "AFC Bournemouth",
+  "Brentford",
+  "Brighton & Hove Albion",
+  "Chelsea",
+  "Coventry City",
+  "Crystal Palace",
+  "Everton",
+  "Fulham",
+  "Hull City",
+  "Ipswich Town",
+  "Leeds United",
+  "Liverpool",
+  "Manchester City",
+  "Manchester United",
+  "Newcastle United",
+  "Nottingham Forest",
+  "Sunderland",
+  "Tottenham Hotspur"
+];
 
 async function ensurePremierLeagueStandingsClubs() {
   const season = "2026/27";
@@ -300,6 +308,13 @@ async function recalculatePremierLeagueStandings() {
   if (fixtureError) throw fixtureError;
   if (matchesError) throw matchesError;
 
+  // A league match must be counted exactly once, even if the same fixture
+  // accidentally exists in both fixtures and premier_league_matches.
+  // The fixtures table is authoritative for Arsenal matches.
+  const countedMatches = new Set();
+  const matchKey = (home, away) =>
+    `${normalizeClubName(home).toLowerCase()}::${normalizeClubName(away).toLowerCase()}`;
+
   (arsenalFixtures || []).forEach(row => {
     const competitionName = String(row.competition || "").trim().toLowerCase();
 
@@ -310,12 +325,20 @@ async function recalculatePremierLeagueStandings() {
     const away = row.away_team || (row.is_home ? row.opponent : "Arsenal");
     const homeScore = row.is_home ? row.arsenal_score : row.opponent_score;
     const awayScore = row.is_home ? row.opponent_score : row.arsenal_score;
+    const key = matchKey(home, away);
 
+    if (!home || !away || countedMatches.has(key)) return;
+    countedMatches.add(key);
     applyResult(home, away, homeScore, awayScore);
   });
 
   (leagueMatches || []).forEach(row => {
     if (!["fulltime","finished","ft"].includes(String(row.status || "").toLowerCase())) return;
+
+    const key = matchKey(row.home_team, row.away_team);
+    if (!row.home_team || !row.away_team || countedMatches.has(key)) return;
+
+    countedMatches.add(key);
     applyResult(row.home_team, row.away_team, row.home_score, row.away_score);
   });
 
@@ -798,9 +821,24 @@ window.nl4ManageMatch = async function(id) {
 
 async function saveCurrentMatch() {
   if (!currentFixture) return;
-  const status = document.getElementById('matchStatus').value;
+  let status = document.getElementById('matchStatus').value;
   const scoreA = document.getElementById('matchArsenalScore').value;
   const scoreO = document.getElementById('matchOpponentScore').value;
+
+  // The two fields below are explicitly FULL-TIME score fields in Admin.
+  // Once both are entered for a Premier League fixture, treat the match as completed
+  // so standings, form, recent results, next-fixture progression and V12.9 all consume it.
+  const hasFullTimeScoreInputs = scoreA !== '' && scoreO !== '';
+  const currentIsPremierLeague =
+    String(currentFixture.competition || '').trim().toLowerCase().includes('premier') &&
+    String(currentFixture.season || '').trim() === '2026/27';
+
+  if (currentIsPremierLeague && hasFullTimeScoreInputs && !['cancelled','postponed'].includes(String(status).toLowerCase())) {
+    status = 'fulltime';
+    const statusSelect = document.getElementById('matchStatus');
+    if (statusSelect) statusSelect.value = 'fulltime';
+  }
+
   const payload = {
     status,
     kickoff_at: new Date(document.getElementById('matchKickoff').value).toISOString(),
@@ -924,9 +962,33 @@ document.getElementById('clearMatchScoresBtn').addEventListener('click', async (
   if (isPremierLeague) {
     try {
       await recalculatePremierLeagueStandings();
+
+      // A cleared result invalidates probability-history snapshots that were
+      // created with more completed league matches than are currently valid.
+      // Derive the live completed-match count from the recalculated table,
+      // then remove only snapshots beyond that point. Earlier valid history
+      // (including the exact preseason baseline) is preserved unchanged.
+      const { data: standingsNow, error: standingsNowError } = await db
+        .from('premier_league_standings')
+        .select('played')
+        .eq('season', '2026/27');
+
+      if (standingsNowError) throw standingsNowError;
+
+      const completedMatchesNow = Math.round(
+        (standingsNow || []).reduce((sum, row) => sum + Number(row.played || 0), 0) / 2
+      );
+
+      const { error: rollbackError } = await db.rpc('rollback_title_probability_history', {
+        p_season: '2026/27',
+        p_completed_matches: completedMatchesNow
+      });
+
+      if (rollbackError) throw rollbackError;
+
       setMessage(
         matchSaveMessage,
-        'Test scores cleared. Premier League standings recalculated.',
+        `Scores cleared. Standings and probability timeline restored to ${completedMatchesNow} completed match${completedMatchesNow === 1 ? '' : 'es'}.`,
         'success'
       );
     } catch (standingsError) {
@@ -1191,35 +1253,33 @@ document.querySelectorAll("[data-pl-position]").forEach(button => {
 });
 
 
-let plLeagueMatchFilter = "all";
-let plLeagueMatchRows = [];
+let plResultsMatchdayFilter = "all";
 
-function renderPremierLeagueMatchesAdmin() {
+function renderPremierLeagueResultsAdmin(rows) {
   const holder = document.getElementById("premier_league_matchesList");
   if (!holder) return;
 
-  let rows = plLeagueMatchRows;
-  if (plLeagueMatchFilter === "scheduled") {
-    rows = rows.filter(r => !["fulltime","finished","ft"].includes(String(r.status || "").toLowerCase()));
-  } else if (plLeagueMatchFilter === "fulltime") {
-    rows = rows.filter(r => ["fulltime","finished","ft"].includes(String(r.status || "").toLowerCase()));
+  const filtered = plResultsMatchdayFilter === "all"
+    ? rows
+    : rows.filter(row => String(row.matchday ?? "") === String(plResultsMatchdayFilter));
+
+  const status = document.getElementById("plResultsAdminStatus");
+  if (status) {
+    status.textContent = `${filtered.length} fixture${filtered.length === 1 ? "" : "s"}${plResultsMatchdayFilter === "all" ? "" : ` • Matchday ${plResultsMatchdayFilter}`}`;
   }
 
-  const status = document.getElementById("plLeagueMatchStatus");
-  if (status) status.textContent = `${rows.length} league match${rows.length === 1 ? "" : "es"}`;
-
-  holder.innerHTML = rows.length
-    ? rows.map(row => cardHtml("premier_league_matches", row)).join("")
-    : '<div class="empty">No league fixtures in this view.</div>';
+  holder.innerHTML = filtered.length
+    ? filtered.map(row => cardHtml("premier_league_matches", row)).join("")
+    : '<div class="empty">No non-Arsenal fixtures found for this matchday.</div>';
 }
 
-document.querySelectorAll("[data-pl-match-filter]").forEach(button => {
-  button.addEventListener("click", () => {
-    document.querySelectorAll("[data-pl-match-filter]").forEach(x => x.classList.remove("active"));
-    button.classList.add("active");
-    plLeagueMatchFilter = button.dataset.plMatchFilter;
-    renderPremierLeagueMatchesAdmin();
-  });
+document.addEventListener("click", event => {
+  const btn = event.target.closest("[data-pl-results-matchday]");
+  if (!btn) return;
+  document.querySelectorAll("[data-pl-results-matchday]").forEach(x => x.classList.remove("active"));
+  btn.classList.add("active");
+  plResultsMatchdayFilter = btn.dataset.plResultsMatchday;
+  loadTable("premier_league_matches");
 });
 
 async function loadTable(table) {
@@ -1228,7 +1288,7 @@ async function loadTable(table) {
   const schema = schemas[table];
   const ascending = table !== "news";
   let query = db.from(table).select("*");
-  if (table === "premier_league_standings" || table === "premier_league_matches") query = query.eq("season", "2026/27");
+  if (table === "premier_league_standings") query = query.eq("season", "2026/27");
   const { data, error } = await query.order(schema.order, { ascending });
 
   const holder = document.getElementById(`${table}List`);
@@ -1249,8 +1309,7 @@ async function loadTable(table) {
   }
 
   if (table === "premier_league_matches") {
-    plLeagueMatchRows = data || [];
-    renderPremierLeagueMatchesAdmin();
+    renderPremierLeagueResultsAdmin(data || []);
     return;
   }
 
@@ -1276,7 +1335,7 @@ async function openEditor(table, id = null) {
     if (table === "premier_league_player_stats") row.season = "2026/27";
     if (table === "premier_league_matches") {
       row.season = "2026/27";
-      row.status = "scheduled";
+      row.status = "fulltime";
     }
   }
 
@@ -1349,11 +1408,6 @@ editorForm.addEventListener("submit", async (event) => {
         "error"
       );
     }
-
-    if (payload.status !== "fulltime") {
-      payload.home_score = null;
-      payload.away_score = null;
-    }
   }
 
   setMessage(editorMessage, "Saving…");
@@ -1369,7 +1423,7 @@ editorForm.addEventListener("submit", async (event) => {
   setMessage(
     editorMessage,
     table === "premier_league_matches"
-      ? (payload.status === "fulltime" ? "Result saved. League standings recalculated automatically." : "League fixture saved for the V2 schedule model.")
+      ? "Result saved. League standings recalculated automatically."
       : "Saved.",
     "success"
   );

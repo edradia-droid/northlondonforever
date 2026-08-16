@@ -679,7 +679,91 @@
 }
 </style>
 
-<style>.v128-validation{margin:22px 0;padding:18px;border:1px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(12,17,28,.96)}.v128-head{display:flex;justify-content:space-between;gap:15px}.v128-head h3{margin:5px 0}.v128-head p{opacity:.7}.v128-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin:14px 0}.v128-grid article,.v128-panel{padding:12px;border-radius:12px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08)}.v128-grid strong{display:block;font-size:1.35rem;margin-top:5px}.v128-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.v128-panel{margin-top:10px}.v128-panel p{display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.07);padding:7px 0;margin:0}.v128-winner-row{display:grid;grid-template-columns:130px 1fr 55px;gap:9px;align-items:center;padding:5px 0}.v128-winner-row>div{height:7px;background:rgba(255,255,255,.08);border-radius:9px;overflow:hidden}.v128-winner-row i{display:block;height:100%;background:currentColor}.v128-winner-row strong{text-align:right}@media(max-width:750px){.v128-grid{grid-template-columns:repeat(2,1fr)}.v128-two{grid-template-columns:1fr}.v128-head{display:block}}@media(max-width:450px){.v128-grid{grid-template-columns:1fr}}</style><style>.v129-reliability{margin:18px 0;padding:18px;border:1px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(18,15,28,.96)}.v129-head{display:flex;justify-content:space-between;gap:16px}.v129-head h3{margin:5px 0}.v129-head p{margin:0;opacity:.72}.v129-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:14px 0}.v129-grid article,.v129-panel{padding:12px;border-radius:12px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08)}.v129-grid strong{display:block;font-size:1.35rem;margin-top:5px}.v129-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.v129-panel h4{margin:0 0 8px}.v129-panel>div{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid rgba(255,255,255,.07)}.v129-mc{margin-top:10px}.v129-mc p{opacity:.65;font-size:.8rem}@media(max-width:760px){.v129-grid{grid-template-columns:repeat(2,1fr)}.v129-two{grid-template-columns:1fr}.v129-head{display:block}}@media(max-width:450px){.v129-grid{grid-template-columns:1fr}}</style></head>
+<style>.v128-validation{margin:22px 0;padding:18px;border:1px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(12,17,28,.96)}.v128-head{display:flex;justify-content:space-between;gap:15px}.v128-head h3{margin:5px 0}.v128-head p{opacity:.7}.v128-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin:14px 0}.v128-grid article,.v128-panel{padding:12px;border-radius:12px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08)}.v128-grid strong{display:block;font-size:1.35rem;margin-top:5px}.v128-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.v128-panel{margin-top:10px}.v128-panel p{display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.07);padding:7px 0;margin:0}.v128-winner-row{display:grid;grid-template-columns:130px 1fr 55px;gap:9px;align-items:center;padding:5px 0}.v128-winner-row>div{height:7px;background:rgba(255,255,255,.08);border-radius:9px;overflow:hidden}.v128-winner-row i{display:block;height:100%;background:currentColor}.v128-winner-row strong{text-align:right}@media(max-width:750px){.v128-grid{grid-template-columns:repeat(2,1fr)}.v128-two{grid-template-columns:1fr}.v128-head{display:block}}@media(max-width:450px){.v128-grid{grid-template-columns:1fr}}</style><style>.v129-reliability{margin:18px 0;padding:18px;border:1px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(18,15,28,.96)}.v129-head{display:flex;justify-content:space-between;gap:16px}.v129-head h3{margin:5px 0}.v129-head p{margin:0;opacity:.72}.v129-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:14px 0}.v129-grid article,.v129-panel{padding:12px;border-radius:12px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08)}.v129-grid strong{display:block;font-size:1.35rem;margin-top:5px}.v129-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.v129-panel h4{margin:0 0 8px}.v129-panel>div{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid rgba(255,255,255,.07)}.v129-mc{margin-top:10px}.v129-mc p{opacity:.65;font-size:.8rem}@media(max-width:760px){.v129-grid{grid-template-columns:repeat(2,1fr)}.v129-two{grid-template-columns:1fr}.v129-head{display:block}}@media(max-width:450px){.v129-grid{grid-template-columns:1fr}}
+
+/* ===== NL4 LIVE RESULT VISUAL UPGRADE ===== */
+.pl-form-section,.pl-results-section,.pl-title-race-section{position:relative;overflow:hidden}
+.pl-form-section::before,.pl-results-section::before,.pl-title-race-section::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at top right,rgba(219,0,7,.10),transparent 38%)}
+.pl-form-strip{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;position:relative;z-index:1}
+.pl-form-match{min-height:142px;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:16px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.025));box-shadow:0 16px 35px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.08);position:relative;overflow:hidden;transform:translateZ(0)}
+.pl-form-match::after{content:"";position:absolute;width:90px;height:90px;border-radius:50%;right:-35px;bottom:-42px;background:rgba(255,255,255,.055)}
+.pl-form-result{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:17px;box-shadow:0 8px 18px rgba(0,0,0,.28)}
+.pl-form-w .pl-form-result{background:#38d878;color:#07140c}.pl-form-d .pl-form-result{background:#f0b429;color:#181005}.pl-form-l .pl-form-result{background:#ef4c58;color:white}
+.pl-form-match strong{font-size:26px;line-height:1;letter-spacing:-.04em;color:#fff}.pl-form-match small{font-size:11px;text-transform:uppercase;letter-spacing:.08em;text-align:center;opacity:.78;max-width:110px}
+.pl-form-opponent-badge{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-size:10px;font-weight:900;letter-spacing:.05em;background:#fff;color:#111;box-shadow:0 8px 18px rgba(0,0,0,.2)}
+
+.pl-results-list{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;position:relative;z-index:1}
+.pl-result-card{border:1px solid rgba(255,255,255,.12);border-radius:22px;padding:18px;background:linear-gradient(145deg,rgba(22,22,26,.96),rgba(8,8,10,.96));box-shadow:0 18px 42px rgba(0,0,0,.26);position:relative;overflow:hidden}
+.pl-result-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:rgba(255,255,255,.22)}
+.pl-result-card.pl-card-win::before{background:#38d878}.pl-result-card.pl-card-draw::before{background:#f0b429}.pl-result-card.pl-card-loss::before{background:#ef4c58}
+.pl-result-meta{display:flex!important;justify-content:space-between;align-items:center;margin-bottom:16px;text-transform:uppercase;letter-spacing:.07em}.pl-result-meta span{font-size:10px;font-weight:900;color:#f0b429}.pl-result-meta small{font-size:10px;opacity:.62}
+.pl-result-scoreline{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px}.pl-result-team{display:flex;align-items:center;gap:10px;min-width:0}.pl-result-team.away{justify-content:flex-end;text-align:right}.pl-result-team-badge{flex:0 0 42px;height:42px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(145deg,#fff,#d8d8d8);color:#111;font-size:10px;font-weight:900;box-shadow:0 8px 18px rgba(0,0,0,.25)}.pl-result-team-name{font-size:13px;font-weight:800;line-height:1.2}.pl-result-score{font-size:28px;font-weight:950;letter-spacing:-.05em;white-space:nowrap;color:#fff}.pl-result-outcome{display:inline-flex!important;margin-top:14px;padding:7px 11px;border-radius:999px;font-size:10px;font-weight:950;letter-spacing:.08em}.pl-result-win{background:rgba(56,216,120,.14);color:#58e38e}.pl-result-draw{background:rgba(240,180,41,.14);color:#f0c04d}.pl-result-loss{background:rgba(239,76,88,.14);color:#ff7780}
+
+.pl-title-race-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;position:relative;z-index:1}
+.pl-title-race-card{position:relative;display:grid!important;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;min-height:92px;padding:16px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.11);background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.025));box-shadow:0 14px 34px rgba(0,0,0,.22);overflow:hidden}
+.pl-title-race-card::after{content:"";position:absolute;right:-22px;top:-28px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.035)}
+.pl-title-race-pos{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-size:18px;font-weight:950;background:#161619;border:1px solid rgba(255,255,255,.12)}
+.pl-title-race-card:nth-child(1) .pl-title-race-pos{background:linear-gradient(145deg,#f0c34d,#a67608);color:#111}.pl-title-race-card:nth-child(2) .pl-title-race-pos{background:linear-gradient(145deg,#e4e7ec,#8e959e);color:#111}.pl-title-race-card:nth-child(3) .pl-title-race-pos{background:linear-gradient(145deg,#d08b56,#7d4523);color:#111}
+.pl-title-race-card strong{display:block;font-size:14px;line-height:1.15}.pl-title-race-card small{display:block;margin-top:5px;font-size:10px;opacity:.66;text-transform:uppercase;letter-spacing:.05em}.pl-title-race-card>b{font-size:20px;white-space:nowrap;color:#fff}.pl-title-race-card>b small{font-size:9px;display:block;text-align:right;margin-top:2px}
+.pl-race-club-badge{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:9px;font-weight:950;background:#fff;color:#111;margin-bottom:7px}
+.arsenal-race-card{border-color:rgba(219,0,7,.55);background:linear-gradient(145deg,rgba(219,0,7,.19),rgba(255,255,255,.03));box-shadow:0 18px 42px rgba(219,0,7,.10),0 14px 34px rgba(0,0,0,.25)}
+.arsenal-race-card .pl-title-race-pos{background:linear-gradient(145deg,#e30613,#8d0007)!important;color:#fff!important}
+
+@media(max-width:900px){.pl-form-strip{grid-template-columns:repeat(5,140px);overflow-x:auto;padding-bottom:8px;scroll-snap-type:x proximity}.pl-form-match{scroll-snap-align:start}.pl-results-list{grid-template-columns:1fr}.pl-title-race-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.pl-title-race-grid{grid-template-columns:1fr}.pl-result-scoreline{gap:8px}.pl-result-team{flex-direction:column;text-align:center}.pl-result-team.away{flex-direction:column-reverse;text-align:center}.pl-result-team-name{font-size:11px}.pl-result-score{font-size:24px}}
+
+</style>
+<style id="nl4-real-club-logo-styles">
+.club-mini-logo,.pl-form-opponent-logo,.pl-result-team-logo,.pl-race-club-logo{
+  display:block;object-fit:contain;flex:0 0 auto;filter:drop-shadow(0 5px 8px rgba(0,0,0,.25));
+}
+.club-mini-logo{width:30px;height:30px}
+.pl-form-opponent-logo{width:42px;height:42px;margin:2px auto}
+.pl-result-team-logo{width:58px;height:58px}
+.pl-race-club-logo{width:42px;height:42px}
+.club-logo-fallback{align-items:center;justify-content:center;font-weight:900;letter-spacing:.04em}
+@media(max-width:600px){
+ .pl-result-team-logo{width:46px;height:46px}
+ .pl-race-club-logo{width:36px;height:36px}
+}
+</style>
+
+
+<style id="nl4-next-match-real-logo-styles">
+#nextHomeCode.pl-team-badge,
+#nextAwayCode.pl-team-badge{
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  padding:6px;
+}
+.pl-next-team-logo{
+  display:block;
+  width:82%;
+  height:82%;
+  max-width:76px;
+  max-height:76px;
+  object-fit:contain;
+  filter:drop-shadow(0 6px 8px rgba(0,0,0,.28));
+}
+#nextHomeCode .club-logo-fallback,
+#nextAwayCode .club-logo-fallback{
+  width:100%;
+  height:100%;
+  align-items:center;
+  justify-content:center;
+}
+@media(max-width:600px){
+  .pl-next-team-logo{
+    width:88%;
+    height:88%;
+    max-width:54px;
+    max-height:54px;
+  }
+}
+</style>
+
+</head>
 
 <body class="nl4-unified-sidebar premier-league-page">
   <button
@@ -997,50 +1081,10 @@
 
 
 
-      <section class="pl-section pl-lineup-section" id="latestArsenalLineup">
-        <div class="pl-section-head">
-          <div>
-            <p class="pl-kicker">06 / TEAM SHEET</p>
-            <h2>LATEST ARSENAL LINEUP &amp; SUBSTITUTIONS</h2>
-          </div>
-          <span class="pl-table-note">AUTO FROM MATCH ADMIN</span>
-        </div>
-
-        <div class="pl-lineup-card">
-          <div class="pl-lineup-match-head">
-            <div>
-              <strong id="latestLineupMatch">Loading latest completed league match…</strong>
-              <span id="latestLineupMeta"></span>
-            </div>
-            <span id="latestLineupScore"></span>
-          </div>
-
-          <div class="pl-lineup-columns">
-            <div class="pl-lineup-column">
-              <h3>STARTING XI</h3>
-              <div id="latestStartingXI" class="pl-lineup-list">
-                <div class="pl-lineup-empty">Loading starters…</div>
-              </div>
-            </div>
-
-            <div class="pl-lineup-column">
-              <h3>SUBSTITUTES USED</h3>
-              <div id="latestSubstitutes" class="pl-lineup-list">
-                <div class="pl-lineup-empty">Loading substitutes…</div>
-              </div>
-            </div>
-          </div>
-
-          <p id="latestLineupStatus" class="pl-player-stats-note">
-            Lineup data is loaded from the same Supabase records entered in Admin.
-          </p>
-        </div>
-      </section>
-
       <section class="pl-section pl-title-race-section">
         <div class="pl-section-head">
           <div>
-            <p class="pl-kicker">07 / TITLE RACE</p>
+            <p class="pl-kicker">06 / TITLE RACE</p>
             <h2>THE RACE AT THE TOP</h2>
           </div>
           <span class="pl-table-note">LIVE FROM STANDINGS</span>
@@ -1055,7 +1099,7 @@
 <section class="pl-section pl-title-probability-section" id="titleProbability">
   <div class="pl-section-head">
     <div>
-      <p class="pl-kicker">08 / NL4 FORECAST</p>
+      <p class="pl-kicker">07 / NL4 FORECAST</p>
       <h2>PREMIER LEAGUE TITLE PROBABILITY</h2>
     </div>
     <span class="pl-table-note" id="titleModelRunLabel">25,000 V12.9 SIMULATIONS</span>
@@ -2143,7 +2187,7 @@
   <script src="supabase-client.js"></script>
   <script src="nl4-data.js"></script>
   <script src="shared-sidebar.js"></script>
-  <script src="premier-league.js?v=20260814-2"></script>
+  <script src="premier-league.js?v=20260816-results-sync"></script>
   <script src="title-probability.js?v=20260816-11-1"></script>
 
   <script>

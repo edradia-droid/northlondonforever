@@ -146,7 +146,7 @@
 
           <td class="club-cell">
             <div class="club-name-wrap">
-              <span class="club-mini-badge">${escapeHtml(clubCode(team.club))}</span>
+              ${clubLogo(team.club,"club-mini-logo")}
               <span>${escapeHtml(team.club)}</span>
             </div>
           </td>
@@ -192,6 +192,145 @@
     );
   }
 
+
+
+
+  const CLUB_LOGOS = {
+    'AFC Bournemouth': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/AFC%20Bournemouth.png',
+    'Arsenal': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Arsenal%20FC.png',
+    'Aston Villa': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Aston%20Villa.png',
+    'Brentford': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Brentford%20FC.png',
+    'Brighton & Hove Albion': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Brighton%20%26%20Hove%20Albion.png',
+    'Chelsea': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Chelsea%20FC.png',
+    'Coventry City': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Coventry%20City.png',
+    'Crystal Palace': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Crystal%20Palace.png',
+    'Everton': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Everton%20FC.png',
+    'Fulham': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Fulham%20FC.png',
+    'Hull City': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Hull%20City.png',
+    'Ipswich Town': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Ipswich%20Town.png',
+    'Leeds United': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Leeds%20United.png',
+    'Liverpool': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Liverpool%20FC.png',
+    'Manchester City': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Manchester%20City.png',
+    'Manchester United': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Manchester%20United.png',
+    'Newcastle United': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Newcastle%20United.png',
+    'Nottingham Forest': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Nottingham%20Forest.png',
+    'Sunderland': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Sunderland%20AFC.png',
+    'Tottenham Hotspur': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Tottenham%20Hotspur.png'
+  };
+  function clubLogo(team, className='club-real-logo') {
+    const url = CLUB_LOGOS[String(team || '').trim()];
+    return url
+      ? `<img class="${className}" src="${url}" alt="${escapeHtml(team)} crest" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="club-logo-fallback" style="display:none">${escapeHtml(clubCode(team))}</span>`
+      : `<span class="club-logo-fallback">${escapeHtml(clubCode(team))}</span>`;
+  }
+
+  function finishedStatus(value) {
+    return ['fulltime','finished','ft','aet','pen'].includes(String(value || '').trim().toLowerCase());
+  }
+
+  function arsenalFixtureScore(row) {
+    const isHome = row.home_team === 'Arsenal' || row.is_home === true;
+    const arsenalScore = Number(row.arsenal_score);
+    const opponentScore = Number(row.opponent_score);
+    if (!Number.isFinite(arsenalScore) || !Number.isFinite(opponentScore)) return null;
+    return {
+      isHome,
+      arsenalScore,
+      opponentScore,
+      home: row.home_team || (isHome ? 'Arsenal' : row.opponent),
+      away: row.away_team || (isHome ? row.opponent : 'Arsenal'),
+      opponent: row.opponent || (isHome ? row.away_team : row.home_team) || 'Opponent'
+    };
+  }
+
+  function fixtureOrder(row) {
+    const md = Number(row.matchday);
+    if (Number.isFinite(md)) return md;
+    const t = row.kickoff_at ? new Date(row.kickoff_at).getTime() : NaN;
+    return Number.isFinite(t) ? t : 0;
+  }
+
+  function renderArsenalFormAndResults(fixtures) {
+    const completed = (fixtures || [])
+      .filter(row => row && finishedStatus(row.status))
+      .map(row => ({ row, score: arsenalFixtureScore(row) }))
+      .filter(item => item.score)
+      .sort((a,b) => fixtureOrder(b.row) - fixtureOrder(a.row));
+
+    const formEl = document.getElementById('arsenalFormStrip');
+    if (formEl) {
+      const lastFive = completed.slice(0,5).reverse();
+      if (!lastFive.length) {
+        formEl.innerHTML = '<span class="pl-form-empty">No completed league matches yet.</span>';
+      } else {
+        formEl.innerHTML = lastFive.map(({row,score}) => {
+          const outcome = score.arsenalScore > score.opponentScore ? 'W' : score.arsenalScore < score.opponentScore ? 'L' : 'D';
+          return `<div class="pl-form-match pl-form-${outcome.toLowerCase()}">
+            <span class="pl-form-result">${outcome}</span>
+            ${clubLogo(score.opponent,"pl-form-opponent-logo")}
+            <strong>${score.arsenalScore}–${score.opponentScore}</strong>
+            <small>${escapeHtml(score.opponent)}</small>
+          </div>`;
+        }).join('');
+      }
+    }
+
+    const resultsEl = document.getElementById('recentResultsList');
+    if (resultsEl) {
+      const recent = completed.slice(0,5);
+      if (!recent.length) {
+        resultsEl.innerHTML = '<div class="pl-results-empty">No completed Arsenal league matches yet.</div>';
+      } else {
+        resultsEl.innerHTML = recent.map(({row,score}) => {
+          const outcome = score.arsenalScore > score.opponentScore ? 'WIN' : score.arsenalScore < score.opponentScore ? 'LOSS' : 'DRAW';
+          const date = row.kickoff_at ? new Date(row.kickoff_at).toLocaleDateString('en-GB',{timeZone:'Europe/London',day:'2-digit',month:'short',year:'numeric'}).toUpperCase() : 'DATE TBC';
+          const homeGoals = score.isHome ? score.arsenalScore : score.opponentScore;
+          const awayGoals = score.isHome ? score.opponentScore : score.arsenalScore;
+          return `<article class="pl-result-card pl-card-${outcome.toLowerCase()}">
+            <div class="pl-result-meta"><span>${row.matchday ? `MATCHDAY ${escapeHtml(row.matchday)}` : 'PREMIER LEAGUE'}</span><small>${date}</small></div>
+            <div class="pl-result-scoreline">
+              <div class="pl-result-team">${clubLogo(score.home,"pl-result-team-logo")}<span class="pl-result-team-name">${escapeHtml(score.home)}</span></div>
+              <strong class="pl-result-score">${homeGoals}–${awayGoals}</strong>
+              <div class="pl-result-team away"><span class="pl-result-team-name">${escapeHtml(score.away)}</span>${clubLogo(score.away,"pl-result-team-logo")}</div>
+            </div>
+            <span class="pl-result-outcome pl-result-${outcome.toLowerCase()}">ARSENAL ${outcome}</span>
+          </article>`;
+        }).join('');
+      }
+    }
+  }
+
+  function renderTitleRaceFromStandings(rows) {
+    const el = document.getElementById('titleRaceGrid');
+    if (!el) return;
+    const standings = (rows || []).map(normalizeStanding).sort((a,b) => a.position-b.position).slice(0,6);
+    if (!standings.length) {
+      el.innerHTML = '<div class="pl-results-empty">No standings available yet.</div>';
+      return;
+    }
+    el.innerHTML = standings.map(team => `<article class="pl-title-race-card ${team.club.toLowerCase()==='arsenal'?'arsenal-race-card':''}">
+      <span class="pl-title-race-pos">${team.position}</span>
+      <div>${clubLogo(team.club,"pl-race-club-logo")}<strong>${escapeHtml(team.club)}</strong><small>${team.played} played • ${team.wins}W ${team.draws}D ${team.losses}L • GD ${team.gd>0?'+':''}${team.gd}</small></div>
+      <b>${team.points}<small>PTS</small></b>
+    </article>`).join('');
+  }
+
+  async function loadArsenalResults() {
+    try {
+      const client = window.nl4Supabase || window.supabaseClient || window.NL4_SUPABASE || window.supabaseDb || window.db;
+      if (!client || typeof client.from !== 'function') return;
+      const { data, error } = await client.from('fixtures')
+        .select('home_team,away_team,is_home,opponent,arsenal_score,opponent_score,status,kickoff_at,matchday,competition,season')
+        .eq('season','2026/27')
+        .eq('competition','Premier League')
+        .order('matchday',{ascending:true});
+      if (error) throw error;
+      renderArsenalFormAndResults(data || []);
+    } catch (error) {
+      console.warn('NL4 Arsenal results sections failed:', error);
+    }
+  }
+
   async function loadStandings() {
     try {
       const client =
@@ -222,6 +361,7 @@
         data,
         'Live standings loaded from Supabase • 2026/27'
       );
+      renderTitleRaceFromStandings(data);
     } catch (error) {
       console.warn('NL4 Premier League standings fallback:', error);
       renderEmptySeason();
@@ -264,8 +404,18 @@
       match.away_team ||
       (isHome ? match.opponent : 'Arsenal');
 
-    setText('nextHomeCode', clubCode(home));
-    setText('nextAwayCode', clubCode(away));
+    const nextHomeBadge = document.getElementById('nextHomeCode');
+    const nextAwayBadge = document.getElementById('nextAwayCode');
+
+    if (nextHomeBadge) {
+      nextHomeBadge.innerHTML = clubLogo(home, 'pl-next-team-logo');
+      nextHomeBadge.setAttribute('aria-label', `${home} crest`);
+    }
+    if (nextAwayBadge) {
+      nextAwayBadge.innerHTML = clubLogo(away, 'pl-next-team-logo');
+      nextAwayBadge.setAttribute('aria-label', `${away} crest`);
+    }
+
     setText('nextHomeTeam', home);
     setText('nextAwayTeam', away);
     setText('nextFixtureVenue', match.venue || 'Venue TBC');
@@ -342,5 +492,6 @@
   }
 
   loadStandings();
+  loadArsenalResults();
   loadNextFixture();
 })();
