@@ -272,6 +272,18 @@ body.fixtures-sidebar-page #sidebar .sidebar-bottom{
 }
 </style>
 
+
+<style>
+.unified-card-bottom .fixture-card-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.unified-card-bottom .predict-lineup-link{
+  display:inline-flex;align-items:center;justify-content:center;text-decoration:none;
+  padding:8px 10px;border-radius:8px;border:1px solid rgba(216,173,69,.38);
+  color:#d8ad45;font-size:10px;font-weight:1000;letter-spacing:.4px;background:rgba(216,173,69,.06)
+}
+.unified-card-bottom .predict-lineup-link:hover{background:rgba(216,173,69,.12)}
+@media(max-width:600px){.unified-card-bottom .fixture-card-actions{gap:5px}.unified-card-bottom .predict-lineup-link{font-size:8px;padding:7px 8px}}
+</style>
+
 </head>
 <body class="nl4-unified-sidebar fixtures-sidebar-page"><button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button>
 <div class="app-shell">
@@ -334,7 +346,7 @@ body.fixtures-sidebar-page #sidebar .sidebar-bottom{
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
 <script src="supabase-client.js?v=20260814-3"></script>
 <script src="nl4-data.js?v=20260814-3"></script>
-<script src="index.js?v=20260814-3"></script><script src="fixtures-3d.js?v=20260814-17"></script>
+<script src="index.js?v=20260814-3"></script><script src="fixtures-3d.js?v=20260815-predict-xi"></script>
 
 <script>
 (function () {

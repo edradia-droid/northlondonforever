@@ -36,6 +36,65 @@
   .pl-admin-empty{padding:18px;border:1px dashed rgba(255,255,255,.12);border-radius:12px;color:#777;text-align:center}
 </style>
 
+
+<style>
+.fan-predictions-admin{margin-top:24px}
+.fan-prediction-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.fan-prediction-fixtures{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-top:16px}
+.fan-prediction-card{
+  border:1px solid rgba(255,255,255,.1);border-radius:16px;background:#111;padding:15px;
+  display:flex;flex-direction:column;gap:10px
+}
+.fan-prediction-card-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.fan-prediction-card h3{margin:0;font-size:15px}
+.fan-prediction-card .fixture-meta{font-size:9px;color:#888;line-height:1.5}
+.fan-vote-number{font-size:22px;font-weight:1000;color:#d8ad45}
+.fan-vote-number small{display:block;font-size:7px;color:#777;letter-spacing:1px}
+.fan-prediction-card .formation-pill{
+  display:inline-flex;align-self:flex-start;border-radius:999px;background:#241c0d;color:#e7c265;
+  border:1px solid rgba(216,173,69,.25);padding:5px 8px;font-size:8px;font-weight:1000
+}
+.fan-prediction-card button{margin-top:auto}
+.fan-prediction-xi{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:12px}
+.fan-xi-player{border:1px solid rgba(255,255,255,.09);border-radius:12px;background:#151515;padding:11px}
+.fan-xi-player small{display:block;color:#d8ad45;font-size:8px;font-weight:1000;margin-bottom:4px}
+.fan-xi-player b{display:block;font-size:11px}
+.fan-xi-player span{display:block;color:#777;font-size:8px;margin-top:5px}
+.fan-prediction-dialog{max-width:780px;width:min(94vw,780px)}
+@media(max-width:700px){
+ .fan-prediction-fixtures{grid-template-columns:1fr}
+ .fan-prediction-xi{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .fan-prediction-actions{width:100%}
+}
+</style>
+
+
+<style>
+.admin-score-probabilities{margin-top:18px;border-top:1px solid rgba(255,255,255,.08);padding-top:14px}
+.admin-score-probability-list{display:grid;gap:7px;margin-top:10px}
+.admin-score-probability-row{display:grid;grid-template-columns:65px 1fr 48px;gap:9px;align-items:center;font-size:9px}
+.admin-score-probability-track{height:6px;border-radius:999px;background:#252525;overflow:hidden}
+.admin-score-probability-fill{height:100%;background:#d8ad45;border-radius:inherit}
+.admin-score-probability-row b{color:#fff}.admin-score-probability-row strong{color:#d8ad45;text-align:right}
+</style>
+
+<style>
+.admin-card-score-probability{
+  border:1px solid rgba(216,173,69,.18);border-radius:10px;background:#15130e;padding:9px 10px
+}
+.admin-card-score-probability-head{display:flex;justify-content:space-between;gap:10px;font-size:8px}
+.admin-card-score-probability-head b{color:#aaa}
+.admin-card-score-probability-head strong{color:#d8ad45;font-size:13px}
+.admin-card-score-probability-track{height:6px;border-radius:999px;background:#29261d;overflow:hidden;margin:7px 0 5px}
+.admin-card-score-probability-fill{height:100%;background:#d8ad45;border-radius:inherit}
+.admin-card-score-probability small{font-size:7px;color:#777}
+</style>
+
+<style>
+.admin-prediction-type-counts{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.admin-prediction-type-counts span{border:1px solid rgba(255,255,255,.08);border-radius:8px;background:#171717;padding:8px;color:#777;font-size:7px;font-weight:900}
+.admin-prediction-type-counts b{display:block;color:#fff;font-size:15px;margin-bottom:2px}
+</style>
 </head>
 <body>
   <header class="topbar">
@@ -205,7 +264,53 @@
     </section>
   </main>
 
-  <dialog id="editorDialog">
+  
+<section class="admin-section fan-predictions-admin" id="fanPredictionsAdmin">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">NL4 FAN VOTE</p>
+      <h2>Fan Predictions</h2>
+      <p class="muted">See prediction totals, the most popular formation and the community Most Selected XI for every published fixture.</p>
+    </div>
+    <div class="fan-prediction-actions">
+      <span class="status" id="fanPredictionTotal">0 PREDICTIONS</span>
+      <button type="button" class="ghost-btn" id="refreshFanPredictionsBtn">Refresh</button>
+    </div>
+  </div>
+
+  <div id="fanPredictionFixtureList" class="fan-prediction-fixtures">
+    <p class="muted">Loading fan predictions…</p>
+  </div>
+</section>
+
+<dialog id="fanPredictionDialog" class="match-dialog fan-prediction-dialog">
+  <div class="dialog-head">
+    <div>
+      <p class="eyebrow">COMMUNITY VOTE</p>
+      <h2 id="fanPredictionDialogTitle">Most Selected XI</h2>
+    </div>
+    <button id="closeFanPredictionDialog" class="icon-btn" type="button" aria-label="Close">×</button>
+  </div>
+
+  <div id="fanPredictionDialogSummary" class="match-admin-summary"></div>
+
+  <section class="match-admin-section">
+    <div class="match-admin-section-head">
+      <div>
+        <p class="eyebrow">MOST SELECTED XI</p>
+        <h3 id="fanPredictionFormation">Formation —</h3>
+      </div>
+      <span class="status" id="fanPredictionDialogCount">0 predictions</span>
+    </div>
+    <div id="fanPredictionXI" class="fan-prediction-xi"></div>
+    <div class="admin-score-probabilities">
+      <p class="eyebrow">SCORE PROBABILITY</p>
+      <div id="adminScoreProbabilityList" class="admin-score-probability-list"></div>
+    </div>
+  </section>
+</dialog>
+
+<dialog id="editorDialog">
     <form id="editorForm" method="dialog">
       <div class="dialog-head">
         <div><p class="eyebrow" id="editorEyebrow">EDIT CONTENT</p><h2 id="editorTitle">Editor</h2></div>
@@ -318,18 +423,8 @@
             <h3>Starters &amp; Substitutes</h3>
           </div>
         </div>
-        <p class="muted">Choose the formation, then assign each starter to a pitch slot. The Match Details page uses these slots to build the 3D team shape before kick-off. Substitutes remain separate and appear during the match.</p>
+        <p class="muted">Record every Arsenal player who appeared. Starters begin at 0'. For substitutes, enter the minute they came on. Add minute off when applicable.</p>
         <div class="form-grid">
-          <label>Formation
-            <select id="lineupFormation">
-              <option value="4-3-3">4-3-3</option>
-              <option value="4-2-3-1">4-2-3-1</option>
-              <option value="4-4-2">4-4-2</option>
-              <option value="3-4-3">3-4-3</option>
-              <option value="3-5-2">3-5-2</option>
-              <option value="4-1-4-1">4-1-4-1</option>
-            </select>
-          </label>
           <label>Player
             <select id="lineupPlayer"></select>
           </label>
@@ -338,9 +433,6 @@
               <option value="starter">Starter</option>
               <option value="substitute">Substitute</option>
             </select>
-          </label>
-          <label>Pitch slot
-            <select id="lineupPitchSlot"></select>
           </label>
           <label>Minute on
             <input id="lineupMinuteOn" type="number" min="0" max="130" value="0">
@@ -417,5 +509,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
   <script src="supabase-client.js"></script>
   <script src="admin.js?v=20260815-clear-buttons"></script>
+<script src="admin.js"></script>
 </body>
 </html>

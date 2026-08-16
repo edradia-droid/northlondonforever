@@ -496,132 +496,12 @@ const eventDialog = document.getElementById('eventDialog');
 const matchDialogTitle = document.getElementById('matchDialogTitle');
 const matchAdminSummary = document.getElementById('matchAdminSummary');
 const matchEventsList = document.getElementById('matchEventsList');
-const lineupFormation = document.getElementById('lineupFormation');
-const lineupPitchSlot = document.getElementById('lineupPitchSlot');
 const lineupPlayer = document.getElementById('lineupPlayer');
 const lineupRole = document.getElementById('lineupRole');
 const lineupMinuteOn = document.getElementById('lineupMinuteOn');
 const lineupMinuteOff = document.getElementById('lineupMinuteOff');
 const lineupMessage = document.getElementById('lineupMessage');
 const lineupList = document.getElementById('lineupList');
-
-
-const NL4_FORMATION_SLOTS = {
-  '4-3-3': ['GK','LB','LCB','RCB','RB','LCM','CM','RCM','LW','ST','RW'],
-  '4-2-3-1': ['GK','LB','LCB','RCB','RB','LDM','RDM','LAM','CAM','RAM','ST'],
-  '4-4-2': ['GK','LB','LCB','RCB','RB','LM','LCM','RCM','RM','LST','RST'],
-  '3-4-3': ['GK','LCB','CB','RCB','LWB','LCM','RCM','RWB','LW','ST','RW'],
-  '3-5-2': ['GK','LCB','CB','RCB','LWB','LCM','CAM','RCM','RWB','LST','RST'],
-  '4-1-4-1': ['GK','LB','LCB','RCB','RB','DM','LM','LCM','RCM','RM','ST']
-};
-
-function updatePitchSlotOptions() {
-  if (!lineupPitchSlot || !lineupFormation || !lineupRole) return;
-  if (lineupRole.value !== 'starter') {
-    lineupPitchSlot.innerHTML = '<option value="">Not required for substitute</option>';
-    lineupPitchSlot.disabled = true;
-    return;
-  }
-  lineupPitchSlot.disabled = false;
-  const formation = lineupFormation.value || '4-3-3';
-  const slots = NL4_FORMATION_SLOTS[formation] || NL4_FORMATION_SLOTS['4-3-3'];
-  lineupPitchSlot.innerHTML = '<option value="">Select pitch slot</option>' +
-    slots.map(slot => `<option value="${slot}">${slot}</option>`).join('');
-}
-
-
-const NL4_SLOT_COORDS = {
-  GK:[50,92],
-  LB:[16,76], LCB:[38,78], CB:[50,78], RCB:[62,78], RB:[84,76],
-  LWB:[13,63], RWB:[87,63],
-  DM:[50,62], LDM:[37,62], RDM:[63,62],
-  LM:[17,50], LCM:[37,52], CM:[50,52], RCM:[63,52], RM:[83,50],
-  LAM:[28,39], CAM:[50,38], RAM:[72,39],
-  LW:[18,24], LST:[40,20], ST:[50,18], RST:[60,20], RW:[82,24]
-};
-
-function slotDistance(fromSlot, toSlot) {
-  const a = NL4_SLOT_COORDS[fromSlot] || [50,50];
-  const b = NL4_SLOT_COORDS[toSlot] || [50,50];
-  const dx = a[0] - b[0];
-  const dy = a[1] - b[1];
-  return Math.sqrt(dx * dx + dy * dy);
-}
-
-function autoRemapStarterSlots(starters, formation) {
-  const available = [...(NL4_FORMATION_SLOTS[formation] || NL4_FORMATION_SLOTS['4-3-3'])];
-  const assignments = [];
-
-  // Goalkeeper is always kept in goal first.
-  const keeper = starters.find(row => row.pitch_slot === 'GK' || /goalkeeper/i.test(row.position || ''));
-  if (keeper && available.includes('GK')) {
-    assignments.push([keeper, 'GK']);
-    available.splice(available.indexOf('GK'), 1);
-  }
-
-  const remaining = starters.filter(row => row !== keeper);
-
-  // Players with the clearest current tactical position are assigned first.
-  remaining.sort((a,b) => {
-    const ac = NL4_SLOT_COORDS[a.pitch_slot] || [50,50];
-    const bc = NL4_SLOT_COORDS[b.pitch_slot] || [50,50];
-    return Math.abs(ac[0]-50) - Math.abs(bc[0]-50) || bc[1] - ac[1];
-  });
-
-  remaining.forEach(row => {
-    if (!available.length) return;
-    const from = row.pitch_slot || 'CM';
-    let bestIndex = 0;
-    let bestScore = Infinity;
-    available.forEach((slot, index) => {
-      let score = slotDistance(from, slot);
-      const pos = String(row.position || '').toLowerCase();
-      if (pos.includes('defender') && ['LW','RW','ST','LST','RST','CAM','LAM','RAM'].includes(slot)) score += 55;
-      if (pos.includes('forward') && ['LB','LCB','CB','RCB','RB','LWB','RWB'].includes(slot)) score += 55;
-      if (pos.includes('midfield') && ['LB','LCB','CB','RCB','RB','ST','LST','RST'].includes(slot)) score += 25;
-      if (score < bestScore) { bestScore = score; bestIndex = index; }
-    });
-    const target = available.splice(bestIndex,1)[0];
-    assignments.push([row,target]);
-  });
-
-  return assignments;
-}
-
-async function applyFormationChange() {
-  updatePitchSlotOptions();
-  if (!currentFixture || !lineupFormation) return;
-
-  const formation = lineupFormation.value || '4-3-3';
-  setMessage(lineupMessage, `Switching lineup to ${formation}…`);
-
-  const { data: starters, error } = await db.from('match_lineups')
-    .select('id,player_name,position,pitch_slot,formation')
-    .eq('fixture_id', currentFixture.id)
-    .eq('is_starter', true);
-
-  if (error) return setMessage(lineupMessage, error.message, 'error');
-  if (!starters?.length) {
-    setMessage(lineupMessage, `${formation} selected. Add the Starting XI and their slots.`, 'success');
-    return;
-  }
-
-  const assignments = autoRemapStarterSlots(starters, formation);
-  const now = new Date().toISOString();
-  const results = await Promise.all(assignments.map(([row, slot]) =>
-    db.from('match_lineups')
-      .update({ formation, pitch_slot: slot, updated_at: now })
-      .eq('id', row.id)
-  ));
-
-  const failed = results.find(result => result.error);
-  if (failed?.error) return setMessage(lineupMessage, failed.error.message, 'error');
-
-  setMessage(lineupMessage, `${formation} applied — all ${assignments.length} starters were repositioned automatically.`, 'success');
-  await loadMatchLineup();
-}
-
-if (lineupFormation) lineupFormation.addEventListener('change', applyFormationChange);
 
 const matchSaveMessage = document.getElementById('matchSaveMessage');
 const eventMessage = document.getElementById('eventMessage');
@@ -737,18 +617,12 @@ async function loadMatchLineup() {
     return;
   }
 
-  const savedStarter = (data || []).find(row => row.is_starter && row.formation);
-  if (savedStarter?.formation && lineupFormation && NL4_FORMATION_SLOTS[savedStarter.formation]) {
-    lineupFormation.value = savedStarter.formation;
-    updatePitchSlotOptions();
-  }
-
   lineupList.innerHTML = (data || []).length ? data.map(row => {
     const end = row.minute_off ?? 90;
     const mins = Math.max(0, Math.min(90,end) - Math.min(90,row.minute_on ?? 0));
     return `<div class="admin-event-row">
       <span class="admin-event-type">${row.is_starter ? 'START' : 'SUB'}</span>
-      <div class="admin-event-player"><strong>${escapeHtml(row.player_name)}</strong><small>${escapeHtml(row.position || 'Player')}${row.pitch_slot ? ` • ${escapeHtml(row.pitch_slot)}` : ''}${row.formation ? ` • ${escapeHtml(row.formation)}` : ''} • ${mins} min</small></div>
+      <div class="admin-event-player"><strong>${escapeHtml(row.player_name)}</strong><small>${escapeHtml(row.position || 'Player')} • ${mins} min</small></div>
       <span class="admin-event-minute">${row.is_starter ? "0'" : `${row.minute_on}'`}${row.minute_off != null ? ` → ${row.minute_off}'` : ''}</span>
       <div class="admin-event-actions">
         <button class="danger" type="button" onclick="window.nl4DeleteLineupPlayer('${row.id}')">Delete</button>
@@ -761,10 +635,8 @@ lineupRole.addEventListener('change', () => {
   const starter = lineupRole.value === 'starter';
   lineupMinuteOn.disabled = starter;
   lineupMinuteOn.value = starter ? '0' : '';
-  updatePitchSlotOptions();
 });
 lineupMinuteOn.disabled = true;
-updatePitchSlotOptions();
 
 
 document.getElementById('clearLineupBtn').addEventListener('click', async () => {
@@ -780,7 +652,6 @@ document.getElementById('clearLineupBtn').addEventListener('click', async () => 
   lineupMinuteOn.value = '0';
   lineupMinuteOn.disabled = true;
   lineupMinuteOff.value = '';
-  updatePitchSlotOptions();
 
   setMessage(lineupMessage, 'Lineup and substitutions cleared.', 'success');
   await loadMatchLineup();
@@ -794,13 +665,9 @@ document.getElementById('saveLineupPlayerBtn').addEventListener('click', async (
 
   const selected = lineupPlayer.options[lineupPlayer.selectedIndex];
   const isStarter = lineupRole.value === 'starter';
-  const formation = lineupFormation?.value || '4-3-3';
-  const pitchSlot = isStarter ? (lineupPitchSlot?.value || '') : null;
   const minuteOn = isStarter ? 0 : Number(lineupMinuteOn.value);
   const minuteOff = lineupMinuteOff.value === '' ? null : Number(lineupMinuteOff.value);
 
-  if (isStarter && !pitchSlot)
-    return setMessage(lineupMessage,'Select a pitch slot for the starter.','error');
   if (!isStarter && (!Number.isFinite(minuteOn) || minuteOn < 0))
     return setMessage(lineupMessage,'Enter minute on for the substitute.','error');
   if (minuteOff !== null && minuteOff < minuteOn)
@@ -810,8 +677,6 @@ document.getElementById('saveLineupPlayerBtn').addEventListener('click', async (
     fixture_id: currentFixture.id,
     player_name: playerName,
     position: selected.dataset.position || null,
-    formation: isStarter ? formation : null,
-    pitch_slot: isStarter ? pitchSlot : null,
     is_starter: isStarter,
     minute_on: minuteOn,
     minute_off: minuteOff,
@@ -834,7 +699,6 @@ document.getElementById('saveLineupPlayerBtn').addEventListener('click', async (
   lineupMinuteOn.value = '0';
   lineupMinuteOn.disabled = true;
   lineupMinuteOff.value = '';
-  updatePitchSlotOptions();
   await loadMatchLineup();
   await loadTable('premier_league_player_stats');
 });
@@ -1527,4 +1391,177 @@ db.auth.onAuthStateChange((_event, session) => {
 (async function start() {
   const { data } = await db.auth.getSession();
   await applySession(data.session);
+})();
+
+
+/* =========================================================
+   NL4 FAN PREDICTIONS ADMIN
+   ========================================================= */
+(() => {
+  const listEl = document.getElementById('fanPredictionFixtureList');
+  if (!listEl) return;
+
+  const totalEl = document.getElementById('fanPredictionTotal');
+  const refreshBtn = document.getElementById('refreshFanPredictionsBtn');
+  const dialog = document.getElementById('fanPredictionDialog');
+  const closeBtn = document.getElementById('closeFanPredictionDialog');
+  const dialogTitle = document.getElementById('fanPredictionDialogTitle');
+  const dialogSummary = document.getElementById('fanPredictionDialogSummary');
+  const formationEl = document.getElementById('fanPredictionFormation');
+  const countEl = document.getElementById('fanPredictionDialogCount');
+  const xiEl = document.getElementById('fanPredictionXI');
+  const adminScoreProbabilityList = document.getElementById('adminScoreProbabilityList');
+
+  let fanRows = [];
+
+  function fanEsc(value){
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    })[ch]);
+  }
+
+  function fanDb(){
+    // This admin project exposes the connected Supabase client as window.nl4Supabase.
+    return window.nl4Supabase || window.supabaseClient || window.db || window.supabaseDb || null;
+  }
+
+  function fanDate(value){
+    if (!value) return 'Kick-off TBC';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return 'Kick-off TBC';
+    return d.toLocaleString([],{
+      weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'
+    });
+  }
+
+  function teams(row){
+    const home = row.home_team || 'Arsenal';
+    const away = row.away_team || row.opponent || 'Opponent';
+    return {home,away};
+  }
+
+  async function loadFanPredictionAdmin(){
+    const db = fanDb();
+    if (!db || typeof db.rpc !== 'function'){
+      listEl.innerHTML = '<p class="message">Supabase client was not found on this Admin page. Check supabase-client.js.</p>';
+      return;
+    }
+
+    listEl.innerHTML = '<p class="muted">Loading fan predictions…</p>';
+
+    try{
+      const {data,error} = await db.rpc('get_fan_prediction_admin_summary');
+      if (error) throw error;
+      fanRows = data || [];
+
+      const total = fanRows.reduce((sum,row) => sum + Number(row.fan_count || 0),0);
+      if (totalEl) totalEl.textContent = `${total} PREDICTION${total === 1 ? '' : 'S'}`;
+
+      listEl.innerHTML = fanRows.length ? fanRows.map(row => {
+        const t = teams(row);
+        const count = Number(row.fan_count || 0);
+        return `<article class="fan-prediction-card">
+          <div class="fan-prediction-card-top">
+            <div>
+              <h3>${fanEsc(t.home)} vs ${fanEsc(t.away)}</h3>
+              <div class="fixture-meta">${fanEsc(fanDate(row.kickoff_at))}<br>${fanEsc(row.venue || 'Venue TBC')}</div>
+            </div>
+            <div class="fan-vote-number">${count}<small>FANS</small></div>
+          </div>
+          <div class="admin-prediction-type-counts">
+            <span><b>${fanEsc(row.lineup_prediction_count || 0)}</b> LINEUP PREDICTIONS</span>
+            <span><b>${fanEsc(row.score_prediction_count || 0)}</b> SCORE PREDICTIONS</span>
+          </div>
+          <span class="formation-pill">MOST POPULAR FORMATION: ${fanEsc(row.most_popular_formation || '—')}</span>
+          <span class="formation-pill">MOST PREDICTED SCORE: ${
+            row.most_popular_home_score === null || row.most_popular_home_score === undefined
+              ? '—'
+              : `${fanEsc(t.home)} ${fanEsc(row.most_popular_home_score)}–${fanEsc(row.most_popular_away_score)} ${fanEsc(t.away)}`
+          }</span>
+          <div class="admin-card-score-probability">
+            <div class="admin-card-score-probability-head">
+              <b>SCORE PROBABILITY</b>
+              <strong>${fanEsc(row.score_prediction_probability || 0)}%</strong>
+            </div>
+            <div class="admin-card-score-probability-track">
+              <div class="admin-card-score-probability-fill" style="width:${Math.max(0,Math.min(100,Number(row.score_prediction_probability)||0))}%"></div>
+            </div>
+            <small>${fanEsc(row.score_prediction_votes || 0)} of ${fanEsc(row.score_prediction_total || 0)} score votes chose this result</small>
+          </div>
+          <button type="button" class="primary-btn" data-view-fan-xi="${fanEsc(row.fixture_id)}" ${Number(row.lineup_prediction_count || 0) ? '' : 'disabled'}>View Most Selected XI</button>
+        </article>`;
+      }).join('') : '<p class="muted">No published fixtures found.</p>';
+    }catch(error){
+      console.error('Fan prediction admin load failed:',error);
+      listEl.innerHTML = `<p class="message">Could not load fan predictions: ${fanEsc(error.message || 'Unknown error')}</p>`;
+    }
+  }
+
+  async function openFanXI(fixtureId){
+    const db = fanDb();
+    const row = fanRows.find(r => String(r.fixture_id) === String(fixtureId));
+    if (!db || !row) return;
+
+    const t = teams(row);
+    dialogTitle.textContent = `${t.home} vs ${t.away}`;
+    dialogSummary.innerHTML = `<strong>${fanEsc(fanDate(row.kickoff_at))}</strong>
+      <span>${fanEsc(row.venue || 'Venue TBC')}</span>
+      <span><b>Most predicted score:</b> ${
+        row.most_popular_home_score === null || row.most_popular_home_score === undefined
+          ? '—'
+          : `${fanEsc(t.home)} ${fanEsc(row.most_popular_home_score)}–${fanEsc(row.most_popular_away_score)} ${fanEsc(t.away)}`
+      }</span>`;
+    formationEl.textContent = `Formation ${row.most_popular_formation || '—'}`;
+    countEl.textContent = `${Number(row.fan_count || 0)} prediction${Number(row.fan_count || 0) === 1 ? '' : 's'}`;
+    xiEl.innerHTML = '<p class="muted">Loading Most Selected XI…</p>';
+    if (adminScoreProbabilityList) adminScoreProbabilityList.innerHTML = '<p class="muted">Loading score probabilities…</p>';
+    dialog.showModal();
+
+    try{
+      const {data,error} = await db.rpc('get_most_selected_xi',{p_fixture_id:fixtureId});
+      if (error) throw error;
+      const rows = data || [];
+      if (rows.length) formationEl.textContent = `Formation ${rows[0].formation || '—'}`;
+      xiEl.innerHTML = rows.length ? rows.map(player => `
+        <div class="fan-xi-player">
+          <small>${fanEsc(player.slot)}</small>
+          <b>${fanEsc(player.player_name)}</b>
+          <span>${fanEsc(player.votes)} vote${Number(player.votes) === 1 ? '' : 's'} • ${fanEsc(player.percentage)}%</span>
+        </div>
+      `).join('') : '<p class="muted">No submitted predictions for this fixture yet.</p>';
+    }catch(error){
+      xiEl.innerHTML = `<p class="message">Could not load Most Selected XI: ${fanEsc(error.message || 'Unknown error')}</p>`;
+    }
+
+    if (adminScoreProbabilityList){
+      try{
+        const {data:scores,error:scoreError} = await db.rpc('get_fan_score_probabilities',{p_fixture_id:fixtureId});
+        if (scoreError) throw scoreError;
+        const scoreRows=scores || [];
+        adminScoreProbabilityList.innerHTML=scoreRows.length ? scoreRows.slice(0,8).map(score=>`
+          <div class="admin-score-probability-row">
+            <b>${fanEsc(t.home)} ${fanEsc(score.predicted_home_score)}–${fanEsc(score.predicted_away_score)} ${fanEsc(t.away)}</b>
+            <div class="admin-score-probability-track"><div class="admin-score-probability-fill" style="width:${Math.max(0,Math.min(100,Number(score.probability)||0))}%"></div></div>
+            <strong>${fanEsc(score.probability)}%</strong>
+          </div>`).join('') : '<p class="muted">No score predictions yet.</p>';
+      }catch(error){
+        console.error('Admin score probability load failed:',error);
+        adminScoreProbabilityList.innerHTML=`<p class="message">Could not load score probability: ${fanEsc(error.message || 'Unknown error')}</p>`;
+      }
+    }
+  }
+
+  listEl.addEventListener('click', e => {
+    const btn = e.target.closest('[data-view-fan-xi]');
+    if (btn) openFanXI(btn.dataset.viewFanXi);
+  });
+
+  refreshBtn?.addEventListener('click',loadFanPredictionAdmin);
+  closeBtn?.addEventListener('click',() => dialog.close());
+  dialog?.addEventListener('click',e => {
+    if (e.target === dialog) dialog.close();
+  });
+
+  window.nl4RefreshFanPredictions = loadFanPredictionAdmin;
+  loadFanPredictionAdmin();
 })();

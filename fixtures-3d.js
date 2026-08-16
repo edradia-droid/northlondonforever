@@ -82,9 +82,15 @@
     return { date, time, monthKey };
   }
 
-  function statusInfo(status) {
+  function statusInfo(status, hasScore = false) {
     const s = String(status || 'scheduled').toLowerCase();
-    if (['fulltime','ft','aet','pen'].includes(s)) return { cls:'fulltime', label:'FULL TIME', result:true };
+
+    // Full-time scores saved by Admin are authoritative for the fixture card.
+    // Once both scores exist, the card becomes a FULL TIME result automatically.
+    if (hasScore || ['fulltime','ft','finished','played','aet','pen'].includes(s)) {
+      return { cls:'fulltime', label:'FULL TIME', result:true };
+    }
+
     if (['live','1h','ht','2h','et'].includes(s)) return { cls:'live', label:'LIVE', result:true };
     if (s === 'postponed' || s === 'pst') return { cls:'postponed', label:'POSTPONED', result:false };
     if (s === 'cancelled' || s === 'canc') return { cls:'postponed', label:'CANCELLED', result:false };
@@ -154,10 +160,10 @@
       const monthIndex = Math.max(0, Math.min(11, Number(month) - 1));
       const heading = `${monthNames[monthIndex] || 'Month'} ${year}`;
       const cards = items.map(match => {
-        const state = statusInfo(match.status);
         const hasScore = match.homeScore !== null && match.homeScore !== undefined &&
                          match.awayScore !== null && match.awayScore !== undefined;
-        const score = state.result && hasScore
+        const state = statusInfo(match.status, hasScore);
+        const score = hasScore
           ? `<div class="result-score"><b>${escapeHtml(match.homeScore)}</b><em>—</em><b>${escapeHtml(match.awayScore)}</b></div>`
           : `<span class="fixture-vs">VS</span>`;
         const confirmedText = match.kickoffConfirmed ? '' : ' • TIME PROVISIONAL';
@@ -189,7 +195,10 @@
             </div>
             <div class="unified-card-bottom">
               <span>MATCH ${String(match.matchday || '').padStart(2,'0')} / 38</span>
-              <a class="details-link" href="match-details.html?fixture=${encodeURIComponent(match.dbId || match.id)}">More Details →</a>
+              <div class="fixture-card-actions">
+                <a class="predict-lineup-link" href="predict-lineup.html?fixture=${encodeURIComponent(match.id)}">Predict Lineup</a>
+                <a class="details-link" href="match-details.html?fixture=${encodeURIComponent(match.id)}">More Details →</a>
+              </div>
             </div>
           </article>`;
       }).join('');
@@ -280,4 +289,11 @@
   }
 
   loadFixtures();
+
+  // Keep fixture cards in sync with Admin updates without a manual refresh.
+  setInterval(() => {
+    if (document.visibilityState === 'visible') {
+      loadFixtures();
+    }
+  }, 15000);
 })();
