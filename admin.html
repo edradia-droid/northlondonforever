@@ -1,18 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>NL4 Admin | North London Forever</title>
-  <link rel="stylesheet" href="admin.css">
-
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>NL4 Admin | North London Forever</title>
+<link href="admin.css" rel="stylesheet"/>
 <style>
 .match-admin-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 18px}.match-filter{border:1px solid rgba(255,255,255,.12);background:#151515;color:#aaa;border-radius:999px;padding:8px 12px;cursor:pointer;font-weight:800}.match-filter.active{background:#d8ad45;color:#111;border-color:#d8ad45}.match-admin-list{display:grid;gap:12px}.admin-match-row{display:grid;grid-template-columns:80px minmax(0,1fr) auto;align-items:center;gap:16px;padding:15px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:#121212}.admin-match-number{font-weight:900;color:#d8ad45}.admin-match-main{min-width:0}.admin-match-main strong{display:block;color:#fff;font-size:15px}.admin-match-meta{margin-top:5px;color:#777;font-size:11px}.admin-match-result{display:flex;align-items:center;gap:8px;justify-content:flex-end}.admin-match-score{font-size:18px;font-weight:900;color:#fff;min-width:58px;text-align:center}.admin-match-status{font-size:8px;font-weight:900;letter-spacing:1px;border-radius:999px;padding:6px 8px;background:#242424;color:#aaa}.admin-match-status.fulltime{background:#176a39;color:#fff}.admin-match-status.live{background:#d8ad45;color:#111}.admin-match-row button{white-space:nowrap}.match-dialog{width:min(1000px,94vw);max-height:92vh}.event-dialog{width:min(650px,94vw)}.match-admin-summary{padding:14px;border:1px solid rgba(216,173,69,.25);border-radius:14px;background:rgba(216,173,69,.04);margin-bottom:18px}.match-admin-summary strong{display:block;font-size:18px;color:#fff}.match-admin-summary span{display:block;color:#888;margin-top:5px;font-size:11px}.match-admin-section{border-top:1px solid rgba(255,255,255,.08);padding-top:18px;margin-top:18px}.match-admin-section-head{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:14px}.match-admin-section-head h3{margin:0}.match-save-row{align-items:center}.match-events-admin-list{display:grid;gap:9px}.admin-event-row{display:grid;grid-template-columns:95px minmax(0,1fr) 90px 90px;align-items:center;gap:10px;padding:11px 12px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:#111}.admin-event-type{font-size:8px;font-weight:900;letter-spacing:.7px;color:#d8ad45}.admin-event-player strong{display:block;color:#fff}.admin-event-player small{display:block;color:#777;margin-top:3px}.admin-event-minute{font-weight:900;color:#d8ad45;text-align:right}.admin-event-actions{display:flex;gap:5px;justify-content:flex-end}.admin-event-actions button{padding:6px 7px}.check-label{display:flex!important;flex-direction:column}.check-label input{width:auto;margin-top:10px}.match-empty{padding:18px;border:1px dashed rgba(255,255,255,.12);border-radius:12px;color:#777;text-align:center}
 @media(max-width:720px){.admin-match-row{grid-template-columns:52px 1fr}.admin-match-result{grid-column:1/-1;justify-content:space-between;padding-top:9px;border-top:1px solid rgba(255,255,255,.06)}.admin-event-row{grid-template-columns:1fr auto}.admin-event-type,.admin-event-minute{grid-column:auto}.admin-event-player{grid-column:1/2}.admin-event-actions{grid-column:2/3}.match-admin-section-head{align-items:flex-start;flex-direction:column}.match-dialog,.event-dialog{width:96vw}}
 
 .stats-admin-table{display:grid;gap:7px}.stats-admin-head,.stats-admin-row{display:grid;grid-template-columns:minmax(80px,1fr) minmax(120px,1.4fr) minmax(80px,1fr);gap:10px;align-items:center}.stats-admin-head{padding:0 4px 5px;color:#d8ad45;text-align:center;font-size:9px;letter-spacing:1px}.stats-admin-row{padding:8px;border:1px solid rgba(255,255,255,.07);border-radius:11px;background:#101010}.stats-admin-row span{text-align:center;color:#999;font-size:10px;font-weight:800}.stats-admin-row input{text-align:center;min-width:0}.stats-admin-row input:first-child{border-left:2px solid #d8001f}.stats-admin-row input:last-child{border-right:2px solid #d8ad45}@media(max-width:520px){.stats-admin-head,.stats-admin-row{grid-template-columns:70px 1fr 70px;gap:6px}.stats-admin-row{padding:6px}.stats-admin-row span{font-size:8px}}
 </style>
-
 <style>
   .pl-admin-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 16px}
   .pl-admin-search{flex:1 1 240px;min-width:220px}
@@ -35,8 +34,6 @@
   .pl-admin-player-card .card-actions{display:flex;justify-content:flex-end}
   .pl-admin-empty{padding:18px;border:1px dashed rgba(255,255,255,.12);border-radius:12px;color:#777;text-align:center}
 </style>
-
-
 <style>
 .fan-predictions-admin{margin-top:24px}
 .fan-prediction-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -67,8 +64,6 @@
  .fan-prediction-actions{width:100%}
 }
 </style>
-
-
 <style>
 .admin-score-probabilities{margin-top:18px;border-top:1px solid rgba(255,255,255,.08);padding-top:14px}
 .admin-score-probability-list{display:grid;gap:7px;margin-top:10px}
@@ -77,7 +72,6 @@
 .admin-score-probability-fill{height:100%;background:#d8ad45;border-radius:inherit}
 .admin-score-probability-row b{color:#fff}.admin-score-probability-row strong{color:#d8ad45;text-align:right}
 </style>
-
 <style>
 .admin-card-score-probability{
   border:1px solid rgba(216,173,69,.18);border-radius:10px;background:#15130e;padding:9px 10px
@@ -89,13 +83,11 @@
 .admin-card-score-probability-fill{height:100%;background:#d8ad45;border-radius:inherit}
 .admin-card-score-probability small{font-size:7px;color:#777}
 </style>
-
 <style>
 .admin-prediction-type-counts{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .admin-prediction-type-counts span{border:1px solid rgba(255,255,255,.08);border-radius:8px;background:#171717;padding:8px;color:#777;font-size:7px;font-weight:900}
 .admin-prediction-type-counts b{display:block;color:#fff;font-size:15px;margin-bottom:2px}
 </style>
-
 <style>
 /* Mobile admin navigation: keep every admin page, including Fan Predictions, reachable */
 @media (max-width: 760px){
@@ -133,7 +125,6 @@
 .model-interpretation-admin{margin-top:24px}.interpretation-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}.interpretation-metrics article{background:#0f0f0f;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px}.interpretation-metrics span{display:block;color:#777;font-size:8px;font-weight:900}.interpretation-metrics strong{display:block;color:#d8ad45;font-size:22px;margin-top:6px}.interpretation-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.interpretation-form .span-2{grid-column:1/-1}.model-diagnostics-admin{margin-top:14px;border:1px solid rgba(216,173,69,.22);border-radius:12px;padding:10px 12px;background:#0d0d0d}.model-diagnostics-admin summary{cursor:pointer;color:#d8ad45;font-size:10px;font-weight:900}.model-diagnostics-admin p{color:#999;font-size:9px;line-height:1.6}.status-pill{border:1px solid rgba(216,173,69,.3);border-radius:999px;padding:7px 10px;color:#d8ad45;font-size:8px;font-weight:900}
 @media(max-width:700px){.interpretation-metrics{grid-template-columns:1fr 1fr}}@media(max-width:430px){.interpretation-metrics{grid-template-columns:1fr}}
 </style>
-
 <style id="v153-forecast-studio-styles">
 .forecast-studio-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-top:14px}
 .forecast-stats-editor,.auto-interpretation-editor,.manual-interpretation-editor{border:1px solid rgba(255,255,255,.08);border-radius:16px;background:#0d0d0d;padding:14px}
@@ -147,7 +138,6 @@
 .automatic-interpretation-choices{display:grid;gap:8px;margin-top:12px}.auto-interpretation-card{border:1px solid rgba(255,255,255,.07);border-radius:12px;background:#111;padding:11px}.auto-interpretation-card h4{margin:0 0 5px;color:#fff;font-size:10px}.auto-interpretation-card p{margin:0;color:#999;font-size:8px;line-height:1.55}.auto-interpretation-card button{margin-top:8px}
 @media(max-width:900px){.forecast-studio-grid{grid-template-columns:1fr}}@media(max-width:600px){.all-forecast-stats{grid-template-columns:1fr}.interpretation-style-buttons{grid-template-columns:1fr 1fr}}
 </style>
-
 <style id="v154-public-forecast-control-styles">
 .public-forecast-control{margin:14px 0;padding:14px;border:1px solid rgba(216,173,69,.28);border-radius:15px;background:linear-gradient(145deg,#11100c,#0a0a0a);display:flex;justify-content:space-between;gap:14px;align-items:center}
 .public-forecast-control h3{margin:3px 0;color:#fff}.public-forecast-control-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
@@ -155,626 +145,603 @@
 .forecast-setup-warning strong{color:#ffb0b0;font-size:9px}.forecast-setup-warning p{margin:6px 0 0;font-size:9px;line-height:1.55}.forecast-setup-warning code{color:#d8ad45}
 @media(max-width:720px){.public-forecast-control{display:block}.public-forecast-control-actions{justify-content:flex-start;margin-top:10px}}
 </style>
-<style id="v1541-button-fix">
-#modelInterpretationAdmin{position:relative;z-index:2;pointer-events:auto!important}
-#modelInterpretationAdmin button,#modelInterpretationAdmin a,#modelInterpretationAdmin input,#modelInterpretationAdmin textarea{pointer-events:auto!important;position:relative;z-index:3}
-#modelInterpretationAdmin button{touch-action:manipulation}
-#modelInterpretationAdmin button:active{transform:translateY(1px);opacity:.82}
-#modelInterpretationAdmin button:disabled{opacity:.6;cursor:progress}
-#modelInterpretationMessage[data-kind="ok"]{color:#d8ad45!important}
-#modelInterpretationMessage[data-kind="error"]{color:#ff8c8c!important}
+
+<style id="v16-graph-interpretation-admin-styles">
+.graph-interpretation-admin{margin:14px 0;padding:16px;border:1px solid rgba(216,173,69,.28);border-radius:16px;background:linear-gradient(145deg,#11100c,#090909)}
+.graph-interpretation-admin h3{margin:4px 0;color:#fff}.graph-interpretation-options{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.graph-style-btn.active{background:#d8ad45!important;color:#111!important;border-color:#d8ad45!important}
+.graph-interpretation-preview{padding:12px;border:1px solid rgba(255,255,255,.07);border-radius:12px;background:#0d0d0d}
+.graph-interpretation-preview span{display:block;color:#777;font-size:7px;font-weight:1000}.graph-interpretation-preview strong{display:block;color:#d8ad45;margin:5px 0;font-size:14px}
+.graph-interpretation-preview p{margin:0;color:#aaa;font-size:9px;line-height:1.55}
 </style>
-<style id="v155-dual-controls-styles">
-.forecast-visibility-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
-.forecast-visibility-grid .public-forecast-control{margin:0;display:block}
-.forecast-visibility-grid .public-forecast-control-actions{justify-content:flex-start;margin-top:12px}
-@media(max-width:900px){.forecast-visibility-grid{grid-template-columns:1fr}}
+<style id="v161-graph-input-styles">
+.graph-mode-options{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.graph-mode-btn.active{background:#d8ad45!important;color:#111!important}
+.graph-manual-editor{display:grid;gap:10px;margin:12px 0}.graph-manual-editor label{color:#aaa;font-size:8px;font-weight:900}
+.graph-manual-editor input,.graph-manual-editor textarea{width:100%;box-sizing:border-box;margin-top:6px;background:#090909;border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;padding:11px;font:inherit}
 </style>
-<style id="v156-forecast-source-styles">
-.forecast-source-card{grid-column:1/-1;border:1px solid rgba(216,173,69,.28);border-radius:12px;background:#111;padding:11px;margin-top:10px}
-.forecast-source-card span{display:block;color:#777;font-size:7px;font-weight:1000}
-.forecast-source-card strong{display:block;color:#d8ad45;font-size:15px;margin:5px 0}
-.forecast-source-card small{color:#888;font-size:8px;line-height:1.45}
-</style>
-<style id="v157-source-selector-styles">
-.forecast-source-selector{display:flex;gap:6px;align-items:center}
-.source-choice-btn{border:1px solid rgba(216,173,69,.25);background:#111;color:#888;border-radius:999px;padding:8px 11px;font-size:7px;font-weight:1000;cursor:pointer}
-.source-choice-btn.active{background:#d8ad45;color:#090909;border-color:#d8ad45}
+<style id="v162-graph-auto-choices-styles">
+.graph-auto-choice-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:14px 0 8px}
+.graph-auto-choice-head h4{margin:3px 0;color:#fff;font-size:11px}
+.graph-auto-choice-list{display:grid;gap:9px}
+.graph-auto-choice-card{border:1px solid rgba(255,255,255,.08);border-radius:13px;background:#0d0d0d;padding:12px}
+.graph-auto-choice-card.selected{border-color:rgba(216,173,69,.65);box-shadow:0 0 0 1px rgba(216,173,69,.18) inset}
+.graph-auto-choice-card .choice-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.graph-auto-choice-card .choice-top span{color:#d8ad45;font-size:7px;font-weight:1000;letter-spacing:.6px}
+.graph-auto-choice-card h5{margin:5px 0;color:#fff;font-size:11px}.graph-auto-choice-card p{margin:0;color:#aaa;font-size:8.5px;line-height:1.6}
+.graph-auto-choice-card button{margin-top:9px}
+.graph-auto-choice-card.selected button{background:#d8ad45;color:#111}
+@media(max-width:650px){.graph-auto-choice-head{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <span class="mark">NL4</span>
-      <div>
-        <strong>North London Forever</strong>
-        <small>Content Administration</small>
-      </div>
-    </div>
-    <div class="top-actions">
-      <span id="adminEmail" class="admin-email"></span>
-      <button id="logoutBtn" class="ghost-btn" type="button" hidden>Sign out</button>
-    </div>
-  </header>
-
-  <main>
-    <section id="loginView" class="auth-shell">
-      <form id="loginForm" class="auth-card">
-        <p class="eyebrow">SECURE ADMIN ACCESS</p>
-        <h1>NL4 Control Room</h1>
-        <p class="muted">Only Supabase users listed in the NL4 <code>admins</code> table can manage website content.</p>
-
-        <label>Email
-          <input id="email" type="email" autocomplete="username" required>
-        </label>
-
-        <label>Password
-          <input id="password" type="password" autocomplete="current-password" required>
-        </label>
-
-        <button class="primary-btn" type="submit">Sign in</button>
-        <p id="loginMessage" class="message" role="status"></p>
-      </form>
-    </section>
-
-    <section id="adminView" class="dashboard" hidden>
-      <aside class="side-nav">
-        <p class="nav-label">CONTENT</p>
-        <button class="nav-link active" data-panel="playersPanel">Players</button>
-        <button class="nav-link" data-panel="newsPanel">News</button>
-        <button class="nav-link" data-panel="fixturesPanel">Fixtures</button>
-        <button class="nav-link" data-panel="premierLeaguePanel">Premier League</button>
-        <button class="nav-link" data-panel="premierLeagueResultsPanel">Other Teams Results</button>
-        <button class="nav-link" data-panel="modelTestingPanel">🧪 Model Testing</button>
-        <button class="nav-link" data-panel="plPlayerStatsPanel">PL Player Stats</button>
-        <button class="nav-link" data-panel="fanPredictionsPanel">Fan Predictions</button>
-        <button class="nav-link" data-panel="trophiesPanel">Trophies</button>
-        <button class="nav-link" data-panel="mediaPanel">Media</button>
-        <a class="nav-link back-link" href="index.html">← Back to website</a>
-      </aside>
-
-      <div class="workspace">
-        <section id="playersPanel" class="panel active-panel">
-          <div class="panel-heading">
-            <div><p class="eyebrow">SQUAD & ARCHIVE</p><h2>Players</h2></div>
-            <button class="primary-btn" data-new="players">+ Add player</button>
-          </div>
-          <div id="playersList" class="content-grid"></div>
-        </section>
-
-        <section id="newsPanel" class="panel">
-          <div class="panel-heading">
-            <div><p class="eyebrow">EDITORIAL</p><h2>News</h2></div>
-            <button class="primary-btn" data-new="news">+ Add story</button>
-          </div>
-          <div id="newsList" class="content-grid"></div>
-        </section>
-
-        <section id="fixturesPanel" class="panel">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">MATCH CENTRE</p>
-              <h2>Fixtures &amp; Results</h2>
-              <p class="muted">Update a fixture once. The public fixture card and More Details page read the same Supabase record.</p>
-            </div>
-            <button class="primary-btn" data-new="fixtures">+ Add fixture</button>
-          </div>
-          <div class="match-admin-toolbar">
-            <button class="match-filter active" type="button" data-match-filter="all">All 38</button>
-            <button class="match-filter" type="button" data-match-filter="upcoming">Upcoming</button>
-            <button class="match-filter" type="button" data-match-filter="finished">Results</button>
-            <span id="fixturesAdminStatus" class="muted"></span>
-          </div>
-          <div id="fixturesList" class="match-admin-list"></div>
-        </section>
-
-
-        <section id="premierLeaguePanel" class="panel">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">COMPETITION HUB</p>
-              <h2>Premier League Standings</h2>
-              <p class="muted">Manage the 2026/27 table shown on premier-league.html. Arsenal's hero statistics are calculated from the Arsenal row.</p>
-            </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button id="recalculateStandingsBtn" class="ghost-btn" type="button">↻ Recalculate table</button>
-              <button class="primary-btn" data-new="premier_league_standings">+ Add club</button>
-            </div>
-          </div>
-          <p id="standingsRecalcMessage" class="message" role="status"></p>
-          <div id="premier_league_standingsList" class="content-grid"></div>
-        </section>
-
-
-        <section id="premierLeagueResultsPanel" class="panel">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">OTHER 19 TEAMS • 2026/27</p>
-              <h2>Premier League Results</h2>
-              <p class="muted">
+<header class="topbar">
+<div class="brand">
+<span class="mark">NL4</span>
+<div>
+<strong>North London Forever</strong>
+<small>Content Administration</small>
+</div>
+</div>
+<div class="top-actions">
+<span class="admin-email" id="adminEmail"></span>
+<button class="ghost-btn" hidden="" id="logoutBtn" type="button">Sign out</button>
+</div>
+</header>
+<main>
+<section class="auth-shell" id="loginView">
+<form class="auth-card" id="loginForm">
+<p class="eyebrow">SECURE ADMIN ACCESS</p>
+<h1>NL4 Control Room</h1>
+<p class="muted">Only Supabase users listed in the NL4 <code>admins</code> table can manage website content.</p>
+<label>Email
+          <input autocomplete="username" id="email" required="" type="email"/>
+</label>
+<label>Password
+          <input autocomplete="current-password" id="password" required="" type="password"/>
+</label>
+<button class="primary-btn" type="submit">Sign in</button>
+<p class="message" id="loginMessage" role="status"></p>
+</form>
+</section>
+<section class="dashboard" hidden="" id="adminView">
+<aside class="side-nav">
+<p class="nav-label">CONTENT</p>
+<button class="nav-link active" data-panel="playersPanel">Players</button>
+<button class="nav-link" data-panel="newsPanel">News</button>
+<button class="nav-link" data-panel="fixturesPanel">Fixtures</button>
+<button class="nav-link" data-panel="premierLeaguePanel">Premier League</button>
+<button class="nav-link" data-panel="premierLeagueResultsPanel">Other Teams Results</button>
+<button class="nav-link" data-panel="modelTestingPanel">⚙ Admin Model</button>
+<button class="nav-link" data-panel="plPlayerStatsPanel">PL Player Stats</button>
+<button class="nav-link" data-panel="fanPredictionsPanel">Fan Predictions</button>
+<button class="nav-link" data-panel="trophiesPanel">Trophies</button>
+<button class="nav-link" data-panel="mediaPanel">Media</button>
+<a class="nav-link back-link" href="index.html">← Back to website</a>
+</aside>
+<div class="workspace">
+<section class="panel active-panel" id="playersPanel">
+<div class="panel-heading">
+<div><p class="eyebrow">SQUAD &amp; ARCHIVE</p><h2>Players</h2></div>
+<button class="primary-btn" data-new="players">+ Add player</button>
+</div>
+<div class="content-grid" id="playersList"></div>
+</section>
+<section class="panel" id="newsPanel">
+<div class="panel-heading">
+<div><p class="eyebrow">EDITORIAL</p><h2>News</h2></div>
+<button class="primary-btn" data-new="news">+ Add story</button>
+</div>
+<div class="content-grid" id="newsList"></div>
+</section>
+<section class="panel" id="fixturesPanel">
+<div class="panel-heading">
+<div>
+<p class="eyebrow">MATCH CENTRE</p>
+<h2>Fixtures &amp; Results</h2>
+<p class="muted">Update a fixture once. The public fixture card and More Details page read the same Supabase record.</p>
+</div>
+<button class="primary-btn" data-new="fixtures">+ Add fixture</button>
+</div>
+<div class="match-admin-toolbar">
+<button class="match-filter active" data-match-filter="all" type="button">All 38</button>
+<button class="match-filter" data-match-filter="upcoming" type="button">Upcoming</button>
+<button class="match-filter" data-match-filter="finished" type="button">Results</button>
+<span class="muted" id="fixturesAdminStatus"></span>
+</div>
+<div class="match-admin-list" id="fixturesList"></div>
+</section>
+<section class="panel" id="premierLeaguePanel">
+<div class="panel-heading">
+<div>
+<p class="eyebrow">COMPETITION HUB</p>
+<h2>Premier League Standings</h2>
+<p class="muted">Manage the 2026/27 table shown on premier-league.html. Arsenal's hero statistics are calculated from the Arsenal row.</p>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<button class="ghost-btn" id="recalculateStandingsBtn" type="button">↻ Recalculate table</button>
+<button class="primary-btn" data-new="premier_league_standings">+ Add club</button>
+</div>
+</div>
+<p class="message" id="standingsRecalcMessage" role="status"></p>
+<div class="content-grid" id="premier_league_standingsList"></div>
+</section>
+<section class="panel" id="premierLeagueResultsPanel">
+<div class="panel-heading">
+<div>
+<p class="eyebrow">OTHER 19 TEAMS • 2026/27</p>
+<h2>Premier League Results</h2>
+<p class="muted">
                 All 342 non-Arsenal league fixtures are already loaded. Choose a matchday, then press Edit on a fixture to enter the final score and set it to Full Time. Arsenal matches stay in the Fixtures panel. Every saved result recalculates the table and feeds the live V13 title model.
               </p>
-            </div>
-            <button class="primary-btn" data-new="premier_league_matches">+ Add missing result</button>
-          </div>
-          <div class="match-admin-toolbar" style="max-height:126px;overflow:auto;padding-bottom:4px">
-            <button class="match-filter active" type="button" data-pl-results-matchday="all">All 342</button><button class="match-filter" type="button" data-pl-results-matchday="1">MD 1</button><button class="match-filter" type="button" data-pl-results-matchday="2">MD 2</button><button class="match-filter" type="button" data-pl-results-matchday="3">MD 3</button><button class="match-filter" type="button" data-pl-results-matchday="4">MD 4</button><button class="match-filter" type="button" data-pl-results-matchday="5">MD 5</button><button class="match-filter" type="button" data-pl-results-matchday="6">MD 6</button><button class="match-filter" type="button" data-pl-results-matchday="7">MD 7</button><button class="match-filter" type="button" data-pl-results-matchday="8">MD 8</button><button class="match-filter" type="button" data-pl-results-matchday="9">MD 9</button><button class="match-filter" type="button" data-pl-results-matchday="10">MD 10</button><button class="match-filter" type="button" data-pl-results-matchday="11">MD 11</button><button class="match-filter" type="button" data-pl-results-matchday="12">MD 12</button><button class="match-filter" type="button" data-pl-results-matchday="13">MD 13</button><button class="match-filter" type="button" data-pl-results-matchday="14">MD 14</button><button class="match-filter" type="button" data-pl-results-matchday="15">MD 15</button><button class="match-filter" type="button" data-pl-results-matchday="16">MD 16</button><button class="match-filter" type="button" data-pl-results-matchday="17">MD 17</button><button class="match-filter" type="button" data-pl-results-matchday="18">MD 18</button><button class="match-filter" type="button" data-pl-results-matchday="19">MD 19</button><button class="match-filter" type="button" data-pl-results-matchday="20">MD 20</button><button class="match-filter" type="button" data-pl-results-matchday="21">MD 21</button><button class="match-filter" type="button" data-pl-results-matchday="22">MD 22</button><button class="match-filter" type="button" data-pl-results-matchday="23">MD 23</button><button class="match-filter" type="button" data-pl-results-matchday="24">MD 24</button><button class="match-filter" type="button" data-pl-results-matchday="25">MD 25</button><button class="match-filter" type="button" data-pl-results-matchday="26">MD 26</button><button class="match-filter" type="button" data-pl-results-matchday="27">MD 27</button><button class="match-filter" type="button" data-pl-results-matchday="28">MD 28</button><button class="match-filter" type="button" data-pl-results-matchday="29">MD 29</button><button class="match-filter" type="button" data-pl-results-matchday="30">MD 30</button><button class="match-filter" type="button" data-pl-results-matchday="31">MD 31</button><button class="match-filter" type="button" data-pl-results-matchday="32">MD 32</button><button class="match-filter" type="button" data-pl-results-matchday="33">MD 33</button><button class="match-filter" type="button" data-pl-results-matchday="34">MD 34</button><button class="match-filter" type="button" data-pl-results-matchday="35">MD 35</button><button class="match-filter" type="button" data-pl-results-matchday="36">MD 36</button><button class="match-filter" type="button" data-pl-results-matchday="37">MD 37</button><button class="match-filter" type="button" data-pl-results-matchday="38">MD 38</button>
-            <span id="plResultsAdminStatus" class="muted"></span>
-          </div>
-          <div id="premier_league_matchesList" class="content-grid"></div>
-        </section>
-
-
-        <section id="modelTestingPanel" class="panel">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">V13.2 • SAFE SANDBOX</p>
-              <h2>Premier League Testing Machine</h2>
-              <p class="muted">Generate one complete random Premier League test season, then move through Matchdays 1–38 using that same result path. This creates a valid sandbox probability timeline without changing real fixtures, standings or Supabase history.</p>
-            </div>
-            <span class="status" id="modelTestStatusBadge">NO TEST LOADED</span>
-          </div>
-          <div class="model-test-warning"><strong>🧪 SAFE TEST MODE</strong><span>Random scores stay in this browser only. They are never written to the live season database.</span></div>
-          <div class="model-test-controls">
-            <label>Simulate season through matchday<select id="modelTestThroughMatchday"></select></label>
-            <label>Random score style<select id="modelTestScoreStyle"><option value="realistic" selected>Realistic random scores</option><option value="chaotic">High-variance stress test</option></select></label>
-            <div class="model-test-actions">
-              <button id="generateModelTestBtn" class="primary-btn" type="button">🎲 Generate / Apply Matchday</button>
-              <button id="regenerateModelTestBtn" class="ghost-btn" type="button">↻ New Random Season</button>
-              <button id="openModelTestBtn" class="primary-btn" type="button" disabled>▶ Open V13 Test</button>
-              <button id="clearModelTestBtn" class="danger-btn" type="button">Clear Test</button>
-            </div>
-          </div>
-          <div class="model-test-summary">
-            <article><span>MATCHDAYS</span><strong id="modelTestRounds">0</strong></article>
-            <article><span>TEST RESULTS</span><strong id="modelTestMatches">0</strong></article>
-            <article><span>ARSENAL RESULTS</span><strong id="modelTestArsenalRecord">—</strong></article>
-            <article><span>MODE</span><strong>LOCAL ONLY</strong></article>
-          </div>
-          <p id="modelTestMessage" class="message" role="status"></p>
-          <div class="model-test-preview-wrap">
-            <div class="model-test-preview-head"><div><p class="eyebrow">SAME TEST SEASON</p><h3>Matchday Results Preview</h3></div><span id="modelTestGeneratedAt" class="muted"></span></div>
-            <div id="modelTestPreview" class="model-test-preview"><p class="muted">Choose a matchday range and generate a test season.</p></div>
-          </div>
-        </section>
-
-        <section id="plPlayerStatsPanel" class="panel">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">ARSENAL ONLY</p>
-              <h2>Premier League Player Stats</h2>
-              <p class="muted">Manage Arsenal players used by the Player Leaders section on premier-league.html.</p>
-            </div>
-            <button class="primary-btn" data-new="premier_league_player_stats">+ Add player stats</button>
-          </div>
-          <div class="pl-admin-tools">
-              <label class="pl-admin-search">
+</div>
+<button class="primary-btn" data-new="premier_league_matches">+ Add missing result</button>
+</div>
+<div class="match-admin-toolbar" style="max-height:126px;overflow:auto;padding-bottom:4px">
+<button class="match-filter active" data-pl-results-matchday="all" type="button">All 342</button><button class="match-filter" data-pl-results-matchday="1" type="button">MD 1</button><button class="match-filter" data-pl-results-matchday="2" type="button">MD 2</button><button class="match-filter" data-pl-results-matchday="3" type="button">MD 3</button><button class="match-filter" data-pl-results-matchday="4" type="button">MD 4</button><button class="match-filter" data-pl-results-matchday="5" type="button">MD 5</button><button class="match-filter" data-pl-results-matchday="6" type="button">MD 6</button><button class="match-filter" data-pl-results-matchday="7" type="button">MD 7</button><button class="match-filter" data-pl-results-matchday="8" type="button">MD 8</button><button class="match-filter" data-pl-results-matchday="9" type="button">MD 9</button><button class="match-filter" data-pl-results-matchday="10" type="button">MD 10</button><button class="match-filter" data-pl-results-matchday="11" type="button">MD 11</button><button class="match-filter" data-pl-results-matchday="12" type="button">MD 12</button><button class="match-filter" data-pl-results-matchday="13" type="button">MD 13</button><button class="match-filter" data-pl-results-matchday="14" type="button">MD 14</button><button class="match-filter" data-pl-results-matchday="15" type="button">MD 15</button><button class="match-filter" data-pl-results-matchday="16" type="button">MD 16</button><button class="match-filter" data-pl-results-matchday="17" type="button">MD 17</button><button class="match-filter" data-pl-results-matchday="18" type="button">MD 18</button><button class="match-filter" data-pl-results-matchday="19" type="button">MD 19</button><button class="match-filter" data-pl-results-matchday="20" type="button">MD 20</button><button class="match-filter" data-pl-results-matchday="21" type="button">MD 21</button><button class="match-filter" data-pl-results-matchday="22" type="button">MD 22</button><button class="match-filter" data-pl-results-matchday="23" type="button">MD 23</button><button class="match-filter" data-pl-results-matchday="24" type="button">MD 24</button><button class="match-filter" data-pl-results-matchday="25" type="button">MD 25</button><button class="match-filter" data-pl-results-matchday="26" type="button">MD 26</button><button class="match-filter" data-pl-results-matchday="27" type="button">MD 27</button><button class="match-filter" data-pl-results-matchday="28" type="button">MD 28</button><button class="match-filter" data-pl-results-matchday="29" type="button">MD 29</button><button class="match-filter" data-pl-results-matchday="30" type="button">MD 30</button><button class="match-filter" data-pl-results-matchday="31" type="button">MD 31</button><button class="match-filter" data-pl-results-matchday="32" type="button">MD 32</button><button class="match-filter" data-pl-results-matchday="33" type="button">MD 33</button><button class="match-filter" data-pl-results-matchday="34" type="button">MD 34</button><button class="match-filter" data-pl-results-matchday="35" type="button">MD 35</button><button class="match-filter" data-pl-results-matchday="36" type="button">MD 36</button><button class="match-filter" data-pl-results-matchday="37" type="button">MD 37</button><button class="match-filter" data-pl-results-matchday="38" type="button">MD 38</button>
+<span class="muted" id="plResultsAdminStatus"></span>
+</div>
+<div class="content-grid" id="premier_league_matchesList"></div>
+</section>
+<section class="panel" id="modelTestingPanel">
+<div class="panel-heading">
+<div>
+<p class="eyebrow">NL4 • ADMIN MODEL</p>
+<h2>Premier League Admin Model</h2>
+<p class="muted">Admin Model uses the exact same live 2026/27 Supabase standings, fixtures, completed results and historical inputs as NL4 Model. Its forecast snapshots are stored separately so model development never changes the public forecast history.</p>
+</div>
+<span class="status" id="modelTestStatusBadge">CHECKING…</span>
+</div>
+<div class="model-test-warning"><strong>⚙ SAME DATA • SEPARATE MODEL HISTORY</strong><span>Admin Model reads the same football data as NL4 Model. Only its saved forecast history is isolated in the Admin Model Supabase tables.</span></div>
+<div class="model-test-controls" style="grid-template-columns:minmax(220px,1fr) 1fr;">
+<label>Admin Model data source
+              <select disabled="" id="modelTestScoreStyle"><option selected="">Supabase • Live 2026/27 data</option></select>
+</label>
+<div class="model-test-actions">
+<button class="primary-btn" id="generateModelTestBtn" type="button">↻ Sync Admin Model Data</button>
+<button class="primary-btn" id="openModelTestBtn" type="button">▶ Load Admin Model Below</button>
+<button class="danger-btn" id="clearModelTestBtn" type="button">Clear Admin History</button>
+</div>
+</div>
+<div class="model-test-summary">
+<article><span>DATA SOURCE</span><strong>SUPABASE</strong></article>
+<article><span>COMPLETED MATCHES</span><strong id="modelTestMatches">—</strong></article>
+<article><span>ARSENAL RECORD</span><strong id="modelTestArsenalRecord">—</strong></article>
+<article><span>SAVED ADMIN SNAPSHOTS</span><strong id="modelTestRounds">—</strong></article>
+</div>
+<p class="message" id="modelTestMessage" role="status"></p>
+<div class="model-test-preview-wrap">
+<div class="model-test-preview-head"><div><p class="eyebrow">SHARED LIVE INPUTS</p><h3>Admin Model Data Status</h3></div><span class="muted" id="modelTestGeneratedAt"></span></div>
+<div class="model-test-preview" id="modelTestPreview"><p class="muted">Checking the shared Supabase model inputs…</p></div>
+</div>
+<div id="adminModelFrameWrap"><iframe data-src="admin-model.html?adminmodel=1" id="adminModelFrame" loading="lazy" style="width:100%;height:1200px;border:1px solid rgba(216,173,69,.28);border-radius:16px;background:#090909;margin-top:18px;display:none;" title="NL4 Admin Model"></iframe></div></section>
+<section class="panel" id="plPlayerStatsPanel">
+<div class="panel-heading">
+<div>
+<p class="eyebrow">ARSENAL ONLY</p>
+<h2>Premier League Player Stats</h2>
+<p class="muted">Manage Arsenal players used by the Player Leaders section on premier-league.html.</p>
+</div>
+<button class="primary-btn" data-new="premier_league_player_stats">+ Add player stats</button>
+</div>
+<div class="pl-admin-tools">
+<label class="pl-admin-search">
                 Search players
-                <input id="plPlayerSearch" type="search" placeholder="Search by player name">
-              </label>
-              <button class="pl-pos-filter active" type="button" data-pl-position="all">All</button>
-              <button class="pl-pos-filter" type="button" data-pl-position="Goalkeeper">Goalkeepers</button>
-              <button class="pl-pos-filter" type="button" data-pl-position="Defender">Defenders</button>
-              <button class="pl-pos-filter" type="button" data-pl-position="Midfielder">Midfielders</button>
-              <button class="pl-pos-filter" type="button" data-pl-position="Forward">Forwards</button>
-            </div>
-            <div id="premier_league_player_statsGrouped" class="pl-player-groups"></div>
-            <div id="premier_league_player_statsList" class="content-grid" hidden></div>
-        </section>
-
-<section id="fanPredictionsPanel" class="panel fan-predictions-admin">
-  <div class="section-heading">
-    <div>
-      <p class="eyebrow">NL4 FAN VOTE</p>
-      <h2>Fan Predictions</h2>
-      <p class="muted">See prediction totals, the most popular formation and the community Most Selected XI for every published fixture.</p>
-    </div>
-    <div class="fan-prediction-actions">
-      <span class="status" id="fanPredictionTotal">0 PREDICTIONS</span>
-      <button type="button" class="ghost-btn" id="refreshFanPredictionsBtn">Refresh</button>
-    </div>
-  </div>
-
-  <div id="fanPredictionFixtureList" class="fan-prediction-fixtures">
-    <p class="muted">Loading fan predictions…</p>
-  </div>
+                <input id="plPlayerSearch" placeholder="Search by player name" type="search"/>
+</label>
+<button class="pl-pos-filter active" data-pl-position="all" type="button">All</button>
+<button class="pl-pos-filter" data-pl-position="Goalkeeper" type="button">Goalkeepers</button>
+<button class="pl-pos-filter" data-pl-position="Defender" type="button">Defenders</button>
+<button class="pl-pos-filter" data-pl-position="Midfielder" type="button">Midfielders</button>
+<button class="pl-pos-filter" data-pl-position="Forward" type="button">Forwards</button>
+</div>
+<div class="pl-player-groups" id="premier_league_player_statsGrouped"></div>
+<div class="content-grid" hidden="" id="premier_league_player_statsList"></div>
 </section>
+<section class="panel fan-predictions-admin" id="fanPredictionsPanel">
+<div class="section-heading">
+<div>
+<p class="eyebrow">NL4 FAN VOTE</p>
+<h2>Fan Predictions</h2>
+<p class="muted">See prediction totals, the most popular formation and the community Most Selected XI for every published fixture.</p>
+</div>
+<div class="fan-prediction-actions">
+<span class="status" id="fanPredictionTotal">0 PREDICTIONS</span>
+<button class="ghost-btn" id="refreshFanPredictionsBtn" type="button">Refresh</button>
+</div>
+</div>
+<div class="fan-prediction-fixtures" id="fanPredictionFixtureList">
+<p class="muted">Loading fan predictions…</p>
+</div>
+</section>
+<section class="panel" id="trophiesPanel">
+<div class="panel-heading">
+<div><p class="eyebrow">TREASURE ROOM</p><h2>Trophies</h2></div>
+<button class="primary-btn" data-new="trophies">+ Add trophy</button>
+</div>
+<div class="content-grid" id="trophiesList"></div>
+</section>
+<section class="panel" id="mediaPanel">
+<div class="panel-heading">
+<div><p class="eyebrow">NL4 MEDIA</p><h2>Upload images</h2></div>
+</div>
+<form class="editor-card" id="mediaForm">
+<label>Choose image
+              <input accept="image/jpeg,image/png,image/webp,image/gif" id="mediaFile" required="" type="file"/>
+</label>
+<button class="primary-btn" type="submit">Upload image</button>
+<p class="message" id="mediaMessage" role="status"></p>
+<div class="media-result" id="mediaResult"></div>
+</form>
+</section>
+</div>
+</section>
+</main>
+<section class="admin-section model-interpretation-admin" id="modelInterpretationAdmin">
+<div class="section-head">
+<div>
+<p class="eyebrow">TITLE MODEL • ADMIN ONLY</p>
+<h2>Forecast Publishing Studio</h2>
+<p class="muted">Load the NL4 Model forecast, choose exactly which statistics viewers can see, then publish an automatic or fully manual interpretation.</p>
+</div>
+<span class="status-pill" id="modelInterpretationState">NOT PUBLISHED</span>
+</div>
 
-        <section id="trophiesPanel" class="panel">
-          <div class="panel-heading">
-            <div><p class="eyebrow">TREASURE ROOM</p><h2>Trophies</h2></div>
-            <button class="primary-btn" data-new="trophies">+ Add trophy</button>
-          </div>
-          <div id="trophiesList" class="content-grid"></div>
-        </section>
-
-        <section id="mediaPanel" class="panel">
-          <div class="panel-heading">
-            <div><p class="eyebrow">NL4 MEDIA</p><h2>Upload images</h2></div>
-          </div>
-          <form id="mediaForm" class="editor-card">
-            <label>Choose image
-              <input id="mediaFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif" required>
-            </label>
-            <button class="primary-btn" type="submit">Upload image</button>
-            <p id="mediaMessage" class="message" role="status"></p>
-            <div id="mediaResult" class="media-result"></div>
-          </form>
-        </section>
-      </div>
-    </section>
-  </main>
-
-  
-
-
-
-
-<section id="modelInterpretationAdmin" class="admin-section model-interpretation-admin">
-  <div class="section-head">
-    <div>
-      <p class="eyebrow">TITLE MODEL • ADMIN ONLY</p>
-      <h2>Forecast Publishing Studio</h2>
-      <p class="muted">Load the complete NL4 forecast, choose exactly which statistics viewers can see, then publish an automatic or fully manual interpretation.</p>
-    </div>
-    <span id="modelInterpretationState" class="status-pill">NOT PUBLISHED</span>
+<div class="graph-interpretation-admin" id="graphInterpretationAdmin">
+  <div>
+    <p class="eyebrow">NL4 MODEL • GRAPH INTERPRETATION</p>
+    <h3>Season Movement Interpretation</h3>
+    <p class="muted">Choose Automatic to let NL4 rewrite the graph explanation after every new result, or Manual to publish your own graph headline and interpretation.</p>
   </div>
 
-  <div class="forecast-visibility-grid">
-    <div class="public-forecast-control">
+  <div class="graph-mode-options" role="group" aria-label="Graph interpretation mode">
+    <button type="button" class="ghost-btn graph-mode-btn" data-graph-mode="automatic">Automatic</button>
+    <button type="button" class="ghost-btn graph-mode-btn" data-graph-mode="manual">Manual</button>
+  </div>
+
+  <div id="graphAutomaticControls">
+    <p class="eyebrow">AUTOMATIC WRITING STYLE</p>
+    <div class="graph-interpretation-options" role="group" aria-label="Graph interpretation style">
+      <button type="button" class="ghost-btn graph-style-btn" data-graph-style="balanced">Balanced</button>
+      <button type="button" class="ghost-btn graph-style-btn" data-graph-style="momentum">Momentum</button>
+      <button type="button" class="ghost-btn graph-style-btn" data-graph-style="analyst">Analyst</button>
+      <button type="button" class="ghost-btn graph-style-btn" data-graph-style="fan">Fan View</button>
+    </div>
+    <div class="graph-auto-choice-head">
       <div>
-        <p class="eyebrow">STATISTICAL FORECAST</p>
-        <h3>Full NL4 Statistical Forecast</h3>
-        <p class="muted">Controls the main title probability model, timeline, expected points, title-race panels and model forecast sections.</p>
+        <p class="eyebrow">AUTOMATIC INTERPRETATION OPTIONS</p>
+        <h4>Choose the interpretation viewers should see</h4>
       </div>
-      <div class="public-forecast-control-actions">
-        <span id="publicForecastVisibilityState" class="status-pill">CHECKING…</span>
-        <button id="showPublicForecastBtn" type="button" class="primary-btn">ADD STATISTICAL FORECAST</button>
-        <button id="hidePublicForecastBtn" type="button" class="ghost-btn">REMOVE STATISTICAL FORECAST</button>
-      </div>
+      <button id="refreshGraphAutoChoicesBtn" type="button" class="ghost-btn">Refresh Options</button>
     </div>
-
-    <div class="public-forecast-control">
-      <div>
-        <p class="eyebrow">ADMIN INTERPRETATION</p>
-        <h3>Interpretation Forecast</h3>
-        <p class="muted">Controls only the Admin-selected statistics and fan-friendly interpretation shown below 2026/27 Premier League Squad Stats.</p>
-      </div>
-      <div class="public-forecast-control-actions">
-        <span id="interpretationForecastVisibilityState" class="status-pill">CHECKING…</span>
-        <button id="showInterpretationForecastBtn" type="button" class="primary-btn">ADD INTERPRETATION</button>
-        <button id="hideInterpretationForecastBtn" type="button" class="ghost-btn">REMOVE INTERPRETATION</button>
-      </div>
+    <div id="graphAutomaticChoices" class="graph-auto-choice-list">
+      <div class="empty">Loading automatic interpretation options…</div>
     </div>
   </div>
 
-  <div id="forecastPublisherSetupWarning" class="forecast-setup-warning" hidden>
-    <strong>DATABASE SETUP REQUIRED</strong>
-    <p>The forecast publisher tables could not be found by the Supabase Data API. This warning is only shown for a confirmed schema/table error.</p>
-  </div>
-
-  <div class="interpretation-actions">
-    <div class="forecast-source-selector">
-      <button id="useLiveForecastSourceBtn" type="button" class="source-choice-btn active" data-source="live">LIVE STATISTICAL</button>
-      <button id="useSandboxForecastSourceBtn" type="button" class="source-choice-btn" data-source="sandbox">SANDBOX TEST</button>
-    </div>
-    <button id="loadLatestModelBtn" type="button" class="primary-btn">Load Selected Forecast</button>
-    <span id="forecastDataSourceState" class="status-pill">SOURCE: LIVE STATISTICAL</span>
-    <button id="selectAllForecastStatsBtn" type="button" class="ghost-btn">Select All Stats</button>
-    <button id="clearForecastStatsBtn" type="button" class="ghost-btn">Clear Stat Selection</button>
-    <a href="premier-league.html" class="ghost-btn" target="_blank" rel="noopener">Preview Viewer Page</a>
-  </div>
-
-  <div class="forecast-studio-grid">
-    <div class="forecast-stats-editor">
-      <div class="subsection-head">
-        <div><p class="eyebrow">01 / FORECAST DATA</p><h3>Choose Viewer Statistics</h3></div>
-        <span id="selectedForecastStatsCount" class="status-pill">0 SELECTED</span>
-      </div>
-      <p class="muted">Every available forecast metric is loaded here. Tick only the statistics you want displayed publicly.</p>
-      <div id="forecastSourceCard" class="forecast-source-card" hidden>
-        <span>FORECAST SOURCE</span>
-        <strong id="forecastSourceName">—</strong>
-        <small id="forecastSourceDetail">—</small>
-      </div>
-      <div id="allForecastStatsList" class="all-forecast-stats">
-        <p class="muted">Load the complete forecast to see statistics.</p>
-      </div>
-    </div>
-
-    <div class="auto-interpretation-editor">
-      <div class="subsection-head">
-        <div><p class="eyebrow">02 / AUTOMATIC INTERPRETATION</p><h3>Choose How NL4 Explains It</h3></div>
-      </div>
-      <p class="muted">Generate several interpretations from the same model output, then choose one as your editable starting point.</p>
-
-      <div class="interpretation-style-buttons">
-        <button type="button" class="interpret-style-btn" data-style="balanced">Balanced</button>
-        <button type="button" class="interpret-style-btn" data-style="short">Short &amp; Direct</button>
-        <button type="button" class="interpret-style-btn" data-style="analyst">Analyst</button>
-        <button type="button" class="interpret-style-btn" data-style="fan">Fan Friendly</button>
-        <button type="button" class="interpret-style-btn" data-style="cautious">Cautious</button>
-        <button type="button" class="interpret-style-btn" data-style="story">Title-Race Story</button>
-      </div>
-
-      <div id="automaticInterpretationChoices" class="automatic-interpretation-choices">
-        <p class="muted">Load the forecast, then choose an interpretation style.</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="manual-interpretation-editor">
-    <div class="subsection-head">
-      <div><p class="eyebrow">03 / FINAL EDIT</p><h3>Automatic + Manual Publisher</h3></div>
-      <span class="status-pill">FULLY EDITABLE</span>
-    </div>
-    <p class="muted">An automatic option can fill this form, but Admin has final control over every word before publishing.</p>
-
-    <div class="form-grid interpretation-form">
-      <label>Viewer headline
-        <input id="interpHeadline" type="text" maxlength="140" placeholder="Example: Arsenal remain strong title favourites">
-      </label>
-      <label>Status label
-        <input id="interpStatusLabel" type="text" maxlength="60" placeholder="Example: TITLE RACE UPDATE">
-      </label>
-      <label class="span-2">Main interpretation
-        <textarea id="interpSummary" rows="6" maxlength="1800" placeholder="Explain what the forecast means and why it looks this way."></textarea>
-      </label>
-      <label class="span-2">Key takeaway
-        <textarea id="interpTakeaway" rows="3" maxlength="600" placeholder="The one thing viewers should understand."></textarea>
-      </label>
-      <label>Key factor 1
-        <input id="interpFactor1" type="text" maxlength="260">
-      </label>
-      <label>Key factor 2
-        <input id="interpFactor2" type="text" maxlength="260">
-      </label>
-      <label>Key factor 3
-        <input id="interpFactor3" type="text" maxlength="260">
-      </label>
-    </div>
-
+  <div class="graph-manual-editor" id="graphManualControls">
+    <label>Graph interpretation headline
+      <input id="graphInterpretationHeadlineInput" type="text" maxlength="120" placeholder="Example: Arsenal build early title momentum">
+    </label>
+    <label>Graph interpretation
+      <textarea id="graphInterpretationTextInput" rows="5" maxlength="1200" placeholder="Write the explanation you want viewers to see below the season movement graph."></textarea>
+    </label>
     <div class="interpretation-actions">
-      <button id="publishInterpretationBtn" type="button" class="primary-btn">Publish Selected Stats + Interpretation</button>
-      <button id="unpublishInterpretationBtn" type="button" class="ghost-btn">Unpublish</button>
-      <button id="clearInterpretationBtn" type="button" class="ghost-btn">Clear Interpretation</button>
+      <button id="saveGraphInterpretationBtn" type="button" class="primary-btn">Save Selected Interpretation</button>
+      <button id="clearGraphInterpretationBtn" type="button" class="ghost-btn">Clear Manual Text</button>
     </div>
-    <p id="modelInterpretationMessage" class="message" role="status"></p>
   </div>
 
-  <details class="model-diagnostics-admin">
-    <summary>How Admin should interpret NL4</summary>
-    <p>The automatic drafts are starting points, not hidden model decisions. Compare Arsenal's probability, expected points, current table evidence, confidence, title-race gap and rival probabilities. Publish only the statistics that help fans understand the current race. You can rewrite the interpretation completely before publishing.</p>
-  </details>
+  <div class="graph-interpretation-preview">
+    <span>CURRENT MODE / STYLE</span>
+    <strong id="graphInterpretationState">LOADING…</strong>
+    <p id="graphInterpretationAdminPreview">Loading graph interpretation settings…</p>
+  </div>
+</div>
+
+<div class="public-forecast-control">
+<div>
+<p class="eyebrow">PUBLIC FORECAST VISIBILITY</p>
+<h3>Show the NL4 Forecast to Viewers?</h3>
+<p class="muted">Turn the complete forecast off to remove it from the Premier League page. Turn it back on whenever you want it visible again.</p>
+</div>
+<div class="public-forecast-control-actions">
+<span class="status-pill" id="publicForecastVisibilityState">CHECKING…</span>
+<button class="primary-btn" id="showPublicForecastBtn" type="button">SHOW FORECAST</button>
+<button class="ghost-btn" id="hidePublicForecastBtn" type="button">REMOVE FORECAST</button>
+</div>
+</div>
+<div class="forecast-setup-warning" hidden="" id="forecastPublisherSetupWarning">
+<strong>DATABASE SETUP REQUIRED</strong>
+<p>The table <code>public.nl4_model_interpretations</code> does not exist yet. Run the included <b>V15.4-forecast-publisher-setup.sql</b> once in Supabase SQL Editor, then reload Admin.</p>
+</div>
+<div class="interpretation-actions">
+<button class="primary-btn" id="loadLatestModelBtn" type="button">Load Complete Forecast</button>
+<button class="ghost-btn" id="selectAllForecastStatsBtn" type="button">Select All Stats</button>
+<button class="ghost-btn" id="clearForecastStatsBtn" type="button">Clear Stat Selection</button>
+<a class="ghost-btn" href="premier-league.html" rel="noopener" target="_blank">Preview Viewer Page</a>
+</div>
+<div class="forecast-studio-grid">
+<div class="forecast-stats-editor">
+<div class="subsection-head">
+<div><p class="eyebrow">01 / FORECAST DATA</p><h3>Choose Viewer Statistics</h3></div>
+<span class="status-pill" id="selectedForecastStatsCount">0 SELECTED</span>
+</div>
+<p class="muted">Every available forecast metric is loaded here. Tick only the statistics you want displayed publicly.</p>
+<div class="all-forecast-stats" id="allForecastStatsList">
+<p class="muted">Load the complete forecast to see statistics.</p>
+</div>
+</div>
+<div class="auto-interpretation-editor">
+<div class="subsection-head">
+<div><p class="eyebrow">02 / AUTOMATIC INTERPRETATION</p><h3>Choose How NL4 Explains It</h3></div>
+</div>
+<p class="muted">Generate several interpretations from the same model output, then choose one as your editable starting point.</p>
+<div class="interpretation-style-buttons">
+<button class="interpret-style-btn" data-style="balanced" type="button">Balanced</button>
+<button class="interpret-style-btn" data-style="short" type="button">Short &amp; Direct</button>
+<button class="interpret-style-btn" data-style="analyst" type="button">Analyst</button>
+<button class="interpret-style-btn" data-style="fan" type="button">Fan Friendly</button>
+<button class="interpret-style-btn" data-style="cautious" type="button">Cautious</button>
+<button class="interpret-style-btn" data-style="story" type="button">Title-Race Story</button>
+</div>
+<div class="automatic-interpretation-choices" id="automaticInterpretationChoices">
+<p class="muted">Load the forecast, then choose an interpretation style.</p>
+</div>
+</div>
+</div>
+<div class="manual-interpretation-editor">
+<div class="subsection-head">
+<div><p class="eyebrow">03 / FINAL EDIT</p><h3>Automatic + Manual Publisher</h3></div>
+<span class="status-pill">FULLY EDITABLE</span>
+</div>
+<p class="muted">An automatic option can fill this form, but Admin has final control over every word before publishing.</p>
+<div class="form-grid interpretation-form">
+<label>Viewer headline
+        <input id="interpHeadline" maxlength="140" placeholder="Example: Arsenal remain strong title favourites" type="text"/>
+</label>
+<label>Status label
+        <input id="interpStatusLabel" maxlength="60" placeholder="Example: TITLE RACE UPDATE" type="text"/>
+</label>
+<label class="span-2">Main interpretation
+        <textarea id="interpSummary" maxlength="1800" placeholder="Explain what the forecast means and why it looks this way." rows="6"></textarea>
+</label>
+<label class="span-2">Key takeaway
+        <textarea id="interpTakeaway" maxlength="600" placeholder="The one thing viewers should understand." rows="3"></textarea>
+</label>
+<label>Key factor 1
+        <input id="interpFactor1" maxlength="260" type="text"/>
+</label>
+<label>Key factor 2
+        <input id="interpFactor2" maxlength="260" type="text"/>
+</label>
+<label>Key factor 3
+        <input id="interpFactor3" maxlength="260" type="text"/>
+</label>
+</div>
+<div class="interpretation-actions">
+<button class="primary-btn" id="publishInterpretationBtn" type="button">Publish Selected Stats + Interpretation</button>
+<button class="ghost-btn" id="unpublishInterpretationBtn" type="button">Unpublish</button>
+<button class="ghost-btn" id="clearInterpretationBtn" type="button">Clear Interpretation</button>
+</div>
+<p class="message" id="modelInterpretationMessage" role="status"></p>
+</div>
+<details class="model-diagnostics-admin">
+<summary>How Admin should interpret NL4</summary>
+<p>The automatic drafts are starting points, not hidden model decisions. Compare Arsenal's probability, expected points, current table evidence, confidence, title-race gap and rival probabilities. Publish only the statistics that help fans understand the current race. You can rewrite the interpretation completely before publishing.</p>
+</details>
 </section>
-
-
-<dialog id="fanPredictionDialog" class="match-dialog fan-prediction-dialog">
-  <div class="dialog-head">
-    <div>
-      <p class="eyebrow">COMMUNITY VOTE</p>
-      <h2 id="fanPredictionDialogTitle">Most Selected XI</h2>
-    </div>
-    <button id="closeFanPredictionDialog" class="icon-btn" type="button" aria-label="Close">×</button>
-  </div>
-
-  <div id="fanPredictionDialogSummary" class="match-admin-summary"></div>
-
-  <section class="match-admin-section">
-    <div class="match-admin-section-head">
-      <div>
-        <p class="eyebrow">MOST SELECTED XI</p>
-        <h3 id="fanPredictionFormation">Formation —</h3>
-      </div>
-      <span class="status" id="fanPredictionDialogCount">0 predictions</span>
-    </div>
-    <div id="fanPredictionXI" class="fan-prediction-xi"></div>
-    <div class="admin-score-probabilities">
-      <p class="eyebrow">SCORE PROBABILITY</p>
-      <div id="adminScoreProbabilityList" class="admin-score-probability-list"></div>
-    </div>
-  </section>
+<dialog class="match-dialog fan-prediction-dialog" id="fanPredictionDialog">
+<div class="dialog-head">
+<div>
+<p class="eyebrow">COMMUNITY VOTE</p>
+<h2 id="fanPredictionDialogTitle">Most Selected XI</h2>
+</div>
+<button aria-label="Close" class="icon-btn" id="closeFanPredictionDialog" type="button">×</button>
+</div>
+<div class="match-admin-summary" id="fanPredictionDialogSummary"></div>
+<section class="match-admin-section">
+<div class="match-admin-section-head">
+<div>
+<p class="eyebrow">MOST SELECTED XI</p>
+<h3 id="fanPredictionFormation">Formation —</h3>
+</div>
+<span class="status" id="fanPredictionDialogCount">0 predictions</span>
+</div>
+<div class="fan-prediction-xi" id="fanPredictionXI"></div>
+<div class="admin-score-probabilities">
+<p class="eyebrow">SCORE PROBABILITY</p>
+<div class="admin-score-probability-list" id="adminScoreProbabilityList"></div>
+</div>
+</section>
 </dialog>
-
 <dialog id="editorDialog">
-    <form id="editorForm" method="dialog">
-      <div class="dialog-head">
-        <div><p class="eyebrow" id="editorEyebrow">EDIT CONTENT</p><h2 id="editorTitle">Editor</h2></div>
-        <button id="closeDialog" class="icon-btn" type="button" aria-label="Close">×</button>
-      </div>
-      <div id="editorFields" class="form-grid"></div>
-      <div class="dialog-actions">
-        <button class="ghost-btn" id="cancelDialog" type="button">Cancel</button>
-        <button class="ghost-btn" id="clearEditorBtn" type="button">Clear Fields</button>
-        <button class="primary-btn" id="saveBtn" type="submit">Save</button>
-      </div>
-      <p id="editorMessage" class="message" role="status"></p>
-    </form>
-  </dialog>
-
-
-  <dialog id="matchDialog" class="match-dialog">
-    <form id="matchForm" method="dialog">
-      <div class="dialog-head">
-        <div>
-          <p class="eyebrow">MATCH UPDATE</p>
-          <h2 id="matchDialogTitle">Fixture</h2>
-        </div>
-        <button id="closeMatchDialog" class="icon-btn" type="button" aria-label="Close">×</button>
-      </div>
-
-      <div class="match-admin-summary" id="matchAdminSummary"></div>
-
-      <section class="match-admin-section">
-        <div class="match-admin-section-head">
-          <div><p class="eyebrow">RESULT</p><h3>Score &amp; Status</h3></div>
-        </div>
-        <div class="form-grid">
-          <label>Status
-            <select id="matchStatus" required>
-              <option value="scheduled">Scheduled</option>
-              <option value="live">Live</option>
-              <option value="fulltime">Full Time</option>
-              <option value="postponed">Postponed</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-          </label>
-          <label>Kick-off date &amp; time
-            <input id="matchKickoff" type="datetime-local" required>
-          </label>
-          <label>Venue
-            <input id="matchVenue" type="text">
-          </label>
-          <label class="check-label">Kick-off confirmed
-            <input id="matchKickoffConfirmed" type="checkbox">
-          </label>
-          <label>Full-time Arsenal score
-            <input id="matchArsenalScore" type="number" min="0" max="30">
-          </label>
-          <label>Full-time opponent score
-            <input id="matchOpponentScore" type="number" min="0" max="30">
-          </label>
-          <label>Half-time Arsenal score
-            <input id="matchHTArsenalScore" type="number" min="0" max="30">
-          </label>
-          <label>Half-time opponent score
-            <input id="matchHTOpponentScore" type="number" min="0" max="30">
-          </label>
-          <label>Referee
-            <input id="matchReferee" type="text" placeholder="Referee name">
-          </label>
-          <label>Attendance
-            <input id="matchAttendance" type="number" min="0" placeholder="e.g. 60312">
-          </label>
-          <label>Man of the Match
-            <input id="matchMOTM" type="text" placeholder="Player name">
-          </label>
-        </div>
-        <div class="dialog-actions match-save-row">
-          <span id="matchSaveMessage" class="message" role="status"></span>
-          <button id="clearMatchScoresBtn" class="ghost-btn" type="button">Clear Scores</button>
-          <button id="saveMatchBtn" class="primary-btn" type="button">Save Match</button>
-        </div>
-      </section>
-
-      <section class="match-admin-section">
-        <div class="match-admin-section-head">
-          <div>
-            <p class="eyebrow">MATCH STATISTICS</p>
-            <h3>Team Statistics</h3>
-            <p class="muted">Enter statistics as Home team vs Away team. Possession accepts percentages from 0–100.</p>
-          </div>
-        </div>
-        <div class="stats-admin-table">
-          <div class="stats-admin-head"><strong id="statsHomeName">HOME</strong><span>STAT</span><strong id="statsAwayName">AWAY</strong></div>
-          <div class="stats-admin-row"><input id="statHomePossession" type="number" min="0" max="100" step="0.1"><span>Possession %</span><input id="statAwayPossession" type="number" min="0" max="100" step="0.1"></div>
-          <div class="stats-admin-row"><input id="statHomeShots" type="number" min="0"><span>Shots</span><input id="statAwayShots" type="number" min="0"></div>
-          <div class="stats-admin-row"><input id="statHomeSOT" type="number" min="0"><span>Shots on Target</span><input id="statAwaySOT" type="number" min="0"></div>
-          <div class="stats-admin-row"><input id="statHomeCorners" type="number" min="0"><span>Corners</span><input id="statAwayCorners" type="number" min="0"></div>
-          <div class="stats-admin-row"><input id="statHomeFouls" type="number" min="0"><span>Fouls</span><input id="statAwayFouls" type="number" min="0"></div>
-          <div class="stats-admin-row"><input id="statHomeOffsides" type="number" min="0"><span>Offsides</span><input id="statAwayOffsides" type="number" min="0"></div>
-          <div class="stats-admin-row"><input id="statHomeSaves" type="number" min="0"><span>Saves</span><input id="statAwaySaves" type="number" min="0"></div>
-        </div>
-        <div class="dialog-actions match-save-row">
-          <span id="statsSaveMessage" class="message" role="status"></span>
-          <button id="clearStatsBtn" class="ghost-btn" type="button">Clear Statistics</button>
-          <button id="saveStatsBtn" class="primary-btn" type="button">Save Statistics</button>
-        </div>
-      </section>
-
-      <section class="match-admin-section">
-        <div class="match-admin-section-head">
-          <div>
-            <p class="eyebrow">ARSENAL LINEUP</p>
-            <h3>Starters &amp; Substitutes</h3>
-          </div>
-        </div>
-        <p class="muted">Record every Arsenal player who appeared. Starters begin at 0'. For substitutes, enter the minute they came on. Add minute off when applicable.</p>
-        <div class="form-grid">
-          <label>Player
+<form id="editorForm" method="dialog">
+<div class="dialog-head">
+<div><p class="eyebrow" id="editorEyebrow">EDIT CONTENT</p><h2 id="editorTitle">Editor</h2></div>
+<button aria-label="Close" class="icon-btn" id="closeDialog" type="button">×</button>
+</div>
+<div class="form-grid" id="editorFields"></div>
+<div class="dialog-actions">
+<button class="ghost-btn" id="cancelDialog" type="button">Cancel</button>
+<button class="ghost-btn" id="clearEditorBtn" type="button">Clear Fields</button>
+<button class="primary-btn" id="saveBtn" type="submit">Save</button>
+</div>
+<p class="message" id="editorMessage" role="status"></p>
+</form>
+</dialog>
+<dialog class="match-dialog" id="matchDialog">
+<form id="matchForm" method="dialog">
+<div class="dialog-head">
+<div>
+<p class="eyebrow">MATCH UPDATE</p>
+<h2 id="matchDialogTitle">Fixture</h2>
+</div>
+<button aria-label="Close" class="icon-btn" id="closeMatchDialog" type="button">×</button>
+</div>
+<div class="match-admin-summary" id="matchAdminSummary"></div>
+<section class="match-admin-section">
+<div class="match-admin-section-head">
+<div><p class="eyebrow">RESULT</p><h3>Score &amp; Status</h3></div>
+</div>
+<div class="form-grid">
+<label>Status
+            <select id="matchStatus" required="">
+<option value="scheduled">Scheduled</option>
+<option value="live">Live</option>
+<option value="fulltime">Full Time</option>
+<option value="postponed">Postponed</option>
+<option value="cancelled">Cancelled</option>
+</select>
+</label>
+<label>Kick-off date &amp; time
+            <input id="matchKickoff" required="" type="datetime-local"/>
+</label>
+<label>Venue
+            <input id="matchVenue" type="text"/>
+</label>
+<label class="check-label">Kick-off confirmed
+            <input id="matchKickoffConfirmed" type="checkbox"/>
+</label>
+<label>Full-time Arsenal score
+            <input id="matchArsenalScore" max="30" min="0" type="number"/>
+</label>
+<label>Full-time opponent score
+            <input id="matchOpponentScore" max="30" min="0" type="number"/>
+</label>
+<label>Half-time Arsenal score
+            <input id="matchHTArsenalScore" max="30" min="0" type="number"/>
+</label>
+<label>Half-time opponent score
+            <input id="matchHTOpponentScore" max="30" min="0" type="number"/>
+</label>
+<label>Referee
+            <input id="matchReferee" placeholder="Referee name" type="text"/>
+</label>
+<label>Attendance
+            <input id="matchAttendance" min="0" placeholder="e.g. 60312" type="number"/>
+</label>
+<label>Man of the Match
+            <input id="matchMOTM" placeholder="Player name" type="text"/>
+</label>
+</div>
+<div class="dialog-actions match-save-row">
+<span class="message" id="matchSaveMessage" role="status"></span>
+<button class="ghost-btn" id="clearMatchScoresBtn" type="button">Clear Scores</button>
+<button class="primary-btn" id="saveMatchBtn" type="button">Save Match</button>
+</div>
+</section>
+<section class="match-admin-section">
+<div class="match-admin-section-head">
+<div>
+<p class="eyebrow">MATCH STATISTICS</p>
+<h3>Team Statistics</h3>
+<p class="muted">Enter statistics as Home team vs Away team. Possession accepts percentages from 0–100.</p>
+</div>
+</div>
+<div class="stats-admin-table">
+<div class="stats-admin-head"><strong id="statsHomeName">HOME</strong><span>STAT</span><strong id="statsAwayName">AWAY</strong></div>
+<div class="stats-admin-row"><input id="statHomePossession" max="100" min="0" step="0.1" type="number"/><span>Possession %</span><input id="statAwayPossession" max="100" min="0" step="0.1" type="number"/></div>
+<div class="stats-admin-row"><input id="statHomeShots" min="0" type="number"/><span>Shots</span><input id="statAwayShots" min="0" type="number"/></div>
+<div class="stats-admin-row"><input id="statHomeSOT" min="0" type="number"/><span>Shots on Target</span><input id="statAwaySOT" min="0" type="number"/></div>
+<div class="stats-admin-row"><input id="statHomeCorners" min="0" type="number"/><span>Corners</span><input id="statAwayCorners" min="0" type="number"/></div>
+<div class="stats-admin-row"><input id="statHomeFouls" min="0" type="number"/><span>Fouls</span><input id="statAwayFouls" min="0" type="number"/></div>
+<div class="stats-admin-row"><input id="statHomeOffsides" min="0" type="number"/><span>Offsides</span><input id="statAwayOffsides" min="0" type="number"/></div>
+<div class="stats-admin-row"><input id="statHomeSaves" min="0" type="number"/><span>Saves</span><input id="statAwaySaves" min="0" type="number"/></div>
+</div>
+<div class="dialog-actions match-save-row">
+<span class="message" id="statsSaveMessage" role="status"></span>
+<button class="ghost-btn" id="clearStatsBtn" type="button">Clear Statistics</button>
+<button class="primary-btn" id="saveStatsBtn" type="button">Save Statistics</button>
+</div>
+</section>
+<section class="match-admin-section">
+<div class="match-admin-section-head">
+<div>
+<p class="eyebrow">ARSENAL LINEUP</p>
+<h3>Starters &amp; Substitutes</h3>
+</div>
+</div>
+<p class="muted">Record every Arsenal player who appeared. Starters begin at 0'. For substitutes, enter the minute they came on. Add minute off when applicable.</p>
+<div class="form-grid">
+<label>Player
             <select id="lineupPlayer"></select>
-          </label>
-          <label>Role
+</label>
+<label>Role
             <select id="lineupRole">
-              <option value="starter">Starter</option>
-              <option value="substitute">Substitute</option>
-            </select>
-          </label>
-          <label>Minute on
-            <input id="lineupMinuteOn" type="number" min="0" max="130" value="0">
-          </label>
-          <label>Minute off
-            <input id="lineupMinuteOff" type="number" min="0" max="130" placeholder="90">
-          </label>
-        </div>
-        <div class="dialog-actions match-save-row">
-          <span id="lineupMessage" class="message" role="status"></span>
-          <button id="clearLineupBtn" class="ghost-btn" type="button">Clear Lineup</button>
-          <button id="saveLineupPlayerBtn" class="primary-btn" type="button">Add / Update Player</button>
-        </div>
-        <div id="lineupList" class="match-events-admin-list"></div>
-      </section>
-
-      <section class="match-admin-section">
-        <div class="match-admin-section-head">
-          <div><p class="eyebrow">MATCH EVENTS</p><h3>Goals, Assists &amp; Cards</h3></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button id="clearAllEventsBtn" class="ghost-btn" type="button">Clear Events</button>
-            <button id="addEventBtn" class="primary-btn" type="button">+ Add event</button>
-          </div>
-        </div>
-        <div id="matchEventsList" class="match-events-admin-list"></div>
-      </section>
-
-      <div class="dialog-actions">
-        <button id="doneMatchDialog" class="ghost-btn" type="button">Done</button>
-      </div>
-    </form>
-  </dialog>
-
-  <dialog id="eventDialog" class="event-dialog">
-    <form id="eventForm" method="dialog">
-      <div class="dialog-head">
-        <div><p class="eyebrow">MATCH EVENT</p><h2 id="eventDialogTitle">Add event</h2></div>
-        <button id="closeEventDialog" class="icon-btn" type="button" aria-label="Close">×</button>
-      </div>
-      <div class="form-grid">
-        <label>Event type
-          <select id="eventType" required>
-            <option value="goal">Goal</option>
-            <option value="assist">Assist</option>
-            <option value="yellow_card">Yellow card</option>
-            <option value="red_card">Red card</option>
-          </select>
-        </label>
-        <label>Player name
-          <input id="eventPlayer" type="text" required>
-        </label>
-        <label>Team
-          <select id="eventTeam" required></select>
-        </label>
-        <label>Minute
-          <input id="eventMinute" type="number" min="0" max="130" placeholder="e.g. 67">
-        </label>
-        <label>Stoppage minute
-          <input id="eventStoppage" type="number" min="0" max="30" placeholder="e.g. 3 for 90+3">
-        </label>
-        <label>Related player (optional)
-          <input id="eventRelatedPlayer" type="text" placeholder="Assist/scorer relationship">
-        </label>
-      </div>
-      <div class="dialog-actions">
-        <button id="cancelEventDialog" class="ghost-btn" type="button">Cancel</button>
-        <button id="clearEventBtn" class="ghost-btn" type="button">Clear Event</button>
-        <button id="saveEventBtn" class="primary-btn" type="button">Save Event</button>
-      </div>
-      <p id="eventMessage" class="message" role="status"></p>
-    </form>
-  </dialog>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
-  <script src="supabase-client.js"></script>
-  <script src="admin.js?v=20260816-v15-4-public-forecast-control"></script>
-  <script src="forecast-publisher-admin.js?v=20260817-v15-7-explicit-source"></script>
+<option value="starter">Starter</option>
+<option value="substitute">Substitute</option>
+</select>
+</label>
+<label>Minute on
+            <input id="lineupMinuteOn" max="130" min="0" type="number" value="0"/>
+</label>
+<label>Minute off
+            <input id="lineupMinuteOff" max="130" min="0" placeholder="90" type="number"/>
+</label>
+</div>
+<div class="dialog-actions match-save-row">
+<span class="message" id="lineupMessage" role="status"></span>
+<button class="ghost-btn" id="clearLineupBtn" type="button">Clear Lineup</button>
+<button class="primary-btn" id="saveLineupPlayerBtn" type="button">Add / Update Player</button>
+</div>
+<div class="match-events-admin-list" id="lineupList"></div>
+</section>
+<section class="match-admin-section">
+<div class="match-admin-section-head">
+<div><p class="eyebrow">MATCH EVENTS</p><h3>Goals, Assists &amp; Cards</h3></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<button class="ghost-btn" id="clearAllEventsBtn" type="button">Clear Events</button>
+<button class="primary-btn" id="addEventBtn" type="button">+ Add event</button>
+</div>
+</div>
+<div class="match-events-admin-list" id="matchEventsList"></div>
+</section>
+<div class="dialog-actions">
+<button class="ghost-btn" id="doneMatchDialog" type="button">Done</button>
+</div>
+</form>
+</dialog>
+<dialog class="event-dialog" id="eventDialog">
+<form id="eventForm" method="dialog">
+<div class="dialog-head">
+<div><p class="eyebrow">MATCH EVENT</p><h2 id="eventDialogTitle">Add event</h2></div>
+<button aria-label="Close" class="icon-btn" id="closeEventDialog" type="button">×</button>
+</div>
+<div class="form-grid">
+<label>Event type
+          <select id="eventType" required="">
+<option value="goal">Goal</option>
+<option value="assist">Assist</option>
+<option value="yellow_card">Yellow card</option>
+<option value="red_card">Red card</option>
+</select>
+</label>
+<label>Player name
+          <input id="eventPlayer" required="" type="text"/>
+</label>
+<label>Team
+          <select id="eventTeam" required=""></select>
+</label>
+<label>Minute
+          <input id="eventMinute" max="130" min="0" placeholder="e.g. 67" type="number"/>
+</label>
+<label>Stoppage minute
+          <input id="eventStoppage" max="30" min="0" placeholder="e.g. 3 for 90+3" type="number"/>
+</label>
+<label>Related player (optional)
+          <input id="eventRelatedPlayer" placeholder="Assist/scorer relationship" type="text"/>
+</label>
+</div>
+<div class="dialog-actions">
+<button class="ghost-btn" id="cancelEventDialog" type="button">Cancel</button>
+<button class="ghost-btn" id="clearEventBtn" type="button">Clear Event</button>
+<button class="primary-btn" id="saveEventBtn" type="button">Save Event</button>
+</div>
+<p class="message" id="eventMessage" role="status"></p>
+</form>
+</dialog>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
+<script src="supabase-client.js"></script>
+<script src="admin.js?v=20260817-v16-8-atomic-score-integrated"></script>
 </body>
 </html>

@@ -284,13 +284,9 @@
 
   const tableEl=document.getElementById('titleProbabilityTable');
   const statusEl=document.getElementById('titleModelStatus');
+  if(!tableEl) return;
 
   const db=window.nl4Supabase || window.supabaseClient || window.NL4_SUPABASE || window.supabaseDb || window.db;
-
-  if(!tableEl){
-    console.error('NL4 statistical forecast root was not found: #titleProbabilityTable is missing.');
-    return;
-  }
   const TEST_MODE=new URLSearchParams(window.location.search).get('test')==='1';
   const TEST_STORAGE_KEY='nl4_v13_test_dataset';
   const TEST_HISTORY_KEY='nl4_v132_test_history';
@@ -3088,7 +3084,7 @@
   }
 
   function render(rows,fixtureCount,completedCount,scenario,impact,championPointStats,pointThresholds,validationStats,environmentAudit,goalPipelineTrace){
-    const terminalSeason=Number(completedCount||0)>=TOTAL_FIXTURES || Number(fixturesCount||0)===Number(completedCount||0);
+    const terminalSeason=Number(completedCount||0)>=TOTAL_FIXTURES || Number(fixtureCount||0)===Number(completedCount||0);
 
     const arsenal=rows.find(x=>x.club.toLowerCase()==='arsenal');
     if(arsenal){
@@ -4044,27 +4040,100 @@
     }
   }
 
-  async function saveAdminSnapshot(arsenal,completedCount){
-    if(!arsenal||completedCount<0)return;
+  let activeRefreshRequest=null;
+
+  async function getPendingPublicRefreshRequest(){
     try{
-      const auth=await db.auth?.getUser?.();
-      if(!auth?.data?.user)return;
-      const confidence=confidenceFromResults(completedCount);
-      const rpc=await db.rpc('save_title_probability_snapshot',{
-        p_season:SEASON,
-        p_completed_matches:completedCount,
-        p_title_probability:Number(arsenal.titleProb.toFixed(4)),
-        p_top4_probability:Number(arsenal.top4Prob.toFixed(4)),
-        p_top5_probability:Number(arsenal.top5Prob.toFixed(4)),
-        p_expected_points:Number(arsenal.expectedPoints.toFixed(4)),
-        p_expected_position:Number(arsenal.expectedPosition.toFixed(4)),
-        p_confidence_score:confidence.score,
-        p_model_version:'V13.0'
-      });
-      if(rpc.error)throw rpc.error;
+      const sessionRes=await db.auth?.getSession?.();
+      const session=sessionRes?.data?.session||null;
+      if(!session?.user)return null;
+
+      const res=await db.from('nl4_forecast_refresh_requests')
+        .select('id,season,reason,requested_at,status')
+        .eq('season',SEASON)
+        .eq('status','pending')
+        .order('requested_at',{ascending:true})
+        .limit(1);
+
+      if(res.error)throw res.error;
+      return res.data?.[0]||null;
     }catch(err){
-      // Public viewers are intentionally unable to save snapshots.
-      console.debug('NL4 snapshot not saved for this session.');
+      console.warn('NL4 refresh request check:',err);
+      return null;
+    }
+  }
+
+  async function claimPublicRefreshRequest(request){
+    if(!request?.id)return null;
+    try{
+      const res=await db.from('nl4_forecast_refresh_requests')
+        .update({status:'processing',error_message:null})
+        .eq('id',request.id)
+        .eq('status','pending')
+        .select('id,season,reason,requested_at,status')
+        .maybeSingle();
+
+      if(res.error)throw res.error;
+      return res.data||null;
+    }catch(err){
+      console.warn('NL4 refresh request claim:',err);
+      return null;
+    }
+  }
+
+  async function finishPublicRefreshRequest(request,status,completedCount,errorMessage=null){
+    if(!request?.id)return;
+    try{
+      const payload={
+        status,
+        completed_matches:Number.isFinite(Number(completedCount))?Number(completedCount):null,
+        completed_at:new Date().toISOString(),
+        error_message:errorMessage?String(errorMessage):null
+      };
+      const res=await db.from('nl4_forecast_refresh_requests')
+        .update(payload)
+        .eq('id',request.id);
+      if(res.error)throw res.error;
+    }catch(err){
+      console.warn('NL4 refresh request completion:',err);
+    }
+  }
+
+  async function savePublicSnapshot(arsenal,completedCount){
+    if(!arsenal||completedCount<0)return false;
+    const confidence=confidenceFromResults(completedCount);
+    const rpc=await db.rpc('save_title_probability_snapshot',{
+      p_season:SEASON,
+      p_completed_matches:completedCount,
+      p_title_probability:Number(arsenal.titleProb.toFixed(4)),
+      p_top4_probability:Number(arsenal.top4Prob.toFixed(4)),
+      p_top5_probability:Number(arsenal.top5Prob.toFixed(4)),
+      p_expected_points:Number(arsenal.expectedPoints.toFixed(4)),
+      p_expected_position:Number(arsenal.expectedPosition.toFixed(4)),
+      p_confidence_score:confidence.score,
+      p_model_version:'PUBLIC MODEL • V13 ENGINE'
+    });
+    if(rpc.error)throw rpc.error;
+    return true;
+  }
+
+  async function initPublicRefreshWatcher(){
+    try{
+      const sessionRes=await db.auth?.getSession?.();
+      const session=sessionRes?.data?.session||null;
+      if(!session?.user)return;
+
+      // If this Public Model page is already open in an authenticated Admin
+      // session, respond to later score updates without any hidden iframe.
+      setInterval(async()=>{
+        if(activeRefreshRequest)return;
+        const pending=await getPendingPublicRefreshRequest();
+        if(pending){
+          location.reload();
+        }
+      },10000);
+    }catch(err){
+      console.warn('NL4 Public Model refresh watcher:',err);
     }
   }
 
@@ -4100,6 +4169,37 @@
   }
 
 
+
+  async function loadPublicForecastVisibility(){
+    const root=document.getElementById('nl4PublicForecastRoot');
+    if(!root)return true;
+
+    // Default is visible for backward compatibility. If Supabase setup has not
+    // been completed yet, the existing forecast remains visible.
+    let visible=true;
+    try{
+      const res=await db.from('nl4_public_forecast_settings')
+        .select('is_visible')
+        .eq('season',SEASON)
+        .limit(1);
+      if(res.error){
+        // Missing settings table should not break the title model.
+        if(String(res.error.message||'').includes('schema cache')){
+          console.warn('NL4 public forecast settings table has not been created yet.');
+        }else{
+          console.warn('NL4 forecast visibility:',res.error);
+        }
+      }else if(res.data?.length){
+        visible=res.data[0].is_visible!==false;
+      }
+    }catch(err){
+      console.warn('NL4 forecast visibility:',err);
+    }
+
+    root.hidden=!visible;
+    root.classList.toggle('nl4-public-forecast-disabled',!visible);
+    return visible;
+  }
 
   async function loadPublishedModelInterpretation(){
     const panel=document.getElementById('nl4AdminInterpretation');
@@ -4150,6 +4250,12 @@
     }
 
     try{
+      const pendingRefresh=await getPendingPublicRefreshRequest();
+      activeRefreshRequest=pendingRefresh?await claimPublicRefreshRequest(pendingRefresh):null;
+      if(activeRefreshRequest){
+        const note=document.getElementById('titleHistoryNote');
+        if(note)note.textContent='PUBLIC MODEL REFRESHING • recalculating from the latest confirmed league results…';
+      }
       const [standingsRes,arsenalRes,leagueRes,previousStandingsRes,secondPreviousStandingsRes]=await Promise.all([
         db.from('premier_league_standings')
           .select('position,club,played,wins,draws,losses,goals_for,goals_against,goal_difference,points')
@@ -4242,7 +4348,24 @@
         if(historyNote)historyNote.textContent='V13.2 sandbox history is stored only in this browser. Supabase probability history is untouched.';
       }else{
         history=await loadTitleHistory();
-        await saveAdminSnapshot(arsenal,results.length);
+
+        // Official Public Model snapshots are written only in response to a
+        // queued score/result refresh request. Normal viewer page loads never
+        // modify forecast history.
+        if(activeRefreshRequest){
+          try{
+            await savePublicSnapshot(arsenal,results.length);
+            await finishPublicRefreshRequest(activeRefreshRequest,'completed',results.length,null);
+            const note=document.getElementById('titleHistoryNote');
+            if(note)note.textContent=`PUBLIC MODEL UPDATED • ${results.length} completed league matches • official snapshot saved.`;
+          }catch(saveErr){
+            await finishPublicRefreshRequest(activeRefreshRequest,'failed',results.length,saveErr?.message||String(saveErr));
+            throw saveErr;
+          }finally{
+            activeRefreshRequest=null;
+          }
+        }
+
         history=await loadTitleHistory();
         renderV123Timeline(history,results,simulation.rows);
         renderV12MatchdayTracker(simulation.rows,results,history,results.length);
@@ -4308,17 +4431,8 @@
     }
   }
 
-  async function startNL4ForecastPage(){
-    // V15.5.2: title model calculation is independent from public visibility.
-    // Visibility is handled by forecast-visibility.js and can never block simulation.
-    loadPublishedModelInterpretation();
-    await load();
-    document.dispatchEvent(new CustomEvent('nl4:forecast-rendered'));
-  }
-
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',startNL4ForecastPage,{once:true});
-  }else{
-    startNL4ForecastPage();
-  }
+  loadPublicForecastVisibility();
+  loadPublishedModelInterpretation();
+  initPublicRefreshWatcher();
+  load();
 })();

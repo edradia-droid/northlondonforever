@@ -10,6 +10,29 @@
   ];
 
   const TEAM_LOGOS = {
+    'AFC Bournemouth': 'https://images.fotmob.com/image_resources/logo/teamlogo/8678.png',
+    'Arsenal': 'https://images.fotmob.com/image_resources/logo/teamlogo/9825.png',
+    'Aston Villa': 'https://images.fotmob.com/image_resources/logo/teamlogo/10252.png',
+    'Brentford': 'https://images.fotmob.com/image_resources/logo/teamlogo/9937.png',
+    'Brighton & Hove Albion': 'https://images.fotmob.com/image_resources/logo/teamlogo/10204.png',
+    'Chelsea': 'https://images.fotmob.com/image_resources/logo/teamlogo/8455.png',
+    'Coventry City': 'https://images.fotmob.com/image_resources/logo/teamlogo/8669.png',
+    'Crystal Palace': 'https://images.fotmob.com/image_resources/logo/teamlogo/9826.png',
+    'Everton': 'https://images.fotmob.com/image_resources/logo/teamlogo/8668.png',
+    'Fulham': 'https://images.fotmob.com/image_resources/logo/teamlogo/9879.png',
+    'Hull City': 'https://images.fotmob.com/image_resources/logo/teamlogo/8667.png',
+    'Ipswich Town': 'https://images.fotmob.com/image_resources/logo/teamlogo/9902.png',
+    'Leeds United': 'https://images.fotmob.com/image_resources/logo/teamlogo/8463.png',
+    'Liverpool': 'https://images.fotmob.com/image_resources/logo/teamlogo/8650.png',
+    'Manchester City': 'https://images.fotmob.com/image_resources/logo/teamlogo/8456.png',
+    'Manchester United': 'https://images.fotmob.com/image_resources/logo/teamlogo/10260.png',
+    'Newcastle United': 'https://images.fotmob.com/image_resources/logo/teamlogo/10261.png',
+    'Nottingham Forest': 'https://images.fotmob.com/image_resources/logo/teamlogo/10203.png',
+    'Sunderland': 'https://images.fotmob.com/image_resources/logo/teamlogo/8472.png',
+    'Tottenham Hotspur': 'https://images.fotmob.com/image_resources/logo/teamlogo/8586.png'
+  };
+
+  const TEAM_LOGO_BACKUPS = {
     'AFC Bournemouth': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/AFC%20Bournemouth.png',
     'Arsenal': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Arsenal%20FC.png',
     'Aston Villa': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Aston%20Villa.png',
@@ -32,8 +55,22 @@
     'Tottenham Hotspur': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Tottenham%20Hotspur.png'
   };
 
+  function normalizeTeamName(name) {
+    const value=String(name||'').trim().replace(/\s+/g,' ');
+    const aliases={
+      'Bournemouth':'AFC Bournemouth','Brighton':'Brighton & Hove Albion',
+      'Brighton and Hove Albion':'Brighton & Hove Albion','Man City':'Manchester City',
+      'Man United':'Manchester United','Manchester Utd':'Manchester United',
+      'Newcastle':'Newcastle United','Nottm Forest':'Nottingham Forest',
+      'Nottingham Forest FC':'Nottingham Forest','Spurs':'Tottenham Hotspur',
+      'Tottenham':'Tottenham Hotspur','Sunderland AFC':'Sunderland'
+    };
+    return aliases[value]||value;
+  }
+
   function teamLogo(name) {
-    return TEAM_LOGOS[name] || '';
+    const key=normalizeTeamName(name);
+    return {primary:TEAM_LOGOS[key]||'',backup:TEAM_LOGO_BACKUPS[key]||''};
   }
 
   function escapeHtml(value) {
@@ -82,15 +119,9 @@
     return { date, time, monthKey };
   }
 
-  function statusInfo(status, hasScore = false) {
+  function statusInfo(status) {
     const s = String(status || 'scheduled').toLowerCase();
-
-    // Full-time scores saved by Admin are authoritative for the fixture card.
-    // Once both scores exist, the card becomes a FULL TIME result automatically.
-    if (hasScore || ['fulltime','ft','finished','played','aet','pen'].includes(s)) {
-      return { cls:'fulltime', label:'FULL TIME', result:true };
-    }
-
+    if (['fulltime','ft','aet','pen'].includes(s)) return { cls:'fulltime', label:'FULL TIME', result:true };
     if (['live','1h','ht','2h','et'].includes(s)) return { cls:'live', label:'LIVE', result:true };
     if (s === 'postponed' || s === 'pst') return { cls:'postponed', label:'POSTPONED', result:false };
     if (s === 'cancelled' || s === 'canc') return { cls:'postponed', label:'CANCELLED', result:false };
@@ -160,10 +191,10 @@
       const monthIndex = Math.max(0, Math.min(11, Number(month) - 1));
       const heading = `${monthNames[monthIndex] || 'Month'} ${year}`;
       const cards = items.map(match => {
+        const state = statusInfo(match.status);
         const hasScore = match.homeScore !== null && match.homeScore !== undefined &&
                          match.awayScore !== null && match.awayScore !== undefined;
-        const state = statusInfo(match.status, hasScore);
-        const score = hasScore
+        const score = state.result && hasScore
           ? `<div class="result-score"><b>${escapeHtml(match.homeScore)}</b><em>—</em><b>${escapeHtml(match.awayScore)}</b></div>`
           : `<span class="fixture-vs">VS</span>`;
         const confirmedText = match.kickoffConfirmed ? '' : ' • TIME PROVISIONAL';
@@ -181,24 +212,21 @@
             <div class="unified-teams">
               <div class="unified-team">
                 <div class="unified-badge club-crest-badge ${match.home === 'Arsenal' ? 'arsenal-unified' : 'opponent-unified'}">
-                  ${match.homeLogo ? `<img class="club-crest-img" src="${escapeHtml(match.homeLogo)}" alt="${escapeHtml(match.home)} crest" loading="lazy" referrerpolicy="no-referrer">` : escapeHtml(match.homeCode)}
+                  ${match.homeLogo?.primary ? `<img class="club-crest-img" src="${escapeHtml(match.homeLogo.primary)}" data-logo-backup="${escapeHtml(match.homeLogo.backup||'')}" alt="${escapeHtml(match.home)} crest" loading="lazy" referrerpolicy="no-referrer" onerror="if(this.dataset.logoBackup){this.src=this.dataset.logoBackup;this.dataset.logoBackup='';}else{this.style.display='none';}">` : escapeHtml(match.homeCode)}
                 </div>
                 <h3>${escapeHtml(match.home)}</h3><small>HOME</small>
               </div>
               <div class="unified-score">${score}<small>${state.result ? state.label : escapeHtml(match.time)}</small></div>
               <div class="unified-team">
                 <div class="unified-badge club-crest-badge ${match.away === 'Arsenal' ? 'arsenal-unified' : 'opponent-unified'}">
-                  ${match.awayLogo ? `<img class="club-crest-img" src="${escapeHtml(match.awayLogo)}" alt="${escapeHtml(match.away)} crest" loading="lazy" referrerpolicy="no-referrer">` : escapeHtml(match.awayCode)}
+                  ${match.awayLogo?.primary ? `<img class="club-crest-img" src="${escapeHtml(match.awayLogo.primary)}" data-logo-backup="${escapeHtml(match.awayLogo.backup||'')}" alt="${escapeHtml(match.away)} crest" loading="lazy" referrerpolicy="no-referrer" onerror="if(this.dataset.logoBackup){this.src=this.dataset.logoBackup;this.dataset.logoBackup='';}else{this.style.display='none';}">` : escapeHtml(match.awayCode)}
                 </div>
                 <h3>${escapeHtml(match.away)}</h3><small>AWAY</small>
               </div>
             </div>
             <div class="unified-card-bottom">
               <span>MATCH ${String(match.matchday || '').padStart(2,'0')} / 38</span>
-              <div class="fixture-card-actions">
-                <a class="predict-lineup-link" href="predict-lineup.html?fixture=${encodeURIComponent(match.id)}">Predict Lineup</a>
-                <a class="details-link" href="match-details.html?fixture=${encodeURIComponent(match.id)}">More Details →</a>
-              </div>
+              <a class="details-link" href="match-details.html?fixture=${encodeURIComponent(match.id)}">More Details →</a>
             </div>
           </article>`;
       }).join('');
@@ -289,11 +317,4 @@
   }
 
   loadFixtures();
-
-  // Keep fixture cards in sync with Admin updates without a manual refresh.
-  setInterval(() => {
-    if (document.visibilityState === 'visible') {
-      loadFixtures();
-    }
-  }, 15000);
 })();

@@ -95,7 +95,7 @@
     const losses = Number(row.losses ?? row.l ?? 0);
     const gf = Number(row.goals_for ?? row.gf ?? 0);
     const ga = Number(row.goals_against ?? row.ga ?? 0);
-    const gd = Number(row.goal_difference ?? row.gd ?? (gf - ga));
+    const gd = gf - ga; // Always derive GD from the same GF/GA values shown in the table.
     const points = Number(row.points ?? row.pts ?? (wins * 3 + draws));
 
     return {
@@ -217,11 +217,62 @@
     'Sunderland': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Sunderland%20AFC.png',
     'Tottenham Hotspur': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Tottenham%20Hotspur.png'
   };
+  const CLUB_FOTMOB_IDS = {
+    'AFC Bournemouth': 8678,
+    'Arsenal': 9825,
+    'Aston Villa': 10252,
+    'Brentford': 9937,
+    'Brighton & Hove Albion': 10204,
+    'Chelsea': 8455,
+    'Coventry City': 8669,
+    'Crystal Palace': 9826,
+    'Everton': 8668,
+    'Fulham': 9879,
+    'Hull City': 8667,
+    'Ipswich Town': 9902,
+    'Leeds United': 8463,
+    'Liverpool': 8650,
+    'Manchester City': 8456,
+    'Manchester United': 10260,
+    'Newcastle United': 10261,
+    'Nottingham Forest': 10203,
+    'Sunderland': 8472,
+    'Tottenham Hotspur': 8586
+  };
+  const CLUB_GITHUB_FALLBACK = {
+    'AFC Bournemouth': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/AFC%20Bournemouth.png',
+    'Arsenal': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Arsenal%20FC.png',
+    'Aston Villa': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Aston%20Villa.png',
+    'Brentford': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Brentford%20FC.png',
+    'Brighton & Hove Albion': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Brighton%20%26%20Hove%20Albion.png',
+    'Chelsea': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Chelsea%20FC.png',
+    'Coventry City': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Coventry%20City.png',
+    'Crystal Palace': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Crystal%20Palace.png',
+    'Everton': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Everton%20FC.png',
+    'Fulham': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Fulham%20FC.png',
+    'Hull City': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Hull%20City.png',
+    'Ipswich Town': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Ipswich%20Town.png',
+    'Leeds United': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Leeds%20United.png',
+    'Liverpool': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Liverpool%20FC.png',
+    'Manchester City': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Manchester%20City.png',
+    'Manchester United': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Manchester%20United.png',
+    'Newcastle United': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Newcastle%20United.png',
+    'Nottingham Forest': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Nottingham%20Forest.png',
+    'Sunderland': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Sunderland%20AFC.png',
+    'Tottenham Hotspur': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Tottenham%20Hotspur.png'
+  };
+
   function clubLogo(team, className='club-real-logo') {
-    const url = CLUB_LOGOS[String(team || '').trim()];
-    return url
-      ? `<img class="${className}" src="${url}" alt="${escapeHtml(team)} crest" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="club-logo-fallback" style="display:none">${escapeHtml(clubCode(team))}</span>`
-      : `<span class="club-logo-fallback">${escapeHtml(clubCode(team))}</span>`;
+    const key=String(team||'').trim();
+    const id=CLUB_FOTMOB_IDS[key];
+    const primary=id ? `https://images.fotmob.com/image_resources/logo/teamlogo/${id}.png` : '';
+    const backup=CLUB_GITHUB_FALLBACK[key] || CLUB_LOGOS[key] || '';
+    if(!primary && !backup) return `<span class="club-logo-fallback">${escapeHtml(clubCode(team))}</span>`;
+    const first=primary||backup;
+    const second=primary&&backup&&backup!==primary ? backup : '';
+    return `<img class="${className}" src="${first}" data-logo-backup="${second}" alt="${escapeHtml(team)} crest" loading="lazy" referrerpolicy="no-referrer"
+      onerror="if(this.dataset.logoBackup){this.src=this.dataset.logoBackup;this.dataset.logoBackup='';}else{this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='inline-flex';}">
+      <span class="club-logo-fallback" style="display:none">${escapeHtml(clubCode(team))}</span>`;
   }
 
   function finishedStatus(value) {
