@@ -1679,3 +1679,178 @@ db.auth.onAuthStateChange((_event, session) => {
   window.nl4RefreshFanPredictions = loadFanPredictionAdmin;
   loadFanPredictionAdmin();
 })();
+
+
+
+/* =========================================================
+   NL4 V13.2 MODEL TESTING MACHINE — browser-only sandbox
+   One master random season is generated, then matchday selection
+   reveals more of that SAME season for a valid probability timeline.
+   ========================================================= */
+(function(){
+  const panel=document.getElementById('modelTestingPanel'); if(!panel)return;
+  const STORAGE_KEY='nl4_v13_test_dataset';
+  const HISTORY_KEY='nl4_v132_test_history';
+  const through=document.getElementById('modelTestThroughMatchday'),style=document.getElementById('modelTestScoreStyle');
+  const generateBtn=document.getElementById('generateModelTestBtn'),regenerateBtn=document.getElementById('regenerateModelTestBtn'),openBtn=document.getElementById('openModelTestBtn'),clearBtn=document.getElementById('clearModelTestBtn');
+  const preview=document.getElementById('modelTestPreview'),message=document.getElementById('modelTestMessage'),badge=document.getElementById('modelTestStatusBadge');
+
+  for(let i=1;i<=38;i++){
+    const o=document.createElement('option');
+    o.value=i;o.textContent=`Matchday ${i} • ${i*10} league results`;
+    through.appendChild(o);
+  }
+
+  const norm=v=>String(v||'').trim().replace(/\s+/g,' '),pair=(h,a)=>`${norm(h).toLowerCase()}__${norm(a).toLowerCase()}`;
+  function poisson(lambda,cap){let L=Math.exp(-lambda),k=0,p=1;do{k++;p*=Math.random();}while(p>L&&k<14);return Math.max(0,Math.min(cap,k-1));}
+  function randomScore(mode,home){return mode==='chaotic'?poisson(home?1.8:1.5,7):poisson(home?1.48:1.22,6);}
+
+  async function fetchSchedule(){
+    const [a,l]=await Promise.all([
+      db.from('fixtures').select('home_team,away_team,is_home,opponent,matchday,season,competition').eq('season','2026/27').eq('competition','Premier League'),
+      db.from('premier_league_matches').select('home_team,away_team,matchday,season').eq('season','2026/27')
+    ]);
+    if(a.error)throw a.error;if(l.error)throw l.error;
+    const map=new Map();
+    (l.data||[]).forEach(r=>{
+      if(r.home_team&&r.away_team)map.set(pair(r.home_team,r.away_team),{
+        home_team:norm(r.home_team),away_team:norm(r.away_team),matchday:Number(r.matchday)||null
+      });
+    });
+    (a.data||[]).forEach(r=>{
+      const ih=r.home_team==='Arsenal'||r.is_home===true;
+      const h=norm(r.home_team||(ih?'Arsenal':r.opponent)),aw=norm(r.away_team||(ih?r.opponent:'Arsenal'));
+      if(h&&aw)map.set(pair(h,aw),{home_team:h,away_team:aw,matchday:Number(r.matchday)||null});
+    });
+    return [...map.values()].filter(r=>r.matchday>=1&&r.matchday<=38)
+      .sort((x,y)=>x.matchday-y.matchday||x.home_team.localeCompare(y.home_team));
+  }
+
+  function currentDataset(){
+    try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');}catch(_){return null;}
+  }
+
+  function visibleDataset(master,max){
+    const m=Math.max(1,Math.min(38,Number(max)||1));
+    return {
+      ...master,
+      version:'V13_TEST_2',
+      throughMatchday:m,
+      results:(master.masterResults||[]).filter(r=>Number(r.matchday)<=m)
+    };
+  }
+
+  function storeVisible(master,max){
+    const d=visibleDataset(master,max);
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(d));
+    return d;
+  }
+
+  function render(d){
+    const rounds=document.getElementById('modelTestRounds'),matches=document.getElementById('modelTestMatches'),record=document.getElementById('modelTestArsenalRecord'),time=document.getElementById('modelTestGeneratedAt');
+    if(!d?.results?.length){
+      preview.innerHTML='<p class="muted">Generate one random season, then move through Matchdays 1–38 using the same test universe.</p>';
+      rounds.textContent='0';matches.textContent='0';record.textContent='—';time.textContent='';
+      badge.textContent='NO TEST LOADED';openBtn.disabled=true;return;
+    }
+    const groups=new Map();
+    d.results.forEach(r=>{if(!groups.has(r.matchday))groups.set(r.matchday,[]);groups.get(r.matchday).push(r);});
+    preview.innerHTML=[...groups.entries()].map(([md,rows])=>`
+      <section class="model-test-round">
+        <h4>MATCHDAY ${md}</h4>
+        ${rows.map(r=>`<div class="model-test-match ${(r.home_team==='Arsenal'||r.away_team==='Arsenal')?'arsenal':''}">
+          <span class="home">${escapeHtml(r.home_team)}</span>
+          <strong class="score">${r.home_score}–${r.away_score}</strong>
+          <span>${escapeHtml(r.away_team)}</span>
+        </div>`).join('')}
+      </section>`).join('');
+
+    const ar=d.results.filter(r=>r.home_team==='Arsenal'||r.away_team==='Arsenal');
+    let w=0,dr=0,lo=0;
+    ar.forEach(r=>{
+      const home=r.home_team==='Arsenal',gf=home?r.home_score:r.away_score,ga=home?r.away_score:r.home_score;
+      if(gf>ga)w++;else if(gf===ga)dr++;else lo++;
+    });
+    rounds.textContent=d.throughMatchday;
+    matches.textContent=d.results.length;
+    record.textContent=`${w}W ${dr}D ${lo}L`;
+    time.textContent=new Date(d.generatedAt).toLocaleString();
+    badge.textContent=`SAME TEST SEASON • THROUGH MD ${d.throughMatchday}`;
+    openBtn.disabled=false;
+  }
+
+  async function generateMaster(){
+    setMessage(message,'Building one complete random test season…');
+    const schedule=await fetchSchedule();
+    if(schedule.length!==380)throw new Error(`Testing machine needs 380 fixtures. Found ${schedule.length}.`);
+    const mode=style.value||'realistic';
+    const masterResults=schedule.map(r=>({
+      ...r,
+      home_score:randomScore(mode,true),
+      away_score:randomScore(mode,false),
+      status:'fulltime'
+    }));
+    const master={
+      version:'V13_TEST_2',
+      season:'2026/27',
+      scoreStyle:mode,
+      generatedAt:new Date().toISOString(),
+      testId:(crypto.randomUUID?crypto.randomUUID():String(Date.now())),
+      masterResults
+    };
+    localStorage.removeItem(HISTORY_KEY);
+    return storeVisible(master,Number(through.value)||1);
+  }
+
+  generateBtn?.addEventListener('click',async()=>{
+    try{
+      const existing=currentDataset();
+      let d;
+      if(existing?.masterResults?.length===380){
+        d=storeVisible(existing,Number(through.value)||1);
+        setMessage(message,`Loaded the same random test season through Matchday ${d.throughMatchday}. Sandbox history was preserved.`,'success');
+      }else{
+        d=await generateMaster();
+        setMessage(message,`Generated one complete random season and loaded it through Matchday ${d.throughMatchday}. Supabase was not changed.`,'success');
+      }
+      render(d);
+    }catch(e){console.error('NL4 model testing:',e);setMessage(message,e.message||'Could not generate test results.','error');}
+  });
+
+  regenerateBtn?.addEventListener('click',async()=>{
+    try{
+      const d=await generateMaster();
+      render(d);
+      setMessage(message,`Started a NEW random test season through Matchday ${d.throughMatchday}. Previous sandbox snapshots were cleared.`,'success');
+    }catch(e){console.error('NL4 model testing:',e);setMessage(message,e.message||'Could not regenerate test season.','error');}
+  });
+
+  through?.addEventListener('change',()=>{
+    const d=currentDataset();
+    if(!d?.masterResults?.length)return;
+    const next=storeVisible(d,Number(through.value)||1);
+    render(next);
+    setMessage(message,`Same test season now exposed through Matchday ${next.throughMatchday}. Open V13 Test to save this sandbox forecast point.`,'success');
+  });
+
+  openBtn?.addEventListener('click',()=>{
+    if(!localStorage.getItem(STORAGE_KEY))return setMessage(message,'Generate a test season first.','error');
+    window.open('premier-league.html?test=1','_blank');
+  });
+
+  clearBtn?.addEventListener('click',()=>{
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(HISTORY_KEY);
+    render(null);
+    setMessage(message,'Test season and sandbox probability history cleared. Live season data was untouched.','success');
+  });
+
+  try{
+    const d=currentDataset();
+    if(d?.results?.length){
+      through.value=d.throughMatchday;
+      style.value=d.scoreStyle||'realistic';
+      render(d);
+    }else render(null);
+  }catch(_){render(null);}
+})();

@@ -116,6 +116,71 @@
   #fanPredictionsPanel .fan-prediction-actions{width:100%;}
 }
 </style>
+<style id="nl4-model-testing-styles">
+.model-test-warning{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 14px;margin:0 0 16px;border:1px solid rgba(216,173,69,.35);border-radius:14px;background:rgba(216,173,69,.08)}
+.model-test-warning strong{color:#d8ad45;font-size:12px}.model-test-warning span{color:#aaa;font-size:12px}
+.model-test-controls{display:grid;grid-template-columns:minmax(170px,260px) minmax(170px,260px) 1fr;gap:12px;align-items:end;margin-bottom:14px}
+.model-test-controls label{display:grid;gap:6px;color:#aaa;font-size:12px;font-weight:800}.model-test-controls select{width:100%;min-height:42px;border-radius:10px;border:1px solid rgba(255,255,255,.13);background:#111;color:#fff;padding:8px 10px}
+.model-test-actions{display:flex;gap:8px;flex-wrap:wrap}.model-test-actions button{min-height:42px}.danger-btn{border:1px solid rgba(220,40,55,.45);background:rgba(220,40,55,.10);color:#ff6976;border-radius:10px;padding:10px 14px;font-weight:900;cursor:pointer}
+.model-test-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:14px 0}.model-test-summary article{border:1px solid rgba(255,255,255,.08);border-radius:13px;background:#111;padding:12px}
+.model-test-summary span{display:block;color:#666;font-size:9px;font-weight:900;letter-spacing:.8px}.model-test-summary strong{display:block;color:#fff;font-size:17px;margin-top:4px}
+.model-test-preview-wrap{margin-top:16px;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:#0d0d0d;padding:14px}.model-test-preview-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}.model-test-preview-head h3{margin:3px 0 0}
+.model-test-preview{display:grid;gap:12px;max-height:650px;overflow:auto;padding-right:4px}.model-test-round{border:1px solid rgba(255,255,255,.07);border-radius:12px;overflow:hidden;background:#101010}.model-test-round h4{margin:0;padding:9px 11px;background:#151515;color:#d8ad45;font-size:11px}
+.model-test-match{display:grid;grid-template-columns:minmax(0,1fr) 46px minmax(0,1fr);gap:8px;align-items:center;padding:8px 11px;border-top:1px solid rgba(255,255,255,.05);font-size:11px}.model-test-match .home{text-align:right}.model-test-match .score{text-align:center;color:#fff;font-size:14px;font-weight:1000}.model-test-match.arsenal{background:rgba(214,0,31,.08)}
+@media(max-width:900px){.model-test-controls{grid-template-columns:1fr 1fr}.model-test-actions{grid-column:1/-1}.model-test-summary{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.model-test-controls{grid-template-columns:1fr}.model-test-actions{grid-column:auto}.model-test-actions button{flex:1 1 45%}.model-test-match{font-size:9px}}
+</style>
+<style id="model-interpretation-admin-styles">
+.model-interpretation-admin{margin-top:24px}.interpretation-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}.interpretation-metrics article{background:#0f0f0f;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px}.interpretation-metrics span{display:block;color:#777;font-size:8px;font-weight:900}.interpretation-metrics strong{display:block;color:#d8ad45;font-size:22px;margin-top:6px}.interpretation-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.interpretation-form .span-2{grid-column:1/-1}.model-diagnostics-admin{margin-top:14px;border:1px solid rgba(216,173,69,.22);border-radius:12px;padding:10px 12px;background:#0d0d0d}.model-diagnostics-admin summary{cursor:pointer;color:#d8ad45;font-size:10px;font-weight:900}.model-diagnostics-admin p{color:#999;font-size:9px;line-height:1.6}.status-pill{border:1px solid rgba(216,173,69,.3);border-radius:999px;padding:7px 10px;color:#d8ad45;font-size:8px;font-weight:900}
+@media(max-width:700px){.interpretation-metrics{grid-template-columns:1fr 1fr}}@media(max-width:430px){.interpretation-metrics{grid-template-columns:1fr}}
+</style>
+
+<style id="v153-forecast-studio-styles">
+.forecast-studio-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-top:14px}
+.forecast-stats-editor,.auto-interpretation-editor,.manual-interpretation-editor{border:1px solid rgba(255,255,255,.08);border-radius:16px;background:#0d0d0d;padding:14px}
+.manual-interpretation-editor{margin-top:14px}
+.subsection-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.subsection-head h3{margin:2px 0;color:#fff}
+.all-forecast-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px;max-height:620px;overflow:auto;padding-right:4px}
+.forecast-stat-option{display:flex;gap:9px;align-items:flex-start;border:1px solid rgba(255,255,255,.06);border-radius:11px;background:#111;padding:10px;cursor:pointer}
+.forecast-stat-option input{margin-top:2px}.forecast-stat-option b{display:block;color:#fff;font-size:9px}.forecast-stat-option strong{display:block;color:#d8ad45;font-size:16px;margin:4px 0}.forecast-stat-option small{color:#666;font-size:7px;line-height:1.4}
+.forecast-stat-group-title{grid-column:1/-1;color:#d8ad45;font-size:8px;font-weight:1000;letter-spacing:.7px;margin-top:5px}
+.interpretation-style-buttons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}.interpret-style-btn{border:1px solid rgba(216,173,69,.25);border-radius:10px;background:#111;color:#aaa;padding:9px;font-size:8px;font-weight:900;cursor:pointer}.interpret-style-btn.active{background:#d8ad45;color:#111}
+.automatic-interpretation-choices{display:grid;gap:8px;margin-top:12px}.auto-interpretation-card{border:1px solid rgba(255,255,255,.07);border-radius:12px;background:#111;padding:11px}.auto-interpretation-card h4{margin:0 0 5px;color:#fff;font-size:10px}.auto-interpretation-card p{margin:0;color:#999;font-size:8px;line-height:1.55}.auto-interpretation-card button{margin-top:8px}
+@media(max-width:900px){.forecast-studio-grid{grid-template-columns:1fr}}@media(max-width:600px){.all-forecast-stats{grid-template-columns:1fr}.interpretation-style-buttons{grid-template-columns:1fr 1fr}}
+</style>
+
+<style id="v154-public-forecast-control-styles">
+.public-forecast-control{margin:14px 0;padding:14px;border:1px solid rgba(216,173,69,.28);border-radius:15px;background:linear-gradient(145deg,#11100c,#0a0a0a);display:flex;justify-content:space-between;gap:14px;align-items:center}
+.public-forecast-control h3{margin:3px 0;color:#fff}.public-forecast-control-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.forecast-setup-warning{margin:12px 0;padding:12px;border:1px solid rgba(220,80,80,.35);border-radius:12px;background:rgba(130,20,20,.12);color:#ddd}
+.forecast-setup-warning strong{color:#ffb0b0;font-size:9px}.forecast-setup-warning p{margin:6px 0 0;font-size:9px;line-height:1.55}.forecast-setup-warning code{color:#d8ad45}
+@media(max-width:720px){.public-forecast-control{display:block}.public-forecast-control-actions{justify-content:flex-start;margin-top:10px}}
+</style>
+<style id="v1541-button-fix">
+#modelInterpretationAdmin{position:relative;z-index:2;pointer-events:auto!important}
+#modelInterpretationAdmin button,#modelInterpretationAdmin a,#modelInterpretationAdmin input,#modelInterpretationAdmin textarea{pointer-events:auto!important;position:relative;z-index:3}
+#modelInterpretationAdmin button{touch-action:manipulation}
+#modelInterpretationAdmin button:active{transform:translateY(1px);opacity:.82}
+#modelInterpretationAdmin button:disabled{opacity:.6;cursor:progress}
+#modelInterpretationMessage[data-kind="ok"]{color:#d8ad45!important}
+#modelInterpretationMessage[data-kind="error"]{color:#ff8c8c!important}
+</style>
+<style id="v155-dual-controls-styles">
+.forecast-visibility-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.forecast-visibility-grid .public-forecast-control{margin:0;display:block}
+.forecast-visibility-grid .public-forecast-control-actions{justify-content:flex-start;margin-top:12px}
+@media(max-width:900px){.forecast-visibility-grid{grid-template-columns:1fr}}
+</style>
+<style id="v156-forecast-source-styles">
+.forecast-source-card{grid-column:1/-1;border:1px solid rgba(216,173,69,.28);border-radius:12px;background:#111;padding:11px;margin-top:10px}
+.forecast-source-card span{display:block;color:#777;font-size:7px;font-weight:1000}
+.forecast-source-card strong{display:block;color:#d8ad45;font-size:15px;margin:5px 0}
+.forecast-source-card small{color:#888;font-size:8px;line-height:1.45}
+</style>
+<style id="v157-source-selector-styles">
+.forecast-source-selector{display:flex;gap:6px;align-items:center}
+.source-choice-btn{border:1px solid rgba(216,173,69,.25);background:#111;color:#888;border-radius:999px;padding:8px 11px;font-size:7px;font-weight:1000;cursor:pointer}
+.source-choice-btn.active{background:#d8ad45;color:#090909;border-color:#d8ad45}
+</style>
 </head>
 <body>
   <header class="topbar">
@@ -160,6 +225,7 @@
         <button class="nav-link" data-panel="fixturesPanel">Fixtures</button>
         <button class="nav-link" data-panel="premierLeaguePanel">Premier League</button>
         <button class="nav-link" data-panel="premierLeagueResultsPanel">Other Teams Results</button>
+        <button class="nav-link" data-panel="modelTestingPanel">🧪 Model Testing</button>
         <button class="nav-link" data-panel="plPlayerStatsPanel">PL Player Stats</button>
         <button class="nav-link" data-panel="fanPredictionsPanel">Fan Predictions</button>
         <button class="nav-link" data-panel="trophiesPanel">Trophies</button>
@@ -226,7 +292,7 @@
               <p class="eyebrow">OTHER 19 TEAMS • 2026/27</p>
               <h2>Premier League Results</h2>
               <p class="muted">
-                All 342 non-Arsenal league fixtures are already loaded. Choose a matchday, then press Edit on a fixture to enter the final score and set it to Full Time. Arsenal matches stay in the Fixtures panel. Every saved result recalculates the table and feeds the V12.9 title model.
+                All 342 non-Arsenal league fixtures are already loaded. Choose a matchday, then press Edit on a fixture to enter the final score and set it to Full Time. Arsenal matches stay in the Fixtures panel. Every saved result recalculates the table and feeds the live V13 title model.
               </p>
             </div>
             <button class="primary-btn" data-new="premier_league_matches">+ Add missing result</button>
@@ -238,6 +304,39 @@
           <div id="premier_league_matchesList" class="content-grid"></div>
         </section>
 
+
+        <section id="modelTestingPanel" class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">V13.2 • SAFE SANDBOX</p>
+              <h2>Premier League Testing Machine</h2>
+              <p class="muted">Generate one complete random Premier League test season, then move through Matchdays 1–38 using that same result path. This creates a valid sandbox probability timeline without changing real fixtures, standings or Supabase history.</p>
+            </div>
+            <span class="status" id="modelTestStatusBadge">NO TEST LOADED</span>
+          </div>
+          <div class="model-test-warning"><strong>🧪 SAFE TEST MODE</strong><span>Random scores stay in this browser only. They are never written to the live season database.</span></div>
+          <div class="model-test-controls">
+            <label>Simulate season through matchday<select id="modelTestThroughMatchday"></select></label>
+            <label>Random score style<select id="modelTestScoreStyle"><option value="realistic" selected>Realistic random scores</option><option value="chaotic">High-variance stress test</option></select></label>
+            <div class="model-test-actions">
+              <button id="generateModelTestBtn" class="primary-btn" type="button">🎲 Generate / Apply Matchday</button>
+              <button id="regenerateModelTestBtn" class="ghost-btn" type="button">↻ New Random Season</button>
+              <button id="openModelTestBtn" class="primary-btn" type="button" disabled>▶ Open V13 Test</button>
+              <button id="clearModelTestBtn" class="danger-btn" type="button">Clear Test</button>
+            </div>
+          </div>
+          <div class="model-test-summary">
+            <article><span>MATCHDAYS</span><strong id="modelTestRounds">0</strong></article>
+            <article><span>TEST RESULTS</span><strong id="modelTestMatches">0</strong></article>
+            <article><span>ARSENAL RESULTS</span><strong id="modelTestArsenalRecord">—</strong></article>
+            <article><span>MODE</span><strong>LOCAL ONLY</strong></article>
+          </div>
+          <p id="modelTestMessage" class="message" role="status"></p>
+          <div class="model-test-preview-wrap">
+            <div class="model-test-preview-head"><div><p class="eyebrow">SAME TEST SEASON</p><h3>Matchday Results Preview</h3></div><span id="modelTestGeneratedAt" class="muted"></span></div>
+            <div id="modelTestPreview" class="model-test-preview"><p class="muted">Choose a matchday range and generate a test season.</p></div>
+          </div>
+        </section>
 
         <section id="plPlayerStatsPanel" class="panel">
           <div class="panel-heading">
@@ -307,6 +406,147 @@
   </main>
 
   
+
+
+
+
+<section id="modelInterpretationAdmin" class="admin-section model-interpretation-admin">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">TITLE MODEL • ADMIN ONLY</p>
+      <h2>Forecast Publishing Studio</h2>
+      <p class="muted">Load the complete NL4 forecast, choose exactly which statistics viewers can see, then publish an automatic or fully manual interpretation.</p>
+    </div>
+    <span id="modelInterpretationState" class="status-pill">NOT PUBLISHED</span>
+  </div>
+
+  <div class="forecast-visibility-grid">
+    <div class="public-forecast-control">
+      <div>
+        <p class="eyebrow">STATISTICAL FORECAST</p>
+        <h3>Full NL4 Statistical Forecast</h3>
+        <p class="muted">Controls the main title probability model, timeline, expected points, title-race panels and model forecast sections.</p>
+      </div>
+      <div class="public-forecast-control-actions">
+        <span id="publicForecastVisibilityState" class="status-pill">CHECKING…</span>
+        <button id="showPublicForecastBtn" type="button" class="primary-btn">ADD STATISTICAL FORECAST</button>
+        <button id="hidePublicForecastBtn" type="button" class="ghost-btn">REMOVE STATISTICAL FORECAST</button>
+      </div>
+    </div>
+
+    <div class="public-forecast-control">
+      <div>
+        <p class="eyebrow">ADMIN INTERPRETATION</p>
+        <h3>Interpretation Forecast</h3>
+        <p class="muted">Controls only the Admin-selected statistics and fan-friendly interpretation shown below 2026/27 Premier League Squad Stats.</p>
+      </div>
+      <div class="public-forecast-control-actions">
+        <span id="interpretationForecastVisibilityState" class="status-pill">CHECKING…</span>
+        <button id="showInterpretationForecastBtn" type="button" class="primary-btn">ADD INTERPRETATION</button>
+        <button id="hideInterpretationForecastBtn" type="button" class="ghost-btn">REMOVE INTERPRETATION</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="forecastPublisherSetupWarning" class="forecast-setup-warning" hidden>
+    <strong>DATABASE SETUP REQUIRED</strong>
+    <p>The forecast publisher tables could not be found by the Supabase Data API. This warning is only shown for a confirmed schema/table error.</p>
+  </div>
+
+  <div class="interpretation-actions">
+    <div class="forecast-source-selector">
+      <button id="useLiveForecastSourceBtn" type="button" class="source-choice-btn active" data-source="live">LIVE STATISTICAL</button>
+      <button id="useSandboxForecastSourceBtn" type="button" class="source-choice-btn" data-source="sandbox">SANDBOX TEST</button>
+    </div>
+    <button id="loadLatestModelBtn" type="button" class="primary-btn">Load Selected Forecast</button>
+    <span id="forecastDataSourceState" class="status-pill">SOURCE: LIVE STATISTICAL</span>
+    <button id="selectAllForecastStatsBtn" type="button" class="ghost-btn">Select All Stats</button>
+    <button id="clearForecastStatsBtn" type="button" class="ghost-btn">Clear Stat Selection</button>
+    <a href="premier-league.html" class="ghost-btn" target="_blank" rel="noopener">Preview Viewer Page</a>
+  </div>
+
+  <div class="forecast-studio-grid">
+    <div class="forecast-stats-editor">
+      <div class="subsection-head">
+        <div><p class="eyebrow">01 / FORECAST DATA</p><h3>Choose Viewer Statistics</h3></div>
+        <span id="selectedForecastStatsCount" class="status-pill">0 SELECTED</span>
+      </div>
+      <p class="muted">Every available forecast metric is loaded here. Tick only the statistics you want displayed publicly.</p>
+      <div id="forecastSourceCard" class="forecast-source-card" hidden>
+        <span>FORECAST SOURCE</span>
+        <strong id="forecastSourceName">—</strong>
+        <small id="forecastSourceDetail">—</small>
+      </div>
+      <div id="allForecastStatsList" class="all-forecast-stats">
+        <p class="muted">Load the complete forecast to see statistics.</p>
+      </div>
+    </div>
+
+    <div class="auto-interpretation-editor">
+      <div class="subsection-head">
+        <div><p class="eyebrow">02 / AUTOMATIC INTERPRETATION</p><h3>Choose How NL4 Explains It</h3></div>
+      </div>
+      <p class="muted">Generate several interpretations from the same model output, then choose one as your editable starting point.</p>
+
+      <div class="interpretation-style-buttons">
+        <button type="button" class="interpret-style-btn" data-style="balanced">Balanced</button>
+        <button type="button" class="interpret-style-btn" data-style="short">Short &amp; Direct</button>
+        <button type="button" class="interpret-style-btn" data-style="analyst">Analyst</button>
+        <button type="button" class="interpret-style-btn" data-style="fan">Fan Friendly</button>
+        <button type="button" class="interpret-style-btn" data-style="cautious">Cautious</button>
+        <button type="button" class="interpret-style-btn" data-style="story">Title-Race Story</button>
+      </div>
+
+      <div id="automaticInterpretationChoices" class="automatic-interpretation-choices">
+        <p class="muted">Load the forecast, then choose an interpretation style.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="manual-interpretation-editor">
+    <div class="subsection-head">
+      <div><p class="eyebrow">03 / FINAL EDIT</p><h3>Automatic + Manual Publisher</h3></div>
+      <span class="status-pill">FULLY EDITABLE</span>
+    </div>
+    <p class="muted">An automatic option can fill this form, but Admin has final control over every word before publishing.</p>
+
+    <div class="form-grid interpretation-form">
+      <label>Viewer headline
+        <input id="interpHeadline" type="text" maxlength="140" placeholder="Example: Arsenal remain strong title favourites">
+      </label>
+      <label>Status label
+        <input id="interpStatusLabel" type="text" maxlength="60" placeholder="Example: TITLE RACE UPDATE">
+      </label>
+      <label class="span-2">Main interpretation
+        <textarea id="interpSummary" rows="6" maxlength="1800" placeholder="Explain what the forecast means and why it looks this way."></textarea>
+      </label>
+      <label class="span-2">Key takeaway
+        <textarea id="interpTakeaway" rows="3" maxlength="600" placeholder="The one thing viewers should understand."></textarea>
+      </label>
+      <label>Key factor 1
+        <input id="interpFactor1" type="text" maxlength="260">
+      </label>
+      <label>Key factor 2
+        <input id="interpFactor2" type="text" maxlength="260">
+      </label>
+      <label>Key factor 3
+        <input id="interpFactor3" type="text" maxlength="260">
+      </label>
+    </div>
+
+    <div class="interpretation-actions">
+      <button id="publishInterpretationBtn" type="button" class="primary-btn">Publish Selected Stats + Interpretation</button>
+      <button id="unpublishInterpretationBtn" type="button" class="ghost-btn">Unpublish</button>
+      <button id="clearInterpretationBtn" type="button" class="ghost-btn">Clear Interpretation</button>
+    </div>
+    <p id="modelInterpretationMessage" class="message" role="status"></p>
+  </div>
+
+  <details class="model-diagnostics-admin">
+    <summary>How Admin should interpret NL4</summary>
+    <p>The automatic drafts are starting points, not hidden model decisions. Compare Arsenal's probability, expected points, current table evidence, confidence, title-race gap and rival probabilities. Publish only the statistics that help fans understand the current race. You can rewrite the interpretation completely before publishing.</p>
+  </details>
+</section>
 
 
 <dialog id="fanPredictionDialog" class="match-dialog fan-prediction-dialog">
@@ -534,7 +774,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
   <script src="supabase-client.js"></script>
-  <script src="admin.js?v=20260815-clear-buttons"></script>
-<script src="admin.js"></script>
+  <script src="admin.js?v=20260816-v15-4-public-forecast-control"></script>
+  <script src="forecast-publisher-admin.js?v=20260817-v15-7-explicit-source"></script>
 </body>
 </html>
