@@ -542,41 +542,6 @@ const lineupMinuteOn = document.getElementById('lineupMinuteOn');
 const lineupMinuteOff = document.getElementById('lineupMinuteOff');
 const lineupMessage = document.getElementById('lineupMessage');
 const lineupList = document.getElementById('lineupList');
-function ensureManualLineupEditorUI(){
-  if (!document.getElementById('manual-lineup-runtime-style')) {
-    const style=document.createElement('style');
-    style.id='manual-lineup-runtime-style';
-    style.textContent=`
-      .manual-lineup-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin:14px 0}.manual-lineup-tools label{display:grid;gap:6px;color:#aaa;font-size:11px;font-weight:800;min-width:150px}.manual-lineup-tools select{min-height:40px;border:1px solid rgba(255,255,255,.13);background:#111;color:#fff;border-radius:10px;padding:8px 10px}.manual-lineup-note{color:#888;font-size:11px;line-height:1.55;margin:8px 0 12px}.admin-manual-pitch-wrap{max-width:620px;margin:12px auto 18px;padding:10px;border:1px solid rgba(216,173,69,.22);border-radius:16px;background:#0a0a0a}.admin-manual-pitch{position:relative;width:100%;aspect-ratio:72/104;overflow:hidden;border:2px solid rgba(255,255,255,.9);border-radius:12px;background:repeating-linear-gradient(0deg,#30994c 0 10%,#278b43 10% 20%);touch-action:none;user-select:none;-webkit-user-select:none}.admin-manual-pitch:before{content:"";position:absolute;left:0;right:0;top:50%;height:2px;background:rgba(255,255,255,.9)}.admin-manual-pitch:after{content:"";position:absolute;left:50%;top:50%;width:24%;aspect-ratio:1;border:2px solid rgba(255,255,255,.9);border-radius:50%;transform:translate(-50%,-50%)}.manual-box{position:absolute;left:22%;right:22%;height:15%;border:2px solid rgba(255,255,255,.85);pointer-events:none}.manual-box.top{top:-2px}.manual-box.bottom{bottom:-2px}.manual-player{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:76px;min-height:78px;display:grid;justify-items:center;align-content:start;cursor:grab;touch-action:none;z-index:10}.manual-player.dragging{cursor:grabbing;z-index:50;filter:drop-shadow(0 12px 9px rgba(0,0,0,.55))}.manual-shirt{width:42px;height:48px;border-radius:8px 8px 12px 12px;background:linear-gradient(90deg,#fff 0 18%,#d6001f 18% 82%,#fff 82%);border:1px solid rgba(255,255,255,.75);box-shadow:0 8px 12px rgba(0,0,0,.35);display:grid;place-items:center;color:#fff;font-size:16px;font-weight:1000;text-shadow:0 1px 2px #000}.manual-player-name{margin-top:3px;max-width:76px;padding:3px 5px;border-radius:6px;background:rgba(0,0,0,.72);color:#fff;font-size:8px;font-weight:900;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.manual-position-status{margin-top:8px;color:#d8ad45;font-size:10px;font-weight:800;text-align:center;min-height:16px}@media(max-width:560px){.admin-manual-pitch-wrap{margin-left:-4px;margin-right:-4px;padding:6px}.manual-player{width:62px;min-height:66px}.manual-shirt{width:35px;height:41px;font-size:14px}.manual-player-name{max-width:62px;font-size:7px}.manual-lineup-tools>*{flex:1 1 130px}}
-    `;
-    document.head.appendChild(style);
-  }
-  if (document.getElementById('manualLineupPitch')) return;
-  const lineupListEl=document.getElementById('lineupList');
-  const saveBtn=document.getElementById('saveLineupPlayerBtn');
-  const anchor=(saveBtn && saveBtn.closest('.dialog-actions')) || lineupListEl;
-  if (!anchor || !anchor.parentNode) return;
-  const wrap=document.createElement('div');
-  wrap.id='manualLineupEditorRuntime';
-  wrap.innerHTML=`
-    <div class="manual-lineup-tools">
-      <label>Formation label
-        <select id="manualLineupFormation">
-          <option value="4-3-3">4-3-3</option><option value="4-2-3-1">4-2-3-1</option><option value="4-4-2">4-4-2</option><option value="3-4-3">3-4-3</option><option value="3-5-2">3-5-2</option><option value="4-1-4-1">4-1-4-1</option>
-        </select>
-      </label>
-      <button id="autoArrangeLineupBtn" class="ghost-btn" type="button">Auto Arrange</button>
-      <button id="resetLineupPositionsBtn" class="ghost-btn" type="button">Reset Positions</button>
-    </div>
-    <p class="manual-lineup-note"><strong>Manual touch lineup:</strong> drag each starter with your finger on phone/tablet, or with the mouse on PC. Existing starters load automatically.</p>
-    <div class="admin-manual-pitch-wrap"><div id="manualLineupPitch" class="admin-manual-pitch" aria-label="Manual Arsenal lineup editor"><span class="manual-box top"></span><span class="manual-box bottom"></span></div><div id="manualPositionStatus" class="manual-position-status"></div></div>`;
-  anchor.insertAdjacentElement('afterend',wrap);
-}
-ensureManualLineupEditorUI();
-const manualLineupPitch = document.getElementById('manualLineupPitch');
-const manualLineupFormation = document.getElementById('manualLineupFormation');
-const manualPositionStatus = document.getElementById('manualPositionStatus');
-let currentLineupRows = [];
 
 const matchSaveMessage = document.getElementById('matchSaveMessage');
 const eventMessage = document.getElementById('eventMessage');
@@ -692,10 +657,7 @@ async function loadMatchLineup() {
     return;
   }
 
-  currentLineupRows = data || [];
-  renderManualLineup(currentLineupRows);
-
-  lineupList.innerHTML = currentLineupRows.length ? currentLineupRows.map(row => {
+  lineupList.innerHTML = (data || []).length ? data.map(row => {
     const end = row.minute_off ?? 90;
     const mins = Math.max(0, Math.min(90,end) - Math.min(90,row.minute_on ?? 0));
     return `<div class="admin-event-row">
@@ -708,130 +670,6 @@ async function loadMatchLineup() {
     </div>`;
   }).join('') : '<div class="match-empty">No Arsenal lineup recorded yet.</div>';
 }
-
-
-const MANUAL_FORMATIONS = {
-  '4-3-3':[[50,91],[16,76],[37,76],[63,76],[84,76],[31,53],[50,57],[69,53],[18,24],[50,18],[82,24]],
-  '4-2-3-1':[[50,91],[16,76],[37,76],[63,76],[84,76],[36,58],[64,58],[20,38],[50,35],[80,38],[50,18]],
-  '4-4-2':[[50,91],[16,76],[37,76],[63,76],[84,76],[17,50],[39,52],[61,52],[83,50],[38,21],[62,21]],
-  '3-4-3':[[50,91],[28,75],[50,77],[72,75],[18,53],[40,55],[60,55],[82,53],[20,23],[50,18],[80,23]],
-  '3-5-2':[[50,91],[28,76],[50,78],[72,76],[14,53],[35,55],[50,48],[65,55],[86,53],[39,20],[61,20]],
-  '4-1-4-1':[[50,91],[16,76],[37,76],[63,76],[84,76],[50,61],[18,43],[40,45],[60,45],[82,43],[50,18]]
-};
-
-function validManualCoordinate(value){
-  const n = Number(value);
-  return Number.isFinite(n) ? n : null;
-}
-
-function manualFallback(index){
-  const formation = manualLineupFormation?.value || '4-3-3';
-  return (MANUAL_FORMATIONS[formation] || MANUAL_FORMATIONS['4-3-3'])[index] || [50,50];
-}
-
-function renderManualLineup(rows){
-  if (!manualLineupPitch) return;
-  const starters = (rows || []).filter(row => row.is_starter);
-  const savedFormation = starters.find(row => row.formation)?.formation;
-  if (savedFormation && manualLineupFormation && MANUAL_FORMATIONS[savedFormation]) manualLineupFormation.value = savedFormation;
-  manualLineupPitch.querySelectorAll('.manual-player,.manual-empty').forEach(el => el.remove());
-  if (!starters.length) {
-    manualLineupPitch.insertAdjacentHTML('beforeend','<div class="manual-empty" style="position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.75);font-weight:900;font-size:12px;text-align:center;padding:30px">Add starters above, then drag them into position.</div>');
-    return;
-  }
-  starters.forEach((row,index) => {
-    const fallback = manualFallback(index);
-    const x = validManualCoordinate(row.position_x) ?? fallback[0];
-    const y = validManualCoordinate(row.position_y) ?? fallback[1];
-    const player = document.createElement('div');
-    player.className = 'manual-player';
-    player.dataset.id = row.id;
-    player.dataset.x = x;
-    player.dataset.y = y;
-    player.style.setProperty('--x', `${x}%`);
-    player.style.setProperty('--y', `${y}%`);
-    const number = row.shirt_number || '';
-    player.innerHTML = `<span class="manual-shirt">${escapeHtml(number || '•')}</span><span class="manual-player-name">${escapeHtml(row.player_name)}</span>`;
-    attachManualDrag(player);
-    manualLineupPitch.appendChild(player);
-  });
-}
-
-function attachManualDrag(player){
-  let dragging = false;
-  const move = event => {
-    if (!dragging || !manualLineupPitch) return;
-    const rect = manualLineupPitch.getBoundingClientRect();
-    let x = ((event.clientX - rect.left) / rect.width) * 100;
-    let y = ((event.clientY - rect.top) / rect.height) * 100;
-    x = Math.max(7, Math.min(93, x));
-    y = Math.max(6, Math.min(94, y));
-    player.dataset.x = x.toFixed(2);
-    player.dataset.y = y.toFixed(2);
-    player.style.setProperty('--x', `${x}%`);
-    player.style.setProperty('--y', `${y}%`);
-    if (manualPositionStatus) manualPositionStatus.textContent = `Position: ${x.toFixed(0)}% × ${y.toFixed(0)}%`;
-  };
-  player.addEventListener('pointerdown', event => {
-    dragging = true;
-    player.classList.add('dragging');
-    player.setPointerCapture?.(event.pointerId);
-    move(event);
-    event.preventDefault();
-  });
-  player.addEventListener('pointermove', move);
-  const finish = async event => {
-    if (!dragging) return;
-    dragging = false;
-    player.classList.remove('dragging');
-    try { player.releasePointerCapture?.(event.pointerId); } catch (_) {}
-    const x = Number(player.dataset.x), y = Number(player.dataset.y);
-    if (manualPositionStatus) manualPositionStatus.textContent = 'Saving position…';
-    const { error } = await db.from('match_lineups').update({
-      position_x:x, position_y:y,
-      formation: manualLineupFormation?.value || null,
-      updated_at:new Date().toISOString()
-    }).eq('id',player.dataset.id);
-    if (error) {
-      if (manualPositionStatus) manualPositionStatus.textContent = `Could not save: ${error.message}`;
-      return;
-    }
-    const row = currentLineupRows.find(r => String(r.id) === String(player.dataset.id));
-    if (row) { row.position_x=x; row.position_y=y; row.formation=manualLineupFormation?.value || row.formation; }
-    if (manualPositionStatus) manualPositionStatus.textContent = 'Position saved ✓';
-  };
-  player.addEventListener('pointerup', finish);
-  player.addEventListener('pointercancel', finish);
-}
-
-document.getElementById('autoArrangeLineupBtn')?.addEventListener('click', async () => {
-  const starters = currentLineupRows.filter(row => row.is_starter);
-  if (!starters.length) return setMessage(lineupMessage,'Add starters first.','error');
-  const formation = manualLineupFormation?.value || '4-3-3';
-  const coords = MANUAL_FORMATIONS[formation] || MANUAL_FORMATIONS['4-3-3'];
-  if (manualPositionStatus) manualPositionStatus.textContent = 'Auto arranging…';
-  const responses = await Promise.all(starters.map((row,index) => {
-    const [x,y] = coords[index] || [50,50];
-    return db.from('match_lineups').update({position_x:x,position_y:y,formation,updated_at:new Date().toISOString()}).eq('id',row.id);
-  }));
-  const failed = responses.find(r => r.error);
-  if (failed) return setMessage(lineupMessage, failed.error.message, 'error');
-  if (manualPositionStatus) manualPositionStatus.textContent = `${formation} arranged and saved ✓`;
-  await loadMatchLineup();
-});
-
-document.getElementById('resetLineupPositionsBtn')?.addEventListener('click', async () => {
-  const starters = currentLineupRows.filter(row => row.is_starter);
-  if (!starters.length) return;
-  if (!confirm('Reset all manual starter positions for this fixture?')) return;
-  const responses = await Promise.all(starters.map(row => db.from('match_lineups').update({position_x:null,position_y:null,updated_at:new Date().toISOString()}).eq('id',row.id)));
-  const failed = responses.find(r => r.error);
-  if (failed) return setMessage(lineupMessage, failed.error.message, 'error');
-  if (manualPositionStatus) manualPositionStatus.textContent = 'Manual positions reset.';
-  await loadMatchLineup();
-});
-
-manualLineupFormation?.addEventListener('change', () => renderManualLineup(currentLineupRows));
 
 lineupRole.addEventListener('change', () => {
   const starter = lineupRole.value === 'starter';

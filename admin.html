@@ -155,10 +155,6 @@
 .forecast-setup-warning strong{color:#ffb0b0;font-size:9px}.forecast-setup-warning p{margin:6px 0 0;font-size:9px;line-height:1.55}.forecast-setup-warning code{color:#d8ad45}
 @media(max-width:720px){.public-forecast-control{display:block}.public-forecast-control-actions{justify-content:flex-start;margin-top:10px}}
 </style>
-
-<style id="manual-lineup-editor-styles">
-.manual-lineup-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin:14px 0}.manual-lineup-tools label{display:grid;gap:6px;color:#aaa;font-size:11px;font-weight:800;min-width:150px}.manual-lineup-tools select{min-height:40px;border:1px solid rgba(255,255,255,.13);background:#111;color:#fff;border-radius:10px;padding:8px 10px}.manual-lineup-note{color:#888;font-size:11px;line-height:1.55;margin:8px 0 12px}.admin-manual-pitch-wrap{max-width:620px;margin:12px auto 18px;padding:10px;border:1px solid rgba(216,173,69,.22);border-radius:16px;background:#0a0a0a}.admin-manual-pitch{position:relative;width:100%;aspect-ratio:72/104;overflow:hidden;border:2px solid rgba(255,255,255,.9);border-radius:12px;background:repeating-linear-gradient(0deg,#30994c 0 10%,#278b43 10% 20%);touch-action:none;user-select:none;-webkit-user-select:none}.admin-manual-pitch:before{content:"";position:absolute;left:0;right:0;top:50%;height:2px;background:rgba(255,255,255,.9)}.admin-manual-pitch:after{content:"";position:absolute;left:50%;top:50%;width:24%;aspect-ratio:1;border:2px solid rgba(255,255,255,.9);border-radius:50%;transform:translate(-50%,-50%)}.manual-box{position:absolute;left:22%;right:22%;height:15%;border:2px solid rgba(255,255,255,.85);pointer-events:none}.manual-box.top{top:-2px}.manual-box.bottom{bottom:-2px}.manual-player{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:76px;min-height:78px;display:grid;justify-items:center;align-content:start;cursor:grab;touch-action:none;z-index:10}.manual-player.dragging{cursor:grabbing;z-index:50;filter:drop-shadow(0 12px 9px rgba(0,0,0,.55))}.manual-shirt{width:42px;height:48px;border-radius:8px 8px 12px 12px;background:linear-gradient(90deg,#fff 0 18%,#d6001f 18% 82%,#fff 82%);border:1px solid rgba(255,255,255,.75);box-shadow:0 8px 12px rgba(0,0,0,.35);display:grid;place-items:center;color:#fff;font-size:16px;font-weight:1000;text-shadow:0 1px 2px #000}.manual-player-name{margin-top:3px;max-width:76px;padding:3px 5px;border-radius:6px;background:rgba(0,0,0,.72);color:#fff;font-size:8px;font-weight:900;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.manual-position-status{margin-top:8px;color:#d8ad45;font-size:10px;font-weight:800;text-align:center;min-height:16px}@media(max-width:560px){.admin-manual-pitch-wrap{margin-left:-4px;margin-right:-4px;padding:6px}.manual-player{width:62px;min-height:66px}.manual-shirt{width:35px;height:41px;font-size:14px}.manual-player-name{max-width:62px;font-size:7px}.manual-lineup-tools>*{flex:1 1 130px}}
-</style>
 </head>
 <body>
   <header class="topbar">
@@ -203,11 +199,11 @@
         <button class="nav-link" data-panel="fixturesPanel">Fixtures</button>
         <button class="nav-link" data-panel="premierLeaguePanel">Premier League</button>
         <button class="nav-link" data-panel="premierLeagueResultsPanel">Other Teams Results</button>
-        <button class="nav-link" data-panel="modelTestingPanel">🧪 Model Testing</button>
         <button class="nav-link" data-panel="plPlayerStatsPanel">PL Player Stats</button>
         <button class="nav-link" data-panel="fanPredictionsPanel">Fan Predictions</button>
         <button class="nav-link" data-panel="trophiesPanel">Trophies</button>
         <button class="nav-link" data-panel="mediaPanel">Media</button>
+        <a class="nav-link model-admin-link" href="admin-model.html">⚙ Model Admin</a>
         <a class="nav-link back-link" href="index.html">← Back to website</a>
       </aside>
 
@@ -283,38 +279,7 @@
         </section>
 
 
-        <section id="modelTestingPanel" class="panel">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">V13.2 • SAFE SANDBOX</p>
-              <h2>Premier League Testing Machine</h2>
-              <p class="muted">Generate one complete random Premier League test season, then move through Matchdays 1–38 using that same result path. This creates a valid sandbox probability timeline without changing real fixtures, standings or Supabase history.</p>
-            </div>
-            <span class="status" id="modelTestStatusBadge">NO TEST LOADED</span>
-          </div>
-          <div class="model-test-warning"><strong>🧪 SAFE TEST MODE</strong><span>Random scores stay in this browser only. They are never written to the live season database.</span></div>
-          <div class="model-test-controls">
-            <label>Simulate season through matchday<select id="modelTestThroughMatchday"></select></label>
-            <label>Random score style<select id="modelTestScoreStyle"><option value="realistic" selected>Realistic random scores</option><option value="chaotic">High-variance stress test</option></select></label>
-            <div class="model-test-actions">
-              <button id="generateModelTestBtn" class="primary-btn" type="button">🎲 Generate / Apply Matchday</button>
-              <button id="regenerateModelTestBtn" class="ghost-btn" type="button">↻ New Random Season</button>
-              <button id="openModelTestBtn" class="primary-btn" type="button" disabled>▶ Open V13 Test</button>
-              <button id="clearModelTestBtn" class="danger-btn" type="button">Clear Test</button>
-            </div>
-          </div>
-          <div class="model-test-summary">
-            <article><span>MATCHDAYS</span><strong id="modelTestRounds">0</strong></article>
-            <article><span>TEST RESULTS</span><strong id="modelTestMatches">0</strong></article>
-            <article><span>ARSENAL RESULTS</span><strong id="modelTestArsenalRecord">—</strong></article>
-            <article><span>MODE</span><strong>LOCAL ONLY</strong></article>
-          </div>
-          <p id="modelTestMessage" class="message" role="status"></p>
-          <div class="model-test-preview-wrap">
-            <div class="model-test-preview-head"><div><p class="eyebrow">SAME TEST SEASON</p><h3>Matchday Results Preview</h3></div><span id="modelTestGeneratedAt" class="muted"></span></div>
-            <div id="modelTestPreview" class="model-test-preview"><p class="muted">Choose a matchday range and generate a test season.</p></div>
-          </div>
-        </section>
+
 
         <section id="plPlayerStatsPanel" class="panel">
           <div class="panel-heading">
@@ -665,29 +630,6 @@
           <button id="clearLineupBtn" class="ghost-btn" type="button">Clear Lineup</button>
           <button id="saveLineupPlayerBtn" class="primary-btn" type="button">Add / Update Player</button>
         </div>
-
-        <div class="manual-lineup-tools">
-          <label>Formation label
-            <select id="manualLineupFormation">
-              <option value="4-3-3">4-3-3</option>
-              <option value="4-2-3-1">4-2-3-1</option>
-              <option value="4-4-2">4-4-2</option>
-              <option value="3-4-3">3-4-3</option>
-              <option value="3-5-2">3-5-2</option>
-              <option value="4-1-4-1">4-1-4-1</option>
-            </select>
-          </label>
-          <button id="autoArrangeLineupBtn" class="ghost-btn" type="button">Auto Arrange</button>
-          <button id="resetLineupPositionsBtn" class="ghost-btn" type="button">Reset Positions</button>
-        </div>
-        <p class="manual-lineup-note"><strong>Manual touch lineup:</strong> drag each starter with your finger on phone/tablet, or with the mouse on PC. The position saves automatically when you release the player.</p>
-        <div class="admin-manual-pitch-wrap">
-          <div id="manualLineupPitch" class="admin-manual-pitch" aria-label="Manual Arsenal lineup editor">
-            <span class="manual-box top"></span><span class="manual-box bottom"></span>
-          </div>
-          <div id="manualPositionStatus" class="manual-position-status"></div>
-        </div>
-
         <div id="lineupList" class="match-events-admin-list"></div>
       </section>
 
@@ -750,7 +692,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
   <script src="supabase-client.js"></script>
-  <script src="admin.js?v=20260817-manual-lineup"></script>
-  <script src="manual-lineup-patch.js?v=20260817-3"></script>
+  <script src="admin.js?v=20260816-v15-4-public-forecast-control"></script>
+  <script src="manual-lineup-patch.js?v=20260818-manual-lineup"></script>
 </body>
 </html>
