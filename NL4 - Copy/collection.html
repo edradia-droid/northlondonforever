@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="Explore Arsenal's trophy collection inside the Arsenal Treasure Room." name="description"/>
+<title>Arsenal Trophy Collection | North London Forever</title>
+<link href="collection.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<style>
+/* Secret Vault: one modal, consistent on desktop/tablet/mobile */
+.secret-door{
+  position:fixed !important;
+  top:50% !important;
+  left:50% !important;
+  right:auto !important;
+  bottom:auto !important;
+  width:min(92vw,420px) !important;
+  max-width:420px !important;
+  transform:translate(-50%,-46%) scale(.96) !important;
+  opacity:0 !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+  z-index:200000 !important;
+  transition:opacity .22s ease, transform .22s ease, visibility .22s ease !important;
+}
+.secret-door.show{
+  transform:translate(-50%,-50%) scale(1) !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+}
+.secret-door-close{
+  position:absolute;top:10px;right:12px;width:42px;height:42px;padding:0;
+  display:grid;place-items:center;border-radius:50%;background:rgba(0,0,0,.55);
+  color:#fff;border:1px solid rgba(255,215,0,.55);font-size:28px;line-height:1;
+  cursor:pointer;touch-action:manipulation;z-index:2;
+}
+.secret-door-action{
+  display:block;margin:18px auto 0;min-height:44px;padding:11px 22px;border-radius:999px;
+  background:#ffd700;color:#111;font-weight:800;border:0;cursor:pointer;touch-action:manipulation;
+}
+@media (max-width:600px){
+  .secret-door{width:min(92vw,380px) !important;}
+}
+</style>
+<style>
+    .reset-progress-button{
+      min-height:44px;padding:11px 18px;border:1px solid rgba(255,215,0,.55);
+      border-radius:999px;background:rgba(0,0,0,.42);color:#ffd700;
+      font:inherit;font-weight:800;cursor:pointer;touch-action:manipulation;
+    }
+    .reset-progress-button:hover,.reset-progress-button:focus-visible{
+      background:#ffd700;color:#111;outline:none;
+    }
+    @media(max-width:600px){.reset-progress-button{width:100%;max-width:320px}}
+  </style>
+<style>
+    /* Trophy viewed / unviewed status */
+    .trophy-card{
+      position:relative;
+    }
+
+    .trophy-status{
+      position:absolute;
+      top:12px;
+      right:12px;
+      z-index:20;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:34px;
+      height:34px;
+      border-radius:50%;
+      border:2px solid rgba(255,255,255,.72);
+      background:rgba(0,0,0,.72);
+      color:#fff;
+      font-size:18px;
+      font-weight:900;
+      line-height:1;
+      box-shadow:0 4px 14px rgba(0,0,0,.35);
+      pointer-events:none;
+    }
+
+    .trophy-card.seen .trophy-status{
+      border-color:#ffd700;
+      background:#ffd700;
+      color:#111;
+      box-shadow:0 0 16px rgba(255,215,0,.55);
+    }
+
+    .trophy-card:not(.seen) .trophy-status{
+      opacity:.88;
+    }
+
+    @media(max-width:600px){
+      .trophy-status{
+        top:9px;
+        right:9px;
+        width:32px;
+        height:32px;
+        font-size:17px;
+      }
+    }
+  </style>
+<link href="shared-sidebar.css" rel="stylesheet"/><link href="sidebar-toggle-fix.css" rel="stylesheet"/></head>
+<body class="treasure-home collection-page nl4-unified-sidebar"><button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button>
+<div class="app-shell">
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-top">
+<a class="logo" href="index.html">
+<span class="logo-box nl4-logo-box">
+<img alt="NL4" src="https://i.postimg.cc/GhGgj8G7/75c7b198-597a-4288-abae-723c809c34fa.png"/>
+</span>
+<span class="nl4-brand-text"><b>NORTH LONDON</b><small>FOREVER</small></span>
+</a>
+</div>
+<nav class="side-nav" id="sideNav">
+<p class="nav-label">EXPLORE NL4</p>
+<a class="nav-link" href="index.html"><span>⌂</span> Home</a>
+<a class="nav-link" href="players.html"><span>♟</span> Players</a>
+<a class="nav-link" href="history.html"><span>◷</span> History</a>
+<a class="nav-link" href="legends.html"><span>★</span> Legends</a>
+<div class="nav-divider"></div>
+<a class="treasure-link" href="trophies.html">
+<span>🔐</span>
+<b>Treasure Room</b>
+<small>Explore Arsenal history</small>
+</a>
+</nav>
+<div class="sidebar-bottom">
+<span>COYG</span>
+<span>1886 • FOREVER</span>
+</div>
+</aside>
+<div class="mobile-overlay" id="overlay"></div>
+<main class="main">
+<header class="topbar">
+<button aria-controls="sidebar" aria-expanded="false" aria-label="Toggle menu" class="menu-btn" id="legacyMenuBtn" style="display:none !important" type="button">☰</button>
+<div class="crumb"><span>ARSENAL</span><b>/</b> TREASURE ROOM <b>/</b> COLLECTION</div>
+<div class="top-actions"><span class="live-dot"></span><span>THE COLLECTION</span></div>
+</header>
+<section aria-labelledby="collectionTitle" class="collection-hero">
+<div class="collection-hero-image"></div>
+<div class="collection-hero-overlay"></div>
+<div class="collection-hero-content">
+<p class="eyebrow">THE ARSENAL TREASURE ROOM</p>
+<h1 id="collectionTitle">The Trophy <span>Collection.</span></h1>
+<p>Walk through Arsenal's honours, open the treasure chest and discover the stories behind the silverware.</p>
+<div class="collection-hero-actions">
+<a class="gold-button" href="#trophyVault">Enter the vault <span>↓</span></a>
+<a class="ghost-button" href="trophies.html">← Back to Treasure Room</a>
+<button class="reset-progress-button" id="resetTrophyProgress" type="button">↻ Reset Trophy Progress</button>
+</div>
+</div>
+<div aria-live="polite" class="score-board">🏆 Trophies Viewed: <span id="score">0</span> / 49</div>
+</section>
+<div class="vault-wrap" id="trophyVault">
+<section class="treasure-room">
+<div aria-hidden="true" aria-labelledby="secretVaultTitle" aria-modal="true" class="secret-door" id="secretDoor" role="dialog">
+<button aria-label="Close Secret Vault" class="secret-door-close" id="closeSecretDoor" type="button">×</button>
+<h2 id="secretVaultTitle">Secret Vault</h2>
+<p>Only true Gooners find this room.</p>
+<button class="secret-door-action" id="closeSecretDoorBtn" type="button">Close Vault</button>
+</div>
+<div class="room-overlay"></div>
+<div class="light light1"></div>
+<div class="light light2"></div>
+<div class="torch left-torch"></div>
+<div class="torch right-torch"></div>
+<div class="pillar pillar-left"></div>
+<div class="pillar pillar-right"></div>
+<h2 class="vault-title">
+The Arsenal Trophy Vault
+</h2>
+<!-- Treasure Chest -->
+<div class="chest-area">
+<img alt="Treasure Chest" class="chest" id="chest" src="https://i.postimg.cc/xdyhvNvt/31b1fa0a-3511-4e86-b65a-d1c3662c6e1f.png"/>
+<button id="openChest">
+Open Treasure
+</button>
+</div>
+<!-- Gold -->
+<div class="gold-pile"></div>
+<!-- Coins -->
+<div id="coinContainer"></div>
+<!-- Sparkles -->
+<div id="sparkleContainer"></div>
+<!-- Trophy Section -->
+<div id="player">
+<div class="head"></div>
+<div class="body"></div>
+</div>
+<h2 class="vault-titlee">
+English First Division Champions
+</h2>
+<!-- First Gallery -->
+<div class="trophy-gallery">
+<div class="trophy-card first-division" data-title="English First Division 1930-1931">
+<img src="https://i.postimg.cc/HkHy5sZh/Chat-GPT-Image-Aug-5-2026-04-57-03-AM.png"/>
+<h3>English First Division<br/>1930-1931</h3></div>
+<div class="trophy-card first-division2" data-title="English First Division 1932-1933">
+<img src="https://i.postimg.cc/HkHy5sZh/Chat-GPT-Image-Aug-5-2026-04-57-03-AM.png"/>
+<h3>English First Division<br/>1932-1933</h3></div>
+<div class="trophy-card first-division3" data-title="English First Division 1933-1934">
+<img src="https://i.postimg.cc/HkHy5sZh/Chat-GPT-Image-Aug-5-2026-04-57-03-AM.png"/>
+<h3>English First Division<br/>1933-1934</h3></div>
+<div class="trophy-card first-division4" data-title="English First Division 1934-1935">
+<img src="https://i.postimg.cc/HkHy5sZh/Chat-GPT-Image-Aug-5-2026-04-57-03-AM.png"/>
+<h3>English First Division<br/>1934-1935</h3></div>
+<div class="trophy-card first-division5" data-title="English First Division 1937-1938">
+<img src="https://i.postimg.cc/HkHy5sZh/Chat-GPT-Image-Aug-5-2026-04-57-03-AM.png"/>
+<h3>English First Division<br/>1937-1938</h3></div>
+<div class="trophy-card first-division6" data-title="English First Division 1947-1948">
+<img src="https://i.postimg.cc/HkHy5sZh/Chat-GPT-Image-Aug-5-2026-04-57-03-AM.png"/>
+<h3>English First Division<br/>1947-1948</h3></div>
+<div class="trophy-card first-division7" data-title="English First Division 1952-1953">
+<img src="https://i.postimg.cc/HkHy5sZh/Chat-GPT-Image-Aug-5-2026-04-57-03-AM.png"/>
+<h3>English First Division<br/>1952-1953</h3></div>
+<div class="trophy-card first-division8" data-title="English First Division 1970-1971">
+<img src="https://i.postimg.cc/HkHy5sZh/Chat-GPT-Image-Aug-5-2026-04-57-03-AM.png"/>
+<h3>English First Division<br/>1970-1971</h3></div>
+<div class="trophy-card first-division9" data-title="English First Division 1988-1989">
+<img src="https://i.postimg.cc/HkHy5sZh/Chat-GPT-Image-Aug-5-2026-04-57-03-AM.png"/>
+<h3>English First Division<br/>1988-1989</h3></div>
+<div class="trophy-card first-division10" data-title="English First Division 1990-1991">
+<img src="https://i.postimg.cc/HkHy5sZh/Chat-GPT-Image-Aug-5-2026-04-57-03-AM.png"/>
+<h3>English First Division<br/>1990-1991</h3></div>
+</div>
+<h2 class="vault-titlee premier-title">
+    Premier League Champions
+</h2>
+<!-- Second Gallery -->
+<div class="trophy-gallery">
+<div class="trophy-card first-division11" data-title="English premier league 1997-1998">
+<img src="https://i.postimg.cc/C5Hgdrv0/ca0f8d50-b74a-4dc3-bd36-5fbeb0c54872.png"/>
+<h3>English premier league<br/>1997-1998</h3></div>
+<div class="trophy-card first-division12" data-title="English premier league 2001–2002">
+<img src="https://i.postimg.cc/C5Hgdrv0/ca0f8d50-b74a-4dc3-bd36-5fbeb0c54872.png"/>
+<h3>English premier league<br/>2001–2002</h3></div>
+<div class="trophy-card first-division13" data-title="English premier league 2003–04 – The Invincibles">
+<img src="https://i.postimg.cc/yxNPSkj9/a2c7c9a5-2fbb-41c3-be16-63e05c62283a.png"/>
+<h3>English premier league<br/>2003–2004</h3></div>
+<div class="trophy-card first-division14" data-title="English premier league 2025-2026">
+<img src="https://i.postimg.cc/xdyhvNvt/31b1fa0a-3511-4e86-b65a-d1c3662c6e1f.png"/>
+<h3>English premier league<br/>2025/2026</h3></div>
+</div>
+<h2 class="vault-titlee premier-title">
+    FA Cup Champions
+</h2>
+<!-- third Gallery -->
+<div class="trophy-gallery">
+<div class="trophy-card FA-cup1" data-title="FA cup 1929–1930">
+<img src="https://i.postimg.cc/5tHnsYWZ/c538abfd-f97d-4b87-9995-23d0c6c1256e.png"/>
+<h3>FA Cup Champions<br/>1929–1930</h3></div>
+<div class="trophy-card FA-cup2" data-title="FA cup 1935–1936">
+<img src="https://i.postimg.cc/5tHnsYWZ/c538abfd-f97d-4b87-9995-23d0c6c1256e.png"/>
+<h3>FA Cup Champions<br/>1935–1936</h3></div>
+<div class="trophy-card FA-cup3" data-title="FA cup 1949–1950">
+<img src="https://i.postimg.cc/5tHnsYWZ/c538abfd-f97d-4b87-9995-23d0c6c1256e.png"/>
+<h3>FA Cup Champions<br/>1949–1950</h3></div>
+<div class="trophy-card FA-cup4" data-title="FA cup 1970–1971">
+<img src="https://i.postimg.cc/5tHnsYWZ/c538abfd-f97d-4b87-9995-23d0c6c1256e.png"/>
+<h3>FA Cup Champions<br/>1970–1971</h3></div>
+<div class="trophy-card FA-cup5" data-title="FA cup 1978–1979">
+<img src="https://i.postimg.cc/5tHnsYWZ/c538abfd-f97d-4b87-9995-23d0c6c1256e.png"/>
+<h3>FA Cup Champions<br/>1978–1979</h3></div>
+<div class="trophy-card FA-cup6" data-title="FA cup 1992–1993">
+<img src="https://i.postimg.cc/5tHnsYWZ/c538abfd-f97d-4b87-9995-23d0c6c1256e.png"/>
+<h3>FA Cup Champions<br/>1992–1993</h3></div>
+<div class="trophy-card FA-cup7" data-title="FA cup 1997–1998">
+<img src="https://i.postimg.cc/5tHnsYWZ/c538abfd-f97d-4b87-9995-23d0c6c1256e.png"/>
+<h3>FA Cup Champions<br/>1997–1998</h3></div>
+<div class="trophy-card FA-cup8" data-title="FA cup 2001–2002">
+<img src="https://i.postimg.cc/5tHnsYWZ/c538abfd-f97d-4b87-9995-23d0c6c1256e.png"/>
+<h3>FA Cup Champions<br/>2001–2002</h3></div>
+<div class="trophy-card FA-cup9" data-title="FA cup 2002–2003">
+<img src="https://i.postimg.cc/5tHnsYWZ/c538abfd-f97d-4b87-9995-23d0c6c1256e.png"/>
+<h3>FA Cup Champions<br/>2002–2003</h3></div>
+<div class="trophy-card FA-cup10" data-title="FA cup 2004–2005">
+<img src="https://i.postimg.cc/5tHnsYWZ/c538abfd-f97d-4b87-9995-23d0c6c1256e.png"/>
+<h3>FA Cup Champions<br/>2004–2005</h3></div>
+<div class="trophy-card FA-cup11" data-title="FA cup 2013–2014">
+<img src="https://i.postimg.cc/5tHnsYWZ/c538abfd-f97d-4b87-9995-23d0c6c1256e.png"/>
+<h3>FA Cup Champions<br/>2013–2014</h3></div>
+<div class="trophy-card FA-cup12" data-title="FA cup 2014–2015">
+<img src="https://i.postimg.cc/5tHnsYWZ/c538abfd-f97d-4b87-9995-23d0c6c1256e.png"/>
+<h3>FA Cup Champions<br/>2014–2015</h3></div>
+<div class="trophy-card FA-cup13" data-title="FA cup 2016–2017">
+<img src="https://i.postimg.cc/5tHnsYWZ/c538abfd-f97d-4b87-9995-23d0c6c1256e.png"/>
+<h3>FA Cup Champions<br/>2016–2017</h3></div>
+<div class="trophy-card FA-cup14" data-title="FA cup 2019–2020">
+<img src="https://i.postimg.cc/5tHnsYWZ/c538abfd-f97d-4b87-9995-23d0c6c1256e.png"/>
+<h3>FA Cup Champions<br/>2019–2020</h3></div>
+</div>
+<h2 class="vault-titlee premier-title">
+    ENGLISH LEAGUE CUP CHAMPIONS
+</h2>
+<!-- ENGLISH LEAGUE CUP -->
+<div class="trophy-gallery">
+<div class="trophy-card English-league-cup1" data-title="English league cup 1986–1987">
+<img src="https://i.postimg.cc/nhW0j0tn/76d62dd0-fe00-481b-a600-e6e78da7b244.png"/>
+<h3>English League Cup Champions<br/>1986–1987</h3></div>
+<div class="trophy-card English-league-cup2" data-title="English league cup 1992–1993">
+<img src="https://i.postimg.cc/nhW0j0tn/76d62dd0-fe00-481b-a600-e6e78da7b244.png"/>
+<h3>English League Cup Champions<br/>1992–1993</h3></div>
+</div>
+<h2 class="vault-titlee premier-title">
+    COMMUNITY SHIELD CHAMPIONS
+</h2>
+<!-- COMMUNITY SHIELD -->
+<div class="trophy-gallery">
+<div class="trophy-card Community-shield1" data-title="Community shield 1930">
+<img src="https://i.postimg.cc/QNvD1B23/92f4e2f4-a50b-4f98-b830-e78a410e68f4.png"/>
+<h3>Community shield<br/>1930 </h3></div>
+<div class="trophy-card Community-shield2" data-title="Community shield 1931">
+<img src="https://i.postimg.cc/QNvD1B23/92f4e2f4-a50b-4f98-b830-e78a410e68f4.png"/>
+<h3>Community shield<br/>1931 </h3></div>
+<div class="trophy-card Community-shield3" data-title="Community shield 1933">
+<img src="https://i.postimg.cc/QNvD1B23/92f4e2f4-a50b-4f98-b830-e78a410e68f4.png"/>
+<h3>Community shield<br/>1933 </h3></div>
+<div class="trophy-card Community-shield4" data-title="Community shield 1934">
+<img src="https://i.postimg.cc/QNvD1B23/92f4e2f4-a50b-4f98-b830-e78a410e68f4.png"/>
+<h3>Community shield<br/>1934 </h3></div>
+<div class="trophy-card Community-shield5" data-title="Community shield 1938">
+<img src="https://i.postimg.cc/QNvD1B23/92f4e2f4-a50b-4f98-b830-e78a410e68f4.png"/>
+<h3>Community shield<br/>1938 </h3></div>
+<div class="trophy-card Community-shield6" data-title="Community shield 1948">
+<img src="https://i.postimg.cc/QNvD1B23/92f4e2f4-a50b-4f98-b830-e78a410e68f4.png"/>
+<h3>Community shield<br/>1948</h3></div>
+<div class="trophy-card Community-shield7" data-title="Community shield 1953">
+<img src="https://i.postimg.cc/QNvD1B23/92f4e2f4-a50b-4f98-b830-e78a410e68f4.png"/>
+<h3>Community shield<br/>1953 </h3></div>
+<div class="trophy-card Community-shield8" data-title="Community shield 1991">
+<img src="https://i.postimg.cc/QNvD1B23/92f4e2f4-a50b-4f98-b830-e78a410e68f4.png"/>
+<h3>Community shield<br/>1991 </h3></div>
+<div class="trophy-card Community-shield9" data-title="Community shield 1998">
+<img src="https://i.postimg.cc/QNvD1B23/92f4e2f4-a50b-4f98-b830-e78a410e68f4.png"/>
+<h3>Community shield<br/>1998 </h3></div>
+<div class="trophy-card Community-shield10" data-title="Community shield 1999">
+<img src="https://i.postimg.cc/QNvD1B23/92f4e2f4-a50b-4f98-b830-e78a410e68f4.png"/>
+<h3>Community shield<br/>1999 </h3></div>
+<div class="trophy-card Community-shield11" data-title="Community shield 2002">
+<img src="https://i.postimg.cc/QNvD1B23/92f4e2f4-a50b-4f98-b830-e78a410e68f4.png"/>
+<h3>Community shield<br/>2002 </h3></div>
+<div class="trophy-card Community-shield12" data-title="Community shield 2004">
+<img src="https://i.postimg.cc/QNvD1B23/92f4e2f4-a50b-4f98-b830-e78a410e68f4.png"/>
+<h3>Community shield<br/>2004 </h3></div>
+<div class="trophy-card Community-shield13" data-title="Community shield 2014">
+<img src="https://i.postimg.cc/QNvD1B23/92f4e2f4-a50b-4f98-b830-e78a410e68f4.png"/>
+<h3>Community shield<br/>2014 </h3></div>
+<div class="trophy-card Community-shield14" data-title="Community shield 2015">
+<img src="https://i.postimg.cc/QNvD1B23/92f4e2f4-a50b-4f98-b830-e78a410e68f4.png"/>
+<h3>Community shield<br/>2015</h3></div>
+<div class="trophy-card Community-shield15" data-title="Community shield 2017">
+<img src="https://i.postimg.cc/QNvD1B23/92f4e2f4-a50b-4f98-b830-e78a410e68f4.png"/>
+<h3>Community shield<br/>2017 </h3></div>
+<div class="trophy-card Community-shield16" data-title="Community shield 2020">
+<img src="https://i.postimg.cc/QNvD1B23/92f4e2f4-a50b-4f98-b830-e78a410e68f4.png"/>
+<h3>Community shield<br/>2020 </h3></div>
+<div class="trophy-card Community-shield17" data-title="Community shield 2023">
+<img src="https://i.postimg.cc/QNvD1B23/92f4e2f4-a50b-4f98-b830-e78a410e68f4.png"/>
+<h3>Community shield<br/>2023 </h3></div>
+</div>
+<h2 class="vault-titlee premier-title">
+    EUROPEAN TROPHIES
+</h2>
+<!-- EUROPEAN TROPHIES -->
+<div class="trophy-gallery">
+<div class="trophy-card European-trophies1" data-title="European trophies 1969–1970">
+<img src="https://i.postimg.cc/fyq1JSnW/a3dfa1c4-77f3-4622-89e4-0db3633a6416.png"/>
+<h3>European chanpions<br/>1969–1970</h3></div>
+<div class="trophy-card European-trophies2" data-title="European trophies 1993–1994">
+<img src="https://i.postimg.cc/HxRQnTvC/9559bd1c-88cc-47a8-b9dc-1fea890458be.png"/>
+<h3>European chanpions<br/>1993–1994</h3></div>
+</div>
+</section></div>
+</main></div>
+<footer class="site-footer collection-footer">
+<div><strong>ARSENAL TREASURE ROOM</strong><span>North London Forever.</span></div>
+<a href="#">Back to top ↑</a>
+</footer>
+<!-- ========================= -->
+<!-- POPUP -->
+<!-- ========================= -->
+<div class="popup" id="popup">
+<div class="popup-box">
+<span class="close">×</span>
+<h2 id="popupTitle"></h2>
+<p id="popupText"></p>
+</div>
+</div>
+<!-- ========================= -->
+<!-- AUDIO -->
+<!-- ========================= -->
+<audio id="coinSound">
+<source src="sounds/coins.mp3" type="audio/mpeg"/>
+</audio>
+<audio id="chestSound">
+<source src="sounds/chest-open.mp3" type="audio/mpeg"/>
+</audio>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
+<script src="supabase-client.js"></script>
+<script src="nl4-data.js"></script>
+<script src="collection.js"></script>
+<script src="shared-sidebar.js"></script></body>
+</html>

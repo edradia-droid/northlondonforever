@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Arsenal latest fixtures, competitions, lineup and news dashboard.">
+  <title>Arsenal Hub | Latest Club Information</title>
+  <link rel="stylesheet" href="styles.css">
+
+  <style>
+    .logo-box.nl4-logo-box {
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    /* NL4 logo only */
+    
+    .nl4-logo-box img {
+      width: 100%;
+      height: 100%;
+    
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-top">
+        <a class="logo" href="home.html">
+          <span class="logo-box nl4-logo-box"><img src="https://i.postimg.cc/GhGgj8G7/75c7b198-597a-4288-abae-723c809c34fa.png" alt="NL4"></span>
+          <span><b>ARSENAL</b><small>THE GUNNERS</small></span>
+        </a>
+        <button class="close-menu" id="closeMenu" aria-label="Close menu">×</button>
+      </div>
+
+      <nav class="side-nav" id="sideNav">
+        <p class="nav-label">CLUB HUB</p>
+        <a class="nav-link active" href="#home"><span>⌂</span> Home</a>
+        <a class="nav-link" href="#fixtures"><span>◷</span> Fixtures</a>
+        <a class="nav-link" href="#calendar"><span>▣</span> Calendar</a>
+
+        <p class="nav-label">COMPETITIONS</p>
+        <a class="nav-link" href="#premier-league"><span>🏆</span> Premier League</a>
+        <a class="nav-link" href="#champions-league"><span>★</span> Champions League</a>
+        <a class="nav-link" href="#fa-cup"><span>🏆</span> FA Cup</a>
+        <a class="nav-link" href="#carabao-cup"><span>🏆</span> Carabao Cup</a>
+
+        <p class="nav-label">TEAM</p>
+        <a class="nav-link" href="#lineup"><span>⚽</span> Lineup</a>
+        <a class="nav-link" href="#news"><span>▤</span> Latest News</a>
+
+        <div class="nav-divider"></div>
+        <a class="treasure-link" href="trophies.html">
+          <span>🔐</span><b>Treasure Room</b><small>Explore Arsenal history</small>
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <span>COYG</span>
+        <span>1886 • FOREVER</span>
+      </div>
+    </aside>
+
+    <div class="mobile-overlay" id="overlay"></div>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-controls="sidebar" aria-expanded="false">☰</button>
+        <div class="crumb"><span>ARSENAL</span><b>/</b> CLUB HUB</div>
+        <div class="top-actions">
+          <span class="live-dot"></span><span>LIVE CLUB HUB</span>
+        </div>
+      </header>
+
+      <section class="dashboard hero-panel" id="home">
+        <div class="hero-copy">
+          <p class="eyebrow">WELCOME TO THE ARSENAL HUB</p>
+          <h1>EVERYTHING<br><span>ARSENAL.</span></h1>
+          <p>Fixtures, competitions, team information and the latest club news — all in one place.</p>
+          <div class="hero-buttons">
+            <a class="primary-btn" href="#fixtures">View Fixtures →</a>
+            <a class="secondary-btn" href="trophies.html">Enter Treasure Room</a>
+          </div>
+        </div>
+        <div class="hero-badge">
+          <div class="crest">A</div>
+          <strong>1886</strong>
+          <span>NORTH LONDON</span>
+        </div>
+      </section>
+
+      <section class="section-block" id="fixtures">
+        <div class="section-heading">
+          <div><p class="eyebrow">MATCH CENTRE</p><h2>Next Fixture</h2></div>
+          <a href="#calendar">Full calendar →</a>
+        </div>
+        <div class="match-card">
+          <div class="match-side"><span class="competition">PREMIER LEAGUE</span><strong>ARSENAL</strong><small>HOME</small></div>
+          <div class="match-middle"><span class="date">21 AUG 2026</span><b>VS</b><span class="time">KICK-OFF TBA</span><small>EMIRATES STADIUM</small></div>
+          <div class="match-side opponent"><span class="competition">MATCHDAY 1</span><strong>COVENTRY CITY</strong><small>AWAY</small></div>
+        </div>
+        <div class="fixture-note">Fixture times can change. Check official club information before matchday.</div>
+      </section>
+
+      <section class="section-block" id="calendar">
+        <div class="section-heading"><div><p class="eyebrow">SCHEDULE</p><h2>Fixture Calendar</h2></div><button class="filter-btn">2026 / 27 ▾</button></div>
+        <div class="calendar-grid">
+          <article class="calendar-card"><span>21</span><div><b>AUGUST</b><p>Premier League</p><strong>Arsenal vs Coventry City</strong></div><em>TBA</em></article>
+          <article class="calendar-card"><span>28</span><div><b>AUGUST</b><p>Premier League</p><strong>Upcoming fixture</strong></div><em>TBA</em></article>
+          <article class="calendar-card"><span>SEP</span><div><b>SEPTEMBER</b><p>Champions League</p><strong>European campaign</strong></div><em>DATE TBA</em></article>
+        </div>
+      </section>
+
+      <section class="section-block" id="premier-league">
+        <div class="section-heading"><div><p class="eyebrow">COMPETITION</p><h2>Premier League</h2></div><span class="status">2026 / 27</span></div>
+        <div class="competition-grid">
+          <div class="stat-card"><small>ARSENAL</small><strong>—</strong><span>Position</span></div>
+          <div class="stat-card"><small>PLAYED</small><strong>0</strong><span>Matches</span></div>
+          <div class="stat-card"><small>POINTS</small><strong>0</strong><span>Season start</span></div>
+          <div class="stat-card"><small>FORM</small><strong>—</strong><span>Latest form</span></div>
+        </div>
+      </section>
+
+      <section class="section-block" id="champions-league">
+        <div class="competition-banner champions"><div><p class="eyebrow">EUROPE</p><h2>Champions League</h2><p>Follow Arsenal's European campaign, fixtures and results here.</p></div><span>★</span></div>
+      </section>
+
+      <section class="section-block cup-grid-section">
+        <article class="mini-competition" id="fa-cup"><span class="cup-icon">🏆</span><p class="eyebrow">DOMESTIC CUP</p><h2>FA Cup</h2><p>Follow Arsenal's road through the world's oldest national football cup competition.</p><a href="#news">Latest updates →</a></article>
+        <article class="mini-competition carabao" id="carabao-cup"><span class="cup-icon">🏆</span><p class="eyebrow">LEAGUE CUP</p><h2>Carabao Cup</h2><p>Track Arsenal's cup fixtures, opponents and results throughout the campaign.</p><a href="#news">Latest updates →</a></article>
+      </section>
+
+      <section class="section-block" id="lineup">
+        <div class="section-heading"><div><p class="eyebrow">THE TEAM</p><h2>Lineup</h2></div><span class="status">FORMATION</span></div>
+        <div class="pitch">
+          <div class="player p1">ST<br><b>9</b></div><div class="player p2">LW<br><b>11</b></div><div class="player p3">RW<br><b>7</b></div>
+          <div class="player p4">CM<br><b>8</b></div><div class="player p5">CM<br><b>5</b></div><div class="player p6">DM<br><b>6</b></div>
+          <div class="player p7">LB<br><b>3</b></div><div class="player p8">CB<br><b>4</b></div><div class="player p9">CB<br><b>2</b></div><div class="player p10">RB<br><b>12</b></div>
+          <div class="player p11">GK<br><b>1</b></div>
+        </div>
+        <p class="lineup-note">Lineup shown as a visual formation template. Confirm the official starting XI before a match.</p>
+      </section>
+
+      <section class="section-block" id="news">
+        <div class="section-heading"><div><p class="eyebrow">THE LATEST</p><h2>Arsenal News</h2></div><span class="status">CLUB UPDATES</span></div>
+        <div class="news-grid">
+          <article class="news-card featured"><div class="news-image image-one"></div><div class="news-body"><span>FIXTURES</span><h3>Arsenal's new season schedule is taking shape</h3><p>Keep this space connected to the latest official fixture announcements and match updates.</p><a href="https://www.arsenal.com/" target="_blank" rel="noopener">Read on Arsenal.com →</a></div></article>
+          <article class="news-card"><div class="news-image image-two"></div><div class="news-body"><span>CLUB</span><h3>Latest Arsenal club news</h3><p>News, interviews and announcements from the club.</p><a href="https://www.arsenal.com/news" target="_blank" rel="noopener">Latest news →</a></div></article>
+          <article class="news-card"><div class="news-image image-three"></div><div class="news-body"><span>MATCHDAY</span><h3>Match centre</h3><p>Follow Arsenal's fixtures, results and match information.</p><a href="#fixtures">Open match centre →</a></div></article>
+        </div>
+      </section>
+
+      <section class="treasure-callout">
+        <div><p class="eyebrow">WHEN YOU'RE READY</p><h2>THE HISTORY<br>IS WAITING.</h2><p>Leave the live hub and enter the Arsenal Treasure Room.</p></div>
+        <a class="primary-btn" href="trophies.html">🔐 Enter Treasure Room</a>
+      </section>
+
+      <footer class="footer"><b>ARSENAL HUB</b><span>Latest information • History • Passion • North London Forever</span></footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
+  <script src="supabase-client.js"></script>
+  <script src="nl4-data.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>

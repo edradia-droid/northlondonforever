@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="description" content="NL4 Arsenal Premier League 2026/27 campaign hub.">
+  <title>Premier League | NL4 Arsenal Fan Hub</title>
+
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="shared-sidebar.css">
+  <link rel="stylesheet" href="sidebar-toggle-fix.css">
+  <link rel="stylesheet" href="premier-league.css">
+
+<style>
+  .pl-player-stats-shell{
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:22px;
+    overflow:hidden;
+    background:rgba(10,10,10,.82);
+  }
+  .pl-player-stats-toolbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px 18px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .pl-player-stats-toolbar p{
+    margin:0;
+    color:#888;
+    font-size:12px;
+  }
+  .pl-player-filter-group{
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+  }
+  .pl-player-filter{
+    border:1px solid rgba(255,255,255,.12);
+    background:#151515;
+    color:#aaa;
+    border-radius:999px;
+    padding:8px 12px;
+    cursor:pointer;
+    font-weight:800;
+    font-size:11px;
+  }
+  .pl-player-filter.active{
+    background:#d8ad45;
+    border-color:#d8ad45;
+    color:#111;
+  }
+  .pl-player-stats-scroll{
+    overflow-x:auto;
+  }
+  .pl-player-stats-table{
+    width:100%;
+    min-width:1180px;
+    border-collapse:collapse;
+  }
+  .pl-player-stats-table th,
+  .pl-player-stats-table td{
+    padding:12px 10px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+    text-align:center;
+    white-space:nowrap;
+    font-size:12px;
+  }
+  .pl-player-stats-table th{
+    position:sticky;
+    top:0;
+    background:#111;
+    color:#d8ad45;
+    z-index:2;
+    font-size:10px;
+    letter-spacing:.8px;
+  }
+  .pl-player-stats-table .player-cell{
+    text-align:left;
+    min-width:220px;
+  }
+  .pl-player-name{
+    display:flex;
+    align-items:center;
+    gap:11px;
+  }
+  .pl-player-number{
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    display:grid;
+    place-items:center;
+    flex:0 0 34px;
+    background:#d8001f;
+    color:white;
+    font-weight:900;
+  }
+  .pl-player-name strong{
+    display:block;
+    color:#fff;
+  }
+  .pl-player-name small{
+    display:block;
+    color:#777;
+    margin-top:3px;
+    font-size:10px;
+  }
+  .pl-player-stats-table tbody tr:hover{
+    background:rgba(216,173,69,.045);
+  }
+  .pl-stat-hot{
+    color:#fff;
+    font-weight:900;
+  }
+  .pl-player-stats-note{
+    padding:13px 18px;
+    color:#777;
+    font-size:11px;
+    border-top:1px solid rgba(255,255,255,.06);
+  }
+  @media(max-width:720px){
+    .pl-player-stats-toolbar{align-items:flex-start;flex-direction:column}
+  }
+</style>
+
+
+<style>
+  .pl-lineup-card{
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:22px;
+    background:rgba(10,10,10,.82);
+    overflow:hidden;
+  }
+  .pl-lineup-match-head{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:space-between;
+    gap:12px;
+    padding:16px 18px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .pl-lineup-match-head strong{color:#fff}
+  .pl-lineup-match-head span{color:#888;font-size:11px}
+  .pl-lineup-columns{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    padding:18px;
+  }
+  .pl-lineup-column h3{
+    margin:0 0 12px;
+    color:#d8ad45;
+    font-size:13px;
+    letter-spacing:.8px;
+  }
+  .pl-lineup-list{display:grid;gap:8px}
+  .pl-lineup-player{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:12px;
+    align-items:center;
+    padding:11px 12px;
+    border:1px solid rgba(255,255,255,.07);
+    border-radius:12px;
+    background:#111;
+  }
+  .pl-lineup-player strong{display:block;color:#fff}
+  .pl-lineup-player small{display:block;color:#777;margin-top:3px;font-size:10px}
+  .pl-lineup-minutes{
+    color:#d8ad45;
+    font-size:11px;
+    font-weight:900;
+    white-space:nowrap;
+  }
+  .pl-lineup-empty{
+    padding:18px;
+    color:#777;
+    text-align:center;
+  }
+  @media(max-width:720px){
+    .pl-lineup-columns{grid-template-columns:1fr}
+  }
+</style>
+
+</head>
+
+<body class="nl4-unified-sidebar premier-league-page">
+  <button
+    id="nl4MenuToggle"
+    type="button"
+    aria-controls="sidebar"
+    aria-expanded="false"
+    aria-label="Open or close navigation"
+  >☰</button>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-top">
+        <a class="logo" href="index.html">
+          <span class="logo-box nl4-logo-box">
+            <img
+              src="https://i.postimg.cc/GhGgj8G7/75c7b198-597a-4288-abae-723c809c34fa.png"
+              alt="NL4"
+            >
+          </span>
+
+          <span class="nl4-brand-text">
+            <b>NORTH LONDON</b>
+            <small>FOREVER</small>
+          </span>
+        </a>
+      </div>
+
+      <nav class="side-nav" id="sideNav">
+        <p class="nav-label">FAN HUB</p>
+
+        <a class="nav-link" href="index.html">
+          <span>⌂</span> Home
+        </a>
+
+        <a class="nav-link" href="fixtures.html">
+          <span>◷</span> Fixtures
+        </a>
+
+        <a class="nav-link" href="index.html#calendar">
+          <span>▣</span> Calendar
+        </a>
+
+        <p class="nav-label">COMPETITIONS</p>
+
+        <a class="nav-link active" href="premier-league.html">
+          <span>🏆</span> Premier League
+        </a>
+
+        <a class="nav-link" href="index.html#champions-league">
+          <span>★</span> Champions League
+        </a>
+
+        <a class="nav-link" href="index.html#fa-cup">
+          <span>🏆</span> FA Cup
+        </a>
+
+        <a class="nav-link" href="index.html#carabao-cup">
+          <span>◈</span> Carabao Cup
+        </a>
+
+        <p class="nav-label">TEAM</p>
+
+        <a class="nav-link" href="index.html#lineup">
+          <span>⚽</span> Lineup
+        </a>
+
+        <a class="nav-link" href="index.html#news">
+          <span>▤</span> Latest News
+        </a>
+
+        <div class="nav-divider"></div>
+
+        <a class="treasure-link" href="trophies.html">
+          <span>🔐</span>
+          <b>Treasure Room</b>
+          <small>Explore Arsenal history</small>
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <span>COYG</span>
+        <span>1886 • FOREVER</span>
+      </div>
+    </aside>
+
+    <div class="mobile-overlay" id="overlay"></div>
+
+    <main class="main">
+      <section class="pl-hero">
+        <div class="pl-hero-glow"></div>
+
+        <div class="pl-hero-copy">
+          <p class="pl-kicker">PREMIER LEAGUE • 2026/27</p>
+
+          <h1>
+            THE LEAGUE
+            <span>CAMPAIGN.</span>
+          </h1>
+
+          <p class="pl-hero-text">
+            Follow Arsenal's Premier League season from one place —
+            standings, form, results, next fixtures and the race at the top.
+          </p>
+
+          <div class="pl-hero-actions">
+            <a href="#leagueTable" class="pl-primary-btn">View League Table ↓</a>
+            <a href="fixtures.html" class="pl-secondary-btn">All Fixtures →</a>
+          </div>
+        </div>
+
+        <div class="pl-hero-card">
+          <span class="pl-season-label">ARSENAL • 2026/27</span>
+
+          <div class="pl-position-wrap">
+            <strong id="heroPosition">—</strong>
+            <span>CURRENT POSITION</span>
+          </div>
+
+          <div class="pl-hero-stat-grid">
+            <div>
+              <strong id="heroPoints">—</strong>
+              <span>POINTS</span>
+            </div>
+
+            <div>
+              <strong id="heroPlayed">—</strong>
+              <span>PLAYED</span>
+            </div>
+
+            <div>
+              <strong id="heroWins">—</strong>
+              <span>WINS</span>
+            </div>
+
+            <div>
+              <strong id="heroGD">—</strong>
+              <span>GOAL DIFF.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="pl-section pl-overview">
+        <div class="pl-section-head">
+          <div>
+            <p class="pl-kicker">01 / SEASON OVERVIEW</p>
+            <h2>ARSENAL AT A GLANCE</h2>
+          </div>
+
+          <span class="pl-live-pill">
+            <i></i>
+            LIVE CAMPAIGN
+          </span>
+        </div>
+
+        <div class="pl-stat-grid">
+          <article class="pl-stat-card">
+            <small>POSITION</small>
+            <strong id="statPosition">—</strong>
+            <span>Premier League</span>
+          </article>
+
+          <article class="pl-stat-card">
+            <small>POINTS</small>
+            <strong id="statPoints">—</strong>
+            <span>Current total</span>
+          </article>
+
+          <article class="pl-stat-card">
+            <small>PLAYED</small>
+            <strong id="statPlayed">—</strong>
+            <span>League matches</span>
+          </article>
+
+          <article class="pl-stat-card">
+            <small>WINS</small>
+            <strong id="statWins">—</strong>
+            <span>League victories</span>
+          </article>
+
+          <article class="pl-stat-card">
+            <small>GOALS</small>
+            <strong id="statGF">—</strong>
+            <span>Goals scored</span>
+          </article>
+
+          <article class="pl-stat-card">
+            <small>GOAL DIFF.</small>
+            <strong id="statGD">—</strong>
+            <span>Season balance</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="pl-section" id="leagueTable">
+        <div class="pl-section-head">
+          <div>
+            <p class="pl-kicker">02 / STANDINGS</p>
+            <h2>PREMIER LEAGUE TABLE</h2>
+          </div>
+
+          <span class="pl-table-note">ARSENAL HIGHLIGHTED</span>
+        </div>
+
+        <div class="pl-table-shell">
+          <div class="pl-table-scroll">
+            <table class="pl-table">
+              <thead>
+                <tr>
+                  <th>POS</th>
+                  <th class="club-col">CLUB</th>
+                  <th>P</th>
+                  <th>W</th>
+                  <th>D</th>
+                  <th>L</th>
+                  <th>GF</th>
+                  <th>GA</th>
+                  <th>GD</th>
+                  <th>PTS</th>
+                </tr>
+              </thead>
+
+              <tbody id="leagueTableBody">
+                <tr class="loading-row">
+                  <td colspan="10">Loading Premier League standings…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="pl-table-status" id="leagueTableStatus">
+            Waiting for Premier League standings data.
+          </p>
+        </div>
+      </section>
+
+      <section class="pl-section pl-next-section">
+        <div class="pl-section-head">
+          <div>
+            <p class="pl-kicker">03 / MATCH CENTRE</p>
+            <h2>NEXT LEAGUE MATCH</h2>
+          </div>
+
+          <a class="pl-section-link" href="fixtures.html">
+            View all fixtures →
+          </a>
+        </div>
+
+        <article class="pl-next-card" id="nextFixtureCard">
+          <div class="pl-next-top">
+            <span>PREMIER LEAGUE</span>
+            <b>UPCOMING</b>
+          </div>
+
+          <div class="pl-next-main">
+            <div class="pl-team">
+              <div class="pl-team-badge" id="nextHomeCode">ARS</div>
+              <h3 id="nextHomeTeam">Arsenal</h3>
+              <small>HOME</small>
+            </div>
+
+            <div class="pl-match-centre">
+              <span id="nextFixtureDate">DATE TBC</span>
+              <strong>VS</strong>
+              <b id="nextFixtureTime">TBA</b>
+              <small id="nextFixtureVenue">Venue TBC</small>
+            </div>
+
+            <div class="pl-team">
+              <div class="pl-team-badge" id="nextAwayCode">—</div>
+              <h3 id="nextAwayTeam">Opponent</h3>
+              <small>AWAY</small>
+            </div>
+          </div>
+
+          <div class="pl-next-bottom">
+            <span id="nextMatchday">MATCHDAY —</span>
+            <a id="nextFixtureDetails" href="fixtures.html">Match Centre →</a>
+          </div>
+        </article>
+      </section>
+
+
+      <section class="pl-section pl-form-section">
+        <div class="pl-section-head">
+          <div>
+            <p class="pl-kicker">04 / CURRENT FORM</p>
+            <h2>LAST FIVE LEAGUE MATCHES</h2>
+          </div>
+          <span class="pl-table-note">AUTO FROM RESULTS</span>
+        </div>
+
+        <div class="pl-form-strip" id="arsenalFormStrip">
+          <span class="pl-form-empty">No completed league matches yet.</span>
+        </div>
+      </section>
+
+      <section class="pl-section pl-results-section">
+        <div class="pl-section-head">
+          <div>
+            <p class="pl-kicker">05 / RECENT RESULTS</p>
+            <h2>ARSENAL RESULTS</h2>
+          </div>
+
+          <a class="pl-section-link" href="fixtures.html">
+            Full match centre →
+          </a>
+        </div>
+
+        <div class="pl-results-list" id="recentResultsList">
+          <div class="pl-results-empty">No completed Arsenal league matches yet.</div>
+        </div>
+      </section>
+
+
+
+      <section class="pl-section pl-lineup-section" id="latestArsenalLineup">
+        <div class="pl-section-head">
+          <div>
+            <p class="pl-kicker">06 / TEAM SHEET</p>
+            <h2>LATEST ARSENAL LINEUP &amp; SUBSTITUTIONS</h2>
+          </div>
+          <span class="pl-table-note">AUTO FROM MATCH ADMIN</span>
+        </div>
+
+        <div class="pl-lineup-card">
+          <div class="pl-lineup-match-head">
+            <div>
+              <strong id="latestLineupMatch">Loading latest completed league match…</strong>
+              <span id="latestLineupMeta"></span>
+            </div>
+            <span id="latestLineupScore"></span>
+          </div>
+
+          <div class="pl-lineup-columns">
+            <div class="pl-lineup-column">
+              <h3>STARTING XI</h3>
+              <div id="latestStartingXI" class="pl-lineup-list">
+                <div class="pl-lineup-empty">Loading starters…</div>
+              </div>
+            </div>
+
+            <div class="pl-lineup-column">
+              <h3>SUBSTITUTES USED</h3>
+              <div id="latestSubstitutes" class="pl-lineup-list">
+                <div class="pl-lineup-empty">Loading substitutes…</div>
+              </div>
+            </div>
+          </div>
+
+          <p id="latestLineupStatus" class="pl-player-stats-note">
+            Lineup data is loaded from the same Supabase records entered in Admin.
+          </p>
+        </div>
+      </section>
+
+      <section class="pl-section pl-title-race-section">
+        <div class="pl-section-head">
+          <div>
+            <p class="pl-kicker">07 / TITLE RACE</p>
+            <h2>THE RACE AT THE TOP</h2>
+          </div>
+          <span class="pl-table-note">LIVE FROM STANDINGS</span>
+        </div>
+
+        <div class="pl-title-race-grid" id="titleRaceGrid">
+          <div class="pl-results-empty">Loading title race…</div>
+        </div>
+      </section>
+
+      <section class="pl-section pl-leaders-section" id="arsenalPlayerStats">
+        <div class="pl-section-head">
+          <div>
+            <p class="pl-kicker">08 / ARSENAL PLAYER STATS</p>
+            <h2>2026/27 PREMIER LEAGUE SQUAD STATS</h2>
+          </div>
+          <span class="pl-table-note">ARSENAL ONLY • LIVE FROM SUPABASE</span>
+        </div>
+
+        <div class="pl-player-stats-shell">
+          <div class="pl-player-stats-toolbar">
+            <p>Track every Arsenal player's Premier League contribution across the season.</p>
+            <div class="pl-player-filter-group">
+              <button class="pl-player-filter active" type="button" data-player-filter="All">All</button>
+              <button class="pl-player-filter" type="button" data-player-filter="Goalkeeper">GK</button>
+              <button class="pl-player-filter" type="button" data-player-filter="Defender">DEF</button>
+              <button class="pl-player-filter" type="button" data-player-filter="Midfielder">MID</button>
+              <button class="pl-player-filter" type="button" data-player-filter="Forward">FWD</button>
+            </div>
+          </div>
+
+          <div class="pl-player-stats-scroll">
+            <table class="pl-player-stats-table">
+              <thead>
+                <tr>
+                  <th class="player-cell">PLAYER</th>
+                  <th>APP</th>
+                  <th>STARTS</th>
+                  <th>MIN</th>
+                  <th>G</th>
+                  <th>A</th>
+                  <th>CS</th>
+                  <th>YC</th>
+                  <th>RC</th>
+                  <th>MOTM</th>
+                  <th>SHOTS</th>
+                  <th>SOT</th>
+                  <th>CHANCES</th>
+                  <th>TACKLES</th>
+                  <th>INT</th>
+                  <th>SAVES</th>
+                </tr>
+              </thead>
+              <tbody id="arsenalPlayerStatsBody">
+                <tr data-player="David Raya" data-position="Goalkeeper">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">1</span>
+          <span><strong>David Raya</strong><small>Goalkeeper</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Kepa Arrizabalaga" data-position="Goalkeeper">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">13</span>
+          <span><strong>Kepa Arrizabalaga</strong><small>Goalkeeper</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Illan Meslier" data-position="Goalkeeper">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">30</span>
+          <span><strong>Illan Meslier</strong><small>Goalkeeper</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Tommy Setford" data-position="Goalkeeper">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">35</span>
+          <span><strong>Tommy Setford</strong><small>Goalkeeper</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="William Saliba" data-position="Defender">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">2</span>
+          <span><strong>William Saliba</strong><small>Defender</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Cristhian Mosquera" data-position="Defender">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">3</span>
+          <span><strong>Cristhian Mosquera</strong><small>Defender</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Ben White" data-position="Defender">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">4</span>
+          <span><strong>Ben White</strong><small>Defender</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Piero Hincapié" data-position="Defender">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">5</span>
+          <span><strong>Piero Hincapié</strong><small>Defender</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Gabriel Magalhães" data-position="Defender">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">6</span>
+          <span><strong>Gabriel Magalhães</strong><small>Defender</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Jurriën Timber" data-position="Defender">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">12</span>
+          <span><strong>Jurriën Timber</strong><small>Defender</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Riccardo Calafiori" data-position="Defender">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">33</span>
+          <span><strong>Riccardo Calafiori</strong><small>Defender</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Myles Lewis-Skelly" data-position="Defender">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">49</span>
+          <span><strong>Myles Lewis-Skelly</strong><small>Defender</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Martin Ødegaard" data-position="Midfielder">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">8</span>
+          <span><strong>Martin Ødegaard</strong><small>Midfielder</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Eberechi Eze" data-position="Midfielder">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">10</span>
+          <span><strong>Eberechi Eze</strong><small>Midfielder</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Fabio Vieira" data-position="Midfielder">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">21</span>
+          <span><strong>Fabio Vieira</strong><small>Midfielder</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Ethan Nwaneri" data-position="Midfielder">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">22</span>
+          <span><strong>Ethan Nwaneri</strong><small>Midfielder</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Mikel Merino" data-position="Midfielder">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">23</span>
+          <span><strong>Mikel Merino</strong><small>Midfielder</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Martín Zubimendi" data-position="Midfielder">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">36</span>
+          <span><strong>Martín Zubimendi</strong><small>Midfielder</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Bruno Guimarães" data-position="Midfielder">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">39</span>
+          <span><strong>Bruno Guimarães</strong><small>Midfielder</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Declan Rice" data-position="Midfielder">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">41</span>
+          <span><strong>Declan Rice</strong><small>Midfielder</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Bukayo Saka" data-position="Forward">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">7</span>
+          <span><strong>Bukayo Saka</strong><small>Forward</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Gabriel Jesus" data-position="Forward">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">9</span>
+          <span><strong>Gabriel Jesus</strong><small>Forward</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Gabriel Martinelli" data-position="Forward">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">11</span>
+          <span><strong>Gabriel Martinelli</strong><small>Forward</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Viktor Gyökeres" data-position="Forward">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">14</span>
+          <span><strong>Viktor Gyökeres</strong><small>Forward</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Christos Tzolis" data-position="Forward">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">17</span>
+          <span><strong>Christos Tzolis</strong><small>Forward</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Noni Madueke" data-position="Forward">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">20</span>
+          <span><strong>Noni Madueke</strong><small>Forward</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Reiss Nelson" data-position="Forward">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">24</span>
+          <span><strong>Reiss Nelson</strong><small>Forward</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr><tr data-player="Kai Havertz" data-position="Forward">
+      <td class="player-cell">
+        <div class="pl-player-name">
+          <span class="pl-player-number">29</span>
+          <span><strong>Kai Havertz</strong><small>Forward</small></span>
+        </div>
+      </td>
+      <td data-stat="appearances">0</td>
+      <td data-stat="starts">0</td>
+      <td data-stat="minutes">0</td>
+      <td data-stat="goals" class="pl-stat-hot">0</td>
+      <td data-stat="assists" class="pl-stat-hot">0</td>
+      <td data-stat="clean_sheets">0</td>
+      <td data-stat="yellow_cards">0</td>
+      <td data-stat="red_cards">0</td>
+      <td data-stat="man_of_the_match">0</td>
+      <td data-stat="shots">0</td>
+      <td data-stat="shots_on_target">0</td>
+      <td data-stat="chances_created">0</td>
+      <td data-stat="tackles">0</td>
+      <td data-stat="interceptions">0</td>
+      <td data-stat="saves">0</td>
+    </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p id="arsenalPlayerStatsStatus" class="pl-player-stats-note">
+            2026/27 Premier League season tracker. Values update from Supabase when player stats are added.
+          </p>
+        </div>
+
+        <!-- Kept for compatibility with the existing premier-league.js leaders renderer. -->
+        <div id="playerLeadersGrid" hidden></div>
+      </section>
+
+
+      <section class="pl-coming">
+        <p class="pl-kicker">COMING NEXT</p>
+        <h2>SEASON STORY</h2>
+        <p>
+          The next build will extend this competition hub without changing
+          the structure already created here.
+        </p>
+      </section>
+
+      <footer class="pl-footer">
+        <b>NL4 PREMIER LEAGUE HUB</b>
+        <span>Arsenal • 2026/27 • North London Forever</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
+  <script src="supabase-client.js"></script>
+  <script src="nl4-data.js"></script>
+  <script src="shared-sidebar.js"></script>
+  <script src="premier-league.js?v=20260814-2"></script>
+
+  <script>
+  (function(){
+    const season = "2026/27";
+    const tbody = document.getElementById("arsenalPlayerStatsBody");
+    const status = document.getElementById("arsenalPlayerStatsStatus");
+    if (!tbody) return;
+
+    const normalize = value => String(value || "")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
+    const rowMap = new Map(
+      [...tbody.querySelectorAll("tr")].map(row => [
+        normalize(row.dataset.player), row
+      ])
+    );
+
+    function put(row, field, value){
+      const cell = row.querySelector(`[data-stat="${field}"]`);
+      if (!cell) return;
+      cell.textContent = value ?? 0;
+    }
+
+    async function loadFullSquadStats(){
+      const db = window.nl4Supabase;
+      if (!db) {
+        status.textContent = "Supabase is not available. Showing season-start values.";
+        return;
+      }
+
+      const { data, error } = await db
+        .from("premier_league_player_stats")
+        .select("*")
+        .eq("season", season);
+
+      if (error) {
+        console.warn("NL4 player stats:", error.message);
+        status.textContent = "Could not load Supabase player stats. Showing season-start values.";
+        return;
+      }
+
+      (data || []).forEach(player => {
+        const row = rowMap.get(normalize(player.player_name));
+        if (!row) return;
+
+        const fields = [
+          "appearances","starts","minutes","goals","assists","clean_sheets",
+          "yellow_cards","red_cards","man_of_the_match","shots",
+          "shots_on_target","chances_created","tackles","interceptions","saves"
+        ];
+
+        fields.forEach(field => put(row, field, player[field] ?? 0));
+      });
+
+      status.textContent = `${data?.length || 0} Arsenal player stat record${(data?.length || 0) === 1 ? "" : "s"} loaded from Supabase • 2026/27 Premier League`;
+    }
+
+    document.querySelectorAll("[data-player-filter]").forEach(button => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll("[data-player-filter]").forEach(x => x.classList.remove("active"));
+        button.classList.add("active");
+        const filter = button.dataset.playerFilter;
+
+        [...tbody.querySelectorAll("tr")].forEach(row => {
+          row.hidden = filter !== "All" && row.dataset.position !== filter;
+        });
+      });
+    });
+
+    window.addEventListener("load", loadFullSquadStats);
+    setTimeout(loadFullSquadStats, 400);
+  })();
+  </script>
+
+
+  <script>
+  (function(){
+    const db = window.nl4Supabase;
+    const matchEl = document.getElementById("latestLineupMatch");
+    const metaEl = document.getElementById("latestLineupMeta");
+    const scoreEl = document.getElementById("latestLineupScore");
+    const startersEl = document.getElementById("latestStartingXI");
+    const subsEl = document.getElementById("latestSubstitutes");
+    const statusEl = document.getElementById("latestLineupStatus");
+
+    if (!db || !matchEl || !startersEl || !subsEl) return;
+
+    const escape = value => String(value ?? "")
+      .replace(/[&<>"']/g, ch => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"
+      }[ch]));
+
+    function playerRow(row){
+      const end = row.minute_off ?? 90;
+      const start = row.minute_on ?? 0;
+      const mins = Math.max(0, Math.min(90,end) - Math.min(90,start));
+
+      let timing = row.is_starter ? `${mins} min` : `ON ${start}'`;
+      if (row.minute_off !== null && row.minute_off !== undefined) {
+        timing += ` • OFF ${row.minute_off}'`;
+      }
+
+      return `<div class="pl-lineup-player">
+        <div>
+          <strong>${escape(row.player_name)}</strong>
+          <small>${escape(row.position || "Arsenal player")}</small>
+        </div>
+        <span class="pl-lineup-minutes">${escape(timing)}</span>
+      </div>`;
+    }
+
+    async function loadLatestArsenalLineup(){
+      const { data: fixtures, error: fixtureError } = await db
+        .from("fixtures")
+        .select("id,opponent,home_team,away_team,is_home,kickoff_at,venue,arsenal_score,opponent_score,status,competition,season,is_published")
+        .eq("season","2026/27")
+        .ilike("competition","%Premier%")
+        .eq("is_published",true)
+        .in("status",["fulltime","finished","ft"])
+        .order("kickoff_at",{ ascending:false })
+        .limit(1);
+
+      if (fixtureError) {
+        matchEl.textContent = "Could not load latest Arsenal match";
+        startersEl.innerHTML = "";
+        subsEl.innerHTML = "";
+        statusEl.textContent = fixtureError.message;
+        return;
+      }
+
+      const fixture = fixtures?.[0];
+      if (!fixture) {
+        matchEl.textContent = "No completed Premier League match yet";
+        metaEl.textContent = "";
+        scoreEl.textContent = "";
+        startersEl.innerHTML = '<div class="pl-lineup-empty">No starting XI available yet.</div>';
+        subsEl.innerHTML = '<div class="pl-lineup-empty">No substitutions available yet.</div>';
+        return;
+      }
+
+      const home = fixture.home_team || (fixture.is_home ? "Arsenal" : fixture.opponent);
+      const away = fixture.away_team || (fixture.is_home ? fixture.opponent : "Arsenal");
+      const homeScore = fixture.is_home ? fixture.arsenal_score : fixture.opponent_score;
+      const awayScore = fixture.is_home ? fixture.opponent_score : fixture.arsenal_score;
+
+      matchEl.textContent = `${home} vs ${away}`;
+      metaEl.textContent = [
+        fixture.kickoff_at ? new Date(fixture.kickoff_at).toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"}) : "",
+        fixture.venue || ""
+      ].filter(Boolean).join(" • ");
+      scoreEl.textContent =
+        homeScore !== null && homeScore !== undefined &&
+        awayScore !== null && awayScore !== undefined
+          ? `FULL TIME • ${homeScore}–${awayScore}`
+          : "FULL TIME";
+
+      const { data: lineup, error: lineupError } = await db
+        .from("match_lineups")
+        .select("player_name,position,is_starter,minute_on,minute_off")
+        .eq("fixture_id",fixture.id)
+        .order("is_starter",{ascending:false})
+        .order("minute_on",{ascending:true});
+
+      if (lineupError) {
+        startersEl.innerHTML = '<div class="pl-lineup-empty">Could not load lineup.</div>';
+        subsEl.innerHTML = '<div class="pl-lineup-empty">Could not load substitutions.</div>';
+        statusEl.textContent = lineupError.message;
+        return;
+      }
+
+      const starters = (lineup || []).filter(row => row.is_starter);
+      const subs = (lineup || []).filter(row => !row.is_starter);
+
+      startersEl.innerHTML = starters.length
+        ? starters.map(playerRow).join("")
+        : '<div class="pl-lineup-empty">No starters recorded for this match.</div>';
+
+      subsEl.innerHTML = subs.length
+        ? subs.map(playerRow).join("")
+        : '<div class="pl-lineup-empty">No substitutes recorded for this match.</div>';
+
+      statusEl.textContent =
+        `${starters.length} starter${starters.length === 1 ? "" : "s"} • ` +
+        `${subs.length} substitute${subs.length === 1 ? "" : "s"} used • ` +
+        "Live from Supabase";
+    }
+
+    window.addEventListener("load", loadLatestArsenalLineup);
+    setTimeout(loadLatestArsenalLineup,500);
+  })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="NL4 Arsenal fixtures and results 3D match centre." name="description"/>
+<title>Fixtures &amp; Results | NL4 Arsenal Fan Hub</title>
+<link href="styles.css" rel="stylesheet"/>
+<link href="shared-sidebar.css" rel="stylesheet"/><link href="sidebar-toggle-fix.css" rel="stylesheet"/><link href="fixtures-3d.css?v=20260814-17" rel="stylesheet"/>
+<style>
+/* =========================================================
+   FIXTURES ONLY — FINAL SIDEBAR AUTHORITY
+   Loaded last so fixtures-3d.css cannot override it.
+   ========================================================= */
+
+body.fixtures-sidebar-page #nl4MenuToggle{
+  display:grid !important;
+  place-items:center !important;
+  position:fixed !important;
+  top:14px !important;
+  left:14px !important;
+  width:46px !important;
+  height:46px !important;
+  z-index:100000 !important;
+  cursor:pointer !important;
+}
+
+body.fixtures-sidebar-page #sidebar.sidebar{
+  position:fixed !important;
+  top:0 !important;
+  left:0 !important;
+  bottom:0 !important;
+  width:300px !important;
+  height:100dvh !important;
+  z-index:90000 !important;
+  display:flex !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  transition:transform .25s ease !important;
+}
+
+body.fixtures-sidebar-page #overlay.mobile-overlay{
+  position:fixed !important;
+  inset:0 !important;
+  z-index:80000 !important;
+  background:rgba(0,0,0,.66) !important;
+  opacity:0 !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+  transition:opacity .25s ease, visibility .25s ease !important;
+}
+
+body.fixtures-sidebar-page #overlay.mobile-overlay.show{
+  display:block !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+}
+
+/* Desktop */
+@media (min-width:901px){
+  body.fixtures-sidebar-page #sidebar.sidebar{
+    transform:translateX(0) !important;
+  }
+
+  body.fixtures-sidebar-page #sidebar.sidebar.fixture-closed{
+    transform:translateX(-105%) !important;
+  }
+
+  body.fixtures-sidebar-page .app-shell > .main{
+    margin-left:300px !important;
+    width:calc(100% - 300px) !important;
+    transition:margin-left .25s ease, width .25s ease !important;
+  }
+
+  body.fixtures-sidebar-page.fixture-sidebar-closed .app-shell > .main{
+    margin-left:0 !important;
+    width:100% !important;
+  }
+
+  body.fixtures-sidebar-page #overlay.mobile-overlay{
+    display:none !important;
+  }
+}
+
+/* Mobile */
+@media (max-width:900px){
+  body.fixtures-sidebar-page #sidebar.sidebar{
+    width:min(86vw,300px) !important;
+    transform:translateX(-105%) !important;
+  }
+
+  body.fixtures-sidebar-page #sidebar.sidebar.fixture-open{
+    transform:translateX(0) !important;
+  }
+
+  body.fixtures-sidebar-page .app-shell > .main{
+    margin-left:0 !important;
+    width:100% !important;
+  }
+
+  body.fixtures-sidebar-page #overlay.mobile-overlay{
+    display:block !important;
+  }
+}
+</style>
+
+
+<style>
+/* FIXTURES SIDEBAR SCROLL FIX */
+body.fixtures-sidebar-page #sidebar.sidebar{
+  overflow:hidden !important;
+}
+
+body.fixtures-sidebar-page #sidebar .sidebar-top{
+  flex:0 0 auto !important;
+}
+
+body.fixtures-sidebar-page #sidebar #sideNav{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  -webkit-overflow-scrolling:touch !important;
+  overscroll-behavior:contain !important;
+  touch-action:pan-y !important;
+  scrollbar-width:thin;
+}
+
+body.fixtures-sidebar-page #sidebar .sidebar-bottom{
+  flex:0 0 auto !important;
+}
+
+/* Keep wheel/touch scrolling inside the sidebar navigation */
+@media (max-width:900px){
+  body.fixtures-sidebar-page #sidebar #sideNav{
+    max-height:calc(100dvh - 190px) !important;
+  }
+}
+</style>
+
+
+<style>
+/* =========================================================
+   FIXTURES SIDEBAR — FINAL SCROLL FIX
+   The whole sidebar scrolls instead of a nested nav area.
+   ========================================================= */
+
+body.fixtures-sidebar-page #sidebar.sidebar{
+  height:100dvh !important;
+  max-height:100dvh !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+  overscroll-behavior-y:contain !important;
+  touch-action:pan-y !important;
+}
+
+/* Do not create a second nested scroll container */
+body.fixtures-sidebar-page #sidebar #sideNav{
+  display:flex !important;
+  flex-direction:column !important;
+  flex:0 0 auto !important;
+  min-height:max-content !important;
+  max-height:none !important;
+  overflow:visible !important;
+  touch-action:auto !important;
+}
+
+/* Let header/footer move naturally with the sidebar scroll */
+body.fixtures-sidebar-page #sidebar .sidebar-top{
+  position:relative !important;
+  top:auto !important;
+  flex:0 0 auto !important;
+}
+
+body.fixtures-sidebar-page #sidebar .sidebar-bottom{
+  flex:0 0 auto !important;
+  margin-top:24px !important;
+}
+
+/* Mobile: prevent touch gestures on the open sidebar from falling through */
+@media (max-width:900px){
+  body.fixtures-sidebar-page #sidebar.sidebar.fixture-open{
+    pointer-events:auto !important;
+    overflow-y:auto !important;
+  }
+}
+</style>
+
+
+<style>
+/* =========================================================
+   FIXTURES SIDEBAR — AUTHORITATIVE SCROLL MODEL
+   Header fixed inside sidebar, nav scrolls, footer fixed inside sidebar.
+   ========================================================= */
+
+body.fixtures-sidebar-page #sidebar.sidebar{
+  display:grid !important;
+  grid-template-rows:auto minmax(0,1fr) auto !important;
+  height:100dvh !important;
+  max-height:100dvh !important;
+  overflow:hidden !important;
+  overscroll-behavior:contain !important;
+}
+
+body.fixtures-sidebar-page #sidebar .sidebar-top{
+  grid-row:1 !important;
+  min-height:0 !important;
+  flex:none !important;
+  position:relative !important;
+}
+
+body.fixtures-sidebar-page #sidebar #sideNav{
+  grid-row:2 !important;
+  display:block !important;
+  min-height:0 !important;
+  height:auto !important;
+  max-height:none !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  -webkit-overflow-scrolling:touch !important;
+  overscroll-behavior-y:contain !important;
+  touch-action:pan-y !important;
+  scrollbar-width:thin !important;
+  padding-right:4px !important;
+}
+
+body.fixtures-sidebar-page #sidebar .sidebar-bottom{
+  grid-row:3 !important;
+  flex:none !important;
+  margin-top:0 !important;
+}
+
+/* Make sure the open mobile sidebar receives all touch/wheel input */
+@media (max-width:900px){
+  body.fixtures-sidebar-page #sidebar.sidebar.fixture-open{
+    pointer-events:auto !important;
+  }
+
+  body.fixtures-sidebar-page #sidebar.sidebar.fixture-open #sideNav{
+    pointer-events:auto !important;
+    overflow-y:auto !important;
+    touch-action:pan-y !important;
+  }
+}
+</style>
+
+
+<style>
+/* FIXTURES MOBILE TOUCH SCROLL — FINAL */
+@media (max-width:900px){
+  body.fixtures-sidebar-page{
+    touch-action:auto !important;
+  }
+
+  body.fixtures-sidebar-page #sidebar.sidebar.fixture-open{
+    touch-action:pan-y !important;
+    overscroll-behavior:contain !important;
+  }
+
+  body.fixtures-sidebar-page #sidebar.sidebar.fixture-open #sideNav{
+    touch-action:pan-y !important;
+    overflow-y:auto !important;
+    -webkit-overflow-scrolling:touch !important;
+    overscroll-behavior-y:contain !important;
+  }
+}
+</style>
+
+
+<style>
+.unified-card-bottom .fixture-card-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.unified-card-bottom .predict-lineup-link{
+  display:inline-flex;align-items:center;justify-content:center;text-decoration:none;
+  padding:8px 10px;border-radius:8px;border:1px solid rgba(216,173,69,.38);
+  color:#d8ad45;font-size:10px;font-weight:1000;letter-spacing:.4px;background:rgba(216,173,69,.06)
+}
+.unified-card-bottom .predict-lineup-link:hover{background:rgba(216,173,69,.12)}
+@media(max-width:600px){.unified-card-bottom .fixture-card-actions{gap:5px}.unified-card-bottom .predict-lineup-link{font-size:8px;padding:7px 8px}}
+</style>
+
+</head>
+<body class="nl4-unified-sidebar fixtures-sidebar-page"><button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button>
+<div class="app-shell">
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-top">
+<a class="logo" href="index.html">
+<span class="logo-box nl4-logo-box">
+<img alt="NL4" src="https://i.postimg.cc/GhGgj8G7/75c7b198-597a-4288-abae-723c809c34fa.png"/>
+</span>
+<span class="nl4-brand-text"><b>NORTH LONDON</b><small>FOREVER</small></span>
+</a>
+</div>
+<nav class="side-nav" id="sideNav">
+<p class="nav-label">FAN HUB</p>
+<a class="nav-link" href="index.html"><span>⌂</span> Home</a>
+<a class="nav-link active" href="fixtures.html"><span>◷</span> Fixtures</a>
+<a class="nav-link" href="index.html#calendar"><span>▣</span> Calendar</a>
+<p class="nav-label">COMPETITIONS</p>
+<a class="nav-link" href="index.html#premier-league"><span>🏆</span> Premier League</a>
+<a class="nav-link" href="index.html#champions-league"><span>★</span> Champions League</a>
+<a class="nav-link" href="index.html#fa-cup"><span>🏆</span> FA Cup</a>
+<a class="nav-link" href="index.html#carabao-cup"><span>🏆</span> Carabao Cup</a>
+<p class="nav-label">TEAM</p>
+<a class="nav-link" href="index.html#lineup"><span>⚽</span> Lineup</a>
+<a class="nav-link" href="index.html#news"><span>▤</span> Latest News</a>
+<div class="nav-divider"></div>
+<a class="treasure-link" href="trophies.html">
+<span>🔐</span><b>Treasure Room</b><small>Explore Arsenal history</small>
+</a>
+</nav>
+<div class="sidebar-bottom">
+<span>COYG</span>
+<span>1886 • FOREVER</span>
+</div>
+</aside>
+<div class="mobile-overlay" id="overlay"></div>
+<main class="main"><section class="hero" id="fixture-home">
+<div class="hero-content">
+<p class="eyebrow">NL4 • MATCH CENTRE</p>
+<h1>FIXTURES<br/><span>&amp; RESULTS</span></h1>
+<p>Arsenal matchdays in one place — upcoming fixtures, kick-off information and results presented in the NL4 3D match centre.</p>
+<a class="primary-btn" href="#fixtures">View Next Fixture →</a>
+<div class="match-centre-shortcuts"><a href="#fixtures">Fixtures &amp; Results</a><a href="match-details.html">Match Details</a></div></div>
+<div class="hero-art"><div class="cannon">⚽</div></div>
+</section><section class="section-block unified-match-centre" id="fixtures"><div class="section-heading">
+<div>
+<p class="eyebrow">PREMIER LEAGUE • 2026/27</p>
+<h2>Arsenal Fixtures &amp; Results</h2>
+</div>
+<span class="status">38 MATCHES</span>
+</div><div class="fixture-update-note">
+<strong>Live fixture system:</strong>
+  Arsenal Premier League fixtures now load directly from <code>Supabase</code>. Dates, venues,
+  status and scores update on the same match card without editing <code>fixtures-data.js</code>.
+</div><div class="fixture-month-nav" id="fixtureMonthNav"></div><div class="unified-match-grid all-league-fixtures" id="matchesGrid"></div></section><footer class="footer">
+<b>ARSENAL MATCH CENTRE</b>
+<span>Fixtures • Results • Matchday • North London Forever</span>
+</footer></main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
+<script src="supabase-client.js?v=20260814-3"></script>
+<script src="nl4-data.js?v=20260814-3"></script>
+<script src="index.js?v=20260814-3"></script><script src="fixtures-3d.js?v=20260815-predict-xi"></script>
+
+<script>
+(function () {
+  const body = document.body;
+  let sidebar = document.getElementById('sidebar');
+  let toggle = document.getElementById('nl4MenuToggle');
+  let overlay = document.getElementById('overlay');
+
+  if (!body || !sidebar || !toggle) return;
+
+  /*
+   * Strip every old click handler from Fixtures only.
+   * Cloning preserves the element/attributes but removes JS listeners.
+   */
+  const cleanToggle = toggle.cloneNode(true);
+  toggle.parentNode.replaceChild(cleanToggle, toggle);
+  toggle = cleanToggle;
+
+  if (overlay) {
+    const cleanOverlay = overlay.cloneNode(true);
+    overlay.parentNode.replaceChild(cleanOverlay, overlay);
+    overlay = cleanOverlay;
+  }
+
+  function mobile() {
+    return window.innerWidth <= 900;
+  }
+
+  function isOpen() {
+    return mobile()
+      ? sidebar.classList.contains('fixture-open')
+      : !sidebar.classList.contains('fixture-closed');
+  }
+
+  function setOpen(open) {
+    /* Remove every legacy state used by previous sidebar systems */
+    sidebar.classList.remove('open');
+    body.classList.remove('sidebar-open', 'sidebar-closed');
+
+    if (mobile()) {
+      sidebar.classList.toggle('fixture-open', open);
+      sidebar.classList.remove('fixture-closed');
+      body.classList.toggle('fixture-sidebar-open', open);
+      body.classList.toggle('fixture-sidebar-closed', !open);
+
+      if (overlay) {
+        overlay.classList.toggle('show', open);
+      }
+    } else {
+      sidebar.classList.toggle('fixture-closed', !open);
+      sidebar.classList.remove('fixture-open');
+      body.classList.toggle('fixture-sidebar-open', open);
+      body.classList.toggle('fixture-sidebar-closed', !open);
+
+      if (overlay) {
+        overlay.classList.remove('show');
+      }
+    }
+
+    /* On mobile, lock the page so swipe/wheel stays inside the sidebar nav. */
+    if (mobile()) {
+      document.documentElement.style.overflow = open ? 'hidden' : '';
+      document.body.style.overflow = open ? 'hidden' : '';
+      sidebar.style.touchAction = 'auto';
+      const nav = document.getElementById('sideNav');
+      if (nav) nav.style.touchAction = 'pan-y';
+    } else {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    }
+
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+  }
+
+  /* Desktop starts open; mobile starts closed */
+  setOpen(!mobile());
+
+  toggle.addEventListener('click', function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    setOpen(!isOpen());
+  });
+
+  if (overlay) {
+    overlay.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      setOpen(false);
+    });
+  }
+
+  document.querySelectorAll('#sideNav a').forEach(function (link) {
+    link.addEventListener('click', function () {
+      if (mobile()) setOpen(false);
+    });
+  });
+
+  window.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && isOpen()) setOpen(false);
+  });
+
+  let wasMobile = mobile();
+  window.addEventListener('resize', function () {
+    const nowMobile = mobile();
+    if (nowMobile !== wasMobile) {
+      wasMobile = nowMobile;
+      setOpen(!nowMobile);
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

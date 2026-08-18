@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NL4 Admin | North London Forever</title>
+  <link rel="stylesheet" href="admin.css">
+
+<style>
+.match-admin-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 18px}.match-filter{border:1px solid rgba(255,255,255,.12);background:#151515;color:#aaa;border-radius:999px;padding:8px 12px;cursor:pointer;font-weight:800}.match-filter.active{background:#d8ad45;color:#111;border-color:#d8ad45}.match-admin-list{display:grid;gap:12px}.admin-match-row{display:grid;grid-template-columns:80px minmax(0,1fr) auto;align-items:center;gap:16px;padding:15px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:#121212}.admin-match-number{font-weight:900;color:#d8ad45}.admin-match-main{min-width:0}.admin-match-main strong{display:block;color:#fff;font-size:15px}.admin-match-meta{margin-top:5px;color:#777;font-size:11px}.admin-match-result{display:flex;align-items:center;gap:8px;justify-content:flex-end}.admin-match-score{font-size:18px;font-weight:900;color:#fff;min-width:58px;text-align:center}.admin-match-status{font-size:8px;font-weight:900;letter-spacing:1px;border-radius:999px;padding:6px 8px;background:#242424;color:#aaa}.admin-match-status.fulltime{background:#176a39;color:#fff}.admin-match-status.live{background:#d8ad45;color:#111}.admin-match-row button{white-space:nowrap}.match-dialog{width:min(1000px,94vw);max-height:92vh}.event-dialog{width:min(650px,94vw)}.match-admin-summary{padding:14px;border:1px solid rgba(216,173,69,.25);border-radius:14px;background:rgba(216,173,69,.04);margin-bottom:18px}.match-admin-summary strong{display:block;font-size:18px;color:#fff}.match-admin-summary span{display:block;color:#888;margin-top:5px;font-size:11px}.match-admin-section{border-top:1px solid rgba(255,255,255,.08);padding-top:18px;margin-top:18px}.match-admin-section-head{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:14px}.match-admin-section-head h3{margin:0}.match-save-row{align-items:center}.match-events-admin-list{display:grid;gap:9px}.admin-event-row{display:grid;grid-template-columns:95px minmax(0,1fr) 90px 90px;align-items:center;gap:10px;padding:11px 12px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:#111}.admin-event-type{font-size:8px;font-weight:900;letter-spacing:.7px;color:#d8ad45}.admin-event-player strong{display:block;color:#fff}.admin-event-player small{display:block;color:#777;margin-top:3px}.admin-event-minute{font-weight:900;color:#d8ad45;text-align:right}.admin-event-actions{display:flex;gap:5px;justify-content:flex-end}.admin-event-actions button{padding:6px 7px}.check-label{display:flex!important;flex-direction:column}.check-label input{width:auto;margin-top:10px}.match-empty{padding:18px;border:1px dashed rgba(255,255,255,.12);border-radius:12px;color:#777;text-align:center}
+@media(max-width:720px){.admin-match-row{grid-template-columns:52px 1fr}.admin-match-result{grid-column:1/-1;justify-content:space-between;padding-top:9px;border-top:1px solid rgba(255,255,255,.06)}.admin-event-row{grid-template-columns:1fr auto}.admin-event-type,.admin-event-minute{grid-column:auto}.admin-event-player{grid-column:1/2}.admin-event-actions{grid-column:2/3}.match-admin-section-head{align-items:flex-start;flex-direction:column}.match-dialog,.event-dialog{width:96vw}}
+
+.stats-admin-table{display:grid;gap:7px}.stats-admin-head,.stats-admin-row{display:grid;grid-template-columns:minmax(80px,1fr) minmax(120px,1.4fr) minmax(80px,1fr);gap:10px;align-items:center}.stats-admin-head{padding:0 4px 5px;color:#d8ad45;text-align:center;font-size:9px;letter-spacing:1px}.stats-admin-row{padding:8px;border:1px solid rgba(255,255,255,.07);border-radius:11px;background:#101010}.stats-admin-row span{text-align:center;color:#999;font-size:10px;font-weight:800}.stats-admin-row input{text-align:center;min-width:0}.stats-admin-row input:first-child{border-left:2px solid #d8001f}.stats-admin-row input:last-child{border-right:2px solid #d8ad45}@media(max-width:520px){.stats-admin-head,.stats-admin-row{grid-template-columns:70px 1fr 70px;gap:6px}.stats-admin-row{padding:6px}.stats-admin-row span{font-size:8px}}
+</style>
+
+<style>
+  .pl-admin-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 16px}
+  .pl-admin-search{flex:1 1 240px;min-width:220px}
+  .pl-admin-search input{width:100%}
+  .pl-pos-filter{border:1px solid rgba(255,255,255,.12);background:#151515;color:#aaa;border-radius:999px;padding:8px 12px;cursor:pointer;font-weight:800}
+  .pl-pos-filter.active{background:#d8ad45;color:#111;border-color:#d8ad45}
+  .pl-player-groups{display:grid;gap:22px}
+  .pl-player-group{display:grid;gap:12px}
+  .pl-player-group-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .pl-player-group-head h3{margin:0;color:#fff}
+  .pl-player-group-head span{color:#777;font-size:11px}
+  .pl-admin-player-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+  .pl-admin-player-card{border:1px solid rgba(255,255,255,.08);border-radius:16px;background:#111;padding:14px}
+  .pl-admin-player-card h4{margin:0;color:#fff;font-size:15px}
+  .pl-admin-player-card .meta{margin-top:5px;color:#888;font-size:11px}
+  .pl-admin-player-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:12px 0}
+  .pl-admin-mini-stat{padding:8px;border:1px solid rgba(255,255,255,.07);border-radius:10px;text-align:center}
+  .pl-admin-mini-stat strong{display:block;color:#fff}
+  .pl-admin-mini-stat span{display:block;color:#777;font-size:8px;letter-spacing:.7px;margin-top:2px}
+  .pl-admin-player-card .card-actions{display:flex;justify-content:flex-end}
+  .pl-admin-empty{padding:18px;border:1px dashed rgba(255,255,255,.12);border-radius:12px;color:#777;text-align:center}
+</style>
+
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark">NL4</span>
+      <div>
+        <strong>North London Forever</strong>
+        <small>Content Administration</small>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span id="adminEmail" class="admin-email"></span>
+      <button id="logoutBtn" class="ghost-btn" type="button" hidden>Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="loginView" class="auth-shell">
+      <form id="loginForm" class="auth-card">
+        <p class="eyebrow">SECURE ADMIN ACCESS</p>
+        <h1>NL4 Control Room</h1>
+        <p class="muted">Only Supabase users listed in the NL4 <code>admins</code> table can manage website content.</p>
+
+        <label>Email
+          <input id="email" type="email" autocomplete="username" required>
+        </label>
+
+        <label>Password
+          <input id="password" type="password" autocomplete="current-password" required>
+        </label>
+
+        <button class="primary-btn" type="submit">Sign in</button>
+        <p id="loginMessage" class="message" role="status"></p>
+      </form>
+    </section>
+
+    <section id="adminView" class="dashboard" hidden>
+      <aside class="side-nav">
+        <p class="nav-label">CONTENT</p>
+        <button class="nav-link active" data-panel="playersPanel">Players</button>
+        <button class="nav-link" data-panel="newsPanel">News</button>
+        <button class="nav-link" data-panel="fixturesPanel">Fixtures</button>
+        <button class="nav-link" data-panel="premierLeaguePanel">Premier League</button>
+        <button class="nav-link" data-panel="premierLeagueResultsPanel">PL Results</button>
+        <button class="nav-link" data-panel="plPlayerStatsPanel">PL Player Stats</button>
+        <button class="nav-link" data-panel="trophiesPanel">Trophies</button>
+        <button class="nav-link" data-panel="mediaPanel">Media</button>
+        <a class="nav-link back-link" href="index.html">← Back to website</a>
+      </aside>
+
+      <div class="workspace">
+        <section id="playersPanel" class="panel active-panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">SQUAD & ARCHIVE</p><h2>Players</h2></div>
+            <button class="primary-btn" data-new="players">+ Add player</button>
+          </div>
+          <div id="playersList" class="content-grid"></div>
+        </section>
+
+        <section id="newsPanel" class="panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">EDITORIAL</p><h2>News</h2></div>
+            <button class="primary-btn" data-new="news">+ Add story</button>
+          </div>
+          <div id="newsList" class="content-grid"></div>
+        </section>
+
+        <section id="fixturesPanel" class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">MATCH CENTRE</p>
+              <h2>Fixtures &amp; Results</h2>
+              <p class="muted">Update a fixture once. The public fixture card and More Details page read the same Supabase record.</p>
+            </div>
+            <button class="primary-btn" data-new="fixtures">+ Add fixture</button>
+          </div>
+          <div class="match-admin-toolbar">
+            <button class="match-filter active" type="button" data-match-filter="all">All 38</button>
+            <button class="match-filter" type="button" data-match-filter="upcoming">Upcoming</button>
+            <button class="match-filter" type="button" data-match-filter="finished">Results</button>
+            <span id="fixturesAdminStatus" class="muted"></span>
+          </div>
+          <div id="fixturesList" class="match-admin-list"></div>
+        </section>
+
+
+        <section id="premierLeaguePanel" class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">COMPETITION HUB</p>
+              <h2>Premier League Standings</h2>
+              <p class="muted">Manage the 2026/27 table shown on premier-league.html. Arsenal's hero statistics are calculated from the Arsenal row.</p>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button id="recalculateStandingsBtn" class="ghost-btn" type="button">↻ Recalculate table</button>
+              <button class="primary-btn" data-new="premier_league_standings">+ Add club</button>
+            </div>
+          </div>
+          <p id="standingsRecalcMessage" class="message" role="status"></p>
+          <div id="premier_league_standingsList" class="content-grid"></div>
+        </section>
+
+
+        <section id="premierLeagueResultsPanel" class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">AUTOMATIC STANDINGS</p>
+              <h2>Premier League Results</h2>
+              <p class="muted">
+                Add completed non-Arsenal Premier League matches here.
+                Arsenal matches are managed from Fixtures and sync automatically.
+                Saving a Full Time result recalculates the league table.
+              </p>
+            </div>
+            <button class="primary-btn" data-new="premier_league_matches">+ Add league match</button>
+          </div>
+          <div id="premier_league_matchesList" class="content-grid"></div>
+        </section>
+
+
+        <section id="plPlayerStatsPanel" class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">ARSENAL ONLY</p>
+              <h2>Premier League Player Stats</h2>
+              <p class="muted">Manage Arsenal players used by the Player Leaders section on premier-league.html.</p>
+            </div>
+            <button class="primary-btn" data-new="premier_league_player_stats">+ Add player stats</button>
+          </div>
+          <div class="pl-admin-tools">
+              <label class="pl-admin-search">
+                Search players
+                <input id="plPlayerSearch" type="search" placeholder="Search by player name">
+              </label>
+              <button class="pl-pos-filter active" type="button" data-pl-position="all">All</button>
+              <button class="pl-pos-filter" type="button" data-pl-position="Goalkeeper">Goalkeepers</button>
+              <button class="pl-pos-filter" type="button" data-pl-position="Defender">Defenders</button>
+              <button class="pl-pos-filter" type="button" data-pl-position="Midfielder">Midfielders</button>
+              <button class="pl-pos-filter" type="button" data-pl-position="Forward">Forwards</button>
+            </div>
+            <div id="premier_league_player_statsGrouped" class="pl-player-groups"></div>
+            <div id="premier_league_player_statsList" class="content-grid" hidden></div>
+        </section>
+
+        <section id="trophiesPanel" class="panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">TREASURE ROOM</p><h2>Trophies</h2></div>
+            <button class="primary-btn" data-new="trophies">+ Add trophy</button>
+          </div>
+          <div id="trophiesList" class="content-grid"></div>
+        </section>
+
+        <section id="mediaPanel" class="panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">NL4 MEDIA</p><h2>Upload images</h2></div>
+          </div>
+          <form id="mediaForm" class="editor-card">
+            <label>Choose image
+              <input id="mediaFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif" required>
+            </label>
+            <button class="primary-btn" type="submit">Upload image</button>
+            <p id="mediaMessage" class="message" role="status"></p>
+            <div id="mediaResult" class="media-result"></div>
+          </form>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="editorDialog">
+    <form id="editorForm" method="dialog">
+      <div class="dialog-head">
+        <div><p class="eyebrow" id="editorEyebrow">EDIT CONTENT</p><h2 id="editorTitle">Editor</h2></div>
+        <button id="closeDialog" class="icon-btn" type="button" aria-label="Close">×</button>
+      </div>
+      <div id="editorFields" class="form-grid"></div>
+      <div class="dialog-actions">
+        <button class="ghost-btn" id="cancelDialog" type="button">Cancel</button>
+        <button class="ghost-btn" id="clearEditorBtn" type="button">Clear Fields</button>
+        <button class="primary-btn" id="saveBtn" type="submit">Save</button>
+      </div>
+      <p id="editorMessage" class="message" role="status"></p>
+    </form>
+  </dialog>
+
+
+  <dialog id="matchDialog" class="match-dialog">
+    <form id="matchForm" method="dialog">
+      <div class="dialog-head">
+        <div>
+          <p class="eyebrow">MATCH UPDATE</p>
+          <h2 id="matchDialogTitle">Fixture</h2>
+        </div>
+        <button id="closeMatchDialog" class="icon-btn" type="button" aria-label="Close">×</button>
+      </div>
+
+      <div class="match-admin-summary" id="matchAdminSummary"></div>
+
+      <section class="match-admin-section">
+        <div class="match-admin-section-head">
+          <div><p class="eyebrow">RESULT</p><h3>Score &amp; Status</h3></div>
+        </div>
+        <div class="form-grid">
+          <label>Status
+            <select id="matchStatus" required>
+              <option value="scheduled">Scheduled</option>
+              <option value="live">Live</option>
+              <option value="fulltime">Full Time</option>
+              <option value="postponed">Postponed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </label>
+          <label>Kick-off date &amp; time
+            <input id="matchKickoff" type="datetime-local" required>
+          </label>
+          <label>Venue
+            <input id="matchVenue" type="text">
+          </label>
+          <label class="check-label">Kick-off confirmed
+            <input id="matchKickoffConfirmed" type="checkbox">
+          </label>
+          <label>Full-time Arsenal score
+            <input id="matchArsenalScore" type="number" min="0" max="30">
+          </label>
+          <label>Full-time opponent score
+            <input id="matchOpponentScore" type="number" min="0" max="30">
+          </label>
+          <label>Half-time Arsenal score
+            <input id="matchHTArsenalScore" type="number" min="0" max="30">
+          </label>
+          <label>Half-time opponent score
+            <input id="matchHTOpponentScore" type="number" min="0" max="30">
+          </label>
+          <label>Referee
+            <input id="matchReferee" type="text" placeholder="Referee name">
+          </label>
+          <label>Attendance
+            <input id="matchAttendance" type="number" min="0" placeholder="e.g. 60312">
+          </label>
+          <label>Man of the Match
+            <input id="matchMOTM" type="text" placeholder="Player name">
+          </label>
+        </div>
+        <div class="dialog-actions match-save-row">
+          <span id="matchSaveMessage" class="message" role="status"></span>
+          <button id="clearMatchScoresBtn" class="ghost-btn" type="button">Clear Scores</button>
+          <button id="saveMatchBtn" class="primary-btn" type="button">Save Match</button>
+        </div>
+      </section>
+
+      <section class="match-admin-section">
+        <div class="match-admin-section-head">
+          <div>
+            <p class="eyebrow">MATCH STATISTICS</p>
+            <h3>Team Statistics</h3>
+            <p class="muted">Enter statistics as Home team vs Away team. Possession accepts percentages from 0–100.</p>
+          </div>
+        </div>
+        <div class="stats-admin-table">
+          <div class="stats-admin-head"><strong id="statsHomeName">HOME</strong><span>STAT</span><strong id="statsAwayName">AWAY</strong></div>
+          <div class="stats-admin-row"><input id="statHomePossession" type="number" min="0" max="100" step="0.1"><span>Possession %</span><input id="statAwayPossession" type="number" min="0" max="100" step="0.1"></div>
+          <div class="stats-admin-row"><input id="statHomeShots" type="number" min="0"><span>Shots</span><input id="statAwayShots" type="number" min="0"></div>
+          <div class="stats-admin-row"><input id="statHomeSOT" type="number" min="0"><span>Shots on Target</span><input id="statAwaySOT" type="number" min="0"></div>
+          <div class="stats-admin-row"><input id="statHomeCorners" type="number" min="0"><span>Corners</span><input id="statAwayCorners" type="number" min="0"></div>
+          <div class="stats-admin-row"><input id="statHomeFouls" type="number" min="0"><span>Fouls</span><input id="statAwayFouls" type="number" min="0"></div>
+          <div class="stats-admin-row"><input id="statHomeOffsides" type="number" min="0"><span>Offsides</span><input id="statAwayOffsides" type="number" min="0"></div>
+          <div class="stats-admin-row"><input id="statHomeSaves" type="number" min="0"><span>Saves</span><input id="statAwaySaves" type="number" min="0"></div>
+        </div>
+        <div class="dialog-actions match-save-row">
+          <span id="statsSaveMessage" class="message" role="status"></span>
+          <button id="clearStatsBtn" class="ghost-btn" type="button">Clear Statistics</button>
+          <button id="saveStatsBtn" class="primary-btn" type="button">Save Statistics</button>
+        </div>
+      </section>
+
+      <section class="match-admin-section">
+        <div class="match-admin-section-head">
+          <div>
+            <p class="eyebrow">ARSENAL LINEUP</p>
+            <h3>Starters &amp; Substitutes</h3>
+          </div>
+        </div>
+        <p class="muted">Record every Arsenal player who appeared. Starters begin at 0'. For substitutes, enter the minute they came on. Add minute off when applicable.</p>
+        <div class="form-grid">
+          <label>Formation
+            <select id="lineupFormation"><option>4-3-3</option><option>4-2-3-1</option><option>4-4-2</option><option>3-4-3</option><option>3-5-2</option><option>4-1-4-1</option></select>
+          </label>
+          <label>Player
+            <select id="lineupPlayer"></select>
+          </label>
+          <label>Pitch slot
+            <select id="lineupSlot"></select>
+          </label>
+          <label>Role
+            <select id="lineupRole">
+              <option value="starter">Starter</option>
+              <option value="substitute">Substitute</option>
+            </select>
+          </label>
+          <label>Minute on
+            <input id="lineupMinuteOn" type="number" min="0" max="130" value="0">
+          </label>
+          <label>Minute off
+            <input id="lineupMinuteOff" type="number" min="0" max="130" placeholder="90">
+          </label>
+        </div>
+        <div class="dialog-actions match-save-row">
+          <span id="lineupMessage" class="message" role="status"></span>
+          <button id="clearLineupBtn" class="ghost-btn" type="button">Clear Lineup</button>
+          <button id="saveLineupPlayerBtn" class="primary-btn" type="button">Add / Update Player</button>
+        </div>
+        <div id="lineupList" class="match-events-admin-list"></div>
+      </section>
+
+      <section class="match-admin-section">
+        <div class="match-admin-section-head">
+          <div><p class="eyebrow">MATCH EVENTS</p><h3>Goals, Assists &amp; Cards</h3></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button id="clearAllEventsBtn" class="ghost-btn" type="button">Clear Events</button>
+            <button id="addEventBtn" class="primary-btn" type="button">+ Add event</button>
+          </div>
+        </div>
+        <div id="matchEventsList" class="match-events-admin-list"></div>
+      </section>
+
+      <div class="dialog-actions">
+        <button id="doneMatchDialog" class="ghost-btn" type="button">Done</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="eventDialog" class="event-dialog">
+    <form id="eventForm" method="dialog">
+      <div class="dialog-head">
+        <div><p class="eyebrow">MATCH EVENT</p><h2 id="eventDialogTitle">Add event</h2></div>
+        <button id="closeEventDialog" class="icon-btn" type="button" aria-label="Close">×</button>
+      </div>
+      <div class="form-grid">
+        <label>Event type
+          <select id="eventType" required>
+            <option value="goal">Goal</option>
+            <option value="assist">Assist</option>
+            <option value="yellow_card">Yellow card</option>
+            <option value="red_card">Red card</option>
+          </select>
+        </label>
+        <label>Player name
+          <input id="eventPlayer" type="text" required>
+        </label>
+        <label>Team
+          <select id="eventTeam" required></select>
+        </label>
+        <label>Minute
+          <input id="eventMinute" type="number" min="0" max="130" placeholder="e.g. 67">
+        </label>
+        <label>Stoppage minute
+          <input id="eventStoppage" type="number" min="0" max="30" placeholder="e.g. 3 for 90+3">
+        </label>
+        <label>Related player (optional)
+          <input id="eventRelatedPlayer" type="text" placeholder="Assist/scorer relationship">
+        </label>
+      </div>
+      <div class="dialog-actions">
+        <button id="cancelEventDialog" class="ghost-btn" type="button">Cancel</button>
+        <button id="clearEventBtn" class="ghost-btn" type="button">Clear Event</button>
+        <button id="saveEventBtn" class="primary-btn" type="button">Save Event</button>
+      </div>
+      <p id="eventMessage" class="message" role="status"></p>
+    </form>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
+  <script src="supabase-client.js"></script>
+  <script src="admin.js?v=20260815-clear-buttons"></script>
+</body>
+</html>

@@ -1,0 +1,527 @@
+/* ==========================================================
+   NL4 ARSENAL WEBSITE — RESPONSIVE PATCH
+   Add this AFTER your existing styles.css
+   ========================================================== */
+
+/* ---------- Global safety ---------- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+
+body {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+img,
+video,
+iframe {
+    max-width: 100%;
+}
+
+button,
+a {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ---------- Main navigation ---------- */
+/* Overrides the old fixed 150px side margin. */
+.main-nav {
+    width: min(95%, 1200px);
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 18px 28px;
+    min-width: 0;
+}
+
+.menu {
+    max-width: 100%;
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.menu a {
+    white-space: nowrap;
+}
+
+/* ---------- NL4 logo ---------- */
+.nl4 {
+    font-size: clamp(50px, 8vw, 100px);
+    margin: 12px 20px;
+}
+
+.north-london {
+    font-size: clamp(11px, 1.5vw, 17px);
+    margin-top: -18px;
+    white-space: nowrap;
+}
+
+/* ---------- General headings ---------- */
+h1,
+h2,
+h3 {
+    max-width: 95%;
+}
+
+h1 {
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    padding: 14px 22px;
+}
+
+h2 {
+    width: min(95%, 800px);
+    padding: clamp(15px, 3vw, 25px);
+    font-size: clamp(1.2rem, 3vw, 2rem);
+}
+
+.div-caption {
+    font-size: clamp(20px, 4vw, 30px);
+}
+
+/* ---------- Image gallery ---------- */
+.image-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    width: min(95%, 1200px);
+    margin: 20px auto;
+}
+
+.image-container figure {
+    width: 100%;
+    margin: 0;
+}
+
+.image-container img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.image-container figcaption {
+    text-align: center;
+    margin-top: 8px;
+}
+
+/* ---------- History content ---------- */
+.history-details {
+    width: min(95%, 1000px);
+    margin: 0 auto;
+}
+
+.history-details h2 {
+    width: 100%;
+    margin: 25px auto;
+}
+
+.history-details p {
+    margin: 20px 0;
+    font-size: clamp(14px, 2vw, 16px);
+    text-align: left;
+}
+
+/* ---------- Tables ---------- */
+/* Allows wide tables to scroll instead of breaking the page. */
+table {
+    max-width: 100%;
+}
+
+.player-table {
+    width: min(95%, 1000px);
+    max-width: 100%;
+}
+
+@media (max-width: 700px) {
+    .player-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .player-table img {
+        max-width: 120px;
+        height: auto;
+    }
+}
+
+/* ---------- Player cards ---------- */
+.players {
+    width: min(95%, 1400px);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.cliff {
+    max-width: 100%;
+}
+
+/* ---------- Treasure Room ---------- */
+.treasure-room {
+    width: 100%;
+    padding-left: clamp(12px, 4vw, 30px);
+    padding-right: clamp(12px, 4vw, 30px);
+}
+
+.vault-title,
+.vault-titlee {
+    width: 100%;
+    max-width: 100%;
+    font-size: clamp(1.6rem, 5vw, 3rem);
+    margin-left: auto;
+    margin-right: auto;
+    overflow-wrap: break-word;
+}
+
+/* ---------- Treasure chest ---------- */
+.chest {
+    width: min(230px, 70vw);
+    max-width: 230px;
+    height: auto;
+}
+
+.gold-pile {
+    width: min(340px, 80vw);
+    max-width: 340px;
+}
+
+/* ---------- Trophy gallery ---------- */
+.trophy-gallery {
+    width: min(95%, 1200px);
+    max-width: 1200px;
+    grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+    gap: clamp(15px, 3vw, 35px);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.trophy-card {
+    min-width: 0;
+    width: 100%;
+    padding: clamp(15px, 3vw, 25px);
+}
+
+.trophy-card img {
+    width: min(150px, 70vw);
+    height: min(150px, 70vw);
+}
+
+.trophy-card h3 {
+    font-size: clamp(17px, 3vw, 22px);
+    overflow-wrap: break-word;
+}
+
+/* ---------- Treasure-room scoreboard ---------- */
+.score-board {
+    max-width: calc(100vw - 20px);
+}
+
+/* ---------- Secret vault ---------- */
+.secret-door {
+    max-width: calc(100vw - 30px);
+}
+
+.secret-door.show {
+    right: 20px;
+}
+
+/* ---------- Popup ---------- */
+.popup {
+    padding: 15px;
+}
+
+.popup-box {
+    width: min(92vw, 600px);
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: clamp(20px, 5vw, 35px);
+}
+
+.popup-box h2 {
+    max-width: 100%;
+    font-size: clamp(20px, 5vw, 30px);
+}
+
+.popup-box p {
+    font-size: clamp(14px, 3vw, 17px);
+}
+
+/* ==========================================================
+   TABLET
+   ========================================================== */
+@media (max-width: 992px) {
+
+    .main-nav {
+        flex-direction: column;
+        width: min(94%, 800px);
+        gap: 18px;
+        text-align: center;
+    }
+
+    .logo-text {
+        max-width: 100%;
+    }
+
+    .menu {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .pillar,
+    .torch,
+    .light {
+        display: none;
+    }
+
+    .trophy-gallery {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .chest {
+        width: min(200px, 55vw);
+    }
+
+    .gold-pile {
+        width: min(280px, 70vw);
+    }
+}
+
+/* ==========================================================
+   PHONE / SMALL TABLET
+   ========================================================== */
+@media (max-width: 768px) {
+
+    .main-nav {
+        width: 96%;
+        padding: 14px;
+        margin: 15px auto;
+        border-radius: 24px;
+    }
+
+    .nl4 {
+        font-size: clamp(48px, 16vw, 70px);
+        margin: 8px 10px;
+    }
+
+    .north-london {
+        font-size: 12px;
+        margin-top: -12px;
+    }
+
+    .menu {
+        gap: 7px;
+    }
+
+    .menu a {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .image-container {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 94%;
+        gap: 12px;
+    }
+
+    .image-container img {
+        height: 180px;
+    }
+
+    .trophy-gallery {
+        grid-template-columns: 1fr;
+        width: 94%;
+    }
+
+    .trophy-card:hover {
+        transform: translateY(-5px) scale(1.02);
+    }
+
+    .secret-door {
+        width: min(250px, calc(100vw - 30px));
+    }
+
+    .secret-door.show {
+        right: 15px;
+    }
+
+    #player {
+        transform: translateX(-50%) scale(.85);
+    }
+
+    .treasure-room {
+        padding-top: 50px;
+        padding-bottom: 160px;
+    }
+}
+
+/* ==========================================================
+   PHONE
+   ========================================================== */
+@media (max-width: 480px) {
+
+    .main-nav {
+        width: 100%;
+        margin: 10px auto;
+        padding: 12px 8px;
+        border-radius: 18px;
+    }
+
+    .nl4 {
+        font-size: 50px;
+        margin: 6px;
+    }
+
+    .north-london {
+        font-size: 10px;
+        margin-top: -8px;
+    }
+
+    .menu {
+        flex-direction: column;
+        width: 100%;
+        gap: 6px;
+    }
+
+    .menu a {
+        width: min(90%, 300px);
+        text-align: center;
+        padding: 9px 12px;
+    }
+
+    .image-container {
+        grid-template-columns: 1fr;
+        width: 92%;
+    }
+
+    .image-container img {
+        height: 220px;
+    }
+
+    .history-details {
+        width: 92%;
+    }
+
+    .history-details p {
+        margin: 15px 0;
+        text-align: left;
+    }
+
+    .player-table {
+        width: 100%;
+        font-size: 12px;
+    }
+
+    .player-table th,
+    .player-table td {
+        padding: 6px;
+    }
+
+    .chest {
+        width: min(160px, 65vw);
+    }
+
+    #openChest {
+        padding: 11px 18px;
+        font-size: 14px;
+    }
+
+    .gold-pile {
+        width: min(190px, 70vw);
+        height: 55px;
+    }
+
+    .score-board {
+        width: calc(100% - 20px);
+        left: 10px;
+        right: 10px;
+        top: 10px;
+        transform: none;
+        padding: 9px 12px;
+        font-size: 13px;
+    }
+
+    .popup-box {
+        width: 94%;
+        padding: 20px 15px;
+    }
+
+    .popup-box p {
+        line-height: 1.6;
+    }
+
+    .close {
+        top: 8px;
+        right: 12px;
+        font-size: 28px;
+    }
+
+    .trophy-card {
+        padding: 15px;
+    }
+
+    .trophy-card img {
+        width: 130px;
+        height: 130px;
+    }
+}
+
+/* ==========================================================
+   VERY SMALL PHONES
+   ========================================================== */
+@media (max-width: 360px) {
+
+    .nl4 {
+        font-size: 42px;
+    }
+
+    .north-london {
+        font-size: 9px;
+    }
+
+    .menu a {
+        width: 95%;
+        font-size: 12px;
+    }
+
+    .image-container img {
+        height: 190px;
+    }
+
+    .vault-title,
+    .vault-titlee {
+        font-size: 1.35rem;
+    }
+
+    .chest {
+        width: 140px;
+    }
+
+    .gold-pile {
+        width: 160px;
+        height: 48px;
+    }
+}
+
+/* ---------- Reduce motion for accessibility ---------- */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

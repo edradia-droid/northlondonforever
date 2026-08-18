@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Predict Lineup | NL4</title>
+<style>
+*{box-sizing:border-box} body{margin:0;background:#070707;color:#fff;font-family:Arial,sans-serif}
+.shell{max-width:1100px;margin:auto;padding:20px 14px 50px}
+.back{color:#d8ad45;text-decoration:none;font-weight:900;display:inline-block;margin-bottom:14px}
+.hero,.card{background:#111;border:1px solid #272727;border-radius:18px;padding:16px}
+.hero{margin-bottom:14px} .eyebrow{font-size:8px;font-weight:1000;letter-spacing:1.2px;color:#d8ad45}
+h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
+.muted{font-size:9px;color:#888;line-height:1.5}
+.status{margin-top:9px;padding:8px 10px;border-radius:9px;background:#151515;color:#aaa;font-size:9px}
+.grid{display:grid;grid-template-columns:340px 1fr;gap:14px}
+.score-row{display:grid;grid-template-columns:1fr 50px auto 50px 1fr;gap:7px;align-items:center;margin-top:12px}
+.score-row strong{text-align:center;font-size:10px} .score-row input{width:100%;padding:10px 5px;text-align:center;background:#171717;color:#fff;border:1px solid #333;border-radius:9px;font-weight:900}
+.vs{color:#d8ad45;font-weight:1000} .btn{background:#d8ad45;border:0;border-radius:9px;padding:10px 12px;font-weight:1000;cursor:pointer;margin-top:11px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.controls label{font-size:8px;color:#aaa;font-weight:900} select{width:100%;background:#171717;color:#fff;border:1px solid #333;border-radius:8px;padding:8px;margin-top:4px}
+.pitch-wrap{position:relative;width:100%;min-height:650px;border-radius:16px;overflow:hidden;border:3px solid #fff;background:#12622f}
+.pitch{position:absolute;inset:0;background:
+repeating-linear-gradient(90deg,#176f38 0,#176f38 12.5%,#12622f 12.5%,#12622f 25%)}
+.pitch:before{content:"";position:absolute;inset:5%;border:2px solid rgba(255,255,255,.85)}
+.pitch:after{content:"";position:absolute;left:50%;top:5%;bottom:5%;width:2px;background:rgba(255,255,255,.85)}
+.circle{position:absolute;left:50%;top:50%;width:105px;height:105px;border:2px solid rgba(255,255,255,.85);border-radius:50%;transform:translate(-50%,-50%)}
+.box{position:absolute;left:50%;width:48%;height:17%;border:2px solid rgba(255,255,255,.85);transform:translateX(-50%)}
+.box.top{top:5%;border-top:0} .box.bottom{bottom:5%;border-bottom:0}
+.slot{position:absolute;transform:translate(-50%,-50%);width:108px;text-align:center;z-index:3}
+.shirt{width:50px;height:58px;margin:0 auto 3px;position:relative;background:linear-gradient(90deg,#fff 0 18%,#c8102e 18% 82%,#fff 82% 100%);
+clip-path:polygon(18% 0,35% 9%,65% 9%,82% 0,100% 20%,86% 34%,81% 100%,19% 100%,14% 34%,0 20%);filter:drop-shadow(0 4px 4px #000)}
+body[data-kit="away"] .shirt{background:linear-gradient(90deg,#f3d329 0 18%,#1c58b6 18% 82%,#f3d329 82% 100%)}
+.shirt-number{
+  position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);
+  color:#fff;font-size:18px;font-weight:1000;line-height:1;
+  text-shadow:0 2px 4px rgba(0,0,0,.85);pointer-events:none;
+}
+body[data-kit="away"] .shirt-number{color:#fff}
+.slot-name{font-size:7px;font-weight:1000;text-shadow:0 2px 3px #000;margin-bottom:2px}
+.slot select{font-size:7px;padding:6px 3px;background:rgba(5,5,5,.92)}
+.subs-title{margin:14px 0 7px;color:#d8ad45;font-size:8px;font-weight:1000}
+.subs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-height:220px;overflow:auto}
+.sub{display:flex;gap:6px;align-items:center;background:#151515;border:1px solid #292929;border-radius:8px;padding:7px;font-size:8px}
+.sub input{accent-color:#d8ad45}
+.msg{display:block;margin-top:8px;font-size:9px;color:#aaa;white-space:pre-wrap}
+.good{color:#8fe19f} .bad{color:#ff8d8d}
+@media(max-width:850px){.grid{grid-template-columns:1fr} .pitch-wrap{min-height:560px} .subs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.pitch-wrap{min-height:520px} .slot{width:82px} .shirt{width:43px;height:50px} .slot select{font-size:6px;padding:5px 2px} .subs{grid-template-columns:1fr}}
+
+.downloadable-lineup{
+  margin-top:14px;background:#080808;border:1px solid #252525;border-radius:18px;
+  overflow:hidden;padding:16px;
+}
+.download-head{text-align:center;padding:4px 8px 14px}
+.download-logo{
+  display:block;width:82px;height:82px;object-fit:contain;margin:0 auto 8px;
+  filter:drop-shadow(0 5px 12px rgba(216,173,69,.25));
+}
+.download-fixture{font-size:18px;font-weight:1000;color:#fff;text-transform:uppercase;letter-spacing:.4px}
+.download-title{font-size:10px;color:#d8ad45;font-weight:1000;letter-spacing:1.4px;margin-top:4px}
+.download-meta{font-size:8px;color:#777;margin-top:4px}
+.download-lineup .pitch-wrap{margin-top:0}
+.download-summary{padding:13px 4px 2px}
+.download-formation{
+  color:#fff;font-weight:1000;font-size:11px;text-align:center;margin-bottom:10px
+}
+.download-formation b{color:#d8ad45}
+.download-subs-title{font-size:8px;font-weight:1000;color:#d8ad45;letter-spacing:1px;margin-bottom:5px}
+.download-subs-list{
+  color:#fff;font-size:9px;font-weight:800;line-height:1.65;min-height:18px
+}
+.lineup-controls-lower{
+  margin-top:14px;padding-top:12px;border-top:1px solid #252525
+}
+.download-button-row{
+  display:flex;justify-content:flex-end;margin-top:8px
+}
+.download-icon-btn{
+  width:38px;height:38px;border-radius:10px;border:1px solid rgba(216,173,69,.4);
+  background:#111;color:#d8ad45;display:inline-grid;place-items:center;font-size:18px;
+  cursor:pointer;font-weight:1000
+}
+.export-player-name{
+  margin-top:3px;color:#fff;font-size:8px;font-weight:1000;text-transform:uppercase;
+  text-align:center;text-shadow:0 2px 3px #000;line-height:1.15
+}
+.export-only{display:none}
+.nl4-exporting .export-only{display:block}
+.nl4-exporting .screen-only{display:none!important}
+.nl4-exporting .slot select{display:none!important}
+.nl4-exporting .slot{width:112px}
+.nl4-exporting .export-player-name{display:block!important}
+@media(max-width:520px){
+  .download-logo{width:64px;height:64px}
+  .download-fixture{font-size:14px}
+  .downloadable-lineup{padding:10px}
+}
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body data-kit="home">
+<div class="shell">
+<a class="back" href="fixtures.html">← Back to Fixtures</a>
+<section class="hero">
+<div class="eyebrow">NL4 FAN PREDICTION</div>
+<h1 id="heading">Loading fixture…</h1>
+<div id="meta" class="muted">Connecting to Supabase…</div>
+</section>
+
+<div class="grid">
+<section class="card">
+<div class="eyebrow">MATCH PREDICTION</div><h2>Predict the Score</h2>
+<p class="muted">Your score prediction is sent to the same Supabase fan-prediction system that Admin reads.</p>
+<div class="score-row">
+<strong id="homeTeam">Home</strong><input id="homeScore" type="number" min="0" max="30" value="0"><span class="vs">–</span>
+<input id="awayScore" type="number" min="0" max="30" value="0"><strong id="awayTeam">Away</strong>
+</div>
+<button id="saveScore" class="btn" type="button">Submit Score Prediction</button>
+<span id="scoreMsg" class="msg"></span>
+</section>
+
+<section class="card">
+<div class="eyebrow">STARTING XI PREDICTION</div><h2>Build Your Arsenal XI</h2>
+<div id="lineupDownloadArea" class="downloadable-lineup">
+  <div class="download-head">
+    <img class="download-logo" src="https://i.postimg.cc/GhGgj8G7/75c7b198-597a-4288-abae-723c809c34fa.png" alt="NL4">
+    <div id="downloadFixture" class="download-fixture">ARSENAL VS OPPONENT</div>
+    <div class="download-title">MY PREDICTED STARTING XI</div>
+    <div id="downloadMeta" class="download-meta"></div>
+  </div>
+
+  <div class="pitch-wrap">
+    <div id="pitch" class="pitch">
+      <span class="circle"></span><span class="box top"></span><span class="box bottom"></span>
+    </div>
+  </div>
+
+  <div class="download-summary">
+    <div class="download-formation">FORMATION • <b id="downloadFormation">4-3-3</b></div>
+    <div class="download-subs-title">SUBSTITUTES</div>
+    <div id="downloadSubs" class="download-subs-list">No substitutes selected yet.</div>
+  </div>
+</div>
+
+<div class="download-button-row">
+  <button id="downloadPredictionBtn" class="download-icon-btn" type="button" title="Download predicted lineup" aria-label="Download predicted lineup">⬇</button>
+</div>
+
+<div class="lineup-controls-lower">
+  <div class="controls">
+    <label>FORMATION<select id="formation"><option>4-3-3</option><option>4-2-3-1</option><option>4-4-2</option><option>3-4-3</option><option>3-5-2</option><option>4-1-4-1</option></select></label>
+    <label>SHIRT<select id="kit"><option value="home">Home • Red/White</option><option value="away">Away</option></select></label>
+  </div>
+
+  <div class="subs-title">SUBSTITUTES • choose up to 9</div>
+  <div id="subs" class="subs"></div>
+  <button id="saveLineup" class="btn" type="button">Submit Lineup Prediction</button>
+  <span id="lineupMsg" class="msg"></span>
+</div>
+</section>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
+<script src="supabase-client.js?v=20260817-predict-fix"></script>
+<script>
+(function(){
+  const FALLBACK=[{name:'Ben White',pos:'Defender'},{name:'Bruno Guimarães',pos:'Midfielder'},{name:'Bukayo Saka',pos:'Forward'},{name:'Christos Tzolis',pos:'Forward'},{name:'Cristhian Mosquera',pos:'Defender'},{name:'David Raya',pos:'Goalkeeper'},{name:'Declan Rice',pos:'Midfielder'},{name:'Eberechi Eze',pos:'Midfielder'},{name:'Ethan Nwaneri',pos:'Midfielder'},{name:'Fabio Vieira',pos:'Midfielder'},{name:'Gabriel Jesus',pos:'Forward'},{name:'Gabriel Magalhães',pos:'Defender'},{name:'Gabriel Martinelli',pos:'Forward'},{name:'Illan Meslier',pos:'Goalkeeper'},{name:'Jurriën Timber',pos:'Defender'},{name:'Kai Havertz',pos:'Forward'},{name:'Kepa Arrizabalaga',pos:'Goalkeeper'},{name:'Martin Ødegaard',pos:'Midfielder'},{name:'Martín Zubimendi',pos:'Midfielder'},{name:'Mikel Merino',pos:'Midfielder'},{name:'Myles Lewis-Skelly',pos:'Defender'},{name:'Noni Madueke',pos:'Forward'},{name:'Piero Hincapié',pos:'Defender'},{name:'Reiss Nelson',pos:'Forward'},{name:'Riccardo Calafiori',pos:'Defender'},{name:'Tommy Setford',pos:'Goalkeeper'},{name:'Viktor Gyökeres',pos:'Forward'},{name:'William Saliba',pos:'Defender'}];
+  const fixtureRef=new URLSearchParams(location.search).get('fixture');
+  let fixtureUuid=null;
+  const formations={
+    '4-3-3':[['GK',50,90],['LB',15,72],['LCB',38,72],['RCB',62,72],['RB',85,72],['LCM',27,49],['CM',50,52],['RCM',73,49],['LW',18,23],['ST',50,17],['RW',82,23]],
+    '4-2-3-1':[['GK',50,90],['LB',15,72],['LCB',38,72],['RCB',62,72],['RB',85,72],['LDM',38,56],['RDM',62,56],['LAM',20,34],['CAM',50,31],['RAM',80,34],['ST',50,15]],
+    '4-4-2':[['GK',50,90],['LB',15,72],['LCB',38,72],['RCB',62,72],['RB',85,72],['LM',15,47],['LCM',38,50],['RCM',62,50],['RM',85,47],['LST',38,20],['RST',62,20]],
+    '3-4-3':[['GK',50,90],['LCB',27,72],['CB',50,74],['RCB',73,72],['LWB',14,49],['LCM',39,50],['RCM',61,50],['RWB',86,49],['LW',20,22],['ST',50,17],['RW',80,22]],
+    '3-5-2':[['GK',50,90],['LCB',27,72],['CB',50,74],['RCB',73,72],['LWB',14,50],['LCM',34,51],['CAM',50,38],['RCM',66,51],['RWB',86,50],['LST',39,19],['RST',61,19]],
+    '4-1-4-1':[['GK',50,90],['LB',15,72],['LCB',38,72],['RCB',62,72],['RB',85,72],['DM',50,59],['LM',16,42],['LCM',38,43],['RCM',62,43],['RM',84,42],['ST',50,16]]
+  };
+  let players=FALLBACK.slice();
+  let db=null;
+  const squadNumbers={
+    'David Raya':1,
+    'Kepa Arrizabalaga':13,
+    'Illan Meslier':30,
+    'Tommy Setford':35,
+    'William Saliba':2,
+    'Cristhian Mosquera':3,
+    'Ben White':4,
+    'Piero Hincapié':5,
+    'Gabriel Magalhães':6,
+    'Jurriën Timber':12,
+    'Riccardo Calafiori':33,
+    'Myles Lewis-Skelly':49,
+    'Martin Ødegaard':8,
+    'Eberechi Eze':10,
+    'Fabio Vieira':21,
+    'Fábio Vieira':21,
+    'Ethan Nwaneri':22,
+    'Mikel Merino':23,
+    'Martín Zubimendi':36,
+    'Martin Zubimendi':36,
+    'Bruno Guimarães':39,
+    'Declan Rice':41,
+    'Bukayo Saka':7,
+    'Gabriel Jesus':9,
+    'Gabriel Martinelli':11,
+    'Viktor Gyökeres':14,
+    'Christos Tzolis':17,
+    'Noni Madueke':20,
+    'Reiss Nelson':24,
+    'Kai Havertz':29
+  };
+
+  function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function voterKey(){
+    let k=localStorage.getItem('nl4_fan_voter_key');
+    if(!k){k='fan_'+(crypto.randomUUID?crypto.randomUUID():Date.now()+'_'+Math.random().toString(36).slice(2));localStorage.setItem('nl4_fan_voter_key',k);}
+    return k;
+  }
+  function options(){
+    return '<option value="">Choose player</option>'+players.map(p=>`<option value="${esc(p.name)}">${esc(p.name)} • ${esc(p.pos)}</option>`).join('');
+  }
+  function renderPitch(){
+    const slots=formations[document.getElementById('formation').value]||formations['4-3-3'];
+    document.getElementById('pitch').innerHTML='<span class="circle"></span><span class="box top"></span><span class="box bottom"></span>'+
+      slots.map(([slot,x,y])=>`<label class="slot" style="left:${x}%;top:${y}%"><div class="shirt"><span class="shirt-number" data-shirt-number></span></div><div class="slot-name">${slot}</div><select class="screen-only" data-slot="${slot}">${options()}</select><div class="export-player-name export-only" data-export-name>SELECT PLAYER</div></label>`).join('');
+  }
+  function renderSubs(){
+    document.getElementById('subs').innerHTML=players.map((p,i)=>`<label class="sub"><input type="checkbox" value="${esc(p.name)}" data-sub><span>${esc(p.name)} <small>• ${esc(p.pos)}</small></span></label>`).join('');
+  }
+
+  function updateShirtNumber(select){
+    const slot=select.closest('.slot');
+    const num=slot?.querySelector('[data-shirt-number]');
+    if(!num)return;
+    const name=select.value.trim();
+    num.textContent=name && squadNumbers[name] != null ? String(squadNumbers[name]) : '';
+    const exportName=slot?.querySelector('[data-export-name]');
+    if(exportName) exportName.textContent=name || 'SELECT PLAYER';
+  }
+  function setMsg(id,text,good=false){
+    const e=document.getElementById(id); e.textContent=text; e.className='msg '+(good?'good':'bad');
+  }
+
+  // Render useful UI immediately, before any network call.
+  renderPitch(); renderSubs();
+  const initialFormation=document.getElementById('downloadFormation');
+  if(initialFormation)initialFormation.textContent=document.getElementById('formation').value;
+  updateDownloadSubs?.();
+
+  async function waitForDb(){
+    for(let i=0;i<40;i++){
+      if(window.nl4Supabase && typeof window.nl4Supabase.from==='function') return window.nl4Supabase;
+      await new Promise(r=>setTimeout(r,100));
+    }
+    return null;
+  }
+
+  async function init(){
+    const boot=document.getElementById('bootStatus') || {textContent:'',className:''};
+    if(!fixtureRef){boot.textContent='ERROR • fixture ID missing from URL';boot.className='status bad';return;}
+    db=await waitForDb();
+    if(!db){boot.textContent='SUPABASE CLIENT NOT FOUND • check supabase-client.js';boot.className='status bad';return;}
+    boot.textContent='SUPABASE CONNECTED • resolving fixture';boot.className='status good';
+
+    const isUuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(fixtureRef);
+    const baseQuery=db.from('fixtures')
+      .select('id,external_fixture_id,home_team,away_team,is_home,opponent,kickoff_at,status,is_published');
+
+    const fixtureRes=isUuid
+      ? await baseQuery.eq('id',fixtureRef).maybeSingle()
+      : await baseQuery.eq('external_fixture_id',fixtureRef).maybeSingle();
+
+    if(fixtureRes.error || !fixtureRes.data){
+      boot.textContent='FIXTURE LOAD FAILED • '+(fixtureRes.error?.message||'not found');boot.className='status bad';return;
+    }
+
+    const f=fixtureRes.data;
+    fixtureUuid=f.id;
+    restoreScorePredictionLock();
+    const home=f.home_team||(f.is_home?'Arsenal':f.opponent)||'Home', away=f.away_team||(f.is_home?f.opponent:'Arsenal')||'Away';
+    document.getElementById('heading').textContent=`${home} vs ${away}`;
+    document.getElementById('homeTeam').textContent=home; document.getElementById('awayTeam').textContent=away;
+    const fixtureDate=new Date(f.kickoff_at).toLocaleString();
+    document.getElementById('meta').textContent=fixtureDate;
+    const dlFixture=document.getElementById('downloadFixture');
+    const dlMeta=document.getElementById('downloadMeta');
+    if(dlFixture) dlFixture.textContent=`${home} vs ${away}`;
+    if(dlMeta) dlMeta.textContent=fixtureDate;
+
+    const squadRes=await db.from('premier_league_player_stats').select('player_name,position').eq('season','2026/27').order('player_name');
+    if(!squadRes.error && squadRes.data?.length){
+      players=squadRes.data.map(x=>({name:String(x.player_name||'').trim(),pos:String(x.position||'Player')})).filter(x=>x.name);
+      renderPitch();renderSubs();
+      boot.textContent=`READY • ${players.length} Arsenal players loaded • fixture resolved`;
+      boot.className='status good';
+    } else {
+      boot.textContent=`READY WITH FALLBACK SQUAD • ${players.length} players • fixture resolved`;
+      boot.className='status good';
+    }
+
+    const closed=new Date(f.kickoff_at)<=new Date() || ['live','1h','ht','2h','et','fulltime','finished','ft','aet','pen','played'].includes(String(f.status||'').toLowerCase());
+    if(closed){document.getElementById('saveScore').disabled=true;document.getElementById('saveLineup').disabled=true;setMsg('scoreMsg','Predictions are closed.');setMsg('lineupMsg','Predictions are closed.');}
+  }
+
+  document.getElementById('formation').addEventListener('change',()=>{
+    renderPitch();
+    const f=document.getElementById('downloadFormation');
+    if(f)f.textContent=document.getElementById('formation').value;
+  });
+  document.getElementById('pitch').addEventListener('change',e=>{
+    if(e.target.matches('[data-slot]')) updateShirtNumber(e.target);
+  });
+  document.getElementById('kit').addEventListener('change',e=>document.body.dataset.kit=e.target.value);
+  function updateDownloadSubs(){
+    const checked=[...document.querySelectorAll('[data-sub]:checked')].map(x=>x.value);
+    const el=document.getElementById('downloadSubs');
+    if(el) el.textContent=checked.length
+      ? checked.map(name=>`${squadNumbers[name] ?? ''}${squadNumbers[name] != null ? ' ' : ''}${name}`).join(' • ')
+      : 'No substitutes selected yet.';
+  }
+
+  document.getElementById('subs').addEventListener('change',()=>{
+    const checked=[...document.querySelectorAll('[data-sub]:checked')];
+    if(checked.length>9){
+      checked.at(-1).checked=false;
+      setMsg('lineupMsg','Maximum 9 substitutes.');
+    }
+    updateDownloadSubs();
+  });
+
+  function scoreLockKey(){
+    return fixtureUuid ? `nl4-score-prediction:${fixtureUuid}` : null;
+  }
+  function lockScorePredictionUI(homeScore=null,awayScore=null){
+    const btn=document.getElementById('saveScore');
+    const hs=document.getElementById('homeScore');
+    const as=document.getElementById('awayScore');
+    if(hs)hs.disabled=true;
+    if(as)as.disabled=true;
+    if(btn){btn.disabled=true;btn.textContent='Score Prediction Submitted';}
+    const suffix=(homeScore!==null && awayScore!==null) ? ` • ${homeScore}-${awayScore}` : '';
+    setMsg('scoreMsg',`SAVED ✓ One score prediction allowed for this fixture${suffix}.`,true);
+  }
+  function restoreScorePredictionLock(){
+    const key=scoreLockKey();
+    if(!key)return;
+    try{
+      const saved=JSON.parse(localStorage.getItem(key)||'null');
+      if(saved)lockScorePredictionUI(saved.home,saved.away);
+    }catch(_){}
+  }
+
+  document.getElementById('saveScore').addEventListener('click',async()=>{
+    if(!db){setMsg('scoreMsg','Supabase is not connected.');return;}
+    if(!fixtureUuid){setMsg('scoreMsg','Fixture has not resolved to a Supabase UUID yet.');return;}
+    const hs=Number(document.getElementById('homeScore').value), as=Number(document.getElementById('awayScore').value);
+    setMsg('scoreMsg','Saving score prediction…');
+    const {data,error}=await db.rpc('submit_fan_prediction',{
+      p_fixture_id:fixtureUuid,p_voter_key:voterKey(),p_mode:'score',p_formation:null,p_kit:null,
+      p_starters:[],p_substitutes:[],p_home_score:hs,p_away_score:as
+    });
+    if(error){
+      if(String(error.message||'').toLowerCase().includes('already submitted a score prediction')){
+        lockScorePredictionUI();
+        return;
+      }
+      return setMsg('scoreMsg','SAVE FAILED • '+error.message);
+    }
+    try{
+      const key=scoreLockKey();
+      if(key)localStorage.setItem(key,JSON.stringify({home:hs,away:as,savedAt:new Date().toISOString()}));
+    }catch(_){}
+    lockScorePredictionUI(hs,as);
+    console.log('NL4 score prediction saved',data);
+  });
+
+  document.getElementById('saveLineup').addEventListener('click',async()=>{
+    if(!db){setMsg('lineupMsg','Supabase is not connected.');return;}
+    if(!fixtureUuid){setMsg('lineupMsg','Fixture has not resolved to a Supabase UUID yet.');return;}
+    const starters=[...document.querySelectorAll('[data-slot]')].map(s=>({slot:s.dataset.slot,player_name:s.value.trim()}));
+    if(starters.some(x=>!x.player_name)) return setMsg('lineupMsg','Choose all 11 starters first.');
+    if(new Set(starters.map(x=>x.player_name.toLowerCase())).size!==11) return setMsg('lineupMsg','Each starter must be a different player.');
+    const subs=[...document.querySelectorAll('[data-sub]:checked')].map(x=>x.value);
+    const starterSet=new Set(starters.map(x=>x.player_name.toLowerCase()));
+    if(subs.some(x=>starterSet.has(x.toLowerCase()))) return setMsg('lineupMsg','A starter cannot also be a substitute.');
+    setMsg('lineupMsg','Saving lineup prediction…');
+    const {data,error}=await db.rpc('submit_fan_prediction',{
+      p_fixture_id:fixtureUuid,p_voter_key:voterKey(),p_mode:'lineup',
+      p_formation:document.getElementById('formation').value,p_kit:document.getElementById('kit').value,
+      p_starters:starters,p_substitutes:subs.map(player_name=>({player_name})),p_home_score:null,p_away_score:null
+    });
+    if(error) return setMsg('lineupMsg','SAVE FAILED • '+error.message);
+    setMsg('lineupMsg','SAVED ✓ Lineup prediction sent to Admin Fan Predictions.',true);
+    console.log('NL4 lineup prediction saved',data);
+  });
+
+  async function downloadPredictedLineup(){
+    const btn=document.getElementById('downloadPredictionBtn');
+    const board=document.getElementById('lineupDownloadArea');
+    if(!btn||!board)return;
+    if(typeof window.html2canvas!=='function'){
+      alert('The download tool could not load. Check your internet connection and try again.');
+      return;
+    }
+
+    const starters=[...document.querySelectorAll('[data-slot]')];
+    if(starters.some(s=>!s.value.trim())){
+      alert('Choose all 11 starting players before downloading your predicted XI.');
+      return;
+    }
+
+    const oldText=btn.textContent;
+    btn.disabled=true;
+    btn.textContent='…';
+
+    let host=null;
+    try{
+      host=document.createElement('div');
+      host.style.position='fixed';
+      host.style.left='-100000px';
+      host.style.top='0';
+      host.style.width=Math.max(board.scrollWidth,board.getBoundingClientRect().width)+'px';
+      host.style.background='#080808';
+
+      const clone=board.cloneNode(true);
+      clone.classList.add('nl4-exporting');
+
+      // Remove all form controls from the downloaded image.
+      clone.querySelectorAll('select,input,button').forEach(el=>el.remove());
+      clone.querySelectorAll('.screen-only').forEach(el=>el.remove());
+      clone.querySelectorAll('.export-only').forEach(el=>el.style.display='block');
+
+      // Ensure names in the clone reflect current selections.
+      const liveSlots=[...board.querySelectorAll('.slot')];
+      const cloneSlots=[...clone.querySelectorAll('.slot')];
+      liveSlots.forEach((liveSlot,i)=>{
+        const selected=liveSlot.querySelector('[data-slot]')?.value?.trim()||'';
+        const target=cloneSlots[i]?.querySelector('[data-export-name]');
+        if(target) target.textContent=selected;
+      });
+
+      host.appendChild(clone);
+      document.body.appendChild(host);
+
+      const canvas=await html2canvas(clone,{
+        backgroundColor:'#080808',
+        scale:Math.min(2,window.devicePixelRatio||1.5),
+        useCORS:true,
+        allowTaint:false,
+        logging:false
+      });
+
+      const fixture=(document.getElementById('downloadFixture')?.textContent||'arsenal-predicted-xi')
+        .replace(/[^A-Za-z0-9\-]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase();
+
+      const link=document.createElement('a');
+      link.download=`${fixture || 'arsenal-predicted-xi'}-my-predicted-xi.png`;
+      link.href=canvas.toDataURL('image/png',1);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }catch(err){
+      console.error('Predicted lineup download failed:',err);
+      alert('Could not create your predicted lineup image. Please try again.');
+    }finally{
+      if(host)host.remove();
+      btn.disabled=false;
+      btn.textContent=oldText;
+    }
+  }
+
+  document.getElementById('downloadPredictionBtn')?.addEventListener('click',downloadPredictedLineup);
+
+  init().catch(err=>{const boot=document.getElementById('bootStatus');if(boot){boot.textContent='PAGE ERROR • '+err.message;boot.className='status bad';}console.error(err);});
+})();
+</script>
+</body>
+</html>
