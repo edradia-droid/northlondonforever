@@ -155,6 +155,30 @@
 .forecast-setup-warning strong{color:#ffb0b0;font-size:9px}.forecast-setup-warning p{margin:6px 0 0;font-size:9px;line-height:1.55}.forecast-setup-warning code{color:#d8ad45}
 @media(max-width:720px){.public-forecast-control{display:block}.public-forecast-control-actions{justify-content:flex-start;margin-top:10px}}
 </style>
+
+<style id="nl4-lineup-display-admin-style">
+.lineup-display-admin{
+  margin:12px 0 16px;
+  padding:13px;
+  border:1px solid rgba(216,173,69,.22);
+  border-radius:13px;
+  background:#0d0d0d;
+}
+.lineup-display-admin h4{margin:4px 0 0;color:#fff}
+.lineup-display-controls{
+  display:grid;
+  grid-template-columns:minmax(150px,1fr) minmax(190px,1fr) auto;
+  gap:9px;
+  align-items:end;
+  margin-top:10px;
+}
+.lineup-display-controls label{margin:0}
+.lineup-display-controls button{min-height:42px}
+@media(max-width:700px){
+  .lineup-display-controls{grid-template-columns:1fr}
+}
+</style>
+
 </head>
 <body>
   <header class="topbar">
@@ -608,6 +632,31 @@
           </div>
         </div>
         <p class="muted">Record every Arsenal player who appeared. Starters begin at 0'. For substitutes, enter the minute they came on. Add minute off when applicable.</p>
+
+        <div class="lineup-display-admin">
+          <div>
+            <p class="eyebrow">LINEUP APPEARANCE</p>
+            <h4>Viewer &amp; Download Style</h4>
+            <p class="muted">Choose the grass and Arsenal shirt shown on Match Details. The same style is used in the downloaded lineup image.</p>
+          </div>
+          <div class="lineup-display-controls">
+            <label>Grass
+              <select id="adminLineupGrass">
+                <option value="green">Green grass</option>
+                <option value="black">Black grass</option>
+              </select>
+            </label>
+            <label>Shirt
+              <select id="adminLineupShirt">
+                <option value="home">Home — Red &amp; White</option>
+                <option value="away">Away — Blue &amp; Golden Yellow</option>
+              </select>
+            </label>
+            <button id="saveLineupDisplayBtn" class="ghost-btn" type="button">Save Lineup Style</button>
+          </div>
+          <p id="lineupDisplayMessage" class="message" role="status"></p>
+        </div>
+
         <div class="form-grid">
           <label>Player
             <select id="lineupPlayer"></select>
@@ -618,6 +667,9 @@
               <option value="substitute">Substitute</option>
             </select>
           </label>
+          <label>Shirt number
+            <input id="lineupShirtNumber" type="number" min="1" max="99" placeholder="Auto-filled" readonly>
+          </label>
           <label>Minute on
             <input id="lineupMinuteOn" type="number" min="0" max="130" value="0">
           </label>
@@ -627,7 +679,7 @@
         </div>
         <div class="dialog-actions match-save-row">
           <span id="lineupMessage" class="message" role="status"></span>
-          <button id="clearLineupBtn" class="ghost-btn" type="button">Clear Lineup</button>
+          <button id="clearLineupBtn" class="ghost-btn" type="button">Clear Entire Lineup</button>
           <button id="saveLineupPlayerBtn" class="primary-btn" type="button">Add / Update Player</button>
         </div>
         <div id="lineupList" class="match-events-admin-list"></div>
@@ -692,7 +744,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
   <script src="supabase-client.js"></script>
-  <script src="admin.js?v=20260816-v15-4-public-forecast-control"></script>
+  <script src="admin.js?v=20260818-lineup-display-admin"></script>
   <script src="manual-lineup-patch.js?v=20260818-manual-lineup"></script>
 </body>
 </html>
