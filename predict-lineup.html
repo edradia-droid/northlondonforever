@@ -1,663 +1,485 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Build and download your Arsenal fan predicted XI on NL4.">
-<title>Build Your XI | NL4 Arsenal Fan Hub</title>
-<link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="shared-sidebar.css">
-<link rel="stylesheet" href="sidebar-toggle-fix.css">
+<title>Predict Lineup | NL4</title>
 <style>
-:root{--gold:#d8ad45;--red:#e3062c;--panel:#101010;--ink:#fff;--muted:#868686}
-*{box-sizing:border-box}
-body.predict-page{margin:0;background:#080808;color:#fff;font-family:Arial,Helvetica,sans-serif}
-.predict-main{min-height:100vh;padding:38px 24px 70px}
-.predict-shell{max-width:1180px;margin:0 auto}
-.predict-back{display:inline-flex;color:var(--gold);text-decoration:none;font-weight:900;margin-bottom:18px}
-.predict-intro{padding:22px;border:1px solid rgba(255,255,255,.09);border-radius:22px;background:#101010;margin-bottom:18px}
-.predict-intro .eyebrow{margin:0 0 7px;color:var(--gold);font-size:10px;font-weight:1000;letter-spacing:1.5px}
-.predict-intro h1{margin:0;font-size:clamp(30px,5vw,56px);line-height:1}
-.predict-intro p{margin:12px 0 0;color:#999;max-width:760px;line-height:1.6}
-.builder-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 14px}
-.builder-controls label{font-size:11px;font-weight:1000;color:#bbb}
-.builder-controls select,.builder-controls button{
-  border:1px solid rgba(255,255,255,.14);border-radius:10px;background:#151515;color:#fff;
-  min-height:40px;padding:0 12px;font-weight:900
+*{box-sizing:border-box} body{margin:0;background:#070707;color:#fff;font-family:Arial,sans-serif}
+.shell{max-width:1100px;margin:auto;padding:20px 14px 50px}
+.back{color:#d8ad45;text-decoration:none;font-weight:900;display:inline-block;margin-bottom:14px}
+.hero,.card{background:#111;border:1px solid #272727;border-radius:18px;padding:16px}
+.hero{margin-bottom:14px} .eyebrow{font-size:8px;font-weight:1000;letter-spacing:1.2px;color:#d8ad45}
+h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
+.muted{font-size:9px;color:#888;line-height:1.5}
+.status{margin-top:9px;padding:8px 10px;border-radius:9px;background:#151515;color:#aaa;font-size:9px}
+.grid{display:grid;grid-template-columns:340px 1fr;gap:14px}
+.score-row{display:grid;grid-template-columns:1fr 50px auto 50px 1fr;gap:7px;align-items:center;margin-top:12px}
+.score-row strong{text-align:center;font-size:10px} .score-row input{width:100%;padding:10px 5px;text-align:center;background:#171717;color:#fff;border:1px solid #333;border-radius:9px;font-weight:900}
+.vs{color:#d8ad45;font-weight:1000} .btn{background:#d8ad45;border:0;border-radius:9px;padding:10px 12px;font-weight:1000;cursor:pointer;margin-top:11px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.controls label{font-size:8px;color:#aaa;font-weight:900} select{width:100%;background:#171717;color:#fff;border:1px solid #333;border-radius:8px;padding:8px;margin-top:4px}
+.pitch-wrap{position:relative;width:100%;min-height:650px;border-radius:16px;overflow:hidden;border:3px solid #fff;background:#12622f}
+.pitch{position:absolute;inset:0;background:
+repeating-linear-gradient(90deg,#176f38 0,#176f38 12.5%,#12622f 12.5%,#12622f 25%)}
+.pitch:before{content:"";position:absolute;inset:5%;border:2px solid rgba(255,255,255,.85)}
+.pitch:after{content:"";position:absolute;left:50%;top:5%;bottom:5%;width:2px;background:rgba(255,255,255,.85)}
+.circle{position:absolute;left:50%;top:50%;width:105px;height:105px;border:2px solid rgba(255,255,255,.85);border-radius:50%;transform:translate(-50%,-50%)}
+.box{position:absolute;left:50%;width:48%;height:17%;border:2px solid rgba(255,255,255,.85);transform:translateX(-50%)}
+.box.top{top:5%;border-top:0} .box.bottom{bottom:5%;border-bottom:0}
+.slot{position:absolute;transform:translate(-50%,-50%);width:108px;text-align:center;z-index:3}
+.shirt{width:50px;height:58px;margin:0 auto 3px;position:relative;background:linear-gradient(90deg,#fff 0 18%,#c8102e 18% 82%,#fff 82% 100%);
+clip-path:polygon(18% 0,35% 9%,65% 9%,82% 0,100% 20%,86% 34%,81% 100%,19% 100%,14% 34%,0 20%);filter:drop-shadow(0 4px 4px #000)}
+body[data-kit="away"] .shirt{background:linear-gradient(90deg,#f3d329 0 18%,#1c58b6 18% 82%,#f3d329 82% 100%)}
+.shirt-number{
+  position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);
+  color:#fff;font-size:18px;font-weight:1000;line-height:1;
+  text-shadow:0 2px 4px rgba(0,0,0,.85);pointer-events:none;
 }
-.builder-controls button{cursor:pointer}
-.builder-controls .clear-btn{color:#ff667d}
-.selection-note{margin-left:auto;color:#858585;font-size:11px;font-weight:900}
-.prediction-board{background:linear-gradient(180deg,#090b0f,#050607);border:1px solid rgba(255,255,255,.12);border-radius:20px;overflow:hidden}
-.prediction-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:22px 24px 0}
-.prediction-heading{min-width:0}
-.prediction-heading .fan-label{display:block;color:var(--gold);font-size:10px;font-weight:1000;letter-spacing:1.5px;margin-bottom:7px}
-.prediction-heading h2{margin:0;font-size:clamp(23px,4vw,42px);text-transform:uppercase;line-height:1}
-.prediction-heading small{display:block;margin-top:8px;color:var(--gold);font-weight:900;letter-spacing:1px}
-.prediction-logo{display:block;width:58px;height:58px;object-fit:contain;margin-top:7px;background:#000;border-radius:8px}
-.prediction-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
-.formation-badge{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border-radius:9px;background:linear-gradient(180deg,#e3062c,#9f001b);border:1px solid rgba(255,255,255,.3);box-shadow:0 6px 0 #5c0010;color:#fff;font-weight:1000;letter-spacing:1.5px;white-space:nowrap}
-.download-prediction{width:34px;height:34px;border:0;background:transparent;color:#fff;font-size:22px;cursor:pointer;padding:0}
-.download-prediction:hover{color:var(--gold)}
-.pitch-wrap{padding:0 18px 22px;margin-top:-10px}
-.pitch-stage{display:flex;justify-content:center;align-items:center;min-height:680px;padding:0 0 28px}
-.football-pitch{position:relative;width:min(900px,96%);aspect-ratio:76/96;border:3px solid rgba(245,255,247,.95);border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,.05),transparent 18%),repeating-linear-gradient(0deg,#30994c 0 10%,#278b43 10% 20%);box-shadow:0 35px 55px rgba(0,0,0,.55);overflow:visible}
-.football-pitch::before{content:"";position:absolute;left:0;right:0;top:50%;height:2px;background:#fff}
-.football-pitch::after{content:"";position:absolute;left:50%;top:50%;width:20%;aspect-ratio:1;border:2px solid #fff;border-radius:50%;transform:translate(-50%,-50%)}
-.penalty-box{position:absolute;left:22%;width:56%;height:16%;border:2px solid rgba(255,255,255,.92)}.penalty-box.top{top:-2px;border-top:0}.penalty-box.bottom{bottom:-2px;border-bottom:0}
-.goal-box{position:absolute;left:36%;width:28%;height:7%;border:2px solid rgba(255,255,255,.92)}.goal-box.top{top:-2px;border-top:0}.goal-box.bottom{bottom:-2px;border-bottom:0}
-.centre-spot{position:absolute;left:50%;top:50%;width:5px;height:5px;border-radius:50%;background:#fff;transform:translate(-50%,-50%)}
-.fan-slot{position:absolute;left:var(--x);top:var(--y);width:104px;height:126px;transform:translate(-50%,-50%);z-index:4;text-align:center}
-.slot-button{border:0;background:transparent;color:#fff;width:100%;height:100%;padding:0;cursor:pointer}
-.slot-name{position:absolute;left:50%;top:70px;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;width:104px;min-height:28px;padding:5px;border-radius:7px;background:rgba(2,7,18,.95);border:1px solid rgba(255,255,255,.4);font-size:8.5px;font-weight:1000;line-height:1.05;text-transform:uppercase}
-.slot-hint{color:#aaa}
-.picker{margin-top:18px;border:1px solid rgba(255,255,255,.1);border-radius:18px;background:#101010;overflow:hidden}
-.picker-head{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
-.picker-head h3{margin:0;font-size:18px}.picker-head span{color:#888;font-size:11px}
-.player-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:14px}
-.player-pick{display:grid;grid-template-columns:44px 1fr auto;gap:9px;align-items:center;text-align:left;border:1px solid rgba(255,255,255,.08);border-radius:11px;background:#151515;color:#fff;padding:8px;cursor:pointer}
-.player-pick:hover{border-color:rgba(216,173,69,.55)}
-.player-pick.selected{opacity:.4}.player-pick img,.player-avatar{width:44px;height:48px;border-radius:7px;object-fit:cover;background:#222}
-.player-avatar{display:grid;place-items:center;font-weight:1000}
-.player-pick strong{display:block;font-size:11px}.player-pick small{display:block;color:#777;font-size:9px;margin-top:3px}
-.player-pick .num{color:var(--gold);font-weight:1000}
-.picker-message{padding:25px;color:#777;text-align:center}
-.subs-strip{margin:0 18px 18px;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:10px 13px;color:#aaa;font-size:10px}
-.subs-strip b{color:#fff;margin-right:7px}
-@media(max-width:900px){.predict-main{margin-left:0!important;padding:76px 14px 50px}.player-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:700px){
- .prediction-top{padding:16px 12px 0;gap:8px}.prediction-heading h2{font-size:22px}.prediction-heading small{font-size:9px}
- .prediction-logo{width:44px;height:44px}.formation-badge{font-size:11px;padding:7px 9px}.download-prediction{width:28px;height:28px;font-size:18px}
- .pitch-wrap{padding:0 5px 14px;margin-top:-4px}.pitch-stage{min-height:530px;padding-bottom:18px}.football-pitch{width:95%;aspect-ratio:72/104}
- .fan-slot{width:72px;height:98px}.slot-name{top:55px;width:72px;min-height:24px;font-size:6.5px;padding:4px 3px}
- .player-grid{grid-template-columns:1fr}.selection-note{width:100%;margin-left:0}.subs-strip{margin:0 6px 12px}
+body[data-kit="away"] .shirt-number{color:#fff}
+.slot-name{font-size:7px;font-weight:1000;text-shadow:0 2px 3px #000;margin-bottom:2px}
+.slot select{font-size:7px;padding:6px 3px;background:rgba(5,5,5,.92)}
+.subs-title{margin:14px 0 7px;color:#d8ad45;font-size:8px;font-weight:1000}
+.subs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-height:220px;overflow:auto}
+.sub{display:flex;gap:6px;align-items:center;background:#151515;border:1px solid #292929;border-radius:8px;padding:7px;font-size:8px}
+.sub input{accent-color:#d8ad45}
+.msg{display:block;margin-top:8px;font-size:9px;color:#aaa;white-space:pre-wrap}
+.good{color:#8fe19f} .bad{color:#ff8d8d}
+@media(max-width:850px){.grid{grid-template-columns:1fr} .pitch-wrap{min-height:560px} .subs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.pitch-wrap{min-height:520px} .slot{width:82px} .shirt{width:43px;height:50px} .slot select{font-size:6px;padding:5px 2px} .subs{grid-template-columns:1fr}}
+
+.downloadable-lineup{
+  margin-top:14px;background:#080808;border:1px solid #252525;border-radius:18px;
+  overflow:hidden;padding:16px;
+}
+.download-head{text-align:center;padding:4px 8px 14px}
+.download-logo{
+  display:block;width:82px;height:82px;object-fit:contain;margin:0 auto 8px;
+  filter:drop-shadow(0 5px 12px rgba(216,173,69,.25));
+}
+.download-fixture{font-size:18px;font-weight:1000;color:#fff;text-transform:uppercase;letter-spacing:.4px}
+.download-title{font-size:10px;color:#d8ad45;font-weight:1000;letter-spacing:1.4px;margin-top:4px}
+.download-meta{font-size:8px;color:#777;margin-top:4px}
+.download-lineup .pitch-wrap{margin-top:0}
+.download-summary{padding:13px 4px 2px}
+.download-formation{
+  color:#fff;font-weight:1000;font-size:11px;text-align:center;margin-bottom:10px
+}
+.download-formation b{color:#d8ad45}
+.download-subs-title{font-size:8px;font-weight:1000;color:#d8ad45;letter-spacing:1px;margin-bottom:5px}
+.download-subs-list{
+  color:#fff;font-size:9px;font-weight:800;line-height:1.65;min-height:18px
+}
+.lineup-controls-lower{
+  margin-top:14px;padding-top:12px;border-top:1px solid #252525
+}
+.download-button-row{
+  display:flex;justify-content:flex-end;margin-top:8px
+}
+.download-icon-btn{
+  width:38px;height:38px;border-radius:10px;border:1px solid rgba(216,173,69,.4);
+  background:#111;color:#d8ad45;display:inline-grid;place-items:center;font-size:18px;
+  cursor:pointer;font-weight:1000
+}
+.export-player-name{
+  margin-top:3px;color:#fff;font-size:8px;font-weight:1000;text-transform:uppercase;
+  text-align:center;text-shadow:0 2px 3px #000;line-height:1.15
+}
+.export-only{display:none}
+.nl4-exporting .export-only{display:block}
+.nl4-exporting .screen-only{display:none!important}
+.nl4-exporting .slot select{display:none!important}
+.nl4-exporting .slot{width:112px}
+.nl4-exporting .export-player-name{display:block!important}
+@media(max-width:520px){
+  .download-logo{width:64px;height:64px}
+  .download-fixture{font-size:14px}
+  .downloadable-lineup{padding:10px}
 }
 
-.quick-player-select{
-  display:grid;
-  grid-template-columns:auto minmax(220px,1fr) auto;
-  gap:10px;
-  align-items:center;
-  padding:14px 18px;
-  border-bottom:1px solid rgba(255,255,255,.08);
-  background:#0d0d0d
-}
-.quick-player-select label{font-size:10px;font-weight:1000;color:#d8ad45;letter-spacing:1px}
-.quick-player-select select{
-  width:100%;min-height:42px;border:1px solid rgba(255,255,255,.14);
-  border-radius:10px;background:#171717;color:#fff;padding:0 12px;font-weight:900
-}
-.quick-player-select button{
-  min-height:42px;border:0;border-radius:10px;background:#d6001f;color:#fff;
-  padding:0 14px;font-weight:1000;cursor:pointer
-}
-@media(max-width:700px){
-  .quick-player-select{grid-template-columns:1fr;padding:12px}
-  .quick-player-select label{display:block}
-}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-
-<style>
-/* Fan XI v4: player photos replace shirts */
-.fan-slot{height:132px!important}
-.slot-button{overflow:visible!important}
-.player-pitch-photo{
-  position:absolute;
-  left:50%;
-  top:0;
-  transform:translateX(-50%);
-  width:64px;
-  height:64px;
-  border-radius:50%;
-  object-fit:cover;
-  object-position:center top;
-  background:#171717;
-  border:3px solid rgba(255,255,255,.9);
-  box-shadow:0 9px 16px rgba(0,0,0,.5);
-}
-.player-pitch-placeholder{
-  position:absolute;
-  left:50%;
-  top:0;
-  transform:translateX(-50%);
-  display:grid;
-  place-items:center;
-  width:64px;
-  height:64px;
-  border-radius:50%;
-  background:linear-gradient(180deg,#252525,#111);
-  border:2px dashed rgba(255,255,255,.5);
-  color:#d8ad45;
-  font-size:20px;
-  font-weight:1000;
-}
-.slot-name{top:69px!important}
-@media(max-width:700px){
-  .fan-slot{height:104px!important}
-  .player-pitch-photo,.player-pitch-placeholder{width:48px;height:48px}
-  .player-pitch-placeholder{font-size:15px}
-  .slot-name{top:53px!important}
-}
-</style>
-
-
-<style>
-/* Fan XI v5: remove the red number badge completely */
-@media(max-width:700px){
-  }
-</style>
-
-
-<style>
-/* V6: clean pitch — no red/position overlay badges */
-.slot-pos,.player-pitch-number,.shirt,.shirt-number{display:none!important}
-.slot-name{top:70px!important}
-@media(max-width:700px){.slot-name{top:54px!important}}
-</style>
-
-<style>
-/* V7: preserve the green football pitch in downloaded images */
-#predictionExport .football-pitch,
-.prediction-export-clone .football-pitch{
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.05),transparent 18%),
-    repeating-linear-gradient(
-      0deg,
-      #30994c 0%,
-      #30994c 10%,
-      #278b43 10%,
-      #278b43 20%
-    )!important;
-  background-color:#278b43!important;
-}
-</style>
-
-
-<style>
-/* Fan XI v8 — substitute selector */
-.selected-subs{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  padding:14px 18px 18px;
-}
-.sub-chip{
-  display:inline-flex;
-  align-items:center;
-  gap:7px;
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:999px;
-  background:#171717;
-  color:#fff;
-  padding:7px 9px 7px 11px;
-  font-size:10px;
-  font-weight:900;
-}
-.sub-chip button{
-  width:22px;
-  height:22px;
-  display:grid;
-  place-items:center;
-  border:0;
-  border-radius:50%;
-  background:#2b2b2b;
-  color:#ff7185;
-  cursor:pointer;
-  padding:0;
-  font-weight:1000;
-}
-.sub-chip button:hover{background:#3a3a3a}
-.substitute-picker{margin-top:14px}
-@media(max-width:700px){
-  .selected-subs{padding:12px;gap:6px}
-  .sub-chip{font-size:8px;padding:6px 8px}
-}
-</style>
-
-<style>
-/* V9 — viewer-selectable Arsenal kit colours */
-.prediction-board{
-  --kit-primary:#d6001f;
-  --kit-secondary:#ffffff;
-  --kit-deep:#8f0016;
-  --kit-text:#ffffff;
-  --kit-secondary-text:#111111;
-}
-
-/* HOME: replace dark/black accents with red, gold accents with white */
-.prediction-board.kit-home{
-  --kit-primary:#d6001f;
-  --kit-secondary:#ffffff;
-  --kit-deep:#8f0016;
-  --kit-text:#ffffff;
-  --kit-secondary-text:#111111;
-}
-
-/* AWAY: blue and yellow */
-.prediction-board.kit-away{
-  --kit-primary:#123c88;
-  --kit-secondary:#f4d62b;
-  --kit-deep:#08245d;
-  --kit-text:#ffffff;
-  --kit-secondary-text:#111111;
-}
-
-/* Apply selected kit colours to the downloadable lineup design */
-.prediction-board.kit-home,
-.prediction-board.kit-away{
-  background:
-    linear-gradient(180deg,var(--kit-deep) 0%,var(--kit-primary) 15%,#050607 42%,#050607 100%)!important;
-}
-
-.prediction-board .fan-label,
-.prediction-board .prediction-heading small{
-  color:var(--kit-secondary)!important;
-}
-
-.prediction-board .formation-badge{
-  background:linear-gradient(180deg,var(--kit-primary),var(--kit-deep))!important;
-  color:var(--kit-text)!important;
-  border-color:var(--kit-secondary)!important;
-  box-shadow:0 6px 0 var(--kit-deep)!important;
-}
-
-.prediction-board .slot-name{
-  background:var(--kit-primary)!important;
-  color:var(--kit-text)!important;
-  border-color:var(--kit-secondary)!important;
-}
-
-.prediction-board .player-pitch-photo,
-.prediction-board .player-pitch-placeholder{
-  border-color:var(--kit-secondary)!important;
-}
-
-.prediction-board .subs-strip{
-  background:var(--kit-primary)!important;
-  border-color:var(--kit-secondary)!important;
-  color:var(--kit-text)!important;
-}
-
-.prediction-board .subs-strip b{
-  color:var(--kit-secondary)!important;
-}
-
-.prediction-board.kit-away .subs-strip,
-.prediction-board.kit-away .slot-name{
-  color:#fff!important;
-}
-
-.prediction-board.kit-away .fan-label,
-.prediction-board.kit-away .prediction-heading small,
-.prediction-board.kit-away .subs-strip b{
-  color:#f4d62b!important;
-}
-
-.kit-preview{
-  display:inline-flex;
-  align-items:center;
-  gap:5px;
-  margin-left:4px;
-}
-.kit-dot{
-  width:14px;height:14px;border-radius:50%;border:1px solid rgba(255,255,255,.45)
-}
-.kit-dot.primary{background:var(--kit-primary)}
-.kit-dot.secondary{background:var(--kit-secondary)}
-
-@media(max-width:700px){
-  .builder-controls label[for="kitSelect"]{margin-left:0}
-}
-</style>
-
-
-<style>
-/* V10 — kit colours belong to the PLAYERS, not the board or player names */
-
-/* Restore the original dark downloadable board */
-.prediction-board.kit-home,
-.prediction-board.kit-away{
-  background:linear-gradient(180deg,#090b0f,#050607)!important;
-}
-
-/* Restore original heading/accent colours */
-.prediction-board .fan-label{
-  color:#d8ad45!important;
-}
-.prediction-board .prediction-heading small{
-  color:#d8ad45!important;
-}
-
-/* Keep formation badge in its original red style */
-.prediction-board .formation-badge{
-  background:linear-gradient(180deg,#e3062c,#9f001b)!important;
-  color:#fff!important;
-  border-color:rgba(255,255,255,.3)!important;
-  box-shadow:0 6px 0 #5c0010!important;
-}
-
-/* Restore player names to their original dark nameplate */
-.prediction-board .slot-name,
-.prediction-board.kit-home .slot-name,
-.prediction-board.kit-away .slot-name{
-  background:rgba(2,7,18,.95)!important;
-  color:#fff!important;
-  border-color:rgba(255,255,255,.4)!important;
-}
-
-/* Restore substitute area */
-.prediction-board .subs-strip,
-.prediction-board.kit-home .subs-strip,
-.prediction-board.kit-away .subs-strip{
-  background:transparent!important;
-  color:#aaa!important;
-  border-color:rgba(255,255,255,.14)!important;
-}
-.prediction-board .subs-strip b,
-.prediction-board.kit-home .subs-strip b,
-.prediction-board.kit-away .subs-strip b{
-  color:#fff!important;
-}
-
-/* HOME PLAYER: red with white ring/accent */
-.prediction-board.kit-home .player-pitch-photo{
-  background:#d6001f!important;
-  border:5px solid #fff!important;
-  box-shadow:
-    0 0 0 5px #d6001f,
-    0 10px 18px rgba(0,0,0,.55)!important;
-}
-.prediction-board.kit-home .player-pitch-placeholder{
-  background:#d6001f!important;
-  color:#fff!important;
-  border:5px solid #fff!important;
-  box-shadow:
-    0 0 0 5px #d6001f,
-    0 10px 18px rgba(0,0,0,.55)!important;
-}
-
-/* AWAY PLAYER: blue with yellow ring/accent */
-.prediction-board.kit-away .player-pitch-photo{
-  background:#123c88!important;
-  border:5px solid #f4d62b!important;
-  box-shadow:
-    0 0 0 5px #123c88,
-    0 10px 18px rgba(0,0,0,.55)!important;
-}
-.prediction-board.kit-away .player-pitch-placeholder{
-  background:#123c88!important;
-  color:#f4d62b!important;
-  border:5px solid #f4d62b!important;
-  box-shadow:
-    0 0 0 5px #123c88,
-    0 10px 18px rgba(0,0,0,.55)!important;
-}
-</style>
-
-
-<style>
-.fan-submit-panel,.community-xi{
-  margin:0 0 16px;
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:18px;
-  background:#101010;
-  padding:18px;
-}
-.fan-submit-panel{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) auto;
-  gap:14px;
-  align-items:center;
-}
-.fan-submit-kicker{
-  display:block;color:#d8ad45;font-size:9px;font-weight:1000;letter-spacing:1.4px;margin-bottom:5px
-}
-.fan-submit-panel h2,.community-xi h2{margin:0;font-size:20px}
-.fan-submit-panel p,.community-note{margin:7px 0 0;color:#888;font-size:11px;line-height:1.5}
-#submitPredictionBtn{
-  min-height:44px;border:0;border-radius:10px;background:#d6001f;color:#fff;
-  padding:0 16px;font-weight:1000;cursor:pointer
-}
-#submitPredictionBtn:disabled{opacity:.5;cursor:not-allowed}
-.submit-status{grid-column:1/-1;font-size:10px;font-weight:900;color:#aaa}
-.submit-status.success{color:#75d68c}.submit-status.error{color:#ff7185}
-.community-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
-.community-head strong{font-size:10px;color:#d8ad45}
-.community-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:13px}
-.community-player{
-  border:1px solid rgba(255,255,255,.09);border-radius:10px;background:#151515;padding:10px
-}
-.community-player small{display:block;color:#d8ad45;font-size:8px;font-weight:1000;margin-bottom:4px}
-.community-player b{display:block;font-size:10px}
-.community-player span{display:block;color:#777;font-size:8px;margin-top:4px}
-@media(max-width:700px){
- .fan-submit-panel{grid-template-columns:1fr}
- #submitPredictionBtn{width:100%}
- .community-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-}
-</style>
-
-<style>
-.score-prediction-box{grid-column:1/-1;border-top:1px solid rgba(255,255,255,.08);padding-top:14px}
-.score-prediction-row{display:flex;align-items:flex-end;justify-content:center;gap:12px}
-.score-prediction-row label{display:grid;gap:5px;text-align:center;color:#aaa;font-size:9px;font-weight:900}
-.score-prediction-row input{
- width:70px;height:50px;border:1px solid rgba(255,255,255,.15);border-radius:10px;
- background:#171717;color:#fff;text-align:center;font-size:22px;font-weight:1000
-}
-.score-prediction-row strong{font-size:24px;padding-bottom:9px;color:#777}
-</style>
-
-<style>
-.score-probability-panel{
- margin:0 0 16px;border:1px solid rgba(255,255,255,.1);border-radius:18px;background:#101010;padding:18px
-}
-.score-probability-list{display:grid;gap:8px;margin-top:14px}
-.score-probability-row{
- display:grid;grid-template-columns:minmax(90px,auto) 1fr auto;gap:10px;align-items:center;
- border:1px solid rgba(255,255,255,.07);border-radius:10px;background:#151515;padding:9px 10px
-}
-.score-probability-score{font-size:11px;font-weight:1000;color:#fff}
-.score-probability-track{height:7px;border-radius:999px;background:#242424;overflow:hidden}
-.score-probability-fill{height:100%;border-radius:inherit;background:#d8ad45}
-.score-probability-value{font-size:11px;font-weight:1000;color:#d8ad45;min-width:46px;text-align:right}
-.score-probability-votes{display:block;font-size:7px;color:#777;margin-top:2px}
-</style>
-
-<style>
-.prediction-choice-panel{margin:0 0 16px;border:1px solid rgba(255,255,255,.1);border-radius:18px;background:#101010;padding:18px}
-.prediction-choice-head h2{margin:0;font-size:21px}.prediction-choice-head p{color:#888;font-size:11px}
-.prediction-choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
-.prediction-choice-card{position:relative;border:1px solid rgba(255,255,255,.09);border-radius:15px;background:#151515;padding:16px;overflow:hidden}
-.prediction-choice-number{position:absolute;right:12px;top:8px;font-size:28px;font-weight:1000;color:rgba(216,173,69,.12)}
-.prediction-choice-card h3{margin:0 0 7px;font-size:15px}.prediction-choice-card p{margin:0 0 14px;color:#777;font-size:9px}
-.prediction-choice-card button,.submit-both-btn{border:0;border-radius:9px;background:#d6001f;color:#fff;min-height:40px;padding:0 14px;font-weight:1000;cursor:pointer}
-.prediction-choice-card button{width:100%;margin-top:12px}.submit-both-btn{display:block;margin:14px auto 0;background:#d8ad45;color:#111}
-@media(max-width:700px){.prediction-choice-grid{grid-template-columns:1fr}.submit-both-btn{width:100%}}
-</style>
 </head>
-<body class="nl4-unified-sidebar predict-page">
-<button id="nl4MenuToggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation">☰</button>
-<div class="app-shell">
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-top">
-    <a class="logo" href="index.html">
-      <span class="logo-box nl4-logo-box"><img src="https://i.postimg.cc/GhGgj8G7/75c7b198-597a-4288-abae-723c809c34fa.png" alt="NL4"></span>
-      <span class="nl4-brand-text"><b>NORTH LONDON</b><small>FOREVER</small></span>
-    </a>
-  </div>
-  <nav class="side-nav" id="sideNav">
-    <p class="nav-label">FAN HUB</p>
-    <a class="nav-link" href="index.html"><span>⌂</span> Home</a>
-    <a class="nav-link active" href="fixtures.html"><span>◷</span> Fixtures</a>
-    <a class="nav-link" href="index.html#calendar"><span>▣</span> Calendar</a>
-    <p class="nav-label">COMPETITIONS</p>
-    <a class="nav-link" href="premier-league.html"><span>🏆</span> Premier League</a>
-    <p class="nav-label">TEAM</p>
-    <a class="nav-link" href="players.html"><span>♙</span> Players</a>
-    <a class="nav-link" href="index.html#news"><span>▤</span> Latest News</a>
-    <div class="nav-divider"></div>
-    <a class="treasure-link" href="trophies.html"><span>🔐</span><b>Treasure Room</b><small>Explore Arsenal history</small></a>
-  </nav>
-  <div class="sidebar-bottom"><span>COYG</span><span>1886 • FOREVER</span></div>
-</aside>
-<div class="mobile-overlay" id="overlay"></div>
-
-<main class="main predict-main">
-<div class="predict-shell">
-<a class="predict-back" href="fixtures.html">← Back to Fixtures</a>
-<section class="predict-intro">
-  <p class="eyebrow">NL4 • FAN PREDICTION</p>
-  <h1>BUILD YOUR XI</h1>
-  <p>Choose a formation, select your Arsenal starting eleven, and download your own predicted lineup. Your prediction stays separate from the official Admin lineup.</p>
+<body data-kit="home">
+<div class="shell">
+<a class="back" href="fixtures.html">← Back to Fixtures</a>
+<section class="hero">
+<div class="eyebrow">NL4 FAN PREDICTION</div>
+<h1 id="heading">Loading fixture…</h1>
+<div id="meta" class="muted">Connecting to Supabase…</div>
 </section>
 
-<div class="builder-controls">
-  <label for="formationSelect">FORMATION</label>
-  <select id="formationSelect">
-    <option>4-3-3</option><option>4-2-3-1</option><option>4-4-2</option><option>3-4-3</option><option>3-5-2</option><option>4-1-4-1</option>
-  </select>
-
-  <label for="kitSelect">KIT</label>
-  <select id="kitSelect">
-    <option value="home">HOME — Red / White</option>
-    <option value="away">AWAY — Blue / Yellow</option>
-  </select>
-
-  <button type="button" id="clearPredictionBtn" class="clear-btn">Clear XI</button>
-  <span class="selection-note" id="selectionCount">0 / 11 selected</span>
+<div class="grid">
+<section class="card">
+<div class="eyebrow">MATCH PREDICTION</div><h2>Predict the Score</h2>
+<p class="muted">Your score prediction is sent to the same Supabase fan-prediction system that Admin reads.</p>
+<div class="score-row">
+<strong id="homeTeam">Home</strong><input id="homeScore" type="number" min="0" max="30" value="0"><span class="vs">–</span>
+<input id="awayScore" type="number" min="0" max="30" value="0"><strong id="awayTeam">Away</strong>
 </div>
-
-
-
-<section class="prediction-choice-panel">
-  <div class="prediction-choice-head">
-    <span class="fan-submit-kicker">CHOOSE YOUR PREDICTION</span>
-    <h2>What do you want to predict?</h2>
-    <p>Starting Lineup and Match Score are separate. Submit either one, or submit both.</p>
-  </div>
-
-  <div class="prediction-choice-grid">
-    <article class="prediction-choice-card">
-      <span class="prediction-choice-number">01</span>
-      <h3>Starting Lineup Prediction</h3>
-      <p>Choose formation, Starting XI, substitutes and kit.</p>
-      <button type="button" id="submitLineupPredictionBtn">SUBMIT LINEUP</button>
-      <span id="submitLineupStatus" class="submit-status"></span>
-    </article>
-
-    <article class="prediction-choice-card">
-      <span class="prediction-choice-number">02</span>
-      <h3>Score Prediction</h3>
-      <p>Predict the final score without needing to create a lineup.</p>
-      <div class="score-prediction-row">
-        <label><span id="scoreHomeTeam">Home</span><input id="predictedHomeScore" type="number" min="0" max="30" inputmode="numeric" placeholder="0"></label>
-        <strong>–</strong>
-        <label><span id="scoreAwayTeam">Away</span><input id="predictedAwayScore" type="number" min="0" max="30" inputmode="numeric" placeholder="0"></label>
-      </div>
-      <button type="button" id="submitScorePredictionBtn">SUBMIT SCORE</button>
-      <span id="submitScoreStatus" class="submit-status"></span>
-    </article>
-  </div>
-
-  <button type="button" id="submitBothPredictionBtn" class="submit-both-btn">SUBMIT BOTH PREDICTIONS</button>
-  <span id="submitBothStatus" class="submit-status"></span>
+<button id="saveScore" class="btn" type="button">Submit Score Prediction</button>
+<span id="scoreMsg" class="msg"></span>
 </section>
 
-<section class="community-xi" id="communityXiSection">
-  <div class="community-head">
-    <div>
-      <span class="fan-submit-kicker">COMMUNITY</span>
-      <h2>Most Selected XI</h2>
-    </div>
-    <strong id="communitySubmissionCount">0 predictions</strong>
-  </div>
-  <p id="communityFormationText" class="community-note">The community XI will appear after fans submit predictions.</p>
-  <div class="community-grid" id="communityXiGrid"></div>
-</section>
-
-
-<section class="score-probability-panel">
-  <div class="community-head">
-    <div>
-      <span class="fan-submit-kicker">FAN SCORE FORECAST</span>
-      <h2>Score Prediction Probability</h2>
-    </div>
-    <strong id="scoreProbabilityVotes">0 votes</strong>
-  </div>
-  <p class="community-note">Based on submitted NL4 fan score predictions — not betting odds.</p>
-  <div id="scoreProbabilityList" class="score-probability-list">
-    <p class="community-note">Score probabilities will appear after fans submit predictions.</p>
-  </div>
-</section>
-
-<section class="prediction-board kit-home" id="predictionExport">
-  <div class="prediction-top">
-    <div class="prediction-heading">
-      <span class="fan-label">FAN PREDICTED XI</span>
-      <h2 id="predictionMatchup">ARSENAL VS OPPONENT</h2>
-      <small><span id="predictionVenue">VENUE TBC</span></small>
-      <img class="prediction-logo" src="nl4-lineup-logo.png" alt="NL4">
-    </div>
-    <div class="prediction-actions">
-      <span class="formation-badge" id="formationBadge">4-3-3</span>
-      <button class="download-prediction" id="downloadPredictionBtn" type="button" title="Download predicted lineup" aria-label="Download predicted lineup">⇩</button>
-    </div>
+<section class="card">
+<div class="eyebrow">STARTING XI PREDICTION</div><h2>Build Your Arsenal XI</h2>
+<div id="lineupDownloadArea" class="downloadable-lineup">
+  <div class="download-head">
+    <img class="download-logo" src="https://i.postimg.cc/GhGgj8G7/75c7b198-597a-4288-abae-723c809c34fa.png" alt="NL4">
+    <div id="downloadFixture" class="download-fixture">ARSENAL VS OPPONENT</div>
+    <div class="download-title">MY PREDICTED STARTING XI</div>
+    <div id="downloadMeta" class="download-meta"></div>
   </div>
 
   <div class="pitch-wrap">
-    <div class="pitch-stage">
-      <div class="football-pitch" id="predictionPitch">
-        <span class="penalty-box top"></span><span class="goal-box top"></span>
-        <span class="penalty-box bottom"></span><span class="goal-box bottom"></span>
-        <span class="centre-spot"></span>
-      </div>
+    <div id="pitch" class="pitch">
+      <span class="circle"></span><span class="box top"></span><span class="box bottom"></span>
     </div>
   </div>
-  <div class="subs-strip"><b>SUBSTITUTES:</b><span id="predictionSubs">No substitutes selected</span></div>
-</section>
 
-<section class="picker">
-  <div class="picker-head"><h3 id="pickerTitle">Choose GK</h3><span id="playerLoadStatus">Loading player list…</span></div>
+  <div class="download-summary">
+    <div class="download-formation">FORMATION • <b id="downloadFormation">4-3-3</b></div>
+    <div class="download-subs-title">SUBSTITUTES</div>
+    <div id="downloadSubs" class="download-subs-list">No substitutes selected yet.</div>
+  </div>
+</div>
 
-  <div class="quick-player-select">
-    <label for="playerSelect">PLAYER</label>
-    <select id="playerSelect">
-      <option value="">Loading Arsenal players…</option>
-    </select>
-    <button type="button" id="addSelectedPlayerBtn">Add to position</button>
+<div class="download-button-row">
+  <button id="downloadPredictionBtn" class="download-icon-btn" type="button" title="Download predicted lineup" aria-label="Download predicted lineup">⬇</button>
+</div>
+
+<div class="lineup-controls-lower">
+  <div class="controls">
+    <label>FORMATION<select id="formation"><option>4-3-3</option><option>4-2-3-1</option><option>4-4-2</option><option>3-4-3</option><option>3-5-2</option><option>4-1-4-1</option></select></label>
+    <label>SHIRT<select id="kit"><option value="home">Home • Red/White</option><option value="away">Away</option></select></label>
   </div>
 
-  <div class="player-grid" id="playerGrid"><div class="picker-message">Loading Arsenal players…</div></div>
-</section>
-
-<section class="picker substitute-picker">
-  <div class="picker-head">
-    <h3>Choose Substitutes</h3>
-    <span id="subCount">0 / 9 substitutes selected</span>
-  </div>
-
-  <div class="quick-player-select">
-    <label for="substituteSelect">SUBSTITUTE</label>
-    <select id="substituteSelect">
-      <option value="">Loading Arsenal players…</option>
-    </select>
-    <button type="button" id="addSubstituteBtn">Add substitute</button>
-  </div>
-
-  <div class="selected-subs" id="selectedSubs">
-    <span class="picker-message">No substitutes selected yet.</span>
-  </div>
+  <div class="subs-title">SUBSTITUTES • choose up to 9</div>
+  <div id="subs" class="subs"></div>
+  <button id="saveLineup" class="btn" type="button">Submit Lineup Prediction</button>
+  <span id="lineupMsg" class="msg"></span>
+</div>
 </section>
 </div>
-</main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
-<script src="supabase-client.js"></script>
-<script src="nl4-data.js"></script>
-<script src="shared-sidebar.js"></script>
-<script src="predict-lineup.js"></script>
+<script src="supabase-client.js?v=20260817-predict-fix"></script>
+<script>
+(function(){
+  const FALLBACK=[{name:'Ben White',pos:'Defender'},{name:'Bruno Guimarães',pos:'Midfielder'},{name:'Bukayo Saka',pos:'Forward'},{name:'Christos Tzolis',pos:'Forward'},{name:'Cristhian Mosquera',pos:'Defender'},{name:'David Raya',pos:'Goalkeeper'},{name:'Declan Rice',pos:'Midfielder'},{name:'Eberechi Eze',pos:'Midfielder'},{name:'Ethan Nwaneri',pos:'Midfielder'},{name:'Fabio Vieira',pos:'Midfielder'},{name:'Gabriel Jesus',pos:'Forward'},{name:'Gabriel Magalhães',pos:'Defender'},{name:'Gabriel Martinelli',pos:'Forward'},{name:'Illan Meslier',pos:'Goalkeeper'},{name:'Jurriën Timber',pos:'Defender'},{name:'Kai Havertz',pos:'Forward'},{name:'Kepa Arrizabalaga',pos:'Goalkeeper'},{name:'Martin Ødegaard',pos:'Midfielder'},{name:'Martín Zubimendi',pos:'Midfielder'},{name:'Mikel Merino',pos:'Midfielder'},{name:'Myles Lewis-Skelly',pos:'Defender'},{name:'Noni Madueke',pos:'Forward'},{name:'Piero Hincapié',pos:'Defender'},{name:'Reiss Nelson',pos:'Forward'},{name:'Riccardo Calafiori',pos:'Defender'},{name:'Tommy Setford',pos:'Goalkeeper'},{name:'Viktor Gyökeres',pos:'Forward'},{name:'William Saliba',pos:'Defender'}];
+  const fixtureRef=new URLSearchParams(location.search).get('fixture');
+  let fixtureUuid=null;
+  const formations={
+    '4-3-3':[['GK',50,90],['LB',15,72],['LCB',38,72],['RCB',62,72],['RB',85,72],['LCM',27,49],['CM',50,52],['RCM',73,49],['LW',18,23],['ST',50,17],['RW',82,23]],
+    '4-2-3-1':[['GK',50,90],['LB',15,72],['LCB',38,72],['RCB',62,72],['RB',85,72],['LDM',38,56],['RDM',62,56],['LAM',20,34],['CAM',50,31],['RAM',80,34],['ST',50,15]],
+    '4-4-2':[['GK',50,90],['LB',15,72],['LCB',38,72],['RCB',62,72],['RB',85,72],['LM',15,47],['LCM',38,50],['RCM',62,50],['RM',85,47],['LST',38,20],['RST',62,20]],
+    '3-4-3':[['GK',50,90],['LCB',27,72],['CB',50,74],['RCB',73,72],['LWB',14,49],['LCM',39,50],['RCM',61,50],['RWB',86,49],['LW',20,22],['ST',50,17],['RW',80,22]],
+    '3-5-2':[['GK',50,90],['LCB',27,72],['CB',50,74],['RCB',73,72],['LWB',14,50],['LCM',34,51],['CAM',50,38],['RCM',66,51],['RWB',86,50],['LST',39,19],['RST',61,19]],
+    '4-1-4-1':[['GK',50,90],['LB',15,72],['LCB',38,72],['RCB',62,72],['RB',85,72],['DM',50,59],['LM',16,42],['LCM',38,43],['RCM',62,43],['RM',84,42],['ST',50,16]]
+  };
+  let players=FALLBACK.slice();
+  let db=null;
+  const squadNumbers={
+    'David Raya':1,
+    'Kepa Arrizabalaga':13,
+    'Illan Meslier':30,
+    'Tommy Setford':35,
+    'William Saliba':2,
+    'Cristhian Mosquera':3,
+    'Ben White':4,
+    'Piero Hincapié':5,
+    'Gabriel Magalhães':6,
+    'Jurriën Timber':12,
+    'Riccardo Calafiori':33,
+    'Myles Lewis-Skelly':49,
+    'Martin Ødegaard':8,
+    'Eberechi Eze':10,
+    'Fabio Vieira':21,
+    'Fábio Vieira':21,
+    'Ethan Nwaneri':22,
+    'Mikel Merino':23,
+    'Martín Zubimendi':36,
+    'Martin Zubimendi':36,
+    'Bruno Guimarães':39,
+    'Declan Rice':41,
+    'Bukayo Saka':7,
+    'Gabriel Jesus':9,
+    'Gabriel Martinelli':11,
+    'Viktor Gyökeres':14,
+    'Christos Tzolis':17,
+    'Noni Madueke':20,
+    'Reiss Nelson':24,
+    'Kai Havertz':29
+  };
+
+  function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function voterKey(){
+    let k=localStorage.getItem('nl4_fan_voter_key');
+    if(!k){k='fan_'+(crypto.randomUUID?crypto.randomUUID():Date.now()+'_'+Math.random().toString(36).slice(2));localStorage.setItem('nl4_fan_voter_key',k);}
+    return k;
+  }
+  function options(){
+    return '<option value="">Choose player</option>'+players.map(p=>`<option value="${esc(p.name)}">${esc(p.name)} • ${esc(p.pos)}</option>`).join('');
+  }
+  function renderPitch(){
+    const slots=formations[document.getElementById('formation').value]||formations['4-3-3'];
+    document.getElementById('pitch').innerHTML='<span class="circle"></span><span class="box top"></span><span class="box bottom"></span>'+
+      slots.map(([slot,x,y])=>`<label class="slot" style="left:${x}%;top:${y}%"><div class="shirt"><span class="shirt-number" data-shirt-number></span></div><div class="slot-name">${slot}</div><select class="screen-only" data-slot="${slot}">${options()}</select><div class="export-player-name export-only" data-export-name>SELECT PLAYER</div></label>`).join('');
+  }
+  function renderSubs(){
+    document.getElementById('subs').innerHTML=players.map((p,i)=>`<label class="sub"><input type="checkbox" value="${esc(p.name)}" data-sub><span>${esc(p.name)} <small>• ${esc(p.pos)}</small></span></label>`).join('');
+  }
+
+  function updateShirtNumber(select){
+    const slot=select.closest('.slot');
+    const num=slot?.querySelector('[data-shirt-number]');
+    if(!num)return;
+    const name=select.value.trim();
+    num.textContent=name && squadNumbers[name] != null ? String(squadNumbers[name]) : '';
+    const exportName=slot?.querySelector('[data-export-name]');
+    if(exportName) exportName.textContent=name || 'SELECT PLAYER';
+  }
+  function setMsg(id,text,good=false){
+    const e=document.getElementById(id); e.textContent=text; e.className='msg '+(good?'good':'bad');
+  }
+
+  // Render useful UI immediately, before any network call.
+  renderPitch(); renderSubs();
+  const initialFormation=document.getElementById('downloadFormation');
+  if(initialFormation)initialFormation.textContent=document.getElementById('formation').value;
+  updateDownloadSubs?.();
+
+  async function waitForDb(){
+    for(let i=0;i<40;i++){
+      if(window.nl4Supabase && typeof window.nl4Supabase.from==='function') return window.nl4Supabase;
+      await new Promise(r=>setTimeout(r,100));
+    }
+    return null;
+  }
+
+  async function init(){
+    const boot=document.getElementById('bootStatus') || {textContent:'',className:''};
+    if(!fixtureRef){boot.textContent='ERROR • fixture ID missing from URL';boot.className='status bad';return;}
+    db=await waitForDb();
+    if(!db){boot.textContent='SUPABASE CLIENT NOT FOUND • check supabase-client.js';boot.className='status bad';return;}
+    boot.textContent='SUPABASE CONNECTED • resolving fixture';boot.className='status good';
+
+    const isUuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(fixtureRef);
+    const baseQuery=db.from('fixtures')
+      .select('id,external_fixture_id,home_team,away_team,is_home,opponent,kickoff_at,status,is_published');
+
+    const fixtureRes=isUuid
+      ? await baseQuery.eq('id',fixtureRef).maybeSingle()
+      : await baseQuery.eq('external_fixture_id',fixtureRef).maybeSingle();
+
+    if(fixtureRes.error || !fixtureRes.data){
+      boot.textContent='FIXTURE LOAD FAILED • '+(fixtureRes.error?.message||'not found');boot.className='status bad';return;
+    }
+
+    const f=fixtureRes.data;
+    fixtureUuid=f.id;
+    restoreScorePredictionLock();
+    const home=f.home_team||(f.is_home?'Arsenal':f.opponent)||'Home', away=f.away_team||(f.is_home?f.opponent:'Arsenal')||'Away';
+    document.getElementById('heading').textContent=`${home} vs ${away}`;
+    document.getElementById('homeTeam').textContent=home; document.getElementById('awayTeam').textContent=away;
+    const fixtureDate=new Date(f.kickoff_at).toLocaleString();
+    document.getElementById('meta').textContent=fixtureDate;
+    const dlFixture=document.getElementById('downloadFixture');
+    const dlMeta=document.getElementById('downloadMeta');
+    if(dlFixture) dlFixture.textContent=`${home} vs ${away}`;
+    if(dlMeta) dlMeta.textContent=fixtureDate;
+
+    const squadRes=await db.from('premier_league_player_stats').select('player_name,position').eq('season','2026/27').order('player_name');
+    if(!squadRes.error && squadRes.data?.length){
+      players=squadRes.data.map(x=>({name:String(x.player_name||'').trim(),pos:String(x.position||'Player')})).filter(x=>x.name);
+      renderPitch();renderSubs();
+      boot.textContent=`READY • ${players.length} Arsenal players loaded • fixture resolved`;
+      boot.className='status good';
+    } else {
+      boot.textContent=`READY WITH FALLBACK SQUAD • ${players.length} players • fixture resolved`;
+      boot.className='status good';
+    }
+
+    const closed=new Date(f.kickoff_at)<=new Date() || ['live','1h','ht','2h','et','fulltime','finished','ft','aet','pen','played'].includes(String(f.status||'').toLowerCase());
+    if(closed){document.getElementById('saveScore').disabled=true;document.getElementById('saveLineup').disabled=true;setMsg('scoreMsg','Predictions are closed.');setMsg('lineupMsg','Predictions are closed.');}
+  }
+
+  document.getElementById('formation').addEventListener('change',()=>{
+    renderPitch();
+    const f=document.getElementById('downloadFormation');
+    if(f)f.textContent=document.getElementById('formation').value;
+  });
+  document.getElementById('pitch').addEventListener('change',e=>{
+    if(e.target.matches('[data-slot]')) updateShirtNumber(e.target);
+  });
+  document.getElementById('kit').addEventListener('change',e=>document.body.dataset.kit=e.target.value);
+  function updateDownloadSubs(){
+    const checked=[...document.querySelectorAll('[data-sub]:checked')].map(x=>x.value);
+    const el=document.getElementById('downloadSubs');
+    if(el) el.textContent=checked.length
+      ? checked.map(name=>`${squadNumbers[name] ?? ''}${squadNumbers[name] != null ? ' ' : ''}${name}`).join(' • ')
+      : 'No substitutes selected yet.';
+  }
+
+  document.getElementById('subs').addEventListener('change',()=>{
+    const checked=[...document.querySelectorAll('[data-sub]:checked')];
+    if(checked.length>9){
+      checked.at(-1).checked=false;
+      setMsg('lineupMsg','Maximum 9 substitutes.');
+    }
+    updateDownloadSubs();
+  });
+
+  function scoreLockKey(){
+    return fixtureUuid ? `nl4-score-prediction:${fixtureUuid}` : null;
+  }
+  function lockScorePredictionUI(homeScore=null,awayScore=null){
+    const btn=document.getElementById('saveScore');
+    const hs=document.getElementById('homeScore');
+    const as=document.getElementById('awayScore');
+    if(hs)hs.disabled=true;
+    if(as)as.disabled=true;
+    if(btn){btn.disabled=true;btn.textContent='Score Prediction Submitted';}
+    const suffix=(homeScore!==null && awayScore!==null) ? ` • ${homeScore}-${awayScore}` : '';
+    setMsg('scoreMsg',`SAVED ✓ One score prediction allowed for this fixture${suffix}.`,true);
+  }
+  function restoreScorePredictionLock(){
+    const key=scoreLockKey();
+    if(!key)return;
+    try{
+      const saved=JSON.parse(localStorage.getItem(key)||'null');
+      if(saved)lockScorePredictionUI(saved.home,saved.away);
+    }catch(_){}
+  }
+
+  document.getElementById('saveScore').addEventListener('click',async()=>{
+    if(!db){setMsg('scoreMsg','Supabase is not connected.');return;}
+    if(!fixtureUuid){setMsg('scoreMsg','Fixture has not resolved to a Supabase UUID yet.');return;}
+    const hs=Number(document.getElementById('homeScore').value), as=Number(document.getElementById('awayScore').value);
+    setMsg('scoreMsg','Saving score prediction…');
+    const {data,error}=await db.rpc('submit_fan_prediction',{
+      p_fixture_id:fixtureUuid,p_voter_key:voterKey(),p_mode:'score',p_formation:null,p_kit:null,
+      p_starters:[],p_substitutes:[],p_home_score:hs,p_away_score:as
+    });
+    if(error){
+      if(String(error.message||'').toLowerCase().includes('already submitted a score prediction')){
+        lockScorePredictionUI();
+        return;
+      }
+      return setMsg('scoreMsg','SAVE FAILED • '+error.message);
+    }
+    try{
+      const key=scoreLockKey();
+      if(key)localStorage.setItem(key,JSON.stringify({home:hs,away:as,savedAt:new Date().toISOString()}));
+    }catch(_){}
+    lockScorePredictionUI(hs,as);
+    console.log('NL4 score prediction saved',data);
+  });
+
+  document.getElementById('saveLineup').addEventListener('click',async()=>{
+    if(!db){setMsg('lineupMsg','Supabase is not connected.');return;}
+    if(!fixtureUuid){setMsg('lineupMsg','Fixture has not resolved to a Supabase UUID yet.');return;}
+    const starters=[...document.querySelectorAll('[data-slot]')].map(s=>({slot:s.dataset.slot,player_name:s.value.trim()}));
+    if(starters.some(x=>!x.player_name)) return setMsg('lineupMsg','Choose all 11 starters first.');
+    if(new Set(starters.map(x=>x.player_name.toLowerCase())).size!==11) return setMsg('lineupMsg','Each starter must be a different player.');
+    const subs=[...document.querySelectorAll('[data-sub]:checked')].map(x=>x.value);
+    const starterSet=new Set(starters.map(x=>x.player_name.toLowerCase()));
+    if(subs.some(x=>starterSet.has(x.toLowerCase()))) return setMsg('lineupMsg','A starter cannot also be a substitute.');
+    setMsg('lineupMsg','Saving lineup prediction…');
+    const {data,error}=await db.rpc('submit_fan_prediction',{
+      p_fixture_id:fixtureUuid,p_voter_key:voterKey(),p_mode:'lineup',
+      p_formation:document.getElementById('formation').value,p_kit:document.getElementById('kit').value,
+      p_starters:starters,p_substitutes:subs.map(player_name=>({player_name})),p_home_score:null,p_away_score:null
+    });
+    if(error) return setMsg('lineupMsg','SAVE FAILED • '+error.message);
+    setMsg('lineupMsg','SAVED ✓ Lineup prediction sent to Admin Fan Predictions.',true);
+    console.log('NL4 lineup prediction saved',data);
+  });
+
+  async function downloadPredictedLineup(){
+    const btn=document.getElementById('downloadPredictionBtn');
+    const board=document.getElementById('lineupDownloadArea');
+    if(!btn||!board)return;
+    if(typeof window.html2canvas!=='function'){
+      alert('The download tool could not load. Check your internet connection and try again.');
+      return;
+    }
+
+    const starters=[...document.querySelectorAll('[data-slot]')];
+    if(starters.some(s=>!s.value.trim())){
+      alert('Choose all 11 starting players before downloading your predicted XI.');
+      return;
+    }
+
+    const oldText=btn.textContent;
+    btn.disabled=true;
+    btn.textContent='…';
+
+    let host=null;
+    try{
+      host=document.createElement('div');
+      host.style.position='fixed';
+      host.style.left='-100000px';
+      host.style.top='0';
+      host.style.width=Math.max(board.scrollWidth,board.getBoundingClientRect().width)+'px';
+      host.style.background='#080808';
+
+      const clone=board.cloneNode(true);
+      clone.classList.add('nl4-exporting');
+
+      // Remove all form controls from the downloaded image.
+      clone.querySelectorAll('select,input,button').forEach(el=>el.remove());
+      clone.querySelectorAll('.screen-only').forEach(el=>el.remove());
+      clone.querySelectorAll('.export-only').forEach(el=>el.style.display='block');
+
+      // Ensure names in the clone reflect current selections.
+      const liveSlots=[...board.querySelectorAll('.slot')];
+      const cloneSlots=[...clone.querySelectorAll('.slot')];
+      liveSlots.forEach((liveSlot,i)=>{
+        const selected=liveSlot.querySelector('[data-slot]')?.value?.trim()||'';
+        const target=cloneSlots[i]?.querySelector('[data-export-name]');
+        if(target) target.textContent=selected;
+      });
+
+      host.appendChild(clone);
+      document.body.appendChild(host);
+
+      const canvas=await html2canvas(clone,{
+        backgroundColor:'#080808',
+        scale:Math.min(2,window.devicePixelRatio||1.5),
+        useCORS:true,
+        allowTaint:false,
+        logging:false
+      });
+
+      const fixture=(document.getElementById('downloadFixture')?.textContent||'arsenal-predicted-xi')
+        .replace(/[^A-Za-z0-9\-]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase();
+
+      const link=document.createElement('a');
+      link.download=`${fixture || 'arsenal-predicted-xi'}-my-predicted-xi.png`;
+      link.href=canvas.toDataURL('image/png',1);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }catch(err){
+      console.error('Predicted lineup download failed:',err);
+      alert('Could not create your predicted lineup image. Please try again.');
+    }finally{
+      if(host)host.remove();
+      btn.disabled=false;
+      btn.textContent=oldText;
+    }
+  }
+
+  document.getElementById('downloadPredictionBtn')?.addEventListener('click',downloadPredictedLineup);
+
+  init().catch(err=>{const boot=document.getElementById('bootStatus');if(boot){boot.textContent='PAGE ERROR • '+err.message;boot.className='status bad';}console.error(err);});
+})();
+</script>
 </body>
 </html>

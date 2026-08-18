@@ -683,13 +683,10 @@
       const resolvedSlots = resolveFormationSlots(starters, formation);
       const figures = starters.map((row,index) => {
         const slot = resolvedSlots[index];
-        const [baseX,baseY] = PITCH_COORDS[slot] || PITCH_COORDS.CM;
-        // Manual Admin positions are stored as normalized pitch percentages.
-        // Fall back to formation slots for older lineups that have not been dragged yet.
-        const savedX = Number(row.position_x);
-        const savedY = Number(row.position_y);
-        const x = Number.isFinite(savedX) && savedX >= 0 && savedX <= 100 ? savedX : baseX;
-        const y = Number.isFinite(savedY) && savedY >= 0 && savedY <= 100 ? savedY : baseY;
+        const [baseX,y] = PITCH_COORDS[slot] || PITCH_COORDS.CM;
+        // Keep the player layer in a flat full-width coordinate system.
+        // Only scale by depth; never squeeze horizontal tactical positions.
+        const x = baseX;
         const depth = (0.78 + (y/100)*0.24).toFixed(2);
         const displayName = row.player_name || 'Arsenal';
         const media = mediaMap.get(String(displayName).trim().toLowerCase()) || {};
@@ -854,7 +851,7 @@
 
       const { data: lineup, error: lineupError } = await db
         .from("match_lineups")
-        .select("player_name,position,formation,pitch_slot,position_x,position_y,is_starter,minute_on,minute_off,updated_at")
+        .select("player_name,position,formation,pitch_slot,is_starter,minute_on,minute_off,updated_at")
         .eq("fixture_id", fixture.id)
         .order("is_starter", { ascending:false })
         .order("minute_on", { ascending:true });

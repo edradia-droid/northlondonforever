@@ -10,29 +10,6 @@
   ];
 
   const TEAM_LOGOS = {
-    'AFC Bournemouth': 'https://images.fotmob.com/image_resources/logo/teamlogo/8678.png',
-    'Arsenal': 'https://images.fotmob.com/image_resources/logo/teamlogo/9825.png',
-    'Aston Villa': 'https://images.fotmob.com/image_resources/logo/teamlogo/10252.png',
-    'Brentford': 'https://images.fotmob.com/image_resources/logo/teamlogo/9937.png',
-    'Brighton & Hove Albion': 'https://images.fotmob.com/image_resources/logo/teamlogo/10204.png',
-    'Chelsea': 'https://images.fotmob.com/image_resources/logo/teamlogo/8455.png',
-    'Coventry City': 'https://images.fotmob.com/image_resources/logo/teamlogo/8669.png',
-    'Crystal Palace': 'https://images.fotmob.com/image_resources/logo/teamlogo/9826.png',
-    'Everton': 'https://images.fotmob.com/image_resources/logo/teamlogo/8668.png',
-    'Fulham': 'https://images.fotmob.com/image_resources/logo/teamlogo/9879.png',
-    'Hull City': 'https://images.fotmob.com/image_resources/logo/teamlogo/8667.png',
-    'Ipswich Town': 'https://images.fotmob.com/image_resources/logo/teamlogo/9902.png',
-    'Leeds United': 'https://images.fotmob.com/image_resources/logo/teamlogo/8463.png',
-    'Liverpool': 'https://images.fotmob.com/image_resources/logo/teamlogo/8650.png',
-    'Manchester City': 'https://images.fotmob.com/image_resources/logo/teamlogo/8456.png',
-    'Manchester United': 'https://images.fotmob.com/image_resources/logo/teamlogo/10260.png',
-    'Newcastle United': 'https://images.fotmob.com/image_resources/logo/teamlogo/10261.png',
-    'Nottingham Forest': 'https://images.fotmob.com/image_resources/logo/teamlogo/10203.png',
-    'Sunderland': 'https://images.fotmob.com/image_resources/logo/teamlogo/8472.png',
-    'Tottenham Hotspur': 'https://images.fotmob.com/image_resources/logo/teamlogo/8586.png'
-  };
-
-  const TEAM_LOGO_BACKUPS = {
     'AFC Bournemouth': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/AFC%20Bournemouth.png',
     'Arsenal': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Arsenal%20FC.png',
     'Aston Villa': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Aston%20Villa.png',
@@ -55,22 +32,8 @@
     'Tottenham Hotspur': 'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Tottenham%20Hotspur.png'
   };
 
-  function normalizeTeamName(name) {
-    const value=String(name||'').trim().replace(/\s+/g,' ');
-    const aliases={
-      'Bournemouth':'AFC Bournemouth','Brighton':'Brighton & Hove Albion',
-      'Brighton and Hove Albion':'Brighton & Hove Albion','Man City':'Manchester City',
-      'Man United':'Manchester United','Manchester Utd':'Manchester United',
-      'Newcastle':'Newcastle United','Nottm Forest':'Nottingham Forest',
-      'Nottingham Forest FC':'Nottingham Forest','Spurs':'Tottenham Hotspur',
-      'Tottenham':'Tottenham Hotspur','Sunderland AFC':'Sunderland'
-    };
-    return aliases[value]||value;
-  }
-
   function teamLogo(name) {
-    const key=normalizeTeamName(name);
-    return {primary:TEAM_LOGOS[key]||'',backup:TEAM_LOGO_BACKUPS[key]||''};
+    return TEAM_LOGOS[name] || '';
   }
 
   function escapeHtml(value) {
@@ -212,21 +175,24 @@
             <div class="unified-teams">
               <div class="unified-team">
                 <div class="unified-badge club-crest-badge ${match.home === 'Arsenal' ? 'arsenal-unified' : 'opponent-unified'}">
-                  ${match.homeLogo?.primary ? `<img class="club-crest-img" src="${escapeHtml(match.homeLogo.primary)}" data-logo-backup="${escapeHtml(match.homeLogo.backup||'')}" alt="${escapeHtml(match.home)} crest" loading="lazy" referrerpolicy="no-referrer" onerror="if(this.dataset.logoBackup){this.src=this.dataset.logoBackup;this.dataset.logoBackup='';}else{this.style.display='none';}">` : escapeHtml(match.homeCode)}
+                  ${match.homeLogo ? `<img class="club-crest-img" src="${escapeHtml(match.homeLogo)}" alt="${escapeHtml(match.home)} crest" loading="lazy" referrerpolicy="no-referrer">` : escapeHtml(match.homeCode)}
                 </div>
                 <h3>${escapeHtml(match.home)}</h3><small>HOME</small>
               </div>
               <div class="unified-score">${score}<small>${state.result ? state.label : escapeHtml(match.time)}</small></div>
               <div class="unified-team">
                 <div class="unified-badge club-crest-badge ${match.away === 'Arsenal' ? 'arsenal-unified' : 'opponent-unified'}">
-                  ${match.awayLogo?.primary ? `<img class="club-crest-img" src="${escapeHtml(match.awayLogo.primary)}" data-logo-backup="${escapeHtml(match.awayLogo.backup||'')}" alt="${escapeHtml(match.away)} crest" loading="lazy" referrerpolicy="no-referrer" onerror="if(this.dataset.logoBackup){this.src=this.dataset.logoBackup;this.dataset.logoBackup='';}else{this.style.display='none';}">` : escapeHtml(match.awayCode)}
+                  ${match.awayLogo ? `<img class="club-crest-img" src="${escapeHtml(match.awayLogo)}" alt="${escapeHtml(match.away)} crest" loading="lazy" referrerpolicy="no-referrer">` : escapeHtml(match.awayCode)}
                 </div>
                 <h3>${escapeHtml(match.away)}</h3><small>AWAY</small>
               </div>
             </div>
             <div class="unified-card-bottom">
               <span>MATCH ${String(match.matchday || '').padStart(2,'0')} / 38</span>
-              <a class="details-link" href="match-details.html?fixture=${encodeURIComponent(match.id)}">More Details →</a>
+              <div class="fixture-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <a class="predict-lineup-link details-link" href="predict-lineup.html?fixture=${encodeURIComponent(match.id)}">Predict Lineup</a>
+                <a class="details-link" href="match-details.html?fixture=${encodeURIComponent(match.id)}">More Details →</a>
+              </div>
             </div>
           </article>`;
       }).join('');
