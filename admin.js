@@ -54,6 +54,31 @@ const schemas = {
 
 
 
+
+  premier_league_matches: {
+    title: "Other Teams Premier League Result",
+    order: "matchday",
+    fields: [
+      ["season","Season","text",true],
+      ["matchday","Matchday","number",true],
+      ["home_team","Home team","select",true,[
+        "AFC Bournemouth","Aston Villa","Brentford","Brighton & Hove Albion","Chelsea",
+        "Coventry City","Crystal Palace","Everton","Fulham","Hull City","Ipswich Town",
+        "Leeds United","Liverpool","Manchester City","Manchester United","Newcastle United",
+        "Nottingham Forest","Sunderland","Tottenham Hotspur"
+      ]],
+      ["away_team","Away team","select",true,[
+        "AFC Bournemouth","Aston Villa","Brentford","Brighton & Hove Albion","Chelsea",
+        "Coventry City","Crystal Palace","Everton","Fulham","Hull City","Ipswich Town",
+        "Leeds United","Liverpool","Manchester City","Manchester United","Newcastle United",
+        "Nottingham Forest","Sunderland","Tottenham Hotspur"
+      ]],
+      ["kickoff_at","Kick-off","datetime-local",false],
+      ["status","Status","select",true,["scheduled","live","fulltime","postponed","cancelled"]],
+      ["home_score","Home score","number",false],
+      ["away_score","Away score","number",false]
+    ]
+  },
   premier_league_player_stats: {
     label: "Arsenal Player Stat",
     order: "goals",
@@ -283,6 +308,13 @@ async function recalculatePremierLeagueStandings() {
   if (fixtureError) throw fixtureError;
   if (matchesError) throw matchesError;
 
+  // A league match must be counted exactly once, even if the same fixture
+  // accidentally exists in both fixtures and premier_league_matches.
+  // The fixtures table is authoritative for Arsenal matches.
+  const countedMatches = new Set();
+  const matchKey = (home, away) =>
+    `${normalizeClubName(home).toLowerCase()}::${normalizeClubName(away).toLowerCase()}`;
+
   (arsenalFixtures || []).forEach(row => {
     const competitionName = String(row.competition || "").trim().toLowerCase();
 
@@ -293,12 +325,20 @@ async function recalculatePremierLeagueStandings() {
     const away = row.away_team || (row.is_home ? row.opponent : "Arsenal");
     const homeScore = row.is_home ? row.arsenal_score : row.opponent_score;
     const awayScore = row.is_home ? row.opponent_score : row.arsenal_score;
+    const key = matchKey(home, away);
 
+    if (!home || !away || countedMatches.has(key)) return;
+    countedMatches.add(key);
     applyResult(home, away, homeScore, awayScore);
   });
 
   (leagueMatches || []).forEach(row => {
     if (!["fulltime","finished","ft"].includes(String(row.status || "").toLowerCase())) return;
+
+    const key = matchKey(row.home_team, row.away_team);
+    if (!row.home_team || !row.away_team || countedMatches.has(key)) return;
+
+    countedMatches.add(key);
     applyResult(row.home_team, row.away_team, row.home_score, row.away_score);
   });
 
@@ -502,59 +542,27 @@ const lineupMinuteOn = document.getElementById('lineupMinuteOn');
 const lineupMinuteOff = document.getElementById('lineupMinuteOff');
 const lineupMessage = document.getElementById('lineupMessage');
 const lineupList = document.getElementById('lineupList');
-const adminLineupGrass = document.getElementById('adminLineupGrass');
-const adminLineupShirt = document.getElementById('adminLineupShirt');
-const saveLineupDisplayBtn = document.getElementById('saveLineupDisplayBtn');
-const lineupDisplayMessage = document.getElementById('lineupDisplayMessage');
+const savedLineupName = document.getElementById('savedLineupName');
+const savedLineupSelect = document.getElementById('savedLineupSelect');
+const savedLineupMessage = document.getElementById('savedLineupMessage');
+const SAVED_LINEUPS_KEY = 'nl4_saved_lineups_v2';
 
-
-const lineupShirtNumber = document.getElementById('lineupShirtNumber');
-
-/* 2026/27 Arsenal squad numbers checked against current squad sources.
-   Admin can still edit the number manually for late changes/new signings. */
-const NL4_ARSENAL_2026_27_NUMBERS = {
-  'david raya':1,
-  'william saliba':2,
-  'cristhian mosquera':3,
-  'ben white':4,
-  'piero hincapie':5,
-  'piero hincapié':5,
-  'gabriel':6,
-  'gabriel magalhaes':6,
-  'gabriel magalhães':6,
-  'bukayo saka':7,
-  'martin odegaard':8,
-  'martin ødegaard':8,
-  'gabriel jesus':9,
-  'eberechi eze':10,
-  'gabriel martinelli':11,
-  'jurrien timber':12,
-  'jurriën timber':12,
-  'kepa arrizabalaga':13,
-  'viktor gyokeres':14,
-  'viktor gyökeres':14,
-  'christian norgaard':16,
-  'christian nørgaard':16,
-  'christos tzolis':17,
-  'noni madueke':20,
-  'ethan nwaneri':22,
-  'mikel merino':23,
-  'reiss nelson':24,
-  'kai havertz':29,
-  'illan meslier':30,
-  'riccardo calafiori':33,
-  'tommy setford':35,
-  'martin zubimendi':36,
-  'martín zubimendi':36,
-  'bruno guimaraes':39,
-  'bruno guimarães':39,
-  'declan rice':41,
-  'myles lewis-skelly':49,
-  'max dowman':56
-};
-
-function nl4SquadNumber(name){
-  return NL4_ARSENAL_2026_27_NUMBERS[String(name || '').trim().toLowerCase()] ?? '';
+function getSavedLineups() {
+  try { return JSON.parse(localStorage.getItem(SAVED_LINEUPS_KEY) || '{}') || {}; }
+  catch (_) { return {}; }
+}
+function setSavedLineups(value) {
+  localStorage.setItem(SAVED_LINEUPS_KEY, JSON.stringify(value || {}));
+}
+function refreshSavedLineupSelect() {
+  if (!savedLineupSelect) return;
+  const saved = getSavedLineups();
+  const current = savedLineupSelect.value;
+  savedLineupSelect.innerHTML = '<option value="">Select saved lineup</option>' +
+    Object.keys(saved).sort((a,b)=>a.localeCompare(b)).map(name =>
+      `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`
+    ).join('');
+  if (current && saved[current]) savedLineupSelect.value = current;
 }
 
 const matchSaveMessage = document.getElementById('matchSaveMessage');
@@ -652,10 +660,9 @@ async function populateLineupPlayers() {
   }
 
   lineupPlayer.innerHTML = '<option value="">Select Arsenal player</option>' +
-    (data || []).map(p => {
-      const shirt = nl4SquadNumber(p.player_name);
-      return `<option value="${escapeHtml(p.player_name)}" data-position="${escapeHtml(p.position || '')}" data-shirt="${escapeHtml(shirt)}">${escapeHtml(p.player_name)}${shirt ? ` #${escapeHtml(shirt)}` : ''} — ${escapeHtml(p.position || 'Player')}</option>`;
-    }).join('');
+    (data || []).map(p =>
+      `<option value="${escapeHtml(p.player_name)}" data-position="${escapeHtml(p.position || '')}">${escapeHtml(p.player_name)} — ${escapeHtml(p.position || 'Player')}</option>`
+    ).join('');
 }
 
 async function loadMatchLineup() {
@@ -677,57 +684,13 @@ async function loadMatchLineup() {
     const mins = Math.max(0, Math.min(90,end) - Math.min(90,row.minute_on ?? 0));
     return `<div class="admin-event-row">
       <span class="admin-event-type">${row.is_starter ? 'START' : 'SUB'}</span>
-      <div class="admin-event-player">
-        <strong><span style="color:#d8ad45;margin-right:7px">#${escapeHtml(nl4SquadNumber(row.player_name) || '—')}</span>${escapeHtml(row.player_name)}</strong>
-        <small>${escapeHtml(row.position || 'Player')} • ${mins} min</small>
-      </div>
+      <div class="admin-event-player"><strong>${escapeHtml(row.player_name)}</strong><small>${escapeHtml(row.position || 'Player')} • ${mins} min</small></div>
       <span class="admin-event-minute">${row.is_starter ? "0'" : `${row.minute_on}'`}${row.minute_off != null ? ` → ${row.minute_off}'` : ''}</span>
       <div class="admin-event-actions">
-        <button class="danger" type="button" onclick="window.nl4DeleteLineupPlayer('${row.id}')">Remove</button>
+        <button class="danger" type="button" onclick="window.nl4DeleteLineupPlayer('${row.id}')">Delete</button>
       </div>
     </div>`;
   }).join('') : '<div class="match-empty">No Arsenal lineup recorded yet.</div>';
-}
-
-lineupPlayer.addEventListener('change', () => {
-  const selected = lineupPlayer.options[lineupPlayer.selectedIndex];
-  if (!lineupShirtNumber) return;
-  lineupShirtNumber.value = selected?.dataset?.shirt || nl4SquadNumber(lineupPlayer.value) || '';
-});
-
-
-if (saveLineupDisplayBtn) {
-  saveLineupDisplayBtn.addEventListener('click', async () => {
-    if (!currentFixture) return setMessage(lineupDisplayMessage, 'Open a fixture first.', 'error');
-
-    const payload = {
-      lineup_grass_theme: adminLineupGrass?.value === 'black' ? 'black' : 'green',
-      lineup_shirt_theme: adminLineupShirt?.value === 'away' ? 'away' : 'home'
-    };
-
-    setMessage(lineupDisplayMessage, 'Saving lineup style…');
-    const { data, error } = await db
-      .from('fixtures')
-      .update(payload)
-      .eq('id', currentFixture.id)
-      .select('lineup_grass_theme,lineup_shirt_theme')
-      .single();
-
-    if (error) {
-      const missingColumn = /lineup_(grass|shirt)_theme|schema cache|column/i.test(error.message || '');
-      return setMessage(
-        lineupDisplayMessage,
-        missingColumn
-          ? 'Database setup required: run V16-lineup-display-settings.sql once in Supabase.'
-          : error.message,
-        'error'
-      );
-    }
-
-    currentFixture.lineup_grass_theme = data?.lineup_grass_theme || payload.lineup_grass_theme;
-    currentFixture.lineup_shirt_theme = data?.lineup_shirt_theme || payload.lineup_shirt_theme;
-    setMessage(lineupDisplayMessage, 'Lineup style saved. Match Details and downloads will use it.', 'success');
-  });
 }
 
 lineupRole.addEventListener('change', () => {
@@ -737,23 +700,108 @@ lineupRole.addEventListener('change', () => {
 });
 lineupMinuteOn.disabled = true;
 
+async function saveCurrentLineupPreset() {
+  if (!currentFixture) return setMessage(savedLineupMessage, 'Open a fixture first.', 'error');
+  const name = String(savedLineupName?.value || '').trim();
+  if (!name) return setMessage(savedLineupMessage, 'Enter a name for this saved lineup.', 'error');
+
+  setMessage(savedLineupMessage, 'Saving lineup…');
+  const { data, error } = await db.from('match_lineups').select('*')
+    .eq('fixture_id', currentFixture.id)
+    .order('is_starter', { ascending:false })
+    .order('minute_on', { ascending:true });
+  if (error) return setMessage(savedLineupMessage, error.message, 'error');
+
+  const starters = (data || []).filter(row => row.is_starter);
+  if (!starters.length) return setMessage(savedLineupMessage, 'This fixture has no saved starters yet.', 'error');
+
+  const formation = starters.find(row => row.formation)?.formation || '4-3-3';
+  const saved = getSavedLineups();
+  saved[name] = {
+    formation,
+    saved_at: new Date().toISOString(),
+    players: starters.map((row, index) => ({
+      player_name: row.player_name,
+      position: row.position || null,
+      formation: row.formation || formation,
+      pitch_slot: row.pitch_slot || String(index + 1),
+      position_x: row.position_x == null ? null : Number(row.position_x),
+      position_y: row.position_y == null ? null : Number(row.position_y)
+    }))
+  };
+  setSavedLineups(saved);
+  refreshSavedLineupSelect();
+  savedLineupSelect.value = name;
+  setMessage(savedLineupMessage, `“${name}” saved for future use.`, 'success');
+}
+
+async function applySavedLineupPreset() {
+  if (!currentFixture) return setMessage(savedLineupMessage, 'Open the fixture you want to use this lineup for.', 'error');
+  const name = savedLineupSelect?.value;
+  if (!name) return setMessage(savedLineupMessage, 'Select a saved lineup.', 'error');
+  const preset = getSavedLineups()[name];
+  if (!preset?.players?.length) return setMessage(savedLineupMessage, 'That saved lineup is empty.', 'error');
+  if (!confirm(`Apply “${name}” to this fixture? The current lineup for this fixture will be replaced.`)) return;
+
+  setMessage(savedLineupMessage, 'Applying saved lineup…');
+  const cleared = await db.from('match_lineups').delete().eq('fixture_id', currentFixture.id);
+  if (cleared.error) return setMessage(savedLineupMessage, cleared.error.message, 'error');
+
+  const now = new Date().toISOString();
+  const payload = preset.players.map((row, index) => ({
+    fixture_id: currentFixture.id,
+    player_name: row.player_name,
+    position: row.position || null,
+    formation: row.formation || preset.formation || '4-3-3',
+    pitch_slot: row.pitch_slot || String(index + 1),
+    position_x: Number.isFinite(Number(row.position_x)) ? Number(row.position_x) : null,
+    position_y: Number.isFinite(Number(row.position_y)) ? Number(row.position_y) : null,
+    is_starter: true,
+    minute_on: 0,
+    minute_off: null,
+    updated_at: now
+  }));
+
+  const inserted = await db.from('match_lineups').insert(payload);
+  if (inserted.error) return setMessage(savedLineupMessage, inserted.error.message, 'error');
+
+  await loadMatchLineup();
+  setMessage(savedLineupMessage, `“${name}” applied to this match.`, 'success');
+  window.dispatchEvent(new CustomEvent('nl4-lineup-preset-applied', { detail:{ fixtureId: currentFixture.id } }));
+}
+
+function deleteSavedLineupPreset() {
+  const name = savedLineupSelect?.value;
+  if (!name) return setMessage(savedLineupMessage, 'Select a saved lineup to delete.', 'error');
+  if (!confirm(`Delete saved lineup “${name}”?`)) return;
+  const saved = getSavedLineups();
+  delete saved[name];
+  setSavedLineups(saved);
+  refreshSavedLineupSelect();
+  setMessage(savedLineupMessage, `“${name}” deleted.`, 'success');
+}
+
+document.getElementById('saveCurrentLineupPresetBtn')?.addEventListener('click', saveCurrentLineupPreset);
+document.getElementById('applySavedLineupBtn')?.addEventListener('click', applySavedLineupPreset);
+document.getElementById('deleteSavedLineupBtn')?.addEventListener('click', deleteSavedLineupPreset);
+refreshSavedLineupSelect();
+
 
 document.getElementById('clearLineupBtn').addEventListener('click', async () => {
   if (!currentFixture) return;
-  if (!confirm('Clear the entire Arsenal lineup and all substitutes for this fixture?')) return;
+  if (!confirm('Clear the entire Arsenal lineup and substitutions for this fixture? This deletes the saved lineup from Supabase.')) return;
 
   setMessage(lineupMessage, 'Clearing lineup…');
   const { error } = await db.from('match_lineups').delete().eq('fixture_id', currentFixture.id);
   if (error) return setMessage(lineupMessage, error.message, 'error');
 
   lineupPlayer.value = '';
-  if (lineupShirtNumber) lineupShirtNumber.value = '';
   lineupRole.value = 'starter';
   lineupMinuteOn.value = '0';
   lineupMinuteOn.disabled = true;
   lineupMinuteOff.value = '';
 
-  setMessage(lineupMessage, 'Entire lineup cleared.', 'success');
+  setMessage(lineupMessage, 'Lineup and substitutions cleared.', 'success');
   await loadMatchLineup();
   await loadTable('premier_league_player_stats');
 });
@@ -795,7 +843,6 @@ document.getElementById('saveLineupPlayerBtn').addEventListener('click', async (
 
   setMessage(lineupMessage,`${playerName} saved.`, 'success');
   lineupPlayer.value = '';
-  if (lineupShirtNumber) lineupShirtNumber.value = '';
   lineupRole.value = 'starter';
   lineupMinuteOn.value = '0';
   lineupMinuteOn.disabled = true;
@@ -805,10 +852,9 @@ document.getElementById('saveLineupPlayerBtn').addEventListener('click', async (
 });
 
 window.nl4DeleteLineupPlayer = async id => {
-  if (!confirm('Remove only this player from the lineup?')) return;
+  if (!confirm('Remove this player from the lineup?')) return;
   const { error } = await db.from('match_lineups').delete().eq('id',id);
   if (error) return setMessage(lineupMessage,error.message,'error');
-  setMessage(lineupMessage, 'Player removed.', 'success');
   await loadMatchLineup();
   await loadTable('premier_league_player_stats');
 };
@@ -849,6 +895,8 @@ window.nl4ManageMatch = async function(id) {
   document.getElementById('matchKickoff').value = toLocalInput(data.kickoff_at);
   document.getElementById('matchVenue').value = data.venue || '';
   document.getElementById('matchKickoffConfirmed').checked = data.kickoff_confirmed !== false;
+  document.getElementById('matchLineupShirtTheme').value = data.lineup_shirt_theme === 'away' ? 'away' : 'home';
+  document.getElementById('matchLineupGrassTheme').value = data.lineup_grass_theme === 'black' ? 'black' : 'green';
   document.getElementById('matchArsenalScore').value = data.arsenal_score ?? '';
   document.getElementById('matchOpponentScore').value = data.opponent_score ?? '';
   document.getElementById('matchHTArsenalScore').value = data.halftime_arsenal_score ?? '';
@@ -856,10 +904,6 @@ window.nl4ManageMatch = async function(id) {
   document.getElementById('matchReferee').value = data.referee || '';
   document.getElementById('matchAttendance').value = data.attendance ?? '';
   document.getElementById('matchMOTM').value = data.man_of_the_match || '';
-  if (adminLineupGrass) adminLineupGrass.value = data.lineup_grass_theme === 'black' ? 'black' : 'green';
-  if (adminLineupShirt) adminLineupShirt.value = data.lineup_shirt_theme === 'away' ? 'away' : 'home';
-  if (lineupDisplayMessage) setMessage(lineupDisplayMessage);
-
   document.getElementById('statsHomeName').textContent = home;
   document.getElementById('statsAwayName').textContent = away;
   document.getElementById('statHomePossession').value = data.home_possession ?? '';
@@ -879,6 +923,9 @@ window.nl4ManageMatch = async function(id) {
 
   setMessage(matchSaveMessage);
   setMessage(lineupMessage);
+  setMessage(savedLineupMessage);
+  setMessage(document.getElementById('lineupThemeSaveMessage'));
+  refreshSavedLineupSelect();
   await populateLineupPlayers();
   await loadMatchLineup();
   await loadMatchEvents();
@@ -887,14 +934,31 @@ window.nl4ManageMatch = async function(id) {
 
 async function saveCurrentMatch() {
   if (!currentFixture) return;
-  const status = document.getElementById('matchStatus').value;
+  let status = document.getElementById('matchStatus').value;
   const scoreA = document.getElementById('matchArsenalScore').value;
   const scoreO = document.getElementById('matchOpponentScore').value;
+
+  // The two fields below are explicitly FULL-TIME score fields in Admin.
+  // Once both are entered for a Premier League fixture, treat the match as completed
+  // so standings, form, recent results, next-fixture progression and V12.9 all consume it.
+  const hasFullTimeScoreInputs = scoreA !== '' && scoreO !== '';
+  const currentIsPremierLeague =
+    String(currentFixture.competition || '').trim().toLowerCase().includes('premier') &&
+    String(currentFixture.season || '').trim() === '2026/27';
+
+  if (currentIsPremierLeague && hasFullTimeScoreInputs && !['cancelled','postponed'].includes(String(status).toLowerCase())) {
+    status = 'fulltime';
+    const statusSelect = document.getElementById('matchStatus');
+    if (statusSelect) statusSelect.value = 'fulltime';
+  }
+
   const payload = {
     status,
     kickoff_at: new Date(document.getElementById('matchKickoff').value).toISOString(),
     venue: document.getElementById('matchVenue').value.trim() || null,
     kickoff_confirmed: document.getElementById('matchKickoffConfirmed').checked,
+    lineup_shirt_theme: document.getElementById('matchLineupShirtTheme').value === 'away' ? 'away' : 'home',
+    lineup_grass_theme: document.getElementById('matchLineupGrassTheme').value === 'black' ? 'black' : 'green',
     arsenal_score: scoreA === '' ? null : Number(scoreA),
     opponent_score: scoreO === '' ? null : Number(scoreO),
     halftime_arsenal_score: document.getElementById('matchHTArsenalScore').value === '' ? null : Number(document.getElementById('matchHTArsenalScore').value),
@@ -930,11 +994,21 @@ async function saveCurrentMatch() {
       await recalculatePremierLeagueStandings();
 
       if (hasFullTimeScore && status === 'fulltime') {
-        setMessage(
-          matchSaveMessage,
-          'Match saved and Premier League standings updated.',
-          'success'
-        );
+        try {
+          const publicSnapshot = await runOfficialPublicModelAfterScoreUpdate(matchSaveMessage);
+          setMessage(
+            matchSaveMessage,
+            `Score updated → Public Model saved → Admin Model refreshed. Official title probability: ${Number(publicSnapshot.title_probability).toFixed(1)}%.`,
+            'success'
+          );
+        } catch (modelError) {
+          console.error('Official Public Model refresh failed:', modelError);
+          setMessage(
+            matchSaveMessage,
+            `Score and standings saved, but Public Model refresh failed: ${modelError.message}`,
+            'error'
+          );
+        }
       } else if (!hasFullTimeScore) {
         setMessage(
           matchSaveMessage,
@@ -968,7 +1042,90 @@ async function saveCurrentMatch() {
   if (isPremierLeague) await loadTable('premier_league_player_stats');
 }
 
+
+
+async function saveLineupAppearance() {
+  if (!currentFixture) return;
+  const msg = document.getElementById('lineupThemeSaveMessage');
+  const shirtTheme = document.getElementById('matchLineupShirtTheme')?.value === 'away' ? 'away' : 'home';
+  const grassTheme = document.getElementById('matchLineupGrassTheme')?.value === 'black' ? 'black' : 'green';
+  setMessage(msg, 'Saving lineup appearance…');
+  const { data, error } = await db.from('fixtures').update({
+    lineup_shirt_theme: shirtTheme,
+    lineup_grass_theme: grassTheme,
+    updated_at: new Date().toISOString()
+  }).eq('id', currentFixture.id).select('*').single();
+  if (error) return setMessage(msg, error.message, 'error');
+  currentFixture = data;
+  setMessage(msg, `Saved: ${shirtTheme === 'away' ? 'Away Blue/Yellow' : 'Home Red'} shirt • ${grassTheme === 'black' ? 'Black Pitch' : 'Green Grass'}.`, 'success');
+}
+
+document.getElementById('saveLineupThemeBtn')?.addEventListener('click', saveLineupAppearance);
+
 document.getElementById('saveMatchBtn').addEventListener('click', saveCurrentMatch);
+
+// ============================================================
+// NL4 ONE-WAY FORECAST PIPELINE
+// UPDATED SCORE -> PUBLIC MODEL -> ADMIN MODEL
+// ============================================================
+async function runOfficialPublicModelAfterScoreUpdate(messageEl = null) {
+  return new Promise((resolve, reject) => {
+    const oldFrame = document.getElementById('nl4PublicModelPipelineFrame');
+    if (oldFrame) oldFrame.remove();
+
+    const frame = document.createElement('iframe');
+    frame.id = 'nl4PublicModelPipelineFrame';
+    frame.setAttribute('aria-hidden', 'true');
+    frame.tabIndex = -1;
+    frame.style.cssText =
+      'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;border:0;left:-9999px;top:-9999px;';
+
+    let settled = false;
+    const finish = (ok, detail) => {
+      if (settled) return;
+      settled = true;
+      window.removeEventListener('message', onMessage);
+      clearTimeout(timer);
+      frame.remove();
+
+      if (ok) {
+        // Admin never calculates/overwrites the forecast here.
+        // It simply reloads the official snapshot produced by the Public Model.
+        document.getElementById('loadLatestModelBtn')?.click();
+        resolve(detail);
+      } else {
+        reject(detail instanceof Error ? detail : new Error(String(detail || 'Public Model refresh failed.')));
+      }
+    };
+
+    const onMessage = event => {
+      if (event.origin !== window.location.origin) return;
+      if (event.source !== frame.contentWindow) return;
+      if (event.data?.type !== 'nl4-public-model-snapshot-saved') return;
+      finish(true, event.data);
+    };
+
+    window.addEventListener('message', onMessage);
+
+    // Safety cleanup only; it does not create a second forecast.
+    const timer = setTimeout(() => {
+      finish(false, new Error('Public Model did not confirm a saved forecast snapshot.'));
+    }, 45000);
+
+    frame.addEventListener('error', () => {
+      finish(false, new Error('The Public Model page could not be loaded.'));
+    });
+
+    // The Admin login session is shared on the same origin, allowing the
+    // Public Model's existing authenticated snapshot RPC to save the result.
+    frame.src = `premier-league.html?nl4_pipeline=1&_=${Date.now()}`;
+    document.body.appendChild(frame);
+
+    if (messageEl) {
+      setMessage(messageEl, 'Standings updated. Running official Public Model…', 'success');
+    }
+  });
+}
 
 document.getElementById('clearMatchScoresBtn').addEventListener('click', async () => {
   if (!currentFixture) return;
@@ -1013,9 +1170,33 @@ document.getElementById('clearMatchScoresBtn').addEventListener('click', async (
   if (isPremierLeague) {
     try {
       await recalculatePremierLeagueStandings();
+
+      // A cleared result invalidates probability-history snapshots that were
+      // created with more completed league matches than are currently valid.
+      // Derive the live completed-match count from the recalculated table,
+      // then remove only snapshots beyond that point. Earlier valid history
+      // (including the exact preseason baseline) is preserved unchanged.
+      const { data: standingsNow, error: standingsNowError } = await db
+        .from('premier_league_standings')
+        .select('played')
+        .eq('season', '2026/27');
+
+      if (standingsNowError) throw standingsNowError;
+
+      const completedMatchesNow = Math.round(
+        (standingsNow || []).reduce((sum, row) => sum + Number(row.played || 0), 0) / 2
+      );
+
+      const { error: rollbackError } = await db.rpc('rollback_title_probability_history', {
+        p_season: '2026/27',
+        p_completed_matches: completedMatchesNow
+      });
+
+      if (rollbackError) throw rollbackError;
+
       setMessage(
         matchSaveMessage,
-        'Test scores cleared. Premier League standings recalculated.',
+        `Scores cleared. Standings and probability timeline restored to ${completedMatchesNow} completed match${completedMatchesNow === 1 ? '' : 'es'}.`,
         'success'
       );
     } catch (standingsError) {
@@ -1279,6 +1460,36 @@ document.querySelectorAll("[data-pl-position]").forEach(button => {
   });
 });
 
+
+let plResultsMatchdayFilter = "all";
+
+function renderPremierLeagueResultsAdmin(rows) {
+  const holder = document.getElementById("premier_league_matchesList");
+  if (!holder) return;
+
+  const filtered = plResultsMatchdayFilter === "all"
+    ? rows
+    : rows.filter(row => String(row.matchday ?? "") === String(plResultsMatchdayFilter));
+
+  const status = document.getElementById("plResultsAdminStatus");
+  if (status) {
+    status.textContent = `${filtered.length} fixture${filtered.length === 1 ? "" : "s"}${plResultsMatchdayFilter === "all" ? "" : ` • Matchday ${plResultsMatchdayFilter}`}`;
+  }
+
+  holder.innerHTML = filtered.length
+    ? filtered.map(row => cardHtml("premier_league_matches", row)).join("")
+    : '<div class="empty">No non-Arsenal fixtures found for this matchday.</div>';
+}
+
+document.addEventListener("click", event => {
+  const btn = event.target.closest("[data-pl-results-matchday]");
+  if (!btn) return;
+  document.querySelectorAll("[data-pl-results-matchday]").forEach(x => x.classList.remove("active"));
+  btn.classList.add("active");
+  plResultsMatchdayFilter = btn.dataset.plResultsMatchday;
+  loadTable("premier_league_matches");
+});
+
 async function loadTable(table) {
   if (table === "fixtures") return loadFixturesAdmin();
   if (table === "premier_league_standings") await ensurePremierLeagueStandingsClubs();
@@ -1302,6 +1513,11 @@ async function loadTable(table) {
     plPlayerStatsRows = data || [];
     renderPremierLeaguePlayerStatsAdmin();
     if (holder) holder.innerHTML = "";
+    return;
+  }
+
+  if (table === "premier_league_matches") {
+    renderPremierLeagueResultsAdmin(data || []);
     return;
   }
 
@@ -1425,6 +1641,30 @@ editorForm.addEventListener("submit", async (event) => {
   if (table === "premier_league_matches") {
     try {
       await recalculatePremierLeagueStandings();
+
+      const isConfirmedResult =
+        String(payload.season || '') === '2026/27' &&
+        ['fulltime','finished','ft'].includes(String(payload.status || '').toLowerCase()) &&
+        payload.home_score !== null &&
+        payload.away_score !== null;
+
+      if (isConfirmedResult) {
+        try {
+          const publicSnapshot = await runOfficialPublicModelAfterScoreUpdate(editorMessage);
+          setMessage(
+            editorMessage,
+            `Result updated → Public Model saved → Admin Model refreshed. Official title probability: ${Number(publicSnapshot.title_probability).toFixed(1)}%.`,
+            'success'
+          );
+        } catch (modelError) {
+          console.error('Official Public Model refresh failed:', modelError);
+          setMessage(
+            editorMessage,
+            `Result and standings saved, but Public Model refresh failed: ${modelError.message}`,
+            'error'
+          );
+        }
+      }
     } catch (standingsError) {
       console.error("Standings recalculation failed:", standingsError);
       setMessage(
@@ -1670,4 +1910,618 @@ db.auth.onAuthStateChange((_event, session) => {
 
   window.nl4RefreshFanPredictions = loadFanPredictionAdmin;
   loadFanPredictionAdmin();
+})();
+
+
+
+/* =========================================================
+   NL4 V13.2 MODEL TESTING MACHINE — browser-only sandbox
+   One master random season is generated, then matchday selection
+   reveals more of that SAME season for a valid probability timeline.
+   ========================================================= */
+(function(){
+  const panel=document.getElementById('modelTestingPanel'); if(!panel)return;
+  const STORAGE_KEY='nl4_v13_test_dataset';
+  const HISTORY_KEY='nl4_v132_test_history';
+  const through=document.getElementById('modelTestThroughMatchday'),style=document.getElementById('modelTestScoreStyle');
+  const generateBtn=document.getElementById('generateModelTestBtn'),regenerateBtn=document.getElementById('regenerateModelTestBtn'),openBtn=document.getElementById('openModelTestBtn'),clearBtn=document.getElementById('clearModelTestBtn');
+  const preview=document.getElementById('modelTestPreview'),message=document.getElementById('modelTestMessage'),badge=document.getElementById('modelTestStatusBadge');
+
+  for(let i=1;i<=38;i++){
+    const o=document.createElement('option');
+    o.value=i;o.textContent=`Matchday ${i} • ${i*10} league results`;
+    through.appendChild(o);
+  }
+
+  const norm=v=>String(v||'').trim().replace(/\s+/g,' '),pair=(h,a)=>`${norm(h).toLowerCase()}__${norm(a).toLowerCase()}`;
+  function poisson(lambda,cap){let L=Math.exp(-lambda),k=0,p=1;do{k++;p*=Math.random();}while(p>L&&k<14);return Math.max(0,Math.min(cap,k-1));}
+  function randomScore(mode,home){return mode==='chaotic'?poisson(home?1.8:1.5,7):poisson(home?1.48:1.22,6);}
+
+  async function fetchSchedule(){
+    const [a,l]=await Promise.all([
+      db.from('fixtures').select('home_team,away_team,is_home,opponent,matchday,season,competition').eq('season','2026/27').eq('competition','Premier League'),
+      db.from('premier_league_matches').select('home_team,away_team,matchday,season').eq('season','2026/27')
+    ]);
+    if(a.error)throw a.error;if(l.error)throw l.error;
+    const map=new Map();
+    (l.data||[]).forEach(r=>{
+      if(r.home_team&&r.away_team)map.set(pair(r.home_team,r.away_team),{
+        home_team:norm(r.home_team),away_team:norm(r.away_team),matchday:Number(r.matchday)||null
+      });
+    });
+    (a.data||[]).forEach(r=>{
+      const ih=r.home_team==='Arsenal'||r.is_home===true;
+      const h=norm(r.home_team||(ih?'Arsenal':r.opponent)),aw=norm(r.away_team||(ih?r.opponent:'Arsenal'));
+      if(h&&aw)map.set(pair(h,aw),{home_team:h,away_team:aw,matchday:Number(r.matchday)||null});
+    });
+    return [...map.values()].filter(r=>r.matchday>=1&&r.matchday<=38)
+      .sort((x,y)=>x.matchday-y.matchday||x.home_team.localeCompare(y.home_team));
+  }
+
+  function currentDataset(){
+    try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');}catch(_){return null;}
+  }
+
+  function visibleDataset(master,max){
+    const m=Math.max(1,Math.min(38,Number(max)||1));
+    return {
+      ...master,
+      version:'V13_TEST_2',
+      throughMatchday:m,
+      results:(master.masterResults||[]).filter(r=>Number(r.matchday)<=m)
+    };
+  }
+
+  function storeVisible(master,max){
+    const d=visibleDataset(master,max);
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(d));
+    return d;
+  }
+
+  function render(d){
+    const rounds=document.getElementById('modelTestRounds'),matches=document.getElementById('modelTestMatches'),record=document.getElementById('modelTestArsenalRecord'),time=document.getElementById('modelTestGeneratedAt');
+    if(!d?.results?.length){
+      preview.innerHTML='<p class="muted">Generate one random season, then move through Matchdays 1–38 using the same test universe.</p>';
+      rounds.textContent='0';matches.textContent='0';record.textContent='—';time.textContent='';
+      badge.textContent='NO TEST LOADED';openBtn.disabled=true;return;
+    }
+    const groups=new Map();
+    d.results.forEach(r=>{if(!groups.has(r.matchday))groups.set(r.matchday,[]);groups.get(r.matchday).push(r);});
+    preview.innerHTML=[...groups.entries()].map(([md,rows])=>`
+      <section class="model-test-round">
+        <h4>MATCHDAY ${md}</h4>
+        ${rows.map(r=>`<div class="model-test-match ${(r.home_team==='Arsenal'||r.away_team==='Arsenal')?'arsenal':''}">
+          <span class="home">${escapeHtml(r.home_team)}</span>
+          <strong class="score">${r.home_score}–${r.away_score}</strong>
+          <span>${escapeHtml(r.away_team)}</span>
+        </div>`).join('')}
+      </section>`).join('');
+
+    const ar=d.results.filter(r=>r.home_team==='Arsenal'||r.away_team==='Arsenal');
+    let w=0,dr=0,lo=0;
+    ar.forEach(r=>{
+      const home=r.home_team==='Arsenal',gf=home?r.home_score:r.away_score,ga=home?r.away_score:r.home_score;
+      if(gf>ga)w++;else if(gf===ga)dr++;else lo++;
+    });
+    rounds.textContent=d.throughMatchday;
+    matches.textContent=d.results.length;
+    record.textContent=`${w}W ${dr}D ${lo}L`;
+    time.textContent=new Date(d.generatedAt).toLocaleString();
+    badge.textContent=`SAME TEST SEASON • THROUGH MD ${d.throughMatchday}`;
+    openBtn.disabled=false;
+  }
+
+  async function generateMaster(){
+    setMessage(message,'Building one complete random test season…');
+    const schedule=await fetchSchedule();
+    if(schedule.length!==380)throw new Error(`Testing machine needs 380 fixtures. Found ${schedule.length}.`);
+    const mode=style.value||'realistic';
+    const masterResults=schedule.map(r=>({
+      ...r,
+      home_score:randomScore(mode,true),
+      away_score:randomScore(mode,false),
+      status:'fulltime'
+    }));
+    const master={
+      version:'V13_TEST_2',
+      season:'2026/27',
+      scoreStyle:mode,
+      generatedAt:new Date().toISOString(),
+      testId:(crypto.randomUUID?crypto.randomUUID():String(Date.now())),
+      masterResults
+    };
+    localStorage.removeItem(HISTORY_KEY);
+    return storeVisible(master,Number(through.value)||1);
+  }
+
+  generateBtn?.addEventListener('click',async()=>{
+    try{
+      const existing=currentDataset();
+      let d;
+      if(existing?.masterResults?.length===380){
+        d=storeVisible(existing,Number(through.value)||1);
+        setMessage(message,`Loaded the same random test season through Matchday ${d.throughMatchday}. Sandbox history was preserved.`,'success');
+      }else{
+        d=await generateMaster();
+        setMessage(message,`Generated one complete random season and loaded it through Matchday ${d.throughMatchday}. Supabase was not changed.`,'success');
+      }
+      render(d);
+    }catch(e){console.error('NL4 model testing:',e);setMessage(message,e.message||'Could not generate test results.','error');}
+  });
+
+  regenerateBtn?.addEventListener('click',async()=>{
+    try{
+      const d=await generateMaster();
+      render(d);
+      setMessage(message,`Started a NEW random test season through Matchday ${d.throughMatchday}. Previous sandbox snapshots were cleared.`,'success');
+    }catch(e){console.error('NL4 model testing:',e);setMessage(message,e.message||'Could not regenerate test season.','error');}
+  });
+
+  through?.addEventListener('change',()=>{
+    const d=currentDataset();
+    if(!d?.masterResults?.length)return;
+    const next=storeVisible(d,Number(through.value)||1);
+    render(next);
+    setMessage(message,`Same test season now exposed through Matchday ${next.throughMatchday}. Open V13 Test to save this sandbox forecast point.`,'success');
+  });
+
+  openBtn?.addEventListener('click',()=>{
+    if(!localStorage.getItem(STORAGE_KEY))return setMessage(message,'Generate a test season first.','error');
+    window.open('premier-league.html?test=1','_blank');
+  });
+
+  clearBtn?.addEventListener('click',()=>{
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(HISTORY_KEY);
+    render(null);
+    setMessage(message,'Test season and sandbox probability history cleared. Live season data was untouched.','success');
+  });
+
+  try{
+    const d=currentDataset();
+    if(d?.results?.length){
+      through.value=d.throughMatchday;
+      style.value=d.scoreStyle||'realistic';
+      render(d);
+    }else render(null);
+  }catch(_){render(null);}
+})();
+
+
+
+
+/* =========================================================
+   V15.3 FORECAST PUBLISHING STUDIO
+   ========================================================= */
+(() => {
+  const root=document.getElementById('modelInterpretationAdmin');
+  if(!root)return;
+  const $=id=>document.getElementById(id);
+  const msg=$('modelInterpretationMessage');
+  let latest=null;
+  let forecastStats=[];
+  let selectedStyle='balanced';
+
+  function db(){return window.nl4Supabase||window.supabaseClient||window.db||window.supabaseDb||null;}
+  function say(text,ok=false){if(msg){msg.textContent=text;msg.style.color=ok?'#d8ad45':'';}}
+  function v(id){return ($(id)?.value||'').trim();}
+  function setv(id,val){const el=$(id);if(el)el.value=val||'';}
+  function esc(s){return String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+  function num(n,d=1){const x=Number(n);return Number.isFinite(x)?x.toFixed(d):'—';}
+
+  const STAT_DEFS=[
+    ['Core','title_probability','Title probability','%'],
+    ['Core','top4_probability','Top 4 probability','%'],
+    ['Core','top5_probability','Top 5 probability','%'],
+    ['Core','expected_points','Expected final points','pts'],
+    ['Core','expected_position','Expected finish',''],
+    ['Core','confidence_score','Model confidence','/100'],
+    ['Season','completed_matches','Completed league matches','/380'],
+    ['Season','history_weight','Historical evidence weight','%'],
+    ['Season','live_weight','Current-season evidence weight','%'],
+    ['Season','arsenal_played','Arsenal league matches played',''],
+    ['Season','arsenal_points','Arsenal current points','pts'],
+    ['Season','arsenal_position','Arsenal current position',''],
+    ['Season','arsenal_ppg','Arsenal PPG',''],
+    ['Season','arsenal_gf','Goals for',''],
+    ['Season','arsenal_ga','Goals against',''],
+    ['Season','arsenal_gd','Goal difference',''],
+    ['Season','arsenal_form','Recent league form',''],
+    ['Model','historical_anchor','Historical points anchor','pts'],
+    ['Model','scoring_baseline','Scoring baseline','goals/team'],
+    ['Model','arsenal_elo','Opponent-adjusted Elo',''],
+    ['Model','elo_delta','Current-season Elo movement',''],
+    ['Race','credible_rival','Credible title threat',''],
+    ['Race','rival_title_probability','Rival title probability','%'],
+    ['Race','probability_gap','Probability gap to rival','pts'],
+    ['Race','champion_average','Expected champion points','pts'],
+    ['Race','median_champion','Median champion points','pts'],
+    ['Race','model_trend','Model trend',''],
+    ['Race','season_probability_change','Season title-probability change','pts']
+  ];
+
+  function statLabelValue(def,row){
+    const [,key,label,suffix]=def;
+    let raw=row[key];
+    if(raw===null||raw===undefined||raw==='')return null;
+    let display=raw;
+    if(typeof raw==='number'||!Number.isNaN(Number(raw))){
+      const n=Number(raw);
+      const whole=['completed_matches','arsenal_played','arsenal_points','arsenal_position','arsenal_gf','arsenal_ga','arsenal_gd','confidence_score','median_champion'].includes(key);
+      display=whole?String(Math.round(n)):n.toFixed(1);
+    }
+    if(suffix==='%')display+= '%';
+    else if(suffix==='pts')display+= ' pts';
+    else if(suffix==='/100')display+= '/100';
+    else if(suffix==='/380')display+= '/380';
+    else if(suffix)display+=' '+suffix;
+    return {key,label,value:display,group:def[0]};
+  }
+
+  async function loadSupplementaryForecast(client,snapshot,historyRows=[]){
+    const result={...snapshot};
+
+    // Arsenal's live table row is the authoritative source for Arsenal's
+    // current points/position/played and for the model evidence transition.
+    const stand=await client.from('premier_league_standings')
+      .select('club,position,played,points,goals_for,goals_against,goal_difference')
+      .eq('season','2026/27');
+    if(!stand.error){
+      const rows=stand.data||[],ars=rows.find(x=>x.club==='Arsenal');
+      if(ars){
+        result.arsenal_played=Number(ars.played)||0;
+        result.arsenal_points=Number(ars.points)||0;
+        result.arsenal_position=Number(ars.position)||0;
+        result.arsenal_gf=Number(ars.goals_for)||0;
+        result.arsenal_ga=Number(ars.goals_against)||0;
+        result.arsenal_gd=Number(ars.goal_difference)||0;
+        result.arsenal_ppg=result.arsenal_played?result.arsenal_points/result.arsenal_played:0;
+
+        const mp=result.arsenal_played;
+        let hist=mp<=10?1-(mp/10)*.4:mp<=20?.6-((mp-10)/10)*.35:mp<=25?.25-((mp-20)/5)*.10:mp<=30?.15-((mp-25)/5)*.10:mp<34?.05-((mp-30)/4)*.05:0;
+        hist=Math.max(0,Math.min(1,hist));
+        result.history_weight=hist*100;
+        result.live_weight=(1-hist)*100;
+      }
+    }
+
+    // Derive probability movement from real saved Public Model history.
+    const ordered=(historyRows||[]).slice().sort((a,b)=>{
+      const cm=Number(a.completed_matches||0)-Number(b.completed_matches||0);
+      if(cm!==0)return cm;
+      return new Date(a.created_at||0)-new Date(b.created_at||0);
+    });
+    const byCount=new Map();
+    ordered.forEach(row=>byCount.set(Number(row.completed_matches||0),row));
+    const unique=[...byCount.values()].sort((a,b)=>Number(a.completed_matches||0)-Number(b.completed_matches||0));
+    if(unique.length){
+      const first=unique[0];
+      const current=Number(result.title_probability||0);
+      result.season_probability_change=current-Number(first.title_probability||0);
+      const prev=unique.length>1?unique[unique.length-2]:null;
+      result.recent_probability_change=prev?current-Number(prev.title_probability||0):0;
+      const delta=result.recent_probability_change;
+      result.model_trend=delta>=1?'RISING':delta<=-1?'FALLING':'STEADY';
+    }else{
+      result.season_probability_change=0;
+      result.recent_probability_change=0;
+      result.model_trend='BASELINE';
+    }
+
+    // Recent Arsenal league form, if completed results are available.
+    try{
+      const matches=await client.from('premier_league_matches')
+        .select('home_team,away_team,home_score,away_score,status,matchday,kickoff')
+        .eq('season','2026/27');
+      if(!matches.error){
+        const completed=(matches.data||[]).filter(m=>{
+          const hs=Number(m.home_score),as=Number(m.away_score);
+          return (m.home_team==='Arsenal'||m.away_team==='Arsenal') && Number.isFinite(hs)&&Number.isFinite(as);
+        }).sort((a,b)=>Number(a.matchday||0)-Number(b.matchday||0)).slice(-5);
+        if(completed.length){
+          result.arsenal_form=completed.map(m=>{
+            const home=m.home_team==='Arsenal';
+            const gf=home?Number(m.home_score):Number(m.away_score);
+            const ga=home?Number(m.away_score):Number(m.home_score);
+            return gf>ga?'W':gf<ga?'L':'D';
+          }).join(' ');
+        }
+      }
+    }catch(_){/* form is supplementary only */}
+
+    result.historical_anchor=81.5;
+    result.scoring_baseline=1.42;
+    return result;
+  }
+
+  function renderStats(){
+    const host=$('allForecastStatsList');
+    if(!host)return;
+    let lastGroup='';
+    host.innerHTML=forecastStats.map(s=>{
+      const heading=s.group!==lastGroup?`<div class="forecast-stat-group-title">${esc(s.group.toUpperCase())}</div>`:'';
+      lastGroup=s.group;
+      return heading+`<label class="forecast-stat-option">
+        <input type="checkbox" class="forecast-stat-check" value="${esc(s.key)}">
+        <span><b>${esc(s.label)}</b><strong>${esc(s.value)}</strong><small>Choose to show this statistic to viewers.</small></span>
+      </label>`;
+    }).join('');
+    host.querySelectorAll('.forecast-stat-check').forEach(x=>x.addEventListener('change',updateSelectedCount));
+    updateSelectedCount();
+  }
+  function selectedStats(){
+    const keys=[...document.querySelectorAll('.forecast-stat-check:checked')].map(x=>x.value);
+    return forecastStats.filter(s=>keys.includes(s.key));
+  }
+  function updateSelectedCount(){
+    const n=selectedStats().length;const el=$('selectedForecastStatsCount');if(el)el.textContent=`${n} SELECTED`;
+  }
+
+
+  function readCanonicalPublicModelBridge(){
+    try{
+      const raw=localStorage.getItem('nl4_public_model_canonical_2026_27');
+      if(!raw)return null;
+      const row=JSON.parse(raw);
+      if(!row||row.season!=='2026/27')return null;
+      const required=['title_probability','top4_probability','top5_probability','expected_points','expected_position'];
+      if(!required.every(k=>Number.isFinite(Number(row[k]))))return null;
+      return row;
+    }catch(_){return null;}
+  }
+
+  async function loadLatest(){
+    const client=db();if(!client){say('Supabase client not found.');return;}
+    say('Loading latest Public Model calculation…');
+
+    // FIRST CHOICE: exact canonical calculation created by Public Model.
+    // This contains all headline numerical outputs from one simulation run.
+    let snapshot=readCanonicalPublicModelBridge();
+    let historyRows=[];
+    let source='live Public Model calculation';
+
+    // FALLBACK: newest complete Public Model snapshot from Supabase.
+    const q=await client.from('title_probability_history')
+      .select('completed_matches,title_probability,top4_probability,top5_probability,expected_points,expected_position,confidence_score,created_at')
+      .eq('season','2026/27')
+      .order('completed_matches',{ascending:false})
+      .order('created_at',{ascending:false})
+      .limit(120);
+
+    if(!q.error && q.data?.length){
+      historyRows=q.data||[];
+      if(!snapshot){
+        const maxCompleted=Math.max(...historyRows.map(r=>Number(r.completed_matches)||0));
+        const candidates=historyRows.filter(r=>(Number(r.completed_matches)||0)===maxCompleted)
+          .sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+        snapshot=candidates[0]||historyRows[0];
+        source='latest saved Public Model snapshot';
+      }
+    }
+
+    if(!snapshot){
+      if(q.error){say(q.error.message);return;}
+      say('No current Public Model calculation was found. Open the Premier League page once, let the model finish calculating, then press Load Latest Model again.');
+      return;
+    }
+
+    latest=await loadSupplementaryForecast(client,snapshot,historyRows);
+
+    // Integrity lock: core interpretation numbers must remain exactly the five
+    // values from the same canonical calculation. Supplementary data may enrich
+    // context, but may never overwrite these model outputs.
+    ['title_probability','top4_probability','top5_probability','expected_points','expected_position','confidence_score','completed_matches']
+      .forEach(k=>{
+        if(snapshot[k]!==undefined && snapshot[k]!==null && snapshot[k]!==''){
+          latest[k]=Number(snapshot[k]);
+        }
+      });
+
+    latest.interpretation_numeric_source=source;
+    latest.interpretation_calculated_at=snapshot.calculated_at||snapshot.created_at||null;
+
+    forecastStats=STAT_DEFS.map(d=>statLabelValue(d,latest)).filter(Boolean);
+    renderStats();
+
+    ['title_probability','top4_probability','expected_points','expected_position','confidence_score','completed_matches','history_weight','live_weight']
+      .forEach(k=>{const c=document.querySelector(`.forecast-stat-check[value="${k}"]`);if(c)c.checked=true;});
+    updateSelectedCount();
+
+    const stamp=latest.interpretation_calculated_at?new Date(latest.interpretation_calculated_at).toLocaleString():'';
+    say(`Loaded ${source}${stamp?` • ${stamp}`:''}. All interpretation model numbers are locked to this single calculation.`,true);
+  }
+
+  function context(){
+    const finite=(v,fallback=0)=>Number.isFinite(Number(v))?Number(v):fallback;
+    const t=finite(latest?.title_probability),top4=finite(latest?.top4_probability),top5=finite(latest?.top5_probability),
+      pts=finite(latest?.expected_points),pos=finite(latest?.expected_position),
+      conf=finite(latest?.confidence_score),matches=finite(latest?.completed_matches),
+      arsenalPlayed=finite(latest?.arsenal_played),hist=finite(latest?.history_weight),live=finite(latest?.live_weight),
+      seasonChange=finite(latest?.season_probability_change),recentChange=finite(latest?.recent_probability_change),
+      trend=String(latest?.model_trend||'BASELINE'),form=String(latest?.arsenal_form||'').trim();
+    return {t,top4,top5,pts,pos,conf,matches,arsenalPlayed,hist,live,seasonChange,recentChange,trend,form};
+  }
+
+  function generate(style){
+    if(!latest)return null;
+    const c=context();
+
+    const state=c.matches>=380?'complete':c.t>=65?'strong':c.t>=50?'fav':c.t>=30?'race':'outside';
+    const phase=c.arsenalPlayed===0?'before Arsenal have played a league match':
+      `after Arsenal have played ${c.arsenalPlayed} league match${c.arsenalPlayed===1?'':'es'}`;
+
+    const baseHeadline=state==='complete'?'The Premier League season is complete':
+      state==='strong'?`Arsenal hold a strong title position ${phase}`:
+      state==='fav'?`Arsenal are the current NL4 title favourite ${phase}`:
+      state==='race'?`Arsenal remain firmly in the title race ${phase}`:
+      `Arsenal remain outside the leading title probability range ${phase}`;
+
+    const trendText=c.trend==='RISING'?`The latest saved movement is positive (${c.recentChange>=0?'+':''}${c.recentChange.toFixed(1)} percentage points).`:
+      c.trend==='FALLING'?`The latest saved movement is negative (${c.recentChange.toFixed(1)} percentage points).`:
+      c.trend==='STEADY'?'The latest saved probability is broadly steady versus the previous distinct snapshot.':
+      'This is the available baseline; there is not yet enough saved movement to describe a trend.';
+
+    const evidence=`The model currently weights the historical component at ${c.hist.toFixed(0)}% and current-season evidence at ${c.live.toFixed(0)}%.`;
+    const shared=`Arsenal's latest Public Model calculation gives a ${c.t.toFixed(1)}% title probability, ${c.top4.toFixed(1)}% Top 4 probability, ${c.pts.toFixed(1)} expected points and an expected finish of ${c.pos.toFixed(1)}. ${evidence} ${trendText}`;
+    const formText=c.form?` Recent Arsenal league form: ${c.form}.`:'';
+
+    const variants={
+      balanced:{
+        headline:baseHeadline,status:'TITLE RACE UPDATE',
+        summary:`${shared}${formText} This interpretation describes the saved Public Model outputs and Arsenal's live table data; it does not infer unsupported rival probabilities.`,
+        takeaway:c.t>=50?'Arsenal currently hold more than half of the simulated title probability, but the estimate can still move materially with future results.':'Arsenal retain a meaningful title path, but their current simulated title probability is below 50%.'
+      },
+      short:{
+        headline:baseHeadline,status:'NL4 QUICK READ',
+        summary:`Arsenal: ${c.t.toFixed(1)}% title probability, ${c.pts.toFixed(1)} expected points, ${c.top4.toFixed(1)}% Top 4. ${c.matches}/380 league matches are recorded in the model snapshot. Trend: ${c.trend}.`,
+        takeaway:`Season probability change from the first saved snapshot: ${c.seasonChange>=0?'+':''}${c.seasonChange.toFixed(1)} points.`
+      },
+      analyst:{
+        headline:`NL4 model: Arsenal ${c.t.toFixed(1)}% for the title`,status:'MODEL ANALYSIS',
+        summary:`${shared} Model confidence is ${c.conf}/100.${formText} The title probability should be read as a distributional estimate rather than a guaranteed finishing total.`,
+        takeaway:`Latest direction: ${c.trend}. Season movement from the first saved snapshot: ${c.seasonChange>=0?'+':''}${c.seasonChange.toFixed(1)} percentage points.`
+      },
+      fan:{
+        headline:c.t>=50?'Arsenal have the current model edge in the title race':baseHeadline,status:'FAN EXPLAINER',
+        summary:`Right now, NL4 gives Arsenal a ${c.t.toFixed(1)}% title chance. In roughly ${Math.round(c.t)} of every 100 simulations represented by this estimate, Arsenal finish first. Their expected total is ${c.pts.toFixed(1)} points.${formText}`,
+        takeaway:c.t>=50?'Arsenal have the model edge, but the probability is not the same as the title being secured.':'The title route is still open, but Arsenal are not above 50% in the current model.'
+      },
+      cautious:{
+        headline:`Arsenal's title probability stands at ${c.t.toFixed(1)}%`,status:'CAUTIOUS MODEL READ',
+        summary:`${shared} Model confidence is ${c.conf}/100. The probability can move as new results enter the model, so it should not be treated as certainty.`,
+        takeaway:`Use ${c.t.toFixed(1)}% as the current model estimate, with a ${c.trend.toLowerCase()} latest direction—not as a prediction that Arsenal will definitely finish first.`
+      },
+      story:{
+        headline:c.t>=50?'Arsenal currently own the larger share of the title path':`Arsenal's title path remains open`,status:'TITLE-RACE STORY',
+        summary:`The latest NL4 snapshot places Arsenal at ${c.t.toFixed(1)}% for the title and ${c.pts.toFixed(1)} expected points. Since the first saved snapshot, the title probability has moved ${c.seasonChange>=0?'+':''}${c.seasonChange.toFixed(1)} points, and the latest direction is ${c.trend.toLowerCase()}.${formText}`,
+        takeaway:'The story should follow measured probability movement over time, not assume a rival effect unless that rival data is explicitly present.'
+      }
+    };
+
+    const out=variants[style]||variants.balanced;
+    out.factor1=`Arsenal forecast: ${c.t.toFixed(1)}% title probability • ${c.pts.toFixed(1)} expected points • ${c.pos.toFixed(1)} expected finish.`;
+    out.factor2=`Evidence mix: ${c.hist.toFixed(0)}% historical / ${c.live.toFixed(0)}% current season${c.form?` • form ${c.form}`:''}.`;
+    out.factor3=`Trend: ${c.trend} • latest change ${c.recentChange>=0?'+':''}${c.recentChange.toFixed(1)} pts • confidence ${c.conf}/100 • ${c.matches}/380 completed league matches in snapshot.`;
+    return out;
+  }
+
+  function showAuto(style){
+    if(!latest){say('Load the complete forecast first.');return;}
+    selectedStyle=style;
+    document.querySelectorAll('.interpret-style-btn').forEach(b=>b.classList.toggle('active',b.dataset.style===style));
+    const host=$('automaticInterpretationChoices');if(!host)return;
+    const styles=[style, ...['balanced','short','analyst','fan','cautious','story'].filter(x=>x!==style).slice(0,2)];
+    host.innerHTML=styles.map(s=>{
+      const d=generate(s);
+      return `<article class="auto-interpretation-card"><h4>${esc(s.toUpperCase())}</h4><p><b>${esc(d.headline)}</b><br>${esc(d.summary)}</p><button type="button" class="ghost-btn use-auto-draft" data-style="${s}">Use This Interpretation</button></article>`;
+    }).join('');
+    host.querySelectorAll('.use-auto-draft').forEach(b=>b.addEventListener('click',()=>useDraft(b.dataset.style)));
+  }
+
+  function useDraft(style){
+    const d=generate(style);if(!d)return;
+    setv('interpHeadline',d.headline);setv('interpStatusLabel',d.status);
+    setv('interpSummary',d.summary);setv('interpTakeaway',d.takeaway);
+    setv('interpFactor1',d.factor1);setv('interpFactor2',d.factor2);setv('interpFactor3',d.factor3);
+    say(`${style} interpretation copied into the manual editor. You can change anything before publishing.`,true);
+  }
+
+  async function publish(){
+    const client=db();if(!client){say('Supabase client not found.');return;}
+    const stats=selectedStats().map(s=>{
+      const def=STAT_DEFS.find(d=>d[1]===s.key);
+      return def?statLabelValue(def,latest):s;
+    }).filter(Boolean);
+    if(!stats.length){say('Choose at least one forecast statistic for viewers.');return;}
+    if(!v('interpHeadline')||!v('interpSummary')){say('Add a headline and interpretation before publishing.');return;}
+    const row={
+      season:'2026/27',headline:v('interpHeadline'),status_label:v('interpStatusLabel')||'TITLE RACE UPDATE',
+      summary:v('interpSummary'),key_takeaway:v('interpTakeaway'),factor_1:v('interpFactor1'),factor_2:v('interpFactor2'),factor_3:v('interpFactor3'),
+      selected_stats:stats,interpretation_mode:'automatic+manual',interpretation_style:selectedStyle,
+      is_published:true,published_at:new Date().toISOString(),
+      source_completed_matches:latest?.completed_matches??null,source_title_probability:latest?.title_probability??null
+    };
+    await client.from('nl4_model_interpretations').update({is_published:false}).eq('season','2026/27').eq('is_published',true);
+    const {error}=await client.from('nl4_model_interpretations').insert(row);
+    if(error){
+      if(String(error.message||'').includes('schema cache')||String(error.message||'').includes('nl4_model_interpretations')){
+        const warn=$('forecastPublisherSetupWarning'); if(warn)warn.hidden=false;
+        say('Database setup required. Run V15.4-forecast-publisher-setup.sql in Supabase SQL Editor once.');
+      }else say(error.message);
+      return;
+    }
+    $('modelInterpretationState').textContent='PUBLISHED';
+    say(`${stats.length} selected statistics and the interpretation were published to viewers.`,true);
+  }
+
+  async function unpublish(){
+    const client=db();if(!client)return;
+    const {error}=await client.from('nl4_model_interpretations').update({is_published:false}).eq('season','2026/27').eq('is_published',true);
+    if(error){
+      if(String(error.message||'').includes('schema cache')){
+        const warn=$('forecastPublisherSetupWarning'); if(warn)warn.hidden=false;
+        say('Database setup required before publishing controls can work.');
+      }else say(error.message);
+      return;
+    }
+    $('modelInterpretationState').textContent='NOT PUBLISHED';say('Viewer forecast interpretation unpublished.',true);
+  }
+
+  function clearInterpretation(){
+    ['interpHeadline','interpStatusLabel','interpSummary','interpTakeaway','interpFactor1','interpFactor2','interpFactor3'].forEach(id=>setv(id,''));
+    say('Interpretation cleared. Forecast-stat selections were kept.');
+  }
+
+
+  async function loadPublicForecastVisibilityAdmin(){
+    const client=db(); if(!client)return;
+    const state=$('publicForecastVisibilityState');
+    try{
+      const {data,error}=await client.from('nl4_public_forecast_settings')
+        .select('is_visible').eq('season','2026/27').limit(1);
+      if(error){
+        if(String(error.message||'').includes('schema cache')){
+          const warn=$('forecastPublisherSetupWarning'); if(warn)warn.hidden=false;
+          if(state)state.textContent='SETUP REQUIRED';
+        }else{
+          if(state)state.textContent='CHECK FAILED';
+        }
+        return;
+      }
+      const visible=data?.length?data[0].is_visible!==false:true;
+      if(state)state.textContent=visible?'VISIBLE TO VIEWERS':'REMOVED FROM VIEWERS';
+    }catch(_){
+      if(state)state.textContent='CHECK FAILED';
+    }
+  }
+
+  async function setPublicForecastVisibility(isVisible){
+    const client=db(); if(!client){say('Supabase client not found.');return;}
+    const state=$('publicForecastVisibilityState');
+    const payload={season:'2026/27',is_visible:!!isVisible,updated_at:new Date().toISOString()};
+    const {error}=await client.from('nl4_public_forecast_settings')
+      .upsert(payload,{onConflict:'season'});
+    if(error){
+      if(String(error.message||'').includes('schema cache')){
+        const warn=$('forecastPublisherSetupWarning'); if(warn)warn.hidden=false;
+        if(state)state.textContent='SETUP REQUIRED';
+        say('Run V15.4-forecast-publisher-setup.sql in Supabase first.');
+      }else say(error.message);
+      return;
+    }
+    if(state)state.textContent=isVisible?'VISIBLE TO VIEWERS':'REMOVED FROM VIEWERS';
+    say(isVisible?'The complete NL4 forecast is now visible on the Premier League page.':'The complete NL4 forecast has been removed from the public Premier League page.',true);
+  }
+
+  $('showPublicForecastBtn')?.addEventListener('click',()=>setPublicForecastVisibility(true));
+  $('hidePublicForecastBtn')?.addEventListener('click',()=>setPublicForecastVisibility(false));
+  loadPublicForecastVisibilityAdmin();
+
+  $('loadLatestModelBtn')?.addEventListener('click',loadLatest);
+  $('selectAllForecastStatsBtn')?.addEventListener('click',()=>{document.querySelectorAll('.forecast-stat-check').forEach(x=>x.checked=true);updateSelectedCount();});
+  $('clearForecastStatsBtn')?.addEventListener('click',()=>{document.querySelectorAll('.forecast-stat-check').forEach(x=>x.checked=false);updateSelectedCount();});
+  document.querySelectorAll('.interpret-style-btn').forEach(b=>b.addEventListener('click',()=>showAuto(b.dataset.style)));
+  $('publishInterpretationBtn')?.addEventListener('click',publish);
+  $('unpublishInterpretationBtn')?.addEventListener('click',unpublish);
+  $('clearInterpretationBtn')?.addEventListener('click',clearInterpretation);
 })();

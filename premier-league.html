@@ -888,7 +888,6 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
 .graph-interpretation-head span{color:#d8ad45;font-size:7px;font-weight:1000;letter-spacing:.7px}.graph-interpretation-head strong{color:#fff;font-size:9px}
 .nl4-public-graph-interpretation p{margin:10px 0 5px;color:#c8c8c8;font-size:9px;line-height:1.65}.nl4-public-graph-interpretation small{color:#666;font-size:7px}
 </style>
-
 <style id="v167-nl4-graph-interpretation-visible">
 .nl4-public-graph-interpretation{
   margin:12px 0 4px;padding:14px;border:1px solid rgba(216,173,69,.24);
@@ -900,6 +899,44 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
 .nl4-public-graph-interpretation p{margin:9px 0 5px;color:#c8c8c8;font-size:9px;line-height:1.65}
 .nl4-public-graph-interpretation small{color:#666;font-size:7px}
 </style>
+
+<style id="nl4-public-only-model-style">
+#nl4PublicModel .nl4-public-live-summary{margin:14px 0 18px}
+#nl4PublicModel .nl4-public-primary{padding:18px;border:1px solid rgba(216,173,69,.25);border-radius:14px;background:rgba(216,173,69,.06);text-align:center}
+#nl4PublicModel .nl4-public-primary strong{display:block;color:#d8ad45;font-size:clamp(34px,7vw,64px);line-height:1;font-weight:1000}
+#nl4PublicModel .nl4-public-primary span{display:block;margin-top:7px;color:#fff;font-size:10px;font-weight:900;letter-spacing:.9px}
+#nl4PublicModel .nl4-public-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+#nl4PublicModel .nl4-public-stat-grid article{padding:11px 8px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:#101010;text-align:center}
+#nl4PublicModel .nl4-public-stat-grid strong{display:block;color:#fff;font-size:18px}
+#nl4PublicModel .nl4-public-stat-grid span{display:block;margin-top:4px;color:#777;font-size:7px;font-weight:900}
+#nl4PublicModel .nl4-public-live-status{margin:10px 0;color:#9b9b9b;font-size:9px;line-height:1.5}
+#nl4PublicModel .nl4-public-table-head,
+#nl4PublicModel .nl4-public-probability-row{display:grid;grid-template-columns:minmax(150px,1.7fr) .7fr .7fr .7fr;gap:8px;align-items:center}
+#nl4PublicModel .nl4-public-table-head{padding:8px 10px;color:#777;font-size:7px;font-weight:1000;border-bottom:1px solid rgba(255,255,255,.08)}
+#nl4PublicModel .nl4-public-probability-row{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.06);font-size:9px}
+#nl4PublicModel .nl4-public-probability-row.arsenal{background:rgba(216,173,69,.08)}
+#nl4PublicModel .nl4-public-probability-row b{color:#fff}
+#nl4PublicModel .nl4-public-probability-row strong{color:#d8ad45}
+@media(max-width:650px){
+  #nl4PublicModel .nl4-public-stat-grid{grid-template-columns:1fr 1fr}
+  #nl4PublicModel .nl4-public-table-head,
+  #nl4PublicModel .nl4-public-probability-row{grid-template-columns:minmax(120px,1.5fr) .7fr .7fr .7fr;font-size:8px}
+}
+</style>
+
+
+<style id="nl4-public-history-guaranteed-style">
+#publicModelHistoryCard{display:block!important}
+#publicTitleHistoryChart{display:block;width:100%;min-height:240px;overflow:visible}
+#publicTitleHistoryChart .nl4-history-grid{stroke:rgba(255,255,255,.09);stroke-width:1}
+#publicTitleHistoryChart .nl4-history-line{fill:none;stroke:#d8ad45;stroke-width:4;stroke-linejoin:round;stroke-linecap:round}
+#publicTitleHistoryChart .nl4-history-area{fill:rgba(216,173,69,.10)}
+#publicTitleHistoryChart .nl4-history-dot{fill:#d8ad45;stroke:#111;stroke-width:3}
+#publicTitleHistoryChart .nl4-history-axis-text{fill:#777;font-size:10px;font-weight:700}
+#publicTitleHistoryChart .nl4-history-label{fill:#fff;font-size:10px;font-weight:900}
+</style>
+
+
 </head>
 <body class="nl4-unified-sidebar premier-league-page">
 <button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button>
@@ -961,26 +998,59 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
 </aside>
 <div class="mobile-overlay" id="overlay"></div>
 <main class="main">
-
-
 <section class="pl-hero">
-<div class="pl-hero-glow"></div>
-<div class="pl-hero-copy">
-<p class="pl-kicker">PREMIER LEAGUE • 2026/27</p>
-<h1>
+        <div class="pl-hero-glow"></div>
+
+        <div class="pl-hero-copy">
+          <p class="pl-kicker">PREMIER LEAGUE • 2026/27</p>
+
+          <h1>
             THE LEAGUE
             <span>CAMPAIGN.</span>
-</h1>
-<p class="pl-hero-text">
+          </h1>
+
+          <p class="pl-hero-text">
             Follow Arsenal's Premier League season from one place —
             standings, form, results, next fixtures and the race at the top.
           </p>
-<div class="pl-hero-actions">
-<a class="pl-primary-btn" href="#leagueTable">View League Table ↓</a>
-<a class="pl-secondary-btn" href="fixtures.html">All Fixtures →</a>
-</div>
-</div>
-</section>
+
+          <div class="pl-hero-actions">
+            <a href="#leagueTable" class="pl-primary-btn">View League Table ↓</a>
+            <a href="fixtures.html" class="pl-secondary-btn">All Fixtures →</a>
+          </div>
+        </div>
+
+        <div class="pl-hero-card">
+          <span class="pl-season-label">ARSENAL • 2026/27</span>
+
+          <div class="pl-position-wrap">
+            <strong id="heroPosition">—</strong>
+            <span>CURRENT POSITION</span>
+          </div>
+
+          <div class="pl-hero-stat-grid">
+            <div>
+              <strong id="heroPoints">—</strong>
+              <span>POINTS</span>
+            </div>
+
+            <div>
+              <strong id="heroPlayed">—</strong>
+              <span>PLAYED</span>
+            </div>
+
+            <div>
+              <strong id="heroWins">—</strong>
+              <span>WINS</span>
+            </div>
+
+            <div>
+              <strong id="heroGD">—</strong>
+              <span>GOAL DIFF.</span>
+            </div>
+          </div>
+        </div>
+      </section>
 <section class="pl-section pl-overview">
 <div class="pl-section-head">
 <div>
@@ -1139,44 +1209,677 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
 <div class="pl-results-empty">Loading title race…</div>
 </div>
 </section>
-
-<div class="nl4-public-forecast-root" hidden="" id="nl4PublicForecastRoot"><section class="nl4-public-model-card" hidden="" id="nl4PublicModel">
+<section class="pl-section pl-title-probability-section" id="titleProbability" hidden style="display:none!important" aria-hidden="true">
+<div class="pl-section-head">
+<div>
+<p class="pl-kicker">07 / NL4 FORECAST</p>
+<h2>PREMIER LEAGUE TITLE PROBABILITY</h2>
+</div>
+<span class="pl-table-note" id="titleModelRunLabel">25,000 V13.0 SIMULATIONS</span>
+</div>
+<div class="nl4-title-forecast-shell">
+<article class="nl4-arsenal-probability-card">
+<span class="nl4-model-label">NL4 STATISTICAL TITLE FORECAST</span>
+<div class="nl4-probability-main">
+<strong id="arsenalTitleProbability">—</strong>
+<span>ARSENAL TITLE PROBABILITY</span>
+</div>
+<div class="nl4-probability-grid nl4-v4-grid">
+<div><strong id="arsenalTop4Probability">—</strong><span>TOP 4</span></div>
+<div><strong id="arsenalTop5Probability">—</strong><span>TOP 5</span></div>
+<div><strong id="arsenalExpectedPoints">—</strong><span>EXPECTED POINTS</span></div>
+<div><strong id="arsenalExpectedPosition">—</strong><span>EXPECTED FINISH</span></div>
+<div><strong id="arsenalMostLikelyPosition">—</strong><span>MOST LIKELY FINISH</span></div>
+<div><strong id="arsenalRelegationProbability">—</strong><span>RELEGATION</span></div>
+</div>
+<p class="nl4-model-note" id="titleModelStatus">Loading current Premier League performance data…</p>
+<div class="nl4-fixture-coverage">
+<div><span>FIXTURE COVERAGE</span><strong id="titleFixtureCoverage">—</strong></div>
+<div class="nl4-coverage-track"><div class="nl4-coverage-fill" id="titleFixtureCoverageBar"></div></div>
+<small id="titleFixtureCoverageNote">Checking league-wide schedule…</small>
+</div>
+<div class="nl4-v3-diagnostics">
+<div><span>MODEL</span><strong id="titleModelVersion">V13.2 • SANDBOX SNAPSHOT ENGINE</strong></div>
+<div><span>COMPLETED MATCHES</span><strong id="titleCompletedMatches">—</strong></div>
+<div><span>ARSENAL FORM</span><strong id="titleArsenalForm">—</strong></div>
+<div><span>HISTORICAL PTS ANCHOR</span><strong id="arsenalHistoricalPointsAnchor">—</strong></div>
+<div><span>HISTORY WEIGHT</span><strong id="arsenalHistoricalPointsWeight">—</strong></div>
+<div><span>PRIOR DE-DUP</span><strong id="arsenalPriorDedupStatus">—</strong></div>
+<div><span>HISTORICAL EFFECT</span><strong id="arsenalHistoricalEffect">—</strong></div>
+<div><span>CALIBRATION CHECK</span><strong id="arsenalCalibrationBand">—</strong></div>
+<div><span>SCORING BASELINE</span><strong id="leagueScoringBaseline">—</strong></div>
+<div><span>DECISIVENESS</span><strong id="leagueDecisivenessMode">—</strong></div>
+</div>
+<section aria-labelledby="v13EvidenceTitle" class="v13-evidence-engine">
+<div class="v13-evidence-head">
+<div>
+<span class="nl4-model-label">V13.2 • SANDBOX SNAPSHOT ENGINE</span>
+<h3 id="v13EvidenceTitle">Evidence Weight</h3>
+<p>Historical strength fades club-by-club as 2026/27 evidence accumulates. The V12.9 match simulation engine remains frozen.</p>
+</div>
+<strong id="v13EvidencePhase">PRE-SEASON</strong>
+</div>
+<div class="v13-weight-grid">
+<article>
+<span>HISTORICAL EVIDENCE</span>
+<strong id="v13HistoricalWeight">100%</strong>
+<div class="v13-weight-track"><i id="v13HistoricalBar" style="width:100%"></i></div>
+<small>2025/26 + 2024/25 context, defending-champion evidence and established-club prior.</small>
+</article>
+<article>
+<span>2026/27 CURRENT SEASON</span>
+<strong id="v13CurrentWeight">0%</strong>
+<div class="v13-weight-track live"><i id="v13CurrentBar" style="width:0%"></i></div>
+<small>Actual points, GF/GA, GD, opponent-adjusted Elo, form, home/away splits and table position.</small>
+</article>
+<article class="v13-played-card">
+<span>ARSENAL MATCHES PLAYED</span>
+<strong id="v13ArsenalPlayed">0/38</strong>
+<small>The transition is based on Arsenal's own league sample; every other club has its own independent weight.</small>
+</article>
+</div>
+<div class="v13-transition-markers">
+<span>PRE-SEASON<br/><b>100 / 0</b></span>
+<span>10 MP<br/><b>60 / 40</b></span>
+<span>20 MP<br/><b>25 / 75</b></span>
+<span>25 MP<br/><b>15 / 85</b></span>
+<span>30 MP<br/><b>5 / 95</b></span>
+<span>34+ MP<br/><b>0 / 100</b></span>
+</div>
+<details class="v13-all-clubs">
+<summary>View evidence weight for all 20 clubs</summary>
+<div id="v13EvidenceClubList"></div>
+</details>
+</section>
+<section class="v136-goal-trace">
+<div class="v136-head">
+<div>
+<span class="nl4-model-label">V13.7 • SCORING BASELINE STABILIZATION</span>
+<h3>Scoring Baseline Repair</h3>
+<p>The raw 2026/27 league scoring sample is now blended with the frozen 1.42 preseason base instead of replacing it after a handful of matches. The counterfactual still compares the same remaining fixtures against a fully frozen 1.42 base.</p>
+</div>
+<b id="v136TraceStatus">TRACING…</b>
+</div>
+<div class="v136-cards">
+<article><span>STABILIZED BASE INPUT</span><strong id="v136ObservedBase">—</strong><small>blended historical + live</small></article>
+<article><span>FROZEN V12.9 BASE</span><strong id="v136FrozenBase">—</strong><small>preseason</small></article>
+<article><span>RAW 2026/27 SAMPLE</span><strong id="v137RawObservedBase">—</strong><small>diagnostic only</small></article>
+<article><span>SCORING EVIDENCE</span><strong id="v137ScoringWeights">—</strong><small>shared league baseline</small></article>
+<article><span>CURRENT REMAINING GOALS</span><strong id="v136LiveGoals">—</strong><small>per match</small></article>
+<article><span>FROZEN-BASE COUNTERFACTUAL</span><strong id="v136FrozenGoals">—</strong><small>same fixtures</small></article>
+<article><span>GOAL LOSS FROM BASE</span><strong id="v136GoalLoss">—</strong><small>same fixtures</small></article>
+</div>
+<div class="v136-table">
+<div class="v136-trace-row v136-trace-head"><strong>PIPELINE CHECK</strong><span>FROZEN BASE</span><span>CURRENT MD</span><b>CHANGE</b></div>
+<div id="v136GoalTrace"><div class="nl4-title-model-loading">Tracing goal pipeline…</div></div>
+</div>
+<div class="v136-diagnosis" id="v136Diagnosis">Building diagnosis…</div>
+<p>V13.7 repairs only the shared league scoring baseline. No team-strength or match-result coefficients were retuned.</p>
+</section>
+<section class="v135-environment-audit">
+<div class="v135-head">
+<div>
+<span class="nl4-model-label">V13.5 • SIMULATION ENVIRONMENT REGRESSION AUDIT</span>
+<h3>Did One Matchday Change the Whole League?</h3>
+<p>This compares the current remaining-season simulation environment against the frozen V12.9 preseason baseline.</p>
+</div>
+<b id="v135EnvironmentStatus">CHECKING…</b>
+</div>
+<div class="v135-cards">
+<article><span>CHAMPION AVG</span><strong id="v135ChampionNow">—</strong><small id="v135ChampionDelta">—</small></article>
+<article><span>ARSENAL EXP PTS</span><strong id="v135ArsenalNow">—</strong><small id="v135ArsenalDelta">—</small></article>
+<article><span>REMAINING MATCH GOALS</span><strong id="v135GoalsNow">—</strong><small>model λ total</small></article>
+<article><span>DRAW RATE</span><strong id="v135DrawNow">—</strong><small>remaining fixtures</small></article>
+<article><span>FAVOURITE WIN RATE</span><strong id="v135FavoriteNow">—</strong><small>stronger Elo side</small></article>
+<article><span>AVG ELO GAP</span><strong id="v135EloGapNow">—</strong><small>remaining fixtures</small></article>
+</div>
+<div class="v135-table">
+<div class="v135-env-row v135-env-head"><strong>METRIC</strong><span>V12.9 BASELINE</span><span>CURRENT TEST</span><b>DELTA</b></div>
+<div id="v135EnvironmentAudit"><div class="nl4-title-model-loading">Auditing simulation environment…</div></div>
+</div>
+<p>This is diagnostic only. V13.5 does not alter the match engine or coefficients.</p>
+</section>
+<section class="v133-influence-audit">
+<div class="v133-head">
+<div>
+<span class="nl4-model-label">V13.3 • EARLY-SEASON INFLUENCE AUDIT</span>
+<h3>How Much Is One Result Really Entering the Model? • Elo Split</h3>
+<p>The nominal evidence gate can be small while several live channels still add up. This panel shows each pathway separately.</p>
+</div>
+<b>DIAGNOSTIC ONLY</b>
+</div>
+<div class="v133-summary">
+<article><span>NOMINAL LIVE GATE</span><strong id="v133NominalLiveGate">—</strong><small>V13 transition schedule</small></article>
+<article><span>EFFECTIVE LIVE INFLUENCE</span><strong id="v133EffectiveLiveInfluence">—</strong><small>Sum of absolute live factor contributions</small></article>
+<article><span>INFLUENCE / GATE</span><strong id="v133InfluenceRatio">—</strong><small>Useful warning signal, not a probability percentage</small></article>
+</div>
+<div class="v133-table">
+<div class="v133-row v133-headrow"><strong>INPUT</strong><span>RAW VALUE</span><span>SAMPLE</span><span>WEIGHT</span><b>STRENGTH CONTRIBUTION</b></div>
+<div id="v133InfluenceAudit"><div class="nl4-title-model-loading">Preparing influence audit…</div></div>
+</div>
+<p class="v133-note">
+            “Effective Live Influence” is a diagnostic index built from the magnitude of the live strength-factor adjustments. It is not itself a title probability.
+            Its job is to reveal when several channels are counting the same early result at once.
+          </p>
+</section>
+<section class="v131-live-audit">
+<div class="v131-audit-head">
+<div>
+<span class="nl4-model-label">V13.1 • LIVE EVIDENCE AUDIT</span>
+<h3>What Is Moving Arsenal's Strength?</h3>
+<p>This panel exposes the inputs entering V13.0. It does not change the match engine or add any new probability adjustment.</p>
+</div>
+<b>DIAGNOSTIC ONLY</b>
+</div>
+<div class="v131-audit-grid" id="v131EvidenceAudit">
+<div class="nl4-title-model-loading">Preparing live evidence audit…</div>
+</div>
+<p class="v131-audit-note">
+            A healthy early-season update should show only small factor movements because the current-season evidence gate is still low.
+            If one match causes a large factor jump here, that component—not the Monte Carlo simulator—is the part to inspect.
+          </p>
+</section>
+<div class="nl4-model-confidence">
+<div class="nl4-confidence-top">
+<div>
+<span>MODEL CONFIDENCE</span>
+<strong id="titleConfidenceLabel">LOW</strong>
+</div>
+<b id="titleConfidenceScore">—</b>
+</div>
+<div class="nl4-confidence-track">
+<div class="nl4-confidence-fill" id="titleConfidenceBar"></div>
+</div>
+<p id="titleConfidenceNote">
+          Confidence increases as real 2026/27 Premier League results are recorded.
+        </p>
+</div>
+<div class="nl4-v115-prior-source">
+<div class="nl4-v115-prior-grid">
+<div><span>2025/26 DATA SOURCE</span><strong id="previousSeasonSource">CHECKING…</strong></div>
+<div><span>2025/26 COVERAGE</span><strong id="previousSeasonCoverage">—</strong></div>
+<div><span>2024/25 COVERAGE</span><strong id="secondPreviousSeasonCoverage">—</strong></div>
+<div><span>AUTO-DETECTED PROMOTED</span><strong id="previousSeasonPromoted">—</strong></div>
+</div>
+<p id="previousSeasonWarning">Loading previous-season standings…</p>
+</div>
+</article>
+<div class="nl4-title-probability-table-wrap">
+<div class="nl4-title-probability-head">
+<span>CLUB</span><span>TITLE</span><span>TOP 4</span><span>TOP 5</span><span>RELEG.</span><span>EXP PTS</span>
+</div>
+<section class="v128-validation"><div class="v128-head"><div><small>V12.9 FROZEN BASELINE • 25,000-SIMULATION AUDIT</small><h3>Monte Carlo Validation Dashboard</h3><p>The V12.7 match engine is frozen while this panel audits the distribution behind the forecast.</p></div><b>MATCH ENGINE FROZEN</b></div><div class="v128-grid"><article><small>ARSENAL MEDIAN</small><strong id="v128ArsenalMedian">—</strong></article><article><small>10TH PERCENTILE</small><strong id="v128ArsenalP10">—</strong></article><article><small>25TH PERCENTILE</small><strong id="v128ArsenalP25">—</strong></article><article><small>75TH PERCENTILE</small><strong id="v128ArsenalP75">—</strong></article><article><small>90TH PERCENTILE</small><strong id="v128ArsenalP90">—</strong></article></div><div class="v128-two"><article class="v128-panel"><h4>When Arsenal Win the League</h4><p>Title-winning simulations <strong id="v128TitleSamples">—</strong></p><p>Average points <strong id="v128TitleAvg">—</strong></p><p>Lowest title total <strong id="v128TitleMin">—</strong></p><p>Highest title total <strong id="v128TitleMax">—</strong></p><p>Average when Arsenal don't win <strong id="v128NonTitleAvg">—</strong></p></article><article class="v128-panel"><h4>League Champion Points</h4><p>Average <strong id="v128ChampionAvg">—</strong></p><p>Median <strong id="v128ChampionMedian">—</strong></p><p>10th percentile <strong id="v128ChampionP10">—</strong></p><p>90th percentile <strong id="v128ChampionP90">—</strong></p></article></div><article class="v128-panel"><h4>Share of Simulated Titles</h4><div id="v128TitleWinnerShare"></div></article></section><section class="v129-reliability"><div class="v129-head"><div><small>V12.9 • RELIABILITY AUDIT</small><h3>Simulation Reliability &amp; Tail Diagnostics</h3><p>The match engine remains frozen. This panel measures rare outcomes and Monte Carlo sampling noise.</p></div><b>STATISTICS ONLY</b></div><div class="v129-grid"><article><small>1ST PERCENTILE</small><strong id="v129ArsenalP01">—</strong></article><article><small>5TH PERCENTILE</small><strong id="v129ArsenalP05">—</strong></article><article><small>95TH PERCENTILE</small><strong id="v129ArsenalP95">—</strong></article><article><small>99TH PERCENTILE</small><strong id="v129ArsenalP99">—</strong></article></div><div class="v129-two"><article class="v129-panel"><h4>Arsenal Points Thresholds</h4><div><span>80+ points</span><strong id="v129Arsenal80">—</strong></div><div><span>85+ points</span><strong id="v129Arsenal85">—</strong></div><div><span>90+ points</span><strong id="v129Arsenal90">—</strong></div><div><span>95+ points</span><strong id="v129Arsenal95">—</strong></div><div><span>100+ points</span><strong id="v129Arsenal100">—</strong></div></article><article class="v129-panel"><h4>Champion Tail Frequency</h4><div><span>Champion below 75</span><strong id="v129ChampionBelow75">—</strong></div><div><span>Champion above 95</span><strong id="v129ChampionAbove95">—</strong></div><div><span>100+ point champion</span><strong id="v129Champion100">—</strong></div></article></div><article class="v129-panel v129-mc"><h4>Monte Carlo Sampling Uncertainty</h4><div><span>Approx. 95% sampling margin</span><strong id="v129MonteCarloSE">—</strong></div><div><span>Approx. 95% interval for Arsenal title estimate</span><strong id="v129MonteCarloCI">—</strong></div><p>This interval measures simulation noise only, not real football uncertainty.</p></article></section><div class="nl4-title-probability-table" id="titleProbabilityTable">
+<div class="nl4-title-model-loading">Running title simulations…</div>
+</div>
+</div>
+</div>
+<div class="v123-timeline">
+<div class="v123-timeline-head">
+<div>
+<span class="nl4-model-label">V13.2 • SANDBOX / LIVE PROBABILITY TIMELINE</span>
+<h3>Arsenal's Title Race, Update by Update</h3>
+</div>
+<strong id="v123TimelineStatus">LOADING SAVED FORECASTS…</strong>
+</div>
+<div class="v123-timeline-scroll">
+<div class="v123-timeline-list" id="v123TimelineList">
+<div class="nl4-title-model-loading">Loading title-race timeline…</div>
+</div>
+</div>
+<div class="v123-detail" id="v123TimelineDetail">
+<div class="nl4-title-model-loading">Select a saved forecast to inspect it.</div>
+</div>
+<p class="nl4-model-note">
+      Every timeline stop comes from an NL4 forecast snapshot. Live snapshots use Supabase; Test Mode snapshots stay only in this browser. Select a card—or a point on the probability chart—to inspect
+      Arsenal's title chance, expected points, expected finish, model confidence and the important new Arsenal/rival results associated with that update.
+    </p>
+</div>
+<div class="v12-matchday-tracker">
+<div class="v12-tracker-head">
+<div>
+<span class="nl4-model-label">V13.2 • LIVE MATCHDAY TRACKER</span>
+<h3>What Did the Latest Results Do to Arsenal's Title Chance?</h3>
+</div>
+<strong id="v12MatchdayChange">BASELINE</strong>
+</div>
+<div class="v12-before-after">
+<div class="v12-prob-card">
+<span>BEFORE LATEST SAVED UPDATE</span>
+<strong id="v12BeforeProbability">—</strong>
+</div>
+<div class="v12-arrow">→</div>
+<div class="v12-prob-card">
+<span>CURRENT TITLE CHANCE</span>
+<strong id="v12AfterProbability">—</strong>
+</div>
+</div>
+<div class="v12-delta-note" id="v12CompletedDelta">Waiting for league results…</div>
+<p id="v12MatchdaySummary">Preparing live probability comparison…</p>
+<div class="v12-evidence-grid">
+<div class="v12-evidence-card">
+<div class="v12-evidence-top"><span>PRESEASON / HISTORICAL PRIOR</span><strong id="v12PriorWeight">—</strong></div>
+<div class="v12-weight-track"><div class="v12-weight-fill" id="v12PriorBar"></div></div>
+</div>
+<div class="v12-evidence-card">
+<div class="v12-evidence-top"><span>2026/27 CURRENT-SEASON EVIDENCE</span><strong id="v12SeasonEvidence">—</strong></div>
+<div class="v12-weight-track"><div class="v12-weight-fill" id="v12EvidenceBar"></div></div>
+</div>
+</div>
+<div class="v12-impact-list" id="v12ResultImpactList">
+<div class="nl4-title-model-loading">Waiting for completed league results…</div>
+</div>
+<p class="nl4-model-note">
+      The before/after probability change is exact from the available NL4 forecast snapshots. In Test Mode these snapshots are browser-only. The result cards are evidence-based drivers:
+      they explain which new Arsenal and leading-rival results entered the model, but do not falsely assign an isolated causal percentage to one match.
+    </p>
+</div>
+<section class="v1491-hotfix">
+<div class="v1491-head"><div>
+<span class="nl4-model-label">V14.9.1 • EXACT-PAIRING HOTFIX</span>
+<h3>Do the MD5 Rival Shocks Survive Exact Paired Universes?</h3>
+<p>Every comparison now uses identical random outcomes for every other unresolved fixture. Only the selected completed result changes.</p>
+</div><b id="v1491HotfixStatus">CALCULATING…</b></div>
+<div id="v1491HotfixAudit"><div class="nl4-title-model-loading">Counting exact Arsenal title flips…</div></div>
+<small>Audit hotfix only. No forecast coefficient, evidence weight, Elo value or scoring parameter is changed.</small>
+</section>
+<section class="v149-stability">
+<div class="v149-head"><div>
+<span class="nl4-model-label">V14.9 • RIVAL SHOCK MONTE CARLO STABILITY AUDIT</span>
+<h3>Do the Biggest MD5 Rival Effects Survive 25,000 Simulations?</h3>
+<p>The largest V14.8 match-level title effects are re-run at higher resolution with paired common random numbers.</p>
+</div><b id="v149StabilityStatus">CALCULATING…</b></div>
+<div id="v149StabilityAudit"><div class="nl4-title-model-loading">Running high-resolution rival-shock checks…</div></div>
+<small>Reliability audit only. No Elo, evidence, scoring, Poisson or title coefficient is changed.</small>
+</section>
+<section class="v148-opponent-neutral">
+<div class="v148-head"><div>
+<span class="nl4-model-label">V14.8 • OPPONENT-NEUTRAL RIVAL SHOCK AUDIT</span>
+<h3>Which Individual Rival Results Actually Moved Arsenal's Title Chance?</h3>
+<p>V14.8 fixes the V14.7 isolation problem. One rival match at a time is compared with its reconstructed pre-match distribution while every other MD1–5 result remains fixed.</p>
+</div><b id="v148OpponentNeutralStatus">CALCULATING…</b></div>
+<div id="v148OpponentNeutralAudit"><div class="nl4-title-model-loading">Running opponent-neutral match-by-match counterfactuals…</div></div>
+<small>Diagnostic only. 6,000 common-seed paired simulations per match. No Elo, evidence, scoring or title coefficient is changed.</small>
+</section>
+<section class="v147-rival-shock">
+<div class="v147-head"><div>
+<span class="nl4-model-label">V14.7 • RIVAL SHOCK SENSITIVITY AUDIT</span>
+<h3>Which Rival Actually Created Arsenal's MD5 Title Surge?</h3>
+<p>Starting from the full MD5 sandbox, each contender's first five results are removed one club at a time and returned to the unresolved fixture distribution.</p>
+</div><b id="v147RivalShockStatus">CALCULATING…</b></div>
+<div id="v147RivalShockAudit"><div class="nl4-title-model-loading">Re-simulating individual rival shocks…</div></div>
+<small>Diagnostic only. 6,000 common-seed simulations per state. Rival effects overlap and are not assumed to be additive. No model coefficient is changed.</small>
+</section>
+<section class="v146-surge">
+<div class="v146-head"><div><span class="nl4-model-label">V14.6 • MD5 TITLE SURGE DECOMPOSITION</span>
+<h3>Where Did Arsenal's MD5 Title Surge Come From?</h3>
+<p>Four controlled states separate Arsenal's first five results from the other 45 Matchday 1–5 results. The same frozen match engine is used in every state.</p></div>
+<b id="v146TitleSurgeStatus">CALCULATING…</b></div>
+<div id="v146TitleSurgeAudit"><div class="nl4-title-model-loading">Re-simulating the MD5 decomposition…</div></div>
+<small>Diagnostic only. No model coefficient is changed. Controlled states use common seeds to reduce comparison noise.</small>
+</section>
+<section class="v145-transition">
+<div class="v145-head">
+<div>
+<span class="nl4-model-label">V14.5 • TRANSITION SCHEDULE CONSISTENCY AUDIT</span>
+<h3>Is the Validation Schedule Reading the Same Weights as the Forecast?</h3>
+<p>This panel no longer estimates the evidence curve. It reads the exact evidenceWeights() function used by the live title model and compares it with the published V13 transition schedule.</p>
+</div>
+<b id="v145TransitionStatus">CHECKING SCHEDULE…</b>
+</div>
+<div id="v145TransitionAudit"><div class="nl4-title-model-loading">Reading the live transition function…</div></div>
+<p id="v145TransitionExplanation">Comparing actual and published evidence weights…</p>
+<small>Diagnostic only. No Elo, Poisson, scoring, evidence or title-probability coefficient is changed.</small>
+</section>
+<section class="v143-compression">
+<div class="v143-head">
+<div>
+<span class="nl4-model-label">V14.3 • CONTENDER DISTRIBUTION COMPRESSION AUDIT</span>
+<h3>Is the Title Race Too Compressed?</h3>
+<p>This measures the final-points distributions of Arsenal, Manchester City and Liverpool and how often simulated title races finish inside very small points margins.</p>
+</div>
+<b id="v143CompressionStatus">CALCULATING…</b>
+</div>
+<div id="v143CompressionAudit"><div class="nl4-title-model-loading">Measuring contender distributions and title-boundary density…</div></div>
+<p id="v143CompressionExplanation">Building contender-compression diagnosis…</p>
+<small>Diagnostic only. 12,000 paired common-seed simulations. No match-engine or forecast coefficient is changed.</small>
+</section>
+<section class="v142-boundary">
+<div class="v142-head"><div><span class="nl4-model-label">V14.2 • TITLE BOUNDARY / RANK SENSITIVITY AUDIT</span><h3>Where Are Arsenal's Extra Title Wins Coming From?</h3><p>Paired simulations compare Arsenal's normal pre-match distribution with the actual 3–0 result and inspect the exact championship boundary.</p></div><b id="v142BoundaryStatus">CALCULATING…</b></div>
+<div class="v142-summary"><article><span>NET TITLE FLIPS</span><strong id="v142NetFlips">—</strong></article><article><span>TITLE PROBABILITY CHANGE</span><strong id="v142TitleDelta">—</strong></article><article><span>EXTRA GD-TIE TITLES</span><strong id="v142GdTitles">—</strong></article><article><span>CHAMPION AVG CHANGE</span><strong id="v142ChampionDelta">—</strong></article></div>
+<div id="v142BoundaryAudit"><div class="nl4-title-model-loading">Tracing title-boundary simulations…</div></div>
+<p id="v142BoundaryExplanation">Building rank-sensitivity diagnosis…</p>
+<small>Diagnostic only. 10,000 paired common-seed simulations. No model coefficient is changed.</small>
+</section>
+<section class="v141-expected-actual">
+<div class="v141-head">
+<div>
+<span class="nl4-model-label">V14.1 • EXPECTED RESULT VS ACTUAL RESULT AUDIT</span>
+<h3>How Much Did the Actual Result Beat the Pre-Match Distribution?</h3>
+<p>Instead of comparing a completed match with an empty fixture, this audit compares the actual score directly with the model's own pre-match score distribution.</p>
+</div>
+<b id="v141ExpectedActualStatus">CALCULATING…</b>
+</div>
+<div class="v141-summary">
+<article><span>ARSENAL POINT SURPRISE</span><strong id="v141ArsenalPointSurprise">—</strong></article>
+<article><span>ARSENAL TITLE SURPRISE</span><strong id="v141ArsenalTitleSurprise">—</strong></article>
+<article><span>CITY POINT SURPRISE</span><strong id="v141CityPointSurprise">—</strong></article>
+<article><span>CITY TITLE SURPRISE</span><strong id="v141CityTitleSurprise">—</strong></article>
+</div>
+<div id="v141ExpectedActualAudit"><div class="nl4-title-model-loading">Comparing expected distributions with actual results…</div></div>
+<p id="v141ExpectedActualExplanation">Building expected-vs-actual diagnosis…</p>
+<small>Decision audit only. 8,000 common-seed simulations per state. No forecast coefficient is changed.</small>
+</section>
+<section class="v140-surprise">
+<div class="v140-head"><div><span class="nl4-model-label">V14.0 • FIXTURE EXPECTATION / SURPRISE AUDIT</span><h3>How Surprising Were Those Results Before Kickoff?</h3><p>The model reconstructs each fixture without its final result, then reads the pre-result win/draw/loss distribution, expected points and expected goal difference.</p></div><b id="v140SurpriseStatus">CALCULATING…</b></div>
+<div class="v140-summary"><article><span>ARSENAL EXPECTED PTS</span><strong id="v140ArsenalExpectedPts">—</strong></article><article><span>ARSENAL POINT SURPRISE</span><strong id="v140ArsenalSurprise">—</strong></article><article><span>CITY EXPECTED PTS</span><strong id="v140CityExpectedPts">—</strong></article><article><span>CITY POINT SURPRISE</span><strong id="v140CitySurprise">—</strong></article></div>
+<div id="v140SurpriseAudit"><div class="nl4-title-model-loading">Reconstructing pre-match expectations…</div></div>
+<p id="v140SurpriseExplanation">Building fixture-surprise diagnosis…</p><small>Diagnostic only. V14.0 does not alter the 25,000-simulation forecast or any model coefficient.</small>
+</section>
+<section class="v139-decomp">
+<div class="v139-head">
+<div>
+<span class="nl4-model-label">V13.9 • BANKED POINTS VS EVIDENCE DECOMPOSITION</span>
+<h3>Is the Probability Move Coming From the Table or the Model?</h3>
+<p>Each headline result is tested four ways: unresolved with no evidence, banked points only, evidence only, and the full actual result.</p>
+</div>
+<b id="v139DecompositionStatus">CALCULATING…</b>
+</div>
+<div class="v139-summary">
+<article><span>ARSENAL • BANKED</span><strong id="v139ArsenalBanked">—</strong></article>
+<article><span>ARSENAL • EVIDENCE</span><strong id="v139ArsenalEvidence">—</strong></article>
+<article><span>CITY • BANKED</span><strong id="v139CityBanked">—</strong></article>
+<article><span>CITY • EVIDENCE</span><strong id="v139CityEvidence">—</strong></article>
+</div>
+<div id="v139Decomposition">
+<div class="nl4-title-model-loading">Decomposing banked results and live evidence…</div>
+</div>
+<p id="v139DecompositionExplanation">Building decomposition…</p>
+<small>Diagnostic only. 6,000 common-seed simulations per state. No model coefficient is changed.</small>
+</section>
+<section class="v138-sensitivity">
+<div class="v138-head">
+<div>
+<span class="nl4-model-label">V13.8 • TITLE PROBABILITY SENSITIVITY AUDIT</span>
+<h3>How Much Did Arsenal and City Actually Move the Race?</h3>
+<p>The other eight Matchday 1 results stay fixed. Only Arsenal's result and Manchester City's result are toggled between fixed and unresolved.</p>
+</div>
+<b id="v138SensitivityStatus">CALCULATING…</b>
+</div>
+<div class="v138-results">
+<div><span>ARSENAL RESULT</span><strong id="v138ArsenalResult">—</strong></div>
+<div><span>CITY RESULT</span><strong id="v138CityResult">—</strong></div>
+</div>
+<div class="v138-states" id="v138SensitivityAudit">
+<div class="nl4-title-model-loading">Running four controlled title simulations…</div>
+</div>
+<div class="v138-effects">
+<article><span>ARSENAL RESULT EFFECT</span><strong id="v138ArsenalEffect">—</strong><small>Arsenal-only minus neither</small></article>
+<article><span>CITY RESULT EFFECT</span><strong id="v138CityEffect">—</strong><small>City-only minus neither</small></article>
+<article><span>COMBINED EFFECT</span><strong id="v138CombinedEffect">—</strong><small>Actual minus neither</small></article>
+<article><span>INTERACTION</span><strong id="v138Interaction">—</strong><small>Combined minus isolated effects</small></article>
+</div>
+<p id="v138SensitivityExplanation">Building controlled sensitivity explanation…</p>
+<small class="v138-note">Diagnostic only. Each state uses 6,000 simulations with common random numbers to reduce comparison noise. The main forecast still uses 25,000 simulations.</small>
+</section>
+<div class="v122-counterfactual">
+<div class="v122-cf-title">
+<div>
+<span class="nl4-model-label">V13.2 • TRUE RESULT IMPACT</span>
+<h3>What If That Result Had Been Different?</h3>
+</div>
+<strong id="v122CounterfactualStatus">WAITING FOR RESULTS</strong>
+</div>
+<div class="v122-cf-list" id="v122CounterfactualList">
+<div class="nl4-title-model-loading">Counterfactual simulations will appear after completed league results.</div>
+</div>
+<p class="nl4-model-note">
+      Each card removes one finished match from the current table and model evidence, keeps every other completed result fixed,
+      then re-runs 8,000 season simulations with that match unresolved. Arsenal's title probability is measured separately when
+      the selected club wins, draws or loses. This is a true conditional counterfactual rather than a guessed impact number.
+    </p>
+</div>
+<div class="nl4-model-method" style="margin-top:14px">
+<strong>V12.9 LEAGUE POINTS CALIBRATION RANGES</strong>
+<p>
+      Calibration checks only — not forced totals: champion roughly 82–90+, second 78–86,
+      third 70–82, fourth 65–75, mid-table 45–55, relegation battle 30–40.
+      The simulation remains free to finish outside these bands.
+    </p>
+</div>
+<div class="nl4-title-target">
+<div class="nl4-scenario-head">
+<div>
+<span class="nl4-model-label">TITLE-WINNING POINTS</span>
+<h3>How Many Points Could Win the League?</h3>
+</div>
+<strong id="titleTargetHeadline">CALCULATING…</strong>
+</div>
+<div class="nl4-title-target-grid">
+<article>
+<span>EXPECTED CHAMPION</span>
+<strong id="expectedChampionPoints">—</strong>
+<small>Average champion points</small>
+</article>
+<article>
+<span>MOST LIKELY RANGE</span>
+<strong id="championPointsRange">—</strong>
+<small>Middle 50% of simulations</small>
+</article>
+<article>
+<span>ARSENAL EXPECTED</span>
+<strong id="arsenalPointsTargetCurrent">—</strong>
+<small>Current expected final points</small>
+</article>
+</div>
+<div class="nl4-points-thresholds">
+<div class="nl4-threshold-head">
+<span>IF ARSENAL FINISH ON…</span>
+<b>CHANCE OF WINNING TITLE</b>
+</div>
+<div class="nl4-threshold-list" id="arsenalPointsThresholdList">
+<div class="nl4-title-model-loading">Calculating title-winning point thresholds…</div>
+</div>
+</div>
+<p class="nl4-model-note">
+      These thresholds come directly from the 25,000 simulated final tables. They show how often Arsenal
+      are champions in simulations where they finish on or above each points target.
+    </p>
+</div>
+<div class="nl4-race-momentum">
+<div class="nl4-scenario-head">
+<div>
+<span class="nl4-model-label">TITLE RACE MOMENTUM</span>
+<h3>Who Is Gaining Ground?</h3>
+</div>
+<strong id="raceMomentumStatus">WAITING FOR RESULTS</strong>
+</div>
+<div class="nl4-race-momentum-grid">
+<article>
+<span>ARSENAL CHANGE</span>
+<strong id="arsenalMomentumChange">—</strong>
+<small>Since first saved forecast</small>
+</article>
+<article>
+<span>CURRENT TITLE CHANCE</span>
+<strong id="arsenalMomentumCurrent">—</strong>
+<small>Latest simulation</small>
+</article>
+<article>
+<span>MODEL TREND</span>
+<strong id="arsenalMomentumTrend">—</strong>
+<small>Rising / steady / falling</small>
+</article>
+</div>
+</div>
+<div class="nl4-v11-explainer" id="titleChangeExplainer">
+<div class="nl4-v11-explainer-head">
+<div>
+<span class="nl4-model-label">V13.2 • SANDBOX SNAPSHOT ENGINE</span>
+<h3>Why Did Arsenal's Title Chance Change?</h3>
+</div>
+<strong class="nl4-v11-change-pill" id="v11ProbabilityChange">WAITING FOR HISTORY</strong>
+</div>
+<p class="nl4-v11-summary" id="v11ChangeSummary">
+    NL4 is comparing the latest simulation with the previous saved forecast and reading the newest league results.
+  </p>
+<div class="nl4-v11-driver-list" id="v11DriverList">
+<div class="nl4-title-model-loading">Building football-friendly title-race explanation…</div>
+</div>
+<div class="nl4-v11-race-outlook">
+<article>
+<span>TITLE RACE STATUS</span>
+<strong id="v11RaceStatus">CALCULATING…</strong>
+<small id="v11RaceStatusNote">Reading the full 20-team simulation.</small>
+</article>
+<article>
+<span>CREDIBLE TITLE THREAT</span>
+<strong id="v11ClosestChallenger">—</strong>
+<small id="v11ChallengerChance">Title probability —</small>
+</article>
+<article>
+<span>PROBABILITY GAP</span>
+<strong id="v11ProbabilityGap">—</strong>
+<small>Arsenal vs credible rival</small>
+</article>
+</div>
+<p class="nl4-model-note">
+    V12.9 separates the raw simulation runner-up from a credible title threat. V12.9 reads the 2025/26 Premier League table from Supabase and derives preseason strength from points, goal difference, goals for/against and final position. Arsenal's championship is therefore model evidence, not just a manual Elo label. Promoted clubs are detected by comparing the two seasons. “Likely drivers” remain evidence signals, not isolated causal percentages.
+  </p>
+</div>
+<div class="nl4-history-card">
+<div class="nl4-history-head">
+<div>
+<span class="nl4-model-label">TITLE PROBABILITY HISTORY • LIVE / SANDBOX</span>
+<h3>Arsenal's Title Chance Through the Season</h3>
+</div>
+<strong id="titleHistoryLatest">WAITING FOR FIRST RESULT</strong>
+</div>
+<div class="nl4-history-chart-wrap">
+<svg aria-label="Arsenal title probability history" class="nl4-history-chart" id="titleHistoryChart" role="img" viewbox="0 0 760 240"></svg>
+</div>
+<div class="nl4-history-legend">
+<span><i></i> Arsenal title probability</span>
+<b id="titleHistoryChange">Season change: —</b>
+</div>
+<p class="nl4-model-note" id="titleHistoryNote">
+      A new live snapshot is stored after recorded Premier League results. In Test Mode, V13.2 stores the equivalent snapshot only in browser sandbox history.
+    </p>
+</div>
+<div class="nl4-scenario-lab">
+<div class="nl4-scenario-head">
+<div>
+<span class="nl4-model-label">NEXT MATCH IMPACT</span>
+<h3>Arsenal Title Probability Scenario</h3>
+</div>
+<strong id="scenarioFixtureLabel">Loading next Arsenal fixture…</strong>
+</div>
+<div class="nl4-scenario-grid">
+<article class="nl4-scenario-card win">
+<span>IF ARSENAL WIN</span>
+<strong id="scenarioWinTitle">—</strong>
+<small id="scenarioWinSwing">Title probability</small>
+</article>
+<article class="nl4-scenario-card draw">
+<span>IF ARSENAL DRAW</span>
+<strong id="scenarioDrawTitle">—</strong>
+<small id="scenarioDrawSwing">Title probability</small>
+</article>
+<article class="nl4-scenario-card loss">
+<span>IF ARSENAL LOSE</span>
+<strong id="scenarioLossTitle">—</strong>
+<small id="scenarioLossSwing">Title probability</small>
+</article>
+</div>
+<div class="nl4-next-match-probs">
+<span>MODELLED NEXT-MATCH RESULT</span>
+<div>
+<b id="scenarioWinChance">W —</b>
+<b id="scenarioDrawChance">D —</b>
+<b id="scenarioLossChance">L —</b>
+</div>
+</div>
+<p class="nl4-model-note">
+      These are conditional title probabilities from the same 25,000 season simulations:
+      how often Arsenal become champions among simulations where their next league match ends in a win, draw or defeat.
+    </p>
+</div>
+<div class="nl4-impact-map">
+<div class="nl4-scenario-head">
+<div>
+<span class="nl4-model-label">TITLE RACE IMPACT MAP</span>
+<h3>Arsenal's Next Five League Matches</h3>
+</div>
+<strong>WHICH RESULT MOVES THE TITLE RACE MOST?</strong>
+</div>
+<div class="nl4-impact-list" id="arsenalImpactMap">
+<div class="nl4-title-model-loading">Calculating fixture-by-fixture title impact…</div>
+</div>
+<p class="nl4-model-note">
+      Each row uses the same 25,000 full-season simulations. The title probability shown for a win,
+      draw or defeat is conditional on that result occurring in the selected Arsenal fixture.
+    </p>
+</div>
+<div class="nl4-position-distribution-card">
+<div class="nl4-position-distribution-head">
+<div>
+<span class="nl4-model-label">ARSENAL FINISHING RANGE</span>
+<h3>Probability by Final Position</h3>
+</div>
+<strong id="arsenalPodiumProbability">— PODIUM</strong>
+</div>
+<div class="nl4-position-distribution" id="arsenalPositionDistribution">
+<div class="nl4-title-model-loading">Calculating Arsenal finishing-position probabilities…</div>
+</div>
+</div>
+<div class="nl4-model-method">
+<strong>HOW NL4 CALCULATES THIS</strong>
+<p>
+      V12.9 blends current performance with calibrated preseason club-strength priors, Elo-style ratings, recent form and home/away evidence. Newly promoted clubs start from a lower strength prior than established title contenders, but that prior fades continuously and reaches zero after roughly 20 league matches per club, so exceptional real performance can fully take over. The rest of the season is simulated 25,000 times using every real remaining Premier League fixture currently stored in Supabase. Home advantage and exact opponent strength are applied.
+    </p>
+</div>
+</section><div class="nl4-public-forecast-root" id="nl4PublicForecastRoot"><section class="nl4-public-model-card" id="nl4PublicModel">
 <p class="eyebrow">NL4 MODEL</p>
 <h3 id="nl4InterpretationHeadline">Title Race Update</h3>
-<span class="status" id="nl4InterpretationStatus">PUBLIC FORECAST</span>
-<p class="summary" id="nl4InterpretationSummary"></p>
+<span class="status" id="nl4InterpretationStatus">AUTOMATIC MODEL ANALYSIS</span>
+<div id="nl4PublicLiveSummary" hidden aria-hidden="true" style="display:none!important">
+  <!-- Calculation-only targets retained for public-model.js. Nothing in this block is shown to viewers. -->
+  <strong id="publicArsenalTitleProbability">—</strong>
+  <strong id="publicArsenalTop4Probability">—</strong>
+  <strong id="publicArsenalTop5Probability">—</strong>
+  <strong id="publicArsenalExpectedPoints">—</strong>
+  <strong id="publicArsenalExpectedPosition">—</strong>
+  <span id="publicModelLiveStatus"></span>
+  <div id="publicProbabilityTable"></div>
+</div>
+<p class="summary" id="nl4InterpretationSummary">Running the Public Model and building automatic interpretation…</p>
 <div class="takeaway" id="nl4InterpretationTakeaway"></div>
 <div class="viewer-stats" id="nl4InterpretationViewerStats"></div>
 <div class="factors" id="nl4InterpretationFactors"></div>
-
 <div class="nl4-history-card" id="publicModelHistoryCard">
-  <div class="nl4-history-head">
-    <div>
-      <span class="nl4-model-label">NL4 MODEL • SEASON MOVEMENT</span>
-      <h3>Arsenal's Title Chance Through the Season</h3>
-    </div>
-    <strong id="publicTitleHistoryLatest">PRE-SEASON BASELINE</strong>
-  </div>
-  <div class="nl4-history-chart-wrap">
-    <svg id="publicTitleHistoryChart" class="nl4-history-chart" viewBox="0 0 760 240" role="img" aria-label="Arsenal public title probability history"></svg>
-  </div>
-  <div class="nl4-history-legend">
-    <span><i></i> Arsenal title probability</span>
-    <b id="publicTitleHistoryChange">Season change: —</b>
-  </div>
-  <p id="publicTitleHistoryNote" class="nl4-model-note">Saved NL4 Model forecasts from Supabase show how Arsenal's title probability changes throughout the season.</p>
+<div class="nl4-history-head">
+<div>
+<span class="nl4-model-label">NL4 MODEL • SEASON MOVEMENT</span>
+<h3>Arsenal's Title Chance Through the Season</h3>
 </div>
-
-
+<strong id="publicTitleHistoryLatest">PRE-SEASON BASELINE</strong>
+</div>
+<div class="nl4-history-chart-wrap">
+<svg aria-label="Arsenal public title probability history" class="nl4-history-chart" id="publicTitleHistoryChart" role="img" viewBox="0 0 760 240"><text x="380" y="120" text-anchor="middle" class="nl4-history-axis-text">Loading public forecast history…</text></svg>
+</div>
+<div class="nl4-history-legend">
+<span><i></i> Arsenal title probability</span>
+<b id="publicTitleHistoryChange">Season change: —</b>
+</div>
+<p class="nl4-model-note" id="publicTitleHistoryNote">Saved NL4 Model forecasts from Supabase show how Arsenal's title probability changes throughout the season.</p>
+</div>
 <div class="nl4-public-graph-interpretation" id="nl4PublicGraphInterpretation">
-  <div class="graph-interpretation-head">
-    <span id="nl4GraphInterpretationLabel">LOADING GRAPH INTERPRETATION…</span>
-    <strong id="nl4GraphInterpretationChange">—</strong>
-  </div>
-  <p id="nl4GraphInterpretationText">Loading the saved NL4 Model graph interpretation…</p>
-  <small id="nl4GraphInterpretationMeta">Reading the Admin-selected interpretation from Supabase.</small>
+<div class="graph-interpretation-head">
+<span id="nl4GraphInterpretationLabel">AUTOMATIC GRAPH ANALYSIS</span>
+<strong id="nl4GraphInterpretationChange">—</strong>
 </div>
-
+<p id="nl4GraphInterpretationText">NL4 will explain the title-probability movement automatically when the Public Model finishes calculating.</p>
+<small id="nl4GraphInterpretationMeta">Generated from the same Public Model history shown in the graph.</small>
+</div>
 <small class="published" id="nl4InterpretationPublished"></small>
 </section></div><section class="pl-section pl-leaders-section" id="arsenalPlayerStats">
 <div class="pl-section-head">
@@ -1865,8 +2568,8 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
 <script src="supabase-client.js"></script>
 <script src="nl4-data.js"></script>
 <script src="shared-sidebar.js"></script>
-<script src="premier-league.js?v=20260817-admin-public-model-split"></script>
-<script src="public-model.js?v=20260817-v16-9-realtime"></script>
+<script src="premier-league.js?v=20260818-hero-restored-v1"></script>
+<script src="public-model.js?v=20260818-canonical-interpretation-bridge-v1"></script>
 <script>
   (function(){
     const season = "2026/27";
@@ -1940,7 +2643,6 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
     setTimeout(loadFullSquadStats, 400);
   })();
   </script>
-
 <script>
   (function(){
     const db = window.nl4Supabase;
