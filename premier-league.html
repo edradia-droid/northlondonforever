@@ -937,6 +937,48 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
 </style>
 
 
+
+<style id="nl4-mobile-graph-pan-zoom">
+/* Mobile-only season graph expansion + pan/zoom */
+@media (max-width: 700px){
+  #publicModelHistoryCard .nl4-history-chart-wrap{
+    overflow:auto!important;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-x pan-y pinch-zoom;
+    overscroll-behavior:contain;
+    position:relative;
+  }
+
+  #publicTitleHistoryChart{
+    width:1100px!important;
+    min-width:1100px!important;
+    max-width:none!important;
+    height:auto!important;
+    min-height:300px!important;
+    display:block!important;
+    transform-origin:0 0;
+  }
+
+  #publicModelHistoryCard .nl4-history-chart-wrap::after{
+    content:"Swipe horizontally • pinch to zoom";
+    position:sticky;
+    left:10px;
+    bottom:8px;
+    display:inline-block;
+    margin:8px 0 0 8px;
+    padding:5px 8px;
+    border-radius:999px;
+    background:rgba(10,10,10,.82);
+    border:1px solid rgba(216,173,69,.25);
+    color:#d8ad45;
+    font-size:7px;
+    font-weight:900;
+    letter-spacing:.5px;
+    pointer-events:none;
+  }
+}
+</style>
+
 </head>
 <body class="nl4-unified-sidebar premier-league-page">
 <button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button>
@@ -1851,7 +1893,7 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
   <span id="publicModelLiveStatus"></span>
   <div id="publicProbabilityTable"></div>
 </div>
-<p class="summary" id="nl4InterpretationSummary">Running the Public Model and building automatic interpretation…</p>
+<p class="summary" id="nl4InterpretationSummary">Loading the latest published NL4 Model forecast…</p>
 <div class="takeaway" id="nl4InterpretationTakeaway"></div>
 <div class="viewer-stats" id="nl4InterpretationViewerStats"></div>
 <div class="factors" id="nl4InterpretationFactors"></div>
@@ -1877,7 +1919,7 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
 <span id="nl4GraphInterpretationLabel">AUTOMATIC GRAPH ANALYSIS</span>
 <strong id="nl4GraphInterpretationChange">—</strong>
 </div>
-<p id="nl4GraphInterpretationText">NL4 will explain the title-probability movement automatically when the Public Model finishes calculating.</p>
+<p id="nl4GraphInterpretationText">Loading the latest saved NL4 Model movement…</p>
 <small id="nl4GraphInterpretationMeta">Generated from the same Public Model history shown in the graph.</small>
 </div>
 <small class="published" id="nl4InterpretationPublished"></small>
@@ -2569,7 +2611,7 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
 <script src="nl4-data.js"></script>
 <script src="shared-sidebar.js"></script>
 <script src="premier-league.js?v=20260818-hero-restored-v1"></script>
-<script src="public-model.js?v=20260818-canonical-interpretation-bridge-v1"></script>
+<script defer src="public-model.js?v=20260819-admin-interpretation-sync-v1"></script>
 <script>
   (function(){
     const season = "2026/27";
@@ -2759,5 +2801,66 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
     setTimeout(loadLatestArsenalLineup,500);
   })();
   </script>
+
+<script>
+(function(){
+  function initNL4MobileGraphZoom(){
+    const wrap=document.querySelector('#publicModelHistoryCard .nl4-history-chart-wrap');
+    const svg=document.getElementById('publicTitleHistoryChart');
+    if(!wrap||!svg||window.innerWidth>700)return;
+
+    let scale=1;
+    let startDistance=0;
+    let startScale=1;
+    const minScale=1;
+    const maxScale=2.4;
+
+    const distance=(touches)=>{
+      if(!touches||touches.length<2)return 0;
+      const dx=touches[0].clientX-touches[1].clientX;
+      const dy=touches[0].clientY-touches[1].clientY;
+      return Math.hypot(dx,dy);
+    };
+
+    wrap.addEventListener('touchstart',e=>{
+      if(e.touches.length===2){
+        startDistance=distance(e.touches);
+        startScale=scale;
+      }
+    },{passive:true});
+
+    wrap.addEventListener('touchmove',e=>{
+      if(e.touches.length!==2||!startDistance)return;
+      const ratio=distance(e.touches)/startDistance;
+      scale=Math.max(minScale,Math.min(maxScale,startScale*ratio));
+      svg.style.transform=`scale(${scale})`;
+      svg.style.marginBottom=`${Math.max(0,(scale-1)*svg.getBoundingClientRect().height)}px`;
+    },{passive:true});
+
+    wrap.addEventListener('touchend',e=>{
+      if(e.touches.length<2)startDistance=0;
+    },{passive:true});
+
+    // Double-tap toggles a useful zoom level.
+    let lastTap=0;
+    wrap.addEventListener('touchend',()=>{
+      const now=Date.now();
+      if(now-lastTap<300){
+        scale=scale>1.05?1:1.65;
+        svg.style.transform=`scale(${scale})`;
+        svg.style.marginBottom=scale>1?`${(scale-1)*300}px`:'0px';
+      }
+      lastTap=now;
+    },{passive:true});
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',initNL4MobileGraphZoom,{once:true});
+  }else{
+    initNL4MobileGraphZoom();
+  }
+})();
+</script>
+
 </body>
 </html>

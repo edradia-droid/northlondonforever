@@ -1,0 +1,12 @@
+NL4 ADMIN MODEL - TOP FOUR INTERPRETATION
+
+1. Public model: use the included premier-league.html and title-probability.js.
+   They do NOT contain the failed public top-four interpretation block.
+
+2. Put admin-model-top4-interpretation.js in the project root.
+
+3. In admin-model.html, add this line immediately before </body>:
+
+   <script src="admin-model-top4-interpretation.js?v=20260819-admin-only-v1"></script>
+
+The script is guarded so it only runs on an Admin Model page. It reads the existing Admin Model probability table and shared Supabase match results. It does not change simulation maths or public model history.

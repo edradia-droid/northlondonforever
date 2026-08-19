@@ -4040,100 +4040,67 @@
     }
   }
 
-  let activeRefreshRequest=null;
+  async function saveAdminSnapshot(arsenal,completedCount){
+    if(!arsenal||completedCount<0)return false;
+    const statusEl=document.getElementById('titleModelStatus');
 
-  async function getPendingPublicRefreshRequest(){
     try{
-      const sessionRes=await db.auth?.getSession?.();
-      const session=sessionRes?.data?.session||null;
-      if(!session?.user)return null;
+      const auth=await db.auth?.getUser?.();
+      if(!auth?.data?.user){
+        if(statusEl)statusEl.textContent='Admin Model calculated, but no authenticated Admin user was found to publish the snapshot.';
+        return false;
+      }
 
-      const res=await db.from('nl4_forecast_refresh_requests')
-        .select('id,season,reason,requested_at,status')
+      const confidence=confidenceFromResults(completedCount);
+      const payload={
+        p_season:SEASON,
+        p_completed_matches:Number(completedCount)||0,
+        p_title_probability:Number(arsenal.titleProb.toFixed(4)),
+        p_top4_probability:Number(arsenal.top4Prob.toFixed(4)),
+        p_top5_probability:Number(arsenal.top5Prob.toFixed(4)),
+        p_expected_points:Number(arsenal.expectedPoints.toFixed(4)),
+        p_expected_position:Number(arsenal.expectedPosition.toFixed(4)),
+        p_confidence_score:confidence.score,
+        p_model_version:'ADMIN MODEL • V13 ENGINE'
+      };
+
+      const rpc=await db.rpc('save_title_probability_snapshot',payload);
+      if(rpc.error)throw rpc.error;
+
+      // Verify the value public viewers will read from title_probability_history.
+      const verify=await db.from('title_probability_history')
+        .select('completed_matches,title_probability,top4_probability,top5_probability,expected_points,expected_position,confidence_score,created_at')
         .eq('season',SEASON)
-        .eq('status','pending')
-        .order('requested_at',{ascending:true})
+        .eq('completed_matches',Number(completedCount)||0)
+        .order('created_at',{ascending:false})
         .limit(1);
 
-      if(res.error)throw res.error;
-      return res.data?.[0]||null;
-    }catch(err){
-      console.warn('NL4 refresh request check:',err);
-      return null;
-    }
-  }
+      if(verify.error)throw verify.error;
+      const row=verify.data?.[0];
+      if(!row)throw new Error('Snapshot RPC returned successfully, but no saved row could be verified.');
 
-  async function claimPublicRefreshRequest(request){
-    if(!request?.id)return null;
-    try{
-      const res=await db.from('nl4_forecast_refresh_requests')
-        .update({status:'processing',error_message:null})
-        .eq('id',request.id)
-        .eq('status','pending')
-        .select('id,season,reason,requested_at,status')
-        .maybeSingle();
+      const expected=Number(arsenal.titleProb.toFixed(4));
+      const actual=Number(row.title_probability);
+      if(!Number.isFinite(actual) || Math.abs(actual-expected)>0.01){
+        throw new Error(`Saved snapshot verification mismatch: Admin ${expected.toFixed(1)}% vs saved ${Number.isFinite(actual)?actual.toFixed(1):'—'}%.`);
+      }
 
-      if(res.error)throw res.error;
-      return res.data||null;
-    }catch(err){
-      console.warn('NL4 refresh request claim:',err);
-      return null;
-    }
-  }
+      if(statusEl){
+        statusEl.textContent=`ADMIN MODEL READY • ${expected.toFixed(1)}% TITLE • PUBLIC SNAPSHOT SYNCED`;
+      }
 
-  async function finishPublicRefreshRequest(request,status,completedCount,errorMessage=null){
-    if(!request?.id)return;
-    try{
-      const payload={
-        status,
-        completed_matches:Number.isFinite(Number(completedCount))?Number(completedCount):null,
-        completed_at:new Date().toISOString(),
-        error_message:errorMessage?String(errorMessage):null
+      window.NL4_ADMIN_LAST_PUBLISHED_SNAPSHOT={
+        ...row,
+        season:SEASON,
+        verified:true
       };
-      const res=await db.from('nl4_forecast_refresh_requests')
-        .update(payload)
-        .eq('id',request.id);
-      if(res.error)throw res.error;
+      return true;
     }catch(err){
-      console.warn('NL4 refresh request completion:',err);
-    }
-  }
-
-  async function savePublicSnapshot(arsenal,completedCount){
-    if(!arsenal||completedCount<0)return false;
-    const confidence=confidenceFromResults(completedCount);
-    const rpc=await db.rpc('save_title_probability_snapshot',{
-      p_season:SEASON,
-      p_completed_matches:completedCount,
-      p_title_probability:Number(arsenal.titleProb.toFixed(4)),
-      p_top4_probability:Number(arsenal.top4Prob.toFixed(4)),
-      p_top5_probability:Number(arsenal.top5Prob.toFixed(4)),
-      p_expected_points:Number(arsenal.expectedPoints.toFixed(4)),
-      p_expected_position:Number(arsenal.expectedPosition.toFixed(4)),
-      p_confidence_score:confidence.score,
-      p_model_version:'PUBLIC MODEL • V13 ENGINE'
-    });
-    if(rpc.error)throw rpc.error;
-    return true;
-  }
-
-  async function initPublicRefreshWatcher(){
-    try{
-      const sessionRes=await db.auth?.getSession?.();
-      const session=sessionRes?.data?.session||null;
-      if(!session?.user)return;
-
-      // If this Public Model page is already open in an authenticated Admin
-      // session, respond to later score updates without any hidden iframe.
-      setInterval(async()=>{
-        if(activeRefreshRequest)return;
-        const pending=await getPendingPublicRefreshRequest();
-        if(pending){
-          location.reload();
-        }
-      },10000);
-    }catch(err){
-      console.warn('NL4 Public Model refresh watcher:',err);
+      console.error('NL4 Admin snapshot publish failed:',err);
+      if(statusEl){
+        statusEl.textContent=`ADMIN MODEL READY • PUBLIC SYNC FAILED: ${err.message||err}`;
+      }
+      return false;
     }
   }
 
@@ -4169,6 +4136,255 @@
   }
 
 
+
+
+  let nl4HeavyDiagnosticsRunning=false;
+  async function runNL4HeavyDiagnostics(){
+    if(nl4HeavyDiagnosticsRunning)return;
+    const ctx=window.NL4_ADMIN_DIAGNOSTIC_CONTEXT;
+    const btn=document.getElementById('nl4RunHeavyDiagnosticsBtn');
+    const status=document.getElementById('nl4HeavyDiagnosticsStatus');
+    if(!ctx){
+      if(status)status.textContent='Main Admin Model must finish before diagnostics can run.';
+      return;
+    }
+
+    nl4HeavyDiagnosticsRunning=true;
+    if(btn){btn.disabled=true;btn.textContent='RUNNING DIAGNOSTICS…';}
+    if(status)status.textContent='Running advanced diagnostic audits. The main forecast is already available.';
+
+    // Yield to the browser so the button/status paints before CPU-heavy diagnostics.
+    await new Promise(r=>setTimeout(r,40));
+
+    try{
+      const {currentTeams,fixtures,simulation,results}=ctx;
+
+      if(isSeasonComplete(fixtures)){
+        renderV1501TerminalDiagnostics(fixtures);
+      }else{
+        const v138Audit=buildV138SensitivityAudit(currentTeams,fixtures);
+        renderV138SensitivityAudit(v138Audit);
+
+        await new Promise(r=>setTimeout(r,0));
+        const v140Audit=buildV140SurpriseAudit(currentTeams,fixtures);
+        renderV140SurpriseAudit(v140Audit);
+
+        const v141Audit=buildV141ExpectedActualAudit(currentTeams,fixtures);
+        renderV141ExpectedActualAudit(v141Audit);
+
+        const v142Audit=buildV142BoundaryAudit(currentTeams,fixtures);
+        renderV142BoundaryAudit(v142Audit);
+
+        await new Promise(r=>setTimeout(r,0));
+        const v143Audit=buildV143CompressionAudit(currentTeams,fixtures);
+        renderV143CompressionAudit(v143Audit);
+
+        const v145Audit=buildV145TransitionConsistencyAudit(currentTeams,fixtures);
+        renderV145TransitionConsistencyAudit(v145Audit);
+
+        await new Promise(r=>setTimeout(r,0));
+        const v146Audit=buildV146TitleSurgeAudit(currentTeams,fixtures);
+        renderV146TitleSurgeAudit(v146Audit);
+
+        const v147Audit=buildV147RivalShockAudit(currentTeams,fixtures);
+        renderV147RivalShockAudit(v147Audit);
+
+        await new Promise(r=>setTimeout(r,0));
+        const v148Audit=buildV148OpponentNeutralAudit(currentTeams,fixtures);
+        renderV148OpponentNeutralAudit(v148Audit);
+
+        const v149Audit=buildV149StabilityAudit(currentTeams,fixtures);
+        renderV149StabilityAudit(v149Audit);
+
+        await new Promise(r=>setTimeout(r,0));
+        const v1491Audit=buildV1491HotfixAudit(currentTeams,fixtures);
+        renderV1491HotfixAudit(v1491Audit);
+
+        const v139Audit=buildV139Decomposition(currentTeams,fixtures);
+        renderV139Decomposition(v139Audit);
+
+        await new Promise(r=>setTimeout(r,0));
+        const counterfactuals=buildCounterfactualImpacts(
+          currentTeams,
+          fixtures,
+          simulation.rows,
+          results.length
+        );
+        renderV122Counterfactuals(
+          counterfactuals,
+          simulation.rows.find(t=>t.club==='Arsenal')?.titleProb||0
+        );
+      }
+
+      markNL4DiagnosticPanels();
+      setNL4DiagnosticsMode(true);
+      if(status)status.textContent='Heavy diagnostics complete.';
+      if(btn)btn.textContent='DIAGNOSTICS COMPLETE';
+    }catch(err){
+      console.error('NL4 heavy diagnostics:',err);
+      if(status)status.textContent=`Diagnostics failed: ${err.message||err}`;
+      if(btn)btn.textContent='RETRY DIAGNOSTICS';
+    }finally{
+      nl4HeavyDiagnosticsRunning=false;
+      if(btn)btn.disabled=false;
+    }
+  }
+
+
+  const NL4_TOP4_LIGHT_CACHE_KEY='nl4_admin_top4_light_state_2026_27';
+
+  function nl4ReadTop4LightCache(){
+    try{return JSON.parse(localStorage.getItem(NL4_TOP4_LIGHT_CACHE_KEY)||'null')}catch(_){return null}
+  }
+
+  function nl4WriteTop4LightCache(rows,completedCount){
+    try{
+      localStorage.setItem(NL4_TOP4_LIGHT_CACHE_KEY,JSON.stringify({
+        completedCount:Number(completedCount)||0,
+        rows:rows.map(x=>({club:x.club,titleProb:x.titleProb})),
+        savedAt:new Date().toISOString()
+      }));
+    }catch(_){}
+  }
+
+  function nl4LastFiveForClub(club,results){
+    return (results||[])
+      .filter(r=>r.home===club||r.away===club)
+      .slice()
+      .sort((a,b)=>resultTime(a)-resultTime(b))
+      .slice(-5);
+  }
+
+  function nl4FormInfo(club,lastFive){
+    let pts=0,w=0,d=0,l=0,gf=0,ga=0;
+    const form=lastFive.map(r=>{
+      const home=r.home===club;
+      const f=home?Number(r.home_score):Number(r.away_score);
+      const a=home?Number(r.away_score):Number(r.home_score);
+      gf+=f;ga+=a;
+      if(f>a){pts+=3;w++;return 'W'}
+      if(f===a){pts+=1;d++;return 'D'}
+      l++;return 'L';
+    });
+    return {form,pts,w,d,l,gf,ga,ppg:lastFive.length?pts/lastFive.length:0};
+  }
+
+  function nl4RaceState(team,index,delta,form){
+    const p=Number(team.titleProb||0);
+    const rank=index+1;
+    const strongForm=form.ppg>=2.0;
+    const weakForm=form.ppg<=1.0;
+
+    // Lightweight classification: probability/rank define race membership;
+    // recent form + probability movement define direction.
+    if((rank<=4 && p>=8) || p>=15){
+      if((delta!=null && delta<=-2) || weakForm) return {key:'drifting',label:'DRIFTING IN TITLE RACE'};
+      return {key:'in',label:'IN TITLE RACE'};
+    }
+
+    if((p>=4 && p<15) && ((delta!=null && delta>=1.5) || strongForm)){
+      return {key:'entering',label:'COMING INTO TITLE RACE'};
+    }
+
+    if((p>=4 && p<15) && ((delta!=null && delta<=-1.5) || weakForm)){
+      return {key:'drifting',label:'DRIFTING AWAY'};
+    }
+
+    return {key:'out',label:'OUTSIDE TITLE RACE'};
+  }
+
+  function nl4EffectText(team,delta,form,state){
+    const formText=form.form.length?`${form.form.join('')} • ${form.pts}/${form.form.length*3} pts`:'No recent results';
+    if(delta==null){
+      return `${formText}. ${state.label}. This is the first lightweight comparison state, so probability movement will be measured after the next result update.`;
+    }
+    const move=Math.abs(delta)<0.05?'held steady':delta>0?`rose ${delta.toFixed(1)} pts`:`fell ${Math.abs(delta).toFixed(1)} pts`;
+    if(state.key==='entering') return `${formText}. Title probability ${move}; recent results are pulling ${team.club} toward the race.`;
+    if(state.key==='drifting') return `${formText}. Title probability ${move}; recent results are weakening ${team.club}'s title position.`;
+    if(state.key==='in') return `${formText}. Title probability ${move}; ${team.club} remain an active contender.`;
+    return `${formText}. Title probability ${move}; the model does not currently treat ${team.club} as a serious title contender.`;
+  }
+
+  function renderNL4AdminTop4Light(){
+    const table=document.getElementById('titleProbabilityTable');
+    const root=document.getElementById('nl4AdminTop4LightGrid');
+    const status=document.getElementById('nl4AdminTop4LightStatus');
+    if(!table||!root)return;
+
+    const rows=[...table.querySelectorAll('.nl4-title-probability-row')].map(row=>{
+      const club=(row.querySelector('.nl4-title-team b')?.childNodes?.[0]?.textContent||'').trim();
+      const titleText=(row.querySelector('.nl4-title-cell.title')?.childNodes?.[0]?.textContent||'').trim();
+      const titleProb=Number((titleText.match(/[\d.]+/)||[])[0]);
+      const cells=row.querySelectorAll('.nl4-title-cell');
+      const top4=(cells[1]?.textContent||'').trim();
+      const expPts=(cells[4]?.textContent||'').trim();
+      return club&&Number.isFinite(titleProb)?{club,titleProb,top4,expPts}:null;
+    }).filter(Boolean).sort((a,b)=>b.titleProb-a.titleProb);
+
+    const top4=rows.slice(0,4);
+    if(top4.length<4){
+      if(status)status.textContent=`WAITING • ${top4.length}/4 READ`;
+      return;
+    }
+
+    const ctx=window.NL4_ADMIN_DIAGNOSTIC_CONTEXT;
+    const results=ctx?.results||[];
+    const completedCount=results.length;
+    const prev=nl4ReadTop4LightCache();
+    const prevMap=new Map((prev?.rows||[]).map(x=>[x.club,Number(x.titleProb)]));
+    const comparable=prev && Number(prev.completedCount)<completedCount;
+
+    root.innerHTML=top4.map((t,i)=>{
+      const lastFive=nl4LastFiveForClub(t.club,results);
+      const form=nl4FormInfo(t.club,lastFive);
+      const before=comparable&&prevMap.has(t.club)?prevMap.get(t.club):null;
+      const delta=before==null?null:t.titleProb-before;
+      const state=nl4RaceState(t,i,delta,form);
+      const formHtml=form.form.length
+        ? form.form.map(x=>`<i class="${x.toLowerCase()}">${x}</i>`).join('')
+        : '<span class="nl4-admin-top4-light-meta">No completed results yet</span>';
+
+      return `
+      <article class="nl4-admin-top4-light-card">
+        <span class="nl4-admin-top4-light-rank">${i===0?'1ST':i===1?'2ND':i===2?'3RD':'4TH'} • TITLE PROBABILITY</span>
+        <strong class="nl4-admin-top4-light-club">${esc(t.club)}</strong>
+        <strong class="nl4-admin-top4-light-prob">${t.titleProb.toFixed(1)}%</strong>
+        <span class="nl4-admin-top4-light-meta">Top 4 ${esc(t.top4||'—')} • Exp pts ${esc(t.expPts||'—')}</span>
+        <div class="nl4-admin-top4-light-track"><div class="nl4-admin-top4-light-fill" style="width:${Math.max(1,Math.min(100,t.titleProb))}%"></div></div>
+        <div class="nl4-admin-top4-form">${formHtml}</div>
+        <span class="nl4-admin-top4-race-state ${state.key}">${state.label}</span>
+        <p class="nl4-admin-top4-effect">${esc(nl4EffectText(t,delta,form,state))}</p>
+      </article>`;
+    }).join('');
+
+    if(status)status.textContent='LAST FIVE + TITLE-RACE DIRECTION READY';
+
+    // Store only after a genuine result-state change, so repeated renders do not erase comparison.
+    if(!prev || Number(prev.completedCount)!==completedCount){
+      nl4WriteTop4LightCache(rows,completedCount);
+    }
+  }
+
+  function initNL4AdminTop4Light(){
+    const table=document.getElementById('titleProbabilityTable');
+    if(!table)return;
+
+    // One lightweight observer: fires only when the model replaces the table rows.
+    const observer=new MutationObserver(()=>{
+      if(table.querySelector('.nl4-title-probability-row')){
+        renderNL4AdminTop4Light();
+      }
+    });
+    observer.observe(table,{childList:true});
+    renderNL4AdminTop4Light();
+  }
+
+  function initNL4HeavyDiagnosticsButton(){
+    const btn=document.getElementById('nl4RunHeavyDiagnosticsBtn');
+    if(!btn||btn.dataset.bound==='1')return;
+    btn.dataset.bound='1';
+    btn.addEventListener('click',runNL4HeavyDiagnostics);
+  }
 
   async function loadPublicForecastVisibility(){
     const root=document.getElementById('nl4PublicForecastRoot');
@@ -4250,12 +4466,6 @@
     }
 
     try{
-      const pendingRefresh=await getPendingPublicRefreshRequest();
-      activeRefreshRequest=pendingRefresh?await claimPublicRefreshRequest(pendingRefresh):null;
-      if(activeRefreshRequest){
-        const note=document.getElementById('titleHistoryNote');
-        if(note)note.textContent='PUBLIC MODEL REFRESHING • recalculating from the latest confirmed league results…';
-      }
       const [standingsRes,arsenalRes,leagueRes,previousStandingsRes,secondPreviousStandingsRes]=await Promise.all([
         db.from('premier_league_standings')
           .select('position,club,played,wins,draws,losses,goals_for,goals_against,goal_difference,points')
@@ -4348,81 +4558,27 @@
         if(historyNote)historyNote.textContent='V13.2 sandbox history is stored only in this browser. Supabase probability history is untouched.';
       }else{
         history=await loadTitleHistory();
-
-        // Official Public Model snapshots are written only in response to a
-        // queued score/result refresh request. Normal viewer page loads never
-        // modify forecast history.
-        if(activeRefreshRequest){
-          try{
-            await savePublicSnapshot(arsenal,results.length);
-            await finishPublicRefreshRequest(activeRefreshRequest,'completed',results.length,null);
-            const note=document.getElementById('titleHistoryNote');
-            if(note)note.textContent=`PUBLIC MODEL UPDATED • ${results.length} completed league matches • official snapshot saved.`;
-          }catch(saveErr){
-            await finishPublicRefreshRequest(activeRefreshRequest,'failed',results.length,saveErr?.message||String(saveErr));
-            throw saveErr;
-          }finally{
-            activeRefreshRequest=null;
-          }
-        }
-
+        await saveAdminSnapshot(arsenal,results.length);
         history=await loadTitleHistory();
         renderV123Timeline(history,results,simulation.rows);
         renderV12MatchdayTracker(simulation.rows,results,history,results.length);
         renderV11Explainer(simulation.rows,results,history,results.length);
       }
 
-      if(isSeasonComplete(fixtures)){
-        // V15.0.1: terminal state is deterministic. Early/mid-season
-        // counterfactual audits are not applicable once all 380 matches are known.
-        renderV1501TerminalDiagnostics(fixtures);
-      }else{
-        const v138Audit=buildV138SensitivityAudit(currentTeams,fixtures);
-        renderV138SensitivityAudit(v138Audit);
+      // PERFORMANCE: do not run development-heavy audits automatically.
+      // The main 25,000-simulation forecast is complete at this point.
+      window.NL4_ADMIN_DIAGNOSTIC_CONTEXT={
+        currentTeams,
+        fixtures,
+        simulation,
+        results
+      };
 
-        const v140Audit=buildV140SurpriseAudit(currentTeams,fixtures);
-        renderV140SurpriseAudit(v140Audit);
-
-        const v141Audit=buildV141ExpectedActualAudit(currentTeams,fixtures);
-        renderV141ExpectedActualAudit(v141Audit);
-
-        const v142Audit=buildV142BoundaryAudit(currentTeams,fixtures);
-        renderV142BoundaryAudit(v142Audit);
-
-        const v143Audit=buildV143CompressionAudit(currentTeams,fixtures);
-        renderV143CompressionAudit(v143Audit);
-
-        const v145Audit=buildV145TransitionConsistencyAudit(currentTeams,fixtures);
-        renderV145TransitionConsistencyAudit(v145Audit);
-
-        const v146Audit=buildV146TitleSurgeAudit(currentTeams,fixtures);
-        renderV146TitleSurgeAudit(v146Audit);
-
-        const v147Audit=buildV147RivalShockAudit(currentTeams,fixtures);
-        renderV147RivalShockAudit(v147Audit);
-
-        const v148Audit=buildV148OpponentNeutralAudit(currentTeams,fixtures);
-        renderV148OpponentNeutralAudit(v148Audit);
-
-        const v149Audit=buildV149StabilityAudit(currentTeams,fixtures);
-        renderV149StabilityAudit(v149Audit);
-
-        const v1491Audit=buildV1491HotfixAudit(currentTeams,fixtures);
-        renderV1491HotfixAudit(v1491Audit);
-
-        const v139Audit=buildV139Decomposition(currentTeams,fixtures);
-        renderV139Decomposition(v139Audit);
-
-        const counterfactuals=buildCounterfactualImpacts(
-          currentTeams,
-          fixtures,
-          simulation.rows,
-          results.length
-        );
-        renderV122Counterfactuals(
-          counterfactuals,
-          simulation.rows.find(t=>t.club==='Arsenal')?.titleProb||0
-        );
+      const diagStatus=document.getElementById('nl4HeavyDiagnosticsStatus');
+      if(diagStatus){
+        diagStatus.textContent=isSeasonComplete(fixtures)
+          ? 'Season complete. Terminal diagnostics are available on demand.'
+          : 'Main forecast ready. Heavy V13.8–V14.9 diagnostics are paused until requested.';
       }
     }catch(error){
       console.error('NL4 title model V13.0:',error);
@@ -4431,8 +4587,9 @@
     }
   }
 
+  initNL4AdminTop4Light();
+  initNL4HeavyDiagnosticsButton();
   loadPublicForecastVisibility();
   loadPublishedModelInterpretation();
-  initPublicRefreshWatcher();
   load();
 })();

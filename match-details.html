@@ -78,14 +78,14 @@
   background:linear-gradient(180deg,#ffd934,#e5b800)!important;
   border-color:rgba(255,224,77,.85)!important;
 }
-    .kit-collar{position:absolute;left:50%;top:-1px;width:19px;height:8px;border:0;border-radius:0 0 16px 16px;transform:translateX(-50%);opacity:.96}
+    .kit-collar{position:absolute;left:50%;top:-1px;width:19px;height:8px;border:3px solid #fff;border-top:0;border-radius:0 0 16px 16px;transform:translateX(-50%);opacity:.96}
     .kit-back-name{display:none!important}
     .kit-front-number,.kit-back-number{position:absolute;left:0;right:0;top:18px;color:#fff;font-family:Arial Black,Impact,sans-serif;font-size:34px;line-height:1;font-weight:1000;letter-spacing:-2px;text-align:center;text-shadow:0 3px 0 rgba(93,0,15,.76),0 5px 7px rgba(0,0,0,.48)}
     /* Both shirt faces carry the same squad number. The visible face stays clean. */
     .kit-front-number{z-index:1}
     .kit-back-number{z-index:2}
     .player-pos{position:absolute;right:2px;top:48px;min-width:28px;padding:4px 6px;border-radius:999px;background:#fff;color:#0c1320;border:1px solid rgba(255,255,255,.75);font-size:8px;font-weight:1000;letter-spacing:.7px;z-index:12;box-shadow:0 4px 7px rgba(0,0,0,.35)}
-    .player-name{position:absolute;left:50%;bottom:0;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;width:96px;min-height:30px;padding:5px 6px;border-radius:7px;background:transparent;border:0;box-shadow:none;font-size:9px;font-weight:1000;line-height:1.05;color:#fff;white-space:normal;overflow-wrap:anywhere;text-transform:uppercase;letter-spacing:.35px;text-shadow:0 2px 4px #000,0 4px 8px rgba(0,0,0,.9)}
+    .player-name{position:absolute;left:50%;bottom:0;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;width:96px;min-height:30px;padding:5px 6px;border-radius:7px;background:rgba(2,7,18,.94);border:1px solid rgba(255,255,255,.42);box-shadow:0 7px 14px rgba(0,0,0,.55);font-size:9px;font-weight:1000;line-height:1.05;color:#fff;white-space:normal;overflow-wrap:anywhere;text-transform:uppercase;letter-spacing:.35px;text-shadow:0 2px 4px #000}
     @keyframes kitFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
     .pitch-empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:30px;color:rgba(255,255,255,.8);font-weight:900;z-index:10}
     .broadcast-side{position:relative;align-self:stretch;margin-top:24px;margin-bottom:20px;border:1px solid rgba(255,255,255,.26);border-radius:11px;background:linear-gradient(180deg,rgba(8,18,45,.97),rgba(3,7,20,.98));box-shadow:0 20px 40px rgba(0,0,0,.5);overflow:hidden}
@@ -742,6 +742,28 @@
 }
 </style>
 
+<style id="nl4-desktop-lineup-brand-spacing-fix">
+/* Desktop only: keep CONFIRMED LINEUP + NL4 logo above the pitch. */
+@media(min-width:701px){
+  #lineupPhotoExport .broadcast-top{
+    position:relative!important;
+    z-index:20!important;
+    padding-bottom:8px!important;
+  }
+  #lineupPhotoExport .lineup-brand-lockup{
+    position:relative!important;
+    z-index:21!important;
+    margin-bottom:8px!important;
+  }
+  #lineupPhotoExport .broadcast-grid{
+    margin-top:0!important;
+  }
+  #lineupPhotoExport .pitch-stage{
+    padding-top:10px!important;
+  }
+}
+</style>
+
 
 <style>
 /* Download setup is available automatically for every fixture once Admin saves a Starting XI */
@@ -815,50 +837,6 @@
 @media(max-width:700px){
   #lineupPhotoExport .lineup-brand-lockup{gap:8px!important;margin-top:7px!important}
   #lineupPhotoExport .confirmed-lineup-badge{font-size:11px!important;letter-spacing:.6px!important}
-}
-</style>
-
-
-<style id="nl4-back-facing-shirt-final">
-/* FINAL: make every lineup jersey read clearly as the BACK of the shirt */
-#lineupPhotoExport .kit-shirt{
-  clip-path:polygon(12% 5%,31% 0,43% 5%,57% 5%,69% 0,88% 5%,96% 20%,88% 100%,12% 100%,4% 20%)!important;
-  border-radius:7px 7px 12px 12px!important;
-  transform:translateX(-50%) perspective(260px) rotateX(3deg)!important;
-  box-shadow:inset 0 10px 10px rgba(255,255,255,.05),inset 0 -13px 18px rgba(70,0,12,.26),0 10px 14px rgba(0,0,0,.42)!important;
-}
-/* Rear neckline: a shallow collar opening viewed from behind. */
-#lineupPhotoExport .kit-collar{
-  top:1px!important;
-  width:20px!important;
-  height:7px!important;
-  border:2px solid rgba(255,255,255,.96)!important;
-  border-bottom:0!important;
-  border-radius:14px 14px 0 0!important;
-  transform:translateX(-50%)!important;
-  background:transparent!important;
-}
-/* Only the back number is visible. */
-#lineupPhotoExport .kit-front-number{display:none!important;}
-#lineupPhotoExport .kit-back-number{
-  display:block!important;
-  z-index:6!important;
-  top:17px!important;
-  font-size:34px!important;
-  letter-spacing:-2px!important;
-}
-/* subtle rear shoulder/yoke line to reinforce the back-facing view */
-#lineupPhotoExport .kit-shirt{border-top-color:rgba(255,255,255,.55)!important;}
-#lineupPhotoExport .kit-back-number::before{
-  content:"";
-  position:absolute;
-  left:18%;right:18%;top:-8px;
-  height:1px;
-  background:rgba(255,255,255,.18);
-}
-@media(max-width:700px){
-  #lineupPhotoExport .kit-collar{width:15px!important;height:5px!important;border-width:0!important;}
-  #lineupPhotoExport .kit-back-number{top:12px!important;font-size:24px!important;}
 }
 </style>
 

@@ -382,7 +382,7 @@
   </div>
 
   <div class="interpretation-actions">
-    <button id="loadLatestModelBtn" type="button" class="primary-btn">Load Latest Model</button>
+    <button id="loadLatestModelBtn" type="button" class="primary-btn">Load Complete Forecast</button>
     <button id="selectAllForecastStatsBtn" type="button" class="ghost-btn">Select All Stats</button>
     <button id="clearForecastStatsBtn" type="button" class="ghost-btn">Clear Stat Selection</button>
     <a href="premier-league.html" class="ghost-btn" target="_blank" rel="noopener">Preview Viewer Page</a>
@@ -396,7 +396,7 @@
       </div>
       <p class="muted">Every available forecast metric is loaded here. Tick only the statistics you want displayed publicly.</p>
       <div id="allForecastStatsList" class="all-forecast-stats">
-        <p class="muted">Load the latest model to see statistics.</p>
+        <p class="muted">Load the complete forecast to see statistics.</p>
       </div>
     </div>
 
@@ -608,25 +608,6 @@
           </div>
         </div>
         <p class="muted">Record every Arsenal player who appeared. Starters begin at 0'. For substitutes, enter the minute they came on. Add minute off when applicable.</p>
-        <div class="lineup-theme-controls" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0 16px;padding:14px;border:1px solid rgba(216,173,69,.38);border-radius:14px;background:rgba(216,173,69,.06)">
-          <label style="display:grid;gap:7px;font-weight:900;color:#d8ad45">Shirt Color
-            <select id="matchLineupShirtTheme" style="min-height:42px;border-radius:10px;border:1px solid rgba(255,255,255,.16);background:#111;color:#fff;padding:8px 10px">
-              <option value="home">Arsenal Home — Red</option>
-              <option value="away">Arsenal Away — Blue/Yellow</option>
-            </select>
-          </label>
-          <label style="display:grid;gap:7px;font-weight:900;color:#d8ad45">Grass Color
-            <select id="matchLineupGrassTheme" style="min-height:42px;border-radius:10px;border:1px solid rgba(255,255,255,.16);background:#111;color:#fff;padding:8px 10px">
-              <option value="green">Green Grass</option>
-              <option value="black">Black Pitch</option>
-            </select>
-          </label>
-          <div style="grid-column:1/-1;display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:2px">
-            <span id="lineupThemeSaveMessage" class="message" role="status"></span>
-            <button id="saveLineupThemeBtn" class="primary-btn" type="button">Save Lineup Appearance</button>
-          </div>
-        </div>
-        <style>@media(max-width:650px){.lineup-theme-controls{grid-template-columns:1fr!important}.lineup-theme-controls>div{grid-column:1!important;justify-content:stretch!important}.lineup-theme-controls #saveLineupThemeBtn{width:100%}}</style>
         <div class="form-grid">
           <label>Player
             <select id="lineupPlayer"></select>
@@ -649,26 +630,6 @@
           <button id="clearLineupBtn" class="ghost-btn" type="button">Clear Lineup</button>
           <button id="saveLineupPlayerBtn" class="primary-btn" type="button">Add / Update Player</button>
         </div>
-
-        <div id="savedLineupsPanel" style="margin:14px 0;padding:12px;border:1px solid rgba(216,173,69,.28);border-radius:12px;background:#0d0d0d">
-          <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
-            <div>
-              <strong style="color:#d8ad45">SAVED LINEUPS</strong>
-              <div class="muted" style="font-size:11px;margin-top:3px">Save this XI and reuse it for a future fixture.</div>
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:minmax(150px,1fr) auto;gap:8px;margin-bottom:8px">
-            <input id="savedLineupName" type="text" maxlength="40" placeholder="e.g. Best XI / UCL XI">
-            <button id="saveCurrentLineupPresetBtn" class="primary-btn" type="button">Save Lineup</button>
-          </div>
-          <div style="display:grid;grid-template-columns:minmax(150px,1fr) auto auto;gap:8px">
-            <select id="savedLineupSelect"><option value="">Select saved lineup</option></select>
-            <button id="applySavedLineupBtn" class="primary-btn" type="button">Apply to Match</button>
-            <button id="deleteSavedLineupBtn" class="ghost-btn" type="button">Delete</button>
-          </div>
-          <p id="savedLineupMessage" class="message" role="status" style="margin-top:8px"></p>
-        </div>
-
         <div id="lineupList" class="match-events-admin-list"></div>
       </section>
 
@@ -731,7 +692,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
   <script src="supabase-client.js"></script>
-  <script src="admin.js?v=20260818-canonical-interpretation-bridge-v1"></script>
-  <script src="manual-lineup-patch.js?v=20260818-touch-lineup-name-transparent"></script>
+  <script src="admin.js?v=20260819-live-publisher-refresh-v1"></script>
+  <script src="manual-lineup-patch.js?v=20260818-manual-lineup"></script>
 </body>
 </html>

@@ -772,11 +772,6 @@
 @media(max-width:380px){.v131-audit-grid{grid-template-columns:1fr}}
 </style>
 <style id="nl4-model-test-page-styles">
-body.nl4-model-test-mode .pl-section:not(#titleProbability){display:none!important}
-body.nl4-model-test-mode .pl-hero,
-body.nl4-model-test-mode .pl-coming,
-body.nl4-model-test-mode .pl-footer{display:none!important}
-body.nl4-model-test-mode #titleProbability{margin-top:24px}
 </style>
 <script>
 document.addEventListener('DOMContentLoaded',function(){
@@ -880,48 +875,67 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
 .nl4-public-forecast-disabled{display:none!important}
 </style>
 <style>
-body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview,#leagueTable,.pl-next-section,.pl-form-section,.pl-results-section,.pl-title-race-section,#arsenalPlayerStats,.pl-coming,.pl-footer{display:none!important}.main{margin:0!important;padding:18px!important;width:100%!important;max-width:none!important}#nl4PublicForecastRoot{display:block!important}#titleProbability{display:block!important;margin:0!important}.pl-section-head .pl-kicker{color:#d8ad45}.pl-section-head h2:after{content:' • ADMIN MODEL';color:#d8ad45}
+/* NL4 Model lives only above Arsenal Player Stats. */
+.nl4-public-model-card{margin:24px 0;padding:22px;border:1px solid rgba(216,173,69,.35);border-radius:18px;background:linear-gradient(145deg,rgba(20,20,20,.98),rgba(12,12,12,.98));box-shadow:0 18px 55px rgba(0,0,0,.22)}
+.nl4-public-model-card .eyebrow{color:#d8ad45;font-weight:900;letter-spacing:1.2px}
+.nl4-public-model-card .status{display:inline-block;margin:4px 0 12px;color:#d8ad45;font-weight:900}
+.nl4-public-model-card .summary{line-height:1.7;color:#ddd}.nl4-public-model-card .takeaway{margin-top:12px;padding:12px;border-left:3px solid #d8ad45;background:rgba(216,173,69,.07)}
+.nl4-public-model-card .viewer-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:16px 0}.nl4-public-model-card .viewer-stat{padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:#111}.nl4-public-model-card .viewer-stat span{display:block;font-size:9px;color:#777;font-weight:900}.nl4-public-model-card .viewer-stat strong{display:block;margin-top:4px;color:#fff;font-size:17px}.nl4-public-model-card .factors{display:grid;gap:8px;margin-top:12px}.nl4-public-model-card .factor{padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.04);color:#bbb}.nl4-public-model-card .published{display:block;margin-top:14px;color:#666}
 </style>
-<style id="nl4-heavy-diagnostics-control-style">
-.nl4-admin-model-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
-.nl4-heavy-diagnostics-btn{border:1px solid rgba(216,173,69,.35);background:#111;color:#d8ad45;border-radius:999px;padding:8px 11px;font-size:7px;font-weight:1000;letter-spacing:.7px;cursor:pointer}
-.nl4-heavy-diagnostics-btn:hover{background:rgba(216,173,69,.09)}
-.nl4-heavy-diagnostics-btn:disabled{opacity:.55;cursor:wait}
-#nl4HeavyDiagnosticsStatus{margin:10px 0 0;color:#777;font-size:8px;line-height:1.5}
-@media(max-width:650px){.nl4-admin-model-actions{justify-content:flex-start}}
+<style id="v16-public-graph-interpretation-styles">
+.nl4-public-graph-interpretation{margin:10px 0 18px;padding:14px;border:1px solid rgba(216,173,69,.22);border-radius:14px;background:#0d0d0d}
+.graph-interpretation-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.graph-interpretation-head span{color:#d8ad45;font-size:7px;font-weight:1000;letter-spacing:.7px}.graph-interpretation-head strong{color:#fff;font-size:9px}
+.nl4-public-graph-interpretation p{margin:10px 0 5px;color:#c8c8c8;font-size:9px;line-height:1.65}.nl4-public-graph-interpretation small{color:#666;font-size:7px}
+</style>
+<style id="v167-nl4-graph-interpretation-visible">
+.nl4-public-graph-interpretation{
+  margin:12px 0 4px;padding:14px;border:1px solid rgba(216,173,69,.24);
+  border-radius:14px;background:#0d0d0d
+}
+.graph-interpretation-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.graph-interpretation-head span{color:#d8ad45;font-size:7px;font-weight:1000;letter-spacing:.7px}
+.graph-interpretation-head strong{color:#fff;font-size:9px}
+.nl4-public-graph-interpretation p{margin:9px 0 5px;color:#c8c8c8;font-size:9px;line-height:1.65}
+.nl4-public-graph-interpretation small{color:#666;font-size:7px}
+</style>
+
+<style id="nl4-public-only-model-style">
+#nl4PublicModel .nl4-public-live-summary{margin:14px 0 18px}
+#nl4PublicModel .nl4-public-primary{padding:18px;border:1px solid rgba(216,173,69,.25);border-radius:14px;background:rgba(216,173,69,.06);text-align:center}
+#nl4PublicModel .nl4-public-primary strong{display:block;color:#d8ad45;font-size:clamp(34px,7vw,64px);line-height:1;font-weight:1000}
+#nl4PublicModel .nl4-public-primary span{display:block;margin-top:7px;color:#fff;font-size:10px;font-weight:900;letter-spacing:.9px}
+#nl4PublicModel .nl4-public-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+#nl4PublicModel .nl4-public-stat-grid article{padding:11px 8px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:#101010;text-align:center}
+#nl4PublicModel .nl4-public-stat-grid strong{display:block;color:#fff;font-size:18px}
+#nl4PublicModel .nl4-public-stat-grid span{display:block;margin-top:4px;color:#777;font-size:7px;font-weight:900}
+#nl4PublicModel .nl4-public-live-status{margin:10px 0;color:#9b9b9b;font-size:9px;line-height:1.5}
+#nl4PublicModel .nl4-public-table-head,
+#nl4PublicModel .nl4-public-probability-row{display:grid;grid-template-columns:minmax(150px,1.7fr) .7fr .7fr .7fr;gap:8px;align-items:center}
+#nl4PublicModel .nl4-public-table-head{padding:8px 10px;color:#777;font-size:7px;font-weight:1000;border-bottom:1px solid rgba(255,255,255,.08)}
+#nl4PublicModel .nl4-public-probability-row{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.06);font-size:9px}
+#nl4PublicModel .nl4-public-probability-row.arsenal{background:rgba(216,173,69,.08)}
+#nl4PublicModel .nl4-public-probability-row b{color:#fff}
+#nl4PublicModel .nl4-public-probability-row strong{color:#d8ad45}
+@media(max-width:650px){
+  #nl4PublicModel .nl4-public-stat-grid{grid-template-columns:1fr 1fr}
+  #nl4PublicModel .nl4-public-table-head,
+  #nl4PublicModel .nl4-public-probability-row{grid-template-columns:minmax(120px,1.5fr) .7fr .7fr .7fr;font-size:8px}
+}
 </style>
 
 
-<style id="nl4-admin-top4-light-style">
-.nl4-admin-top4-light{margin-top:14px;border:1px solid rgba(216,173,69,.2);border-radius:16px;background:#0f0f0f;padding:14px}
-.nl4-admin-top4-light-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
-.nl4-admin-top4-light-head h3{margin:4px 0 0;color:#fff;font-size:17px}
-.nl4-admin-top4-light-head>strong{color:#d8ad45;font-size:8px;text-align:right}
-.nl4-admin-top4-light-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
-.nl4-admin-top4-light-card{border:1px solid rgba(255,255,255,.07);border-radius:11px;background:#151515;padding:11px}
-.nl4-admin-top4-light-card:first-child{border-color:rgba(216,173,69,.35);background:rgba(216,173,69,.07)}
-.nl4-admin-top4-light-rank{display:block;color:#d8ad45;font-size:7px;font-weight:1000;letter-spacing:.8px}
-.nl4-admin-top4-light-club{display:block;color:#fff;font-size:11px;font-weight:1000;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.nl4-admin-top4-light-prob{display:block;color:#d8ad45;font-size:22px;font-weight:1000;margin-top:7px}
-.nl4-admin-top4-light-meta{display:block;color:#666;font-size:7px;margin-top:4px}
-.nl4-admin-top4-light-track{height:5px;background:#242424;border-radius:999px;overflow:hidden;margin-top:8px}
-.nl4-admin-top4-light-fill{height:100%;background:#d8ad45;border-radius:inherit}
-@media(max-width:760px){.nl4-admin-top4-light-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:430px){.nl4-admin-top4-light-grid{grid-template-columns:1fr}.nl4-admin-top4-light-head{flex-direction:column}.nl4-admin-top4-light-head>strong{text-align:left}}
+<style id="nl4-public-history-guaranteed-style">
+#publicModelHistoryCard{display:block!important}
+#publicTitleHistoryChart{display:block;width:100%;min-height:240px;overflow:visible}
+#publicTitleHistoryChart .nl4-history-grid{stroke:rgba(255,255,255,.09);stroke-width:1}
+#publicTitleHistoryChart .nl4-history-line{fill:none;stroke:#d8ad45;stroke-width:4;stroke-linejoin:round;stroke-linecap:round}
+#publicTitleHistoryChart .nl4-history-area{fill:rgba(216,173,69,.10)}
+#publicTitleHistoryChart .nl4-history-dot{fill:#d8ad45;stroke:#111;stroke-width:3}
+#publicTitleHistoryChart .nl4-history-axis-text{fill:#777;font-size:10px;font-weight:700}
+#publicTitleHistoryChart .nl4-history-label{fill:#fff;font-size:10px;font-weight:900}
 </style>
 
-
-<style id="nl4-admin-top4-last5-style">
-.nl4-admin-top4-form{display:flex;gap:4px;margin-top:9px;flex-wrap:wrap}
-.nl4-admin-top4-form i{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;background:#1b1b1b;color:#aaa;font-style:normal;font-size:8px;font-weight:1000}
-.nl4-admin-top4-form i.w{color:#6fd58e}.nl4-admin-top4-form i.d{color:#d8ad45}.nl4-admin-top4-form i.l{color:#ff7185}
-.nl4-admin-top4-race-state{display:inline-block;margin-top:8px;padding:4px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.08);font-size:7px;font-weight:1000;letter-spacing:.5px}
-.nl4-admin-top4-race-state.in{color:#6fd58e;border-color:rgba(111,213,142,.25)}
-.nl4-admin-top4-race-state.entering{color:#d8ad45;border-color:rgba(216,173,69,.3)}
-.nl4-admin-top4-race-state.drifting{color:#ff9d66;border-color:rgba(255,157,102,.3)}
-.nl4-admin-top4-race-state.out{color:#888}
-.nl4-admin-top4-effect{margin:8px 0 0;color:#888;font-size:7.5px;line-height:1.5}
-</style>
 
 </head>
 <body class="nl4-unified-sidebar premier-league-page">
@@ -984,51 +998,29 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
 </aside>
 <div class="mobile-overlay" id="overlay"></div>
 <main class="main">
-<div class="nl4-public-forecast-root" hidden="" id="nl4PublicForecastRoot">
-
 <section class="pl-hero">
-<div class="pl-hero-glow"></div>
-<div class="pl-hero-copy">
-<p class="pl-kicker">PREMIER LEAGUE • 2026/27</p>
-<h1>
+        <div class="pl-hero-glow"></div>
+
+        <div class="pl-hero-copy">
+          <p class="pl-kicker">PREMIER LEAGUE • 2026/27</p>
+
+          <h1>
             THE LEAGUE
             <span>CAMPAIGN.</span>
-</h1>
-<p class="pl-hero-text">
+          </h1>
+
+          <p class="pl-hero-text">
             Follow Arsenal's Premier League season from one place —
             standings, form, results, next fixtures and the race at the top.
           </p>
-<div class="pl-hero-actions">
-<a class="pl-primary-btn" href="#leagueTable">View League Table ↓</a>
-<a class="pl-secondary-btn" href="fixtures.html">All Fixtures →</a>
-</div>
-</div>
-<div class="pl-hero-card">
-<span class="pl-season-label">ARSENAL • 2026/27</span>
-<div class="pl-position-wrap">
-<strong id="heroPosition">—</strong>
-<span>CURRENT POSITION</span>
-</div>
-<div class="pl-hero-stat-grid">
-<div>
-<strong id="heroPoints">—</strong>
-<span>POINTS</span>
-</div>
-<div>
-<strong id="heroPlayed">—</strong>
-<span>PLAYED</span>
-</div>
-<div>
-<strong id="heroWins">—</strong>
-<span>WINS</span>
-</div>
-<div>
-<strong id="heroGD">—</strong>
-<span>GOAL DIFF.</span>
-</div>
-</div>
-</div>
-</section>
+
+          <div class="pl-hero-actions">
+            <a href="#leagueTable" class="pl-primary-btn">View League Table ↓</a>
+            <a href="fixtures.html" class="pl-secondary-btn">All Fixtures →</a>
+          </div>
+        </div>
+
+      </section>
 <section class="pl-section pl-overview">
 <div class="pl-section-head">
 <div>
@@ -1187,20 +1179,17 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
 <div class="pl-results-empty">Loading title race…</div>
 </div>
 </section>
-<section class="pl-section pl-title-probability-section" id="titleProbability">
+<section class="pl-section pl-title-probability-section" id="titleProbability" hidden style="display:none!important" aria-hidden="true">
 <div class="pl-section-head">
 <div>
 <p class="pl-kicker">07 / NL4 FORECAST</p>
 <h2>PREMIER LEAGUE TITLE PROBABILITY</h2>
 </div>
-<div class="nl4-admin-model-actions">
-  <span class="pl-table-note" id="titleModelRunLabel">25,000 V13.0 SIMULATIONS</span>
-  <button type="button" id="nl4RunHeavyDiagnosticsBtn" class="nl4-heavy-diagnostics-btn">RUN HEAVY DIAGNOSTICS</button>
-</div>
+<span class="pl-table-note" id="titleModelRunLabel">25,000 V13.0 SIMULATIONS</span>
 </div>
 <div class="nl4-title-forecast-shell">
 <article class="nl4-arsenal-probability-card">
-<span class="nl4-model-label" id="nl4PrimaryModelLabel">NL4 PUBLIC MODEL • STATISTICAL TITLE FORECAST</span>
+<span class="nl4-model-label">NL4 STATISTICAL TITLE FORECAST</span>
 <div class="nl4-probability-main">
 <strong id="arsenalTitleProbability">—</strong>
 <span>ARSENAL TITLE PROBABILITY</span>
@@ -1214,14 +1203,13 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
 <div><strong id="arsenalRelegationProbability">—</strong><span>RELEGATION</span></div>
 </div>
 <p class="nl4-model-note" id="titleModelStatus">Loading current Premier League performance data…</p>
-<p id="nl4HeavyDiagnosticsStatus">Heavy diagnostics are paused by default for faster Admin Model loading.</p>
 <div class="nl4-fixture-coverage">
 <div><span>FIXTURE COVERAGE</span><strong id="titleFixtureCoverage">—</strong></div>
 <div class="nl4-coverage-track"><div class="nl4-coverage-fill" id="titleFixtureCoverageBar"></div></div>
 <small id="titleFixtureCoverageNote">Checking league-wide schedule…</small>
 </div>
 <div class="nl4-v3-diagnostics">
-<div><span>MODEL</span><strong id="titleModelVersion">PUBLIC MODEL • SUPABASE SNAPSHOT ENGINE</strong></div>
+<div><span>MODEL</span><strong id="titleModelVersion">V13.2 • SANDBOX SNAPSHOT ENGINE</strong></div>
 <div><span>COMPLETED MATCHES</span><strong id="titleCompletedMatches">—</strong></div>
 <div><span>ARSENAL FORM</span><strong id="titleArsenalForm">—</strong></div>
 <div><span>HISTORICAL PTS ANCHOR</span><strong id="arsenalHistoricalPointsAnchor">—</strong></div>
@@ -1235,7 +1223,7 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
 <section aria-labelledby="v13EvidenceTitle" class="v13-evidence-engine">
 <div class="v13-evidence-head">
 <div>
-<span class="nl4-model-label">PUBLIC MODEL • SUPABASE SNAPSHOT ENGINE</span>
+<span class="nl4-model-label">V13.2 • SANDBOX SNAPSHOT ENGINE</span>
 <h3 id="v13EvidenceTitle">Evidence Weight</h3>
 <p>Historical strength fades club-by-club as 2026/27 evidence accumulates. The V12.9 match simulation engine remains frozen.</p>
 </div>
@@ -1393,28 +1381,12 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
 <section class="v128-validation"><div class="v128-head"><div><small>V12.9 FROZEN BASELINE • 25,000-SIMULATION AUDIT</small><h3>Monte Carlo Validation Dashboard</h3><p>The V12.7 match engine is frozen while this panel audits the distribution behind the forecast.</p></div><b>MATCH ENGINE FROZEN</b></div><div class="v128-grid"><article><small>ARSENAL MEDIAN</small><strong id="v128ArsenalMedian">—</strong></article><article><small>10TH PERCENTILE</small><strong id="v128ArsenalP10">—</strong></article><article><small>25TH PERCENTILE</small><strong id="v128ArsenalP25">—</strong></article><article><small>75TH PERCENTILE</small><strong id="v128ArsenalP75">—</strong></article><article><small>90TH PERCENTILE</small><strong id="v128ArsenalP90">—</strong></article></div><div class="v128-two"><article class="v128-panel"><h4>When Arsenal Win the League</h4><p>Title-winning simulations <strong id="v128TitleSamples">—</strong></p><p>Average points <strong id="v128TitleAvg">—</strong></p><p>Lowest title total <strong id="v128TitleMin">—</strong></p><p>Highest title total <strong id="v128TitleMax">—</strong></p><p>Average when Arsenal don't win <strong id="v128NonTitleAvg">—</strong></p></article><article class="v128-panel"><h4>League Champion Points</h4><p>Average <strong id="v128ChampionAvg">—</strong></p><p>Median <strong id="v128ChampionMedian">—</strong></p><p>10th percentile <strong id="v128ChampionP10">—</strong></p><p>90th percentile <strong id="v128ChampionP90">—</strong></p></article></div><article class="v128-panel"><h4>Share of Simulated Titles</h4><div id="v128TitleWinnerShare"></div></article></section><section class="v129-reliability"><div class="v129-head"><div><small>V12.9 • RELIABILITY AUDIT</small><h3>Simulation Reliability &amp; Tail Diagnostics</h3><p>The match engine remains frozen. This panel measures rare outcomes and Monte Carlo sampling noise.</p></div><b>STATISTICS ONLY</b></div><div class="v129-grid"><article><small>1ST PERCENTILE</small><strong id="v129ArsenalP01">—</strong></article><article><small>5TH PERCENTILE</small><strong id="v129ArsenalP05">—</strong></article><article><small>95TH PERCENTILE</small><strong id="v129ArsenalP95">—</strong></article><article><small>99TH PERCENTILE</small><strong id="v129ArsenalP99">—</strong></article></div><div class="v129-two"><article class="v129-panel"><h4>Arsenal Points Thresholds</h4><div><span>80+ points</span><strong id="v129Arsenal80">—</strong></div><div><span>85+ points</span><strong id="v129Arsenal85">—</strong></div><div><span>90+ points</span><strong id="v129Arsenal90">—</strong></div><div><span>95+ points</span><strong id="v129Arsenal95">—</strong></div><div><span>100+ points</span><strong id="v129Arsenal100">—</strong></div></article><article class="v129-panel"><h4>Champion Tail Frequency</h4><div><span>Champion below 75</span><strong id="v129ChampionBelow75">—</strong></div><div><span>Champion above 95</span><strong id="v129ChampionAbove95">—</strong></div><div><span>100+ point champion</span><strong id="v129Champion100">—</strong></div></article></div><article class="v129-panel v129-mc"><h4>Monte Carlo Sampling Uncertainty</h4><div><span>Approx. 95% sampling margin</span><strong id="v129MonteCarloSE">—</strong></div><div><span>Approx. 95% interval for Arsenal title estimate</span><strong id="v129MonteCarloCI">—</strong></div><p>This interval measures simulation noise only, not real football uncertainty.</p></article></section><div class="nl4-title-probability-table" id="titleProbabilityTable">
 <div class="nl4-title-model-loading">Running title simulations…</div>
 </div>
-
-<section id="nl4AdminTop4Light" class="nl4-admin-top4-light">
-  <div class="nl4-admin-top4-light-head">
-    <div>
-      <span class="nl4-model-label">ADMIN MODEL • TOP FOUR TITLE RACE</span>
-      <h3>Current Contenders & Last Five Result Effect</h3>
-    </div>
-    <strong id="nl4AdminTop4LightStatus">WAITING FOR MAIN FORECAST…</strong>
-  </div>
-  <div class="nl4-admin-top4-light-grid" id="nl4AdminTop4LightGrid">
-    <div class="nl4-title-model-loading">Top 4 will appear after the main Admin Model finishes.</div>
-  </div>
-  <p class="nl4-model-note">
-    Display-only. It reads the finished Admin Model probabilities plus the already-loaded league results. No extra simulations or Supabase reads are triggered.
-  </p>
-</section>
 </div>
 </div>
 <div class="v123-timeline">
 <div class="v123-timeline-head">
 <div>
-<span class="nl4-model-label">PUBLIC / ADMIN MODEL PROBABILITY TIMELINE</span>
+<span class="nl4-model-label">V13.2 • SANDBOX / LIVE PROBABILITY TIMELINE</span>
 <h3>Arsenal's Title Race, Update by Update</h3>
 </div>
 <strong id="v123TimelineStatus">LOADING SAVED FORECASTS…</strong>
@@ -1428,7 +1400,7 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
 <div class="nl4-title-model-loading">Select a saved forecast to inspect it.</div>
 </div>
 <p class="nl4-model-note">
-      Every timeline stop comes from an NL4 forecast snapshot. Public Model and Admin Model snapshots are both stored in Supabase, but in separate histories. Select a card—or a point on the probability chart—to inspect
+      Every timeline stop comes from an NL4 forecast snapshot. Live snapshots use Supabase; Test Mode snapshots stay only in this browser. Select a card—or a point on the probability chart—to inspect
       Arsenal's title chance, expected points, expected finish, model confidence and the important new Arsenal/rival results associated with that update.
     </p>
 </div>
@@ -1467,7 +1439,7 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
 <div class="nl4-title-model-loading">Waiting for completed league results…</div>
 </div>
 <p class="nl4-model-note">
-      The before/after probability change is exact from the available NL4 forecast snapshots. Admin Model snapshots are stored separately in Supabase from Public Model history. The result cards are evidence-based drivers:
+      The before/after probability change is exact from the available NL4 forecast snapshots. In Test Mode these snapshots are browser-only. The result cards are evidence-based drivers:
       they explain which new Arsenal and leading-rival results entered the model, but do not falsely assign an isolated causal percentage to one match.
     </p>
 </div>
@@ -1502,7 +1474,7 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
 <div class="v147-head"><div>
 <span class="nl4-model-label">V14.7 • RIVAL SHOCK SENSITIVITY AUDIT</span>
 <h3>Which Rival Actually Created Arsenal's MD5 Title Surge?</h3>
-<p>Starting from the full Admin Model MD5 state, each contender's first five results are removed one club at a time and returned to the unresolved fixture distribution.</p>
+<p>Starting from the full MD5 sandbox, each contender's first five results are removed one club at a time and returned to the unresolved fixture distribution.</p>
 </div><b id="v147RivalShockStatus">CALCULATING…</b></div>
 <div id="v147RivalShockAudit"><div class="nl4-title-model-loading">Re-simulating individual rival shocks…</div></div>
 <small>Diagnostic only. 6,000 common-seed simulations per state. Rival effects overlap and are not assumed to be additive. No model coefficient is changed.</small>
@@ -1712,7 +1684,7 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
 <div class="nl4-v11-explainer" id="titleChangeExplainer">
 <div class="nl4-v11-explainer-head">
 <div>
-<span class="nl4-model-label">PUBLIC MODEL • SUPABASE SNAPSHOT ENGINE</span>
+<span class="nl4-model-label">V13.2 • SANDBOX SNAPSHOT ENGINE</span>
 <h3>Why Did Arsenal's Title Chance Change?</h3>
 </div>
 <strong class="nl4-v11-change-pill" id="v11ProbabilityChange">WAITING FOR HISTORY</strong>
@@ -1747,7 +1719,7 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
 <div class="nl4-history-card">
 <div class="nl4-history-head">
 <div>
-<span class="nl4-model-label">PUBLIC / ADMIN MODEL PROBABILITY HISTORY</span>
+<span class="nl4-model-label">TITLE PROBABILITY HISTORY • LIVE / SANDBOX</span>
 <h3>Arsenal's Title Chance Through the Season</h3>
 </div>
 <strong id="titleHistoryLatest">WAITING FOR FIRST RESULT</strong>
@@ -1760,7 +1732,7 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
 <b id="titleHistoryChange">Season change: —</b>
 </div>
 <p class="nl4-model-note" id="titleHistoryNote">
-      Public Model snapshots use the live Supabase season history. Admin Model snapshots use a separate authenticated Supabase history and never alter the public record.
+      A new live snapshot is stored after recorded Premier League results. In Test Mode, V13.2 stores the equivalent snapshot only in browser sandbox history.
     </p>
 </div>
 <div class="nl4-scenario-lab">
@@ -1835,11 +1807,54 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
       V12.9 blends current performance with calibrated preseason club-strength priors, Elo-style ratings, recent form and home/away evidence. Newly promoted clubs start from a lower strength prior than established title contenders, but that prior fades continuously and reaches zero after roughly 20 league matches per club, so exceptional real performance can fully take over. The rest of the season is simulated 25,000 times using every real remaining Premier League fixture currently stored in Supabase. Home advantage and exact opponent strength are applied.
     </p>
 </div>
-</section>
-<section class="pl-section pl-leaders-section" id="arsenalPlayerStats">
+</section><div class="nl4-public-forecast-root" id="nl4PublicForecastRoot"><section class="nl4-public-model-card" id="nl4PublicModel">
+<p class="eyebrow">NL4 MODEL</p>
+<h3 id="nl4InterpretationHeadline">Title Race Update</h3>
+<span class="status" id="nl4InterpretationStatus">AUTOMATIC MODEL ANALYSIS</span>
+<div id="nl4PublicLiveSummary" hidden aria-hidden="true" style="display:none!important">
+  <!-- Calculation-only targets retained for public-model.js. Nothing in this block is shown to viewers. -->
+  <strong id="publicArsenalTitleProbability">—</strong>
+  <strong id="publicArsenalTop4Probability">—</strong>
+  <strong id="publicArsenalTop5Probability">—</strong>
+  <strong id="publicArsenalExpectedPoints">—</strong>
+  <strong id="publicArsenalExpectedPosition">—</strong>
+  <span id="publicModelLiveStatus"></span>
+  <div id="publicProbabilityTable"></div>
+</div>
+<p class="summary" id="nl4InterpretationSummary">Running the Public Model and building automatic interpretation…</p>
+<div class="takeaway" id="nl4InterpretationTakeaway"></div>
+<div class="viewer-stats" id="nl4InterpretationViewerStats"></div>
+<div class="factors" id="nl4InterpretationFactors"></div>
+<div class="nl4-history-card" id="publicModelHistoryCard">
+<div class="nl4-history-head">
+<div>
+<span class="nl4-model-label">NL4 MODEL • SEASON MOVEMENT</span>
+<h3>Arsenal's Title Chance Through the Season</h3>
+</div>
+<strong id="publicTitleHistoryLatest">PRE-SEASON BASELINE</strong>
+</div>
+<div class="nl4-history-chart-wrap">
+<svg aria-label="Arsenal public title probability history" class="nl4-history-chart" id="publicTitleHistoryChart" role="img" viewBox="0 0 760 240"><text x="380" y="120" text-anchor="middle" class="nl4-history-axis-text">Loading public forecast history…</text></svg>
+</div>
+<div class="nl4-history-legend">
+<span><i></i> Arsenal title probability</span>
+<b id="publicTitleHistoryChange">Season change: —</b>
+</div>
+<p class="nl4-model-note" id="publicTitleHistoryNote">Saved NL4 Model forecasts from Supabase show how Arsenal's title probability changes throughout the season.</p>
+</div>
+<div class="nl4-public-graph-interpretation" id="nl4PublicGraphInterpretation">
+<div class="graph-interpretation-head">
+<span id="nl4GraphInterpretationLabel">AUTOMATIC GRAPH ANALYSIS</span>
+<strong id="nl4GraphInterpretationChange">—</strong>
+</div>
+<p id="nl4GraphInterpretationText">NL4 will explain the title-probability movement automatically when the Public Model finishes calculating.</p>
+<small id="nl4GraphInterpretationMeta">Generated from the same Public Model history shown in the graph.</small>
+</div>
+<small class="published" id="nl4InterpretationPublished"></small>
+</section></div><section class="pl-section pl-leaders-section" id="arsenalPlayerStats">
 <div class="pl-section-head">
 <div>
-<p class="pl-kicker">09 / ARSENAL PLAYER STATS</p>
+<p class="pl-kicker">08 / ARSENAL PLAYER STATS</p>
 <h2>2026/27 PREMIER LEAGUE SQUAD STATS</h2>
 </div>
 <span class="pl-table-note">ARSENAL ONLY • LIVE FROM SUPABASE</span>
@@ -2517,14 +2532,14 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
 <b>NL4 PREMIER LEAGUE HUB</b>
 <span>Arsenal • 2026/27 • North London Forever</span>
 </footer>
-</div></main>
+</main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
 <script src="supabase-client.js"></script>
 <script src="nl4-data.js"></script>
 <script src="shared-sidebar.js"></script>
-<script src="premier-league.js?v=20260817-admin-public-model-split"></script>
-<script src="title-probability.js?v=20260819-admin-public-sync-v1"></script>
+<script src="premier-league.js?v=20260818-hero-restored-v1"></script>
+<script src="public-model.js?v=20260818-canonical-interpretation-bridge-v1"></script>
 <script>
   (function(){
     const season = "2026/27";
@@ -2598,7 +2613,6 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
     setTimeout(loadFullSquadStats, 400);
   })();
   </script>
-
 <script>
   (function(){
     const db = window.nl4Supabase;
