@@ -23,9 +23,12 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 .controls label{font-size:8px;color:#aaa;font-weight:900} select{width:100%;background:#171717;color:#fff;border:1px solid #333;border-radius:8px;padding:8px;margin-top:4px}
-.pitch-wrap{position:relative;width:100%;min-height:650px;border-radius:16px;overflow:hidden;border:3px solid #fff;background:#12622f}
+.pitch-wrap{position:relative;width:100%;min-height:650px;border-radius:16px;overflow:hidden;border:3px solid #fff;background:#247d3e;box-shadow:0 24px 44px rgba(0,0,0,.36),inset 0 0 0 1px rgba(255,255,255,.06)}
 .pitch{position:absolute;inset:0;background:
-repeating-linear-gradient(90deg,#176f38 0,#176f38 12.5%,#12622f 12.5%,#12622f 25%)}
+radial-gradient(ellipse at 18% 16%,rgba(255,255,255,.045),transparent 24%),
+radial-gradient(ellipse at 78% 66%,rgba(0,0,0,.055),transparent 30%),
+repeating-linear-gradient(0deg,#2f9148 0 10%,#278442 10% 20%);
+box-shadow:inset 0 0 78px rgba(0,0,0,.15),inset 0 16px 26px rgba(255,255,255,.025)}
 .pitch:before{content:"";position:absolute;inset:5%;border:2px solid rgba(255,255,255,.85)}
 .pitch:after{content:"";position:absolute;left:50%;top:5%;bottom:5%;width:2px;background:rgba(255,255,255,.85)}
 .circle{position:absolute;left:50%;top:50%;width:105px;height:105px;border:2px solid rgba(255,255,255,.85);border-radius:50%;transform:translate(-50%,-50%)}

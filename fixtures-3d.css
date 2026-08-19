@@ -3231,3 +3231,40 @@ body.nl4-unified-sidebar #nl4MenuToggle{
     height:30px !important;
   }
 }
+
+/* =========================================================
+   NL4 — LINEUP PLAYER NAME BACKGROUND REMOVAL
+   Shared fixture/match-detail override. Visual only.
+   Keeps player-name text visible while removing dark name plates.
+   ========================================================= */
+:where(
+  .lineup,
+  .match-lineup,
+  .team-lineup,
+  .starting-lineup,
+  .starting-xi,
+  .team-sheet,
+  .teamsheet,
+  .lineup-pitch,
+  .formation-pitch,
+  .pitch-lineup,
+  [class*="lineup"],
+  [class*="team-sheet"],
+  [class*="teamsheet"]
+) :where(
+  .player-name,
+  .lineup-player-name,
+  .pitch-player-name,
+  .player-label,
+  .name-tag,
+  .nameplate,
+  [class*="player-name"],
+  [class*="name-tag"],
+  [class*="nameplate"]
+){
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  box-shadow:none !important;
+  border-color:transparent !important;
+}
