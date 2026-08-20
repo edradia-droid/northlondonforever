@@ -1,0 +1,5 @@
+NL4 MANAGER IMAGE LICENSING NOTES
+
+All manager-card/profile visuals now load from images/managers/. No manager portrait depends on Arsenal.com, The Guardian, ArsenalPlayers, Suning, Bing, or another remote image host.
+
+See photo-credits.html for per-image source, creator, licence and attribution notes. Managers without a verified reusable portrait use an original NL4 placeholder.

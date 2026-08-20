@@ -1,28 +1,49 @@
-NL4 CURRENT GENERATION → ADMIN PROFILE EDITOR
+NL4 Arsenal Managers package
 
-FILES
-- current-generation.html
-- saka.html
-- ode.html
-- rice.html
-- saliba.html
-- gabby.html
-- kai.html
-- nelly.html
-- current-player-profile.js
-- admin.html
-- admin.js
-- admin.css
-- NL4-current-player-profiles-setup.sql
+Files:
+- managers.html — complete manager archive / collection page
+- manager-details.html — reusable detail profile page driven by query string
+- managers-data.js — all manager summaries, stats, honours and three story topics
 
-INSTALL
-1. Run NL4-current-player-profiles-setup.sql once in Supabase SQL Editor.
-2. Copy the HTML/JS/CSS files into the NL4 project, replacing the matching current versions.
-3. Keep your existing supabase-client.js unchanged.
-4. Open Admin → Current Player Profiles.
-5. Choose a player, edit the text, and click Save & Publish Profile.
-6. Refresh that player's public page to see the saved Supabase text.
+This package intentionally links to styles.css, matching cliff.html. Put these files in the same folder as your existing styles.css.
 
-SAFETY
-The original HTML text remains in each profile as a fallback. If Supabase cannot load,
-the page still shows the existing profile instead of becoming blank.
+Example detail URL:
+manager-details.html?manager=arsene-wenger
+
+Historical note: early Arsenal managerial records differ across sources, especially Sam Hollis, wartime periods and some caretaker counts.
+
+
+PHOTO FIX: Manager cards now try the verified/original source first, then multiple web-search image fallbacks. The detail page uses the same chain and updates the hero image when a fallback succeeds. This prevents most cards from disappearing when old Arsenal/CDN URLs reject hotlinking or move.
+
+
+DEDICATED MANAGER PAGES
+-----------------------
+sam-hollis.html — Sam Hollis
+thomas-mitchell.html — Thomas Mitchell
+william-elcoat.html — William Elcoat
+harry-bradshaw.html — Harry Bradshaw
+phil-kelso.html — Phil Kelso
+george-morrell.html — George Morrell
+james-mcewen.html — James McEwen
+leslie-knighton.html — Leslie Knighton
+herbert-chapman.html — Herbert Chapman
+joe-shaw.html — Joe Shaw
+george-allison.html — George Allison
+tom-whittaker.html — Tom Whittaker
+jack-crayston.html — Jack Crayston
+george-swindin.html — George Swindin
+billy-wright.html — Billy Wright
+bertie-mee.html — Bertie Mee
+terry-neill.html — Terry Neill
+don-howe.html — Don Howe
+steve-burtenshaw.html — Steve Burtenshaw
+george-graham.html — George Graham
+stewart-houston.html — Stewart Houston
+bruce-rioch.html — Bruce Rioch
+pat-rice.html — Pat Rice
+arsene-wenger.html — Arsène Wenger
+unai-emery.html — Unai Emery
+freddie-ljungberg.html — Freddie Ljungberg
+mikel-arteta.html — Mikel Arteta
+
+All More Details links in managers.html now open these standalone pages. manager-details.html is retained for backward compatibility.

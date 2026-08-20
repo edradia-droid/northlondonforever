@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arsenal Managers | NL4 North London Forever</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.manager-archive-hero{min-height:58vh;display:flex;align-items:flex-end;padding:clamp(7rem,13vw,11rem) clamp(1.2rem,6vw,6rem) 4rem;background:linear-gradient(90deg,rgba(5,5,7,.96),rgba(5,5,7,.55)),url('https://www.arsenal.com/sites/default/files/styles/large/public/images/highbury_stadium.jpg') center/cover;color:#fff}
+.manager-archive-hero .hero-copy{max-width:850px} .manager-archive-hero h1{font-size:clamp(3rem,8vw,7rem);line-height:.86;margin:.4rem 0 1.2rem;text-transform:uppercase} .manager-archive-hero h1 span,.manager-section-head span{color:#d8ad42}
+.manager-section-head{display:flex;justify-content:space-between;gap:2rem;align-items:end;margin:4rem 0 2rem} .manager-section-head>p{max-width:650px}
+.manager-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.3rem} .manager-card{position:relative;background:#111;color:#fff;border:1px solid rgba(216,173,66,.25);overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.manager-img{height:340px;background:linear-gradient(135deg,#1c1c1c,#090909);position:relative;overflow:hidden} .manager-img img{width:100%;height:100%;object-fit:cover;filter:saturate(.9) contrast(1.03);transition:.35s transform} .manager-card:hover img{transform:scale(1.035)} .manager-img.image-missing::after{content:attr(data-initials);position:absolute;inset:0;display:grid;place-items:center;font-size:6rem;font-weight:900;color:#d8ad42;background:radial-gradient(circle at 50% 35%,#292929,#070707 70%)}
+.manager-number{position:absolute;right:1rem;top:318px;transform:translateY(-50%);font-weight:900;font-size:2.5rem;color:#d8ad42;text-shadow:0 4px 15px #000} .manager-body{padding:1.5rem;display:flex;flex-direction:column;gap:.75rem;flex:1} .manager-role,.manager-years{color:#d8ad42;font-size:.78rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase} .manager-body h3{font-size:1.6rem;margin:0} .manager-body p{line-height:1.7;margin:0} .manager-body .read{margin-top:auto;align-self:flex-start}
+.manager-note{margin:2rem 0;padding:1rem 1.2rem;border-left:3px solid #d8ad42;background:rgba(216,173,66,.08)}
+.manager-hof-badge{position:absolute;left:14px;top:14px;z-index:4;display:inline-flex;align-items:center;gap:.42rem;padding:.58rem .8rem;border:1px solid rgba(255,226,135,.82);border-radius:999px;background:linear-gradient(135deg,rgba(23,18,5,.96),rgba(126,89,7,.94));color:#f8d86b;font-size:.72rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;box-shadow:0 8px 24px rgba(0,0,0,.42),inset 0 0 16px rgba(255,215,92,.12);backdrop-filter:blur(5px)}
+.manager-hof-badge .hof-star{font-size:.95rem;color:#ffe18a;text-shadow:0 0 10px rgba(255,213,89,.8)}
+
+@media(max-width:1000px){.manager-grid{grid-template-columns:repeat(2,minmax(0,1fr))}} @media(max-width:650px){.manager-grid{grid-template-columns:1fr}.manager-img{height:300px}.manager-number{top:278px}.manager-section-head{display:block}}
+</style>
+</head>
+<body>
+<header class="topbar">
+<a class="brand" href="index.html"><span class="mark">A</span><span><b>ARSENAL</b><small>NORTH LONDON FOREVER</small></span></a>
+<button id="menuBtn" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+<nav><a href="index.html">Home</a><a class="active" href="history.html">History</a><a href="players.html">Players</a><a href="trophies.html">Treasure Room</a></nav>
+</header>
+<section class="manager-archive-hero">
+<div class="hero-copy"><p class="eyebrow">ARSENAL HISTORY / MANAGER ARCHIVE</p><h1>THE MEN WHO<br><span>LED ARSENAL.</span></h1><p>From Woolwich to Highbury and the Emirates era, explore the managers and caretakers who shaped Arsenal Football Club across more than a century.</p><a class="gold-btn" href="#manager-collection">Explore the managers ↓</a></div>
+</section>
+<main class="main" id="manager-collection">
+<div class="manager-section-head"><div><p class="eyebrow">THE COMPLETE COLLECTION</p><h2>ARSENAL MANAGERS<br><span>1894 — PRESENT</span></h2></div><p>Each profile includes a short introduction. Select <b>More Details</b> for managerial tenure, matches, win percentage, trophies and three defining chapters from the manager's Arsenal story.</p></div>
+<div class="manager-note"><strong>Historical note:</strong> early Arsenal management records are not perfectly uniform. Sam Hollis is sometimes described as a trainer rather than a professional manager, wartime football under James McEwen is not directly comparable, and caretaker spells are shown separately where appropriate.</div>
+<section class="manager-grid"><article class="manager-card">
+      <div class="manager-img" data-initials="SH">
+        <img src="https://www.arsenal.com/sites/default/files/styles/large/public/images/manager_hollis.jpg" data-sources="[&quot;https://arsenal-histoire.com/wp-content/uploads/2020/11/Sam-Hollis.jpg&quot;, &quot;https://tse1.mm.bing.net/th?q=Sam+Hollis+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=Sam+Hollis+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=Sam+Hollis+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=Sam+Hollis+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="Sam Hollis, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">01</div>
+      <div class="manager-body">
+        <div class="manager-role">TRAINER / SECRETARY-MANAGER (HISTORICAL ATTRIBUTION)</div>
+        <h3>Sam Hollis</h3>
+        <p class="manager-years">1894–1897</p>
+        <p>A pioneering figure from Woolwich Arsenal&#x27;s formative years. Hollis is credited by some Arsenal histories as the club&#x27;s first manager-like figure, although other records describe him primarily as the first-team trainer before the professional manager era began.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=sam-hollis">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="TM">
+        <img src="https://www.arsenal.com/sites/default/files/styles/large/public/images/manager_mitchell.jpg" data-sources="[&quot;https://arsenal-histoire.com/wp-content/uploads/2020/11/Thomas-Mitchell.jpg&quot;, &quot;https://tse1.mm.bing.net/th?q=Thomas+Mitchell+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=Thomas+Mitchell+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=Thomas+Mitchell+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=Thomas+Mitchell+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="Thomas Mitchell, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">02</div>
+      <div class="manager-body">
+        <div class="manager-role">FIRST PROFESSIONAL MANAGER</div>
+        <h3>Thomas Mitchell</h3>
+        <p class="manager-years">1897–1898</p>
+        <p>Thomas Mitchell is widely recognised as Arsenal&#x27;s first professional manager. His stay was short, but he helped move Woolwich Arsenal up the Second Division table and established a more recognisable professional management structure.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=thomas-mitchell">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="WE">
+        <img src="https://www.arsenal.com/sites/default/files/styles/large/public/images/manager_elcoat.jpg" data-sources="[&quot;https://arsenal-histoire.com/wp-content/uploads/2020/11/William-Elcoat.jpg&quot;, &quot;https://tse1.mm.bing.net/th?q=William+Elcoat+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=William+Elcoat+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=William+Elcoat+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=William+Elcoat+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="William Elcoat, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">03</div>
+      <div class="manager-body">
+        <div class="manager-role">MANAGER</div>
+        <h3>William Elcoat</h3>
+        <p class="manager-years">1898–1899</p>
+        <p>William Elcoat succeeded Thomas Mitchell during Arsenal&#x27;s Second Division years. His single-season reign continued the club&#x27;s attempt to build a competitive side from players drawn heavily from the stronger northern football regions.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=william-elcoat">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="HB">
+        <img src="https://www.arsenal.com/sites/default/files/styles/large/public/images/manager_bradshaw.jpg" data-sources="[&quot;https://arsenal-histoire.com/wp-content/uploads/2020/11/Harry-Bradshaw.jpg&quot;, &quot;https://tse1.mm.bing.net/th?q=Harry+Bradshaw+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=Harry+Bradshaw+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=Harry+Bradshaw+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=Harry+Bradshaw+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="Harry Bradshaw, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">04</div>
+      <div class="manager-body">
+        <div class="manager-role">MANAGER</div>
+        <h3>Harry Bradshaw</h3>
+        <p class="manager-years">1899–1904</p>
+        <p>Harry Bradshaw brought greater tactical organisation and consistency to Woolwich Arsenal. Under him the club became a serious Second Division force and laid the platform for promotion to the First Division.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=harry-bradshaw">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="PK">
+        <img src="https://www.arsenal.com/sites/default/files/styles/large/public/images/manager_kelso.jpg" data-sources="[&quot;https://arsenal-histoire.com/wp-content/uploads/2020/11/Phil-Kelso.jpg&quot;, &quot;https://tse1.mm.bing.net/th?q=Phil+Kelso+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=Phil+Kelso+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=Phil+Kelso+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=Phil+Kelso+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="Phil Kelso, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">05</div>
+      <div class="manager-body">
+        <div class="manager-role">MANAGER</div>
+        <h3>Phil Kelso</h3>
+        <p class="manager-years">1904–1908</p>
+        <p>Phil Kelso took over after Arsenal&#x27;s promotion and managed the club during its first sustained spell in the top division. His sides were especially notable for deep FA Cup runs in consecutive seasons.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=phil-kelso">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="GM">
+        <img src="https://www.arsenal.com/sites/default/files/styles/large/public/images/manager_morrell.jpg" data-sources="[&quot;https://arsenal-histoire.com/wp-content/uploads/2020/11/George-Morrell.jpg&quot;, &quot;https://tse1.mm.bing.net/th?q=George+Morrell+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=George+Morrell+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=George+Morrell+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=George+Morrell+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="George Morrell, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">06</div>
+      <div class="manager-body">
+        <div class="manager-role">MANAGER</div>
+        <h3>George Morrell</h3>
+        <p class="manager-years">1908–1915</p>
+        <p>George Morrell managed Arsenal through one of the most turbulent periods in club history: financial difficulty, relegation, the move from Woolwich to Highbury and the transition toward a new identity in north London.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=george-morrell">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="JM">
+        <img src="https://commons.wikimedia.org/wiki/Special:Redirect/file/James_McEwen_(1872%E2%80%931942).png" data-sources="[&quot;https://tse1.mm.bing.net/th?q=James+McEwen+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=James+McEwen+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=James+McEwen+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=James+McEwen+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="James McEwen, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">07</div>
+      <div class="manager-body">
+        <div class="manager-role">SECRETARY-MANAGER DURING WARTIME</div>
+        <h3>James McEwen</h3>
+        <p class="manager-years">1915–1919</p>
+        <p>James McEwen served Arsenal during the First World War period, when normal Football League competition was suspended. Because wartime matches were regional and unofficial for standard record purposes, his statistics cannot be compared cleanly with later managers.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=james-mcewen">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="LK">
+        <img src="https://www.arsenal.com/sites/default/files/styles/large/public/images/manager_knighton.jpg" data-sources="[&quot;https://arsenal-histoire.com/wp-content/uploads/2020/11/Leslie-Knighton.jpg&quot;, &quot;https://tse1.mm.bing.net/th?q=Leslie+Knighton+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=Leslie+Knighton+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=Leslie+Knighton+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=Leslie+Knighton+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="Leslie Knighton, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">08</div>
+      <div class="manager-body">
+        <div class="manager-role">SECRETARY-MANAGER</div>
+        <h3>Leslie Knighton</h3>
+        <p class="manager-years">1919–1925</p>
+        <p>Leslie Knighton took charge when Arsenal returned to the First Division after the war. He kept the club in the top flight but struggled to turn it into a consistent contender, and his departure opened the door for Herbert Chapman.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=leslie-knighton">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="HC">
+        <img src="https://www.arsenal.com/sites/default/files/styles/large/public/images/chapman_herbert.jpg" data-sources="[&quot;https://pbs.twimg.com/media/Gmj8rHAXkAAsJyG.png&quot;, &quot;https://tse1.mm.bing.net/th?q=Herbert+Chapman+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=Herbert+Chapman+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=Herbert+Chapman+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=Herbert+Chapman+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="Herbert Chapman, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">09</div>
+      <div class="manager-body">
+        <div class="manager-role">MANAGER</div>
+        <h3>Herbert Chapman</h3>
+        <p class="manager-years">1925–1934</p>
+        <p>Herbert Chapman transformed Arsenal into a major power and became one of football&#x27;s great innovators. Tactics, training, recruitment, stadium presentation and even ideas about floodlights and numbered shirts all formed part of his modernising influence.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=herbert-chapman">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="JS">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Arsenal_FC_1930.jpg/1024px-Arsenal_FC_1930.jpg" data-sources="[&quot;https://tse1.mm.bing.net/th?q=Joe+Shaw+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=Joe+Shaw+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=Joe+Shaw+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=Joe+Shaw+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="Joe Shaw, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">10</div>
+      <div class="manager-body">
+        <div class="manager-role">CARETAKER MANAGER</div>
+        <h3>Joe Shaw</h3>
+        <p class="manager-years">1934 (caretaker)</p>
+        <p>Joe Shaw stepped in after Herbert Chapman&#x27;s sudden death and guided Arsenal through the remainder of the 1933/34 season. His calm stewardship helped the club finish the work Chapman had begun and secure another league title.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=joe-shaw">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="GA">
+        <img src="https://www.arsenal.com/sites/default/files/styles/large/public/images/manager_allison.jpg" data-sources="[&quot;https://arsenal-histoire.com/wp-content/uploads/2020/11/George-Allison.jpg&quot;, &quot;https://tse1.mm.bing.net/th?q=George+Allison+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=George+Allison+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=George+Allison+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=George+Allison+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="George Allison, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">11</div>
+      <div class="manager-body">
+        <div class="manager-role">MANAGER</div>
+        <h3>George Allison</h3>
+        <p class="manager-years">1934–1947</p>
+        <p>George Allison carried Arsenal&#x27;s first golden age forward after Chapman. A journalist, broadcaster and club administrator before becoming manager, he oversaw further league titles and an FA Cup while preserving the elite standards of the 1930s.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=george-allison">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="TW">
+        <img src="https://www.arsenal.com/sites/default/files/styles/large/public/images/manager_whittaker.jpg" data-sources="[&quot;https://arsenal-histoire.com/wp-content/uploads/2020/11/Tom-Whittaker.jpg&quot;, &quot;https://tse1.mm.bing.net/th?q=Tom+Whittaker+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=Tom+Whittaker+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=Tom+Whittaker+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=Tom+Whittaker+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="Tom Whittaker, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">12</div>
+      <div class="manager-body">
+        <div class="manager-role">MANAGER</div>
+        <h3>Tom Whittaker</h3>
+        <p class="manager-years">1947–1956</p>
+        <p>Tom Whittaker was an Arsenal player, trainer and coach before becoming manager. He rebuilt the club after the Second World War and delivered two league titles and an FA Cup during a demanding era of post-war recovery.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=tom-whittaker">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="JC">
+        <img src="https://www.arsenal.com/sites/default/files/styles/large/public/images/manager_crayston.jpg" data-sources="[&quot;https://arsenal-histoire.com/wp-content/uploads/2020/11/Jack-Crayston.jpg&quot;, &quot;https://tse1.mm.bing.net/th?q=Jack+Crayston+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=Jack+Crayston+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=Jack+Crayston+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=Jack+Crayston+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="Jack Crayston, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">13</div>
+      <div class="manager-body">
+        <div class="manager-role">MANAGER</div>
+        <h3>Jack Crayston</h3>
+        <p class="manager-years">1956–1958</p>
+        <p>Former Arsenal midfielder Jack Crayston succeeded Tom Whittaker. His managerial period was short, but Arsenal improved their league position and he completed more than two decades of service to the club as player, coach and manager.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=jack-crayston">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="GS">
+        <img src="https://www.arsenal.com/sites/default/files/styles/large_16x9/public/gun__1340791930_swindin_george.jpg?auto=webp&itok=Pp9A2h0L" data-sources="[&quot;https://tse1.mm.bing.net/th?q=George+Swindin+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=George+Swindin+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=George+Swindin+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=George+Swindin+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="George Swindin, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">14</div>
+      <div class="manager-body">
+        <div class="manager-role">MANAGER</div>
+        <h3>George Swindin</h3>
+        <p class="manager-years">1958–1962</p>
+        <p>George Swindin returned to Arsenal as manager after previously making hundreds of appearances as the club&#x27;s goalkeeper. His first season produced a strong third-place league finish, but the team could not turn that promise into a sustained title challenge.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=george-swindin">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="BW">
+        <img src="https://www.arsenal.com/sites/default/files/styles/large/public/images/manager_wright.jpg" data-sources="[&quot;https://arsenal-histoire.com/wp-content/uploads/2020/11/Billy-Wright.jpg&quot;, &quot;https://tse1.mm.bing.net/th?q=Billy+Wright+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=Billy+Wright+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=Billy+Wright+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=Billy+Wright+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="Billy Wright, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">15</div>
+      <div class="manager-body">
+        <div class="manager-role">MANAGER</div>
+        <h3>Billy Wright</h3>
+        <p class="manager-years">1962–1966</p>
+        <p>England legend Billy Wright arrived at Arsenal with enormous stature from his playing career. His teams introduced and developed young talent but could not achieve the consistent results or trophies expected at Highbury.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=billy-wright">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="BM">
+        <img src="https://www.arsenal.com/sites/default/files/styles/large/public/images/manager_mee.jpg" data-sources="[&quot;https://arsenal-histoire.com/wp-content/uploads/2020/11/Bertie-Mee.jpg&quot;, &quot;https://tse1.mm.bing.net/th?q=Bertie+Mee+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=Bertie+Mee+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=Bertie+Mee+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=Bertie+Mee+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="Bertie Mee, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">16</div>
+      <div class="manager-body">
+        <div class="manager-role">MANAGER</div>
+        <h3>Bertie Mee</h3>
+        <p class="manager-years">1966–1976</p>
+        <p>Bertie Mee led Arsenal out of a long trophy drought and into one of the club&#x27;s defining achievements: the 1970/71 League and FA Cup Double. He also delivered Arsenal&#x27;s first European trophy, the Inter-Cities Fairs Cup.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=bertie-mee">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="TN">
+        <img src="https://arsenalplayers.com/wp-content/uploads/2025/06/Terry-Neill-768x532.png" data-sources="[&quot;https://tse1.mm.bing.net/th?q=Terry+Neill+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=Terry+Neill+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=Terry+Neill+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=Terry+Neill+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="Terry Neill, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">17</div>
+      <div class="manager-body">
+        <div class="manager-role">MANAGER</div>
+        <h3>Terry Neill</h3>
+        <p class="manager-years">1976–1983</p>
+        <p>Terry Neill, a former Arsenal captain, returned as manager in 1976. His side reached three consecutive FA Cup finals and produced the unforgettable 1979 victory over Manchester United in the &#x27;Five-Minute Final&#x27;.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=terry-neill">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="DH">
+        <img src="https://www.arsenal.com/sites/default/files/styles/large/public/images/manager_howe.jpg?itok=mvfzDJaA" data-sources="[&quot;https://tse1.mm.bing.net/th?q=Don+Howe+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=Don+Howe+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=Don+Howe+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=Don+Howe+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="Don Howe, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">18</div>
+      <div class="manager-body">
+        <div class="manager-role">MANAGER</div>
+        <h3>Don Howe</h3>
+        <p class="manager-years">1983–1986</p>
+        <p>Don Howe was one of English football&#x27;s most respected coaches. As Arsenal manager he worked through a transitional period and gave important first-team opportunities to young players who would later become central to the club&#x27;s revival.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=don-howe">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="SB">
+        <img src="https://arsenalplayers.com/wp-content/uploads/2025/06/Steve-Burtenshaw-768x532.png" data-sources="[&quot;https://tse1.mm.bing.net/th?q=Steve+Burtenshaw+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=Steve+Burtenshaw+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=Steve+Burtenshaw+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=Steve+Burtenshaw+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="Steve Burtenshaw, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">19</div>
+      <div class="manager-body">
+        <div class="manager-role">CARETAKER MANAGER</div>
+        <h3>Steve Burtenshaw</h3>
+        <p class="manager-years">1986 (caretaker)</p>
+        <p>Steve Burtenshaw briefly took caretaker charge following Don Howe&#x27;s departure in 1986. His role was temporary and chiefly concerned with guiding Arsenal through the transition before George Graham&#x27;s appointment.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=steve-burtenshaw">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="GG">
+        <img src="https://www.arsenal.com/sites/default/files/styles/large/public/images/manager_graham.jpg" data-sources="[&quot;https://arsenalplayers.com/wp-content/uploads/2025/06/George-Graham-768x532.png&quot;, &quot;https://tse1.mm.bing.net/th?q=George+Graham+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=George+Graham+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=George+Graham+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=George+Graham+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="George Graham, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">20</div>
+      <div class="manager-body">
+        <div class="manager-role">MANAGER</div>
+        <h3>George Graham</h3>
+        <p class="manager-years">1986–1995</p>
+        <p>George Graham restored Arsenal as a trophy-winning force. Built on defensive discipline, organisation and a strong core of academy-connected players, his teams won two league titles, domestic cups and the 1994 European Cup Winners&#x27; Cup.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=george-graham">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="SH">
+        <img src="https://arsenalplayers.com/wp-content/uploads/2025/06/Stewart-Houston-768x532.png" data-sources="[&quot;https://tse1.mm.bing.net/th?q=Stewart+Houston+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=Stewart+Houston+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=Stewart+Houston+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=Stewart+Houston+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="Stewart Houston, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">21</div>
+      <div class="manager-body">
+        <div class="manager-role">CARETAKER MANAGER</div>
+        <h3>Stewart Houston</h3>
+        <p class="manager-years">1995 &amp; 1996 (caretaker)</p>
+        <p>Stewart Houston twice acted as Arsenal caretaker manager during the mid-1990s. His first spell followed George Graham&#x27;s departure and included the run to the 1995 European Cup Winners&#x27; Cup final; he returned briefly after Bruce Rioch left.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=stewart-houston">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="BR">
+        <img src="https://www.arsenal.com/sites/default/files/styles/large/public/images/manager_rioch.jpg" data-sources="[&quot;https://arsenalplayers.com/wp-content/uploads/2025/06/Bruce-Rioch-768x532.png&quot;, &quot;https://tse1.mm.bing.net/th?q=Bruce+Rioch+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=Bruce+Rioch+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=Bruce+Rioch+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=Bruce+Rioch+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="Bruce Rioch, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">22</div>
+      <div class="manager-body">
+        <div class="manager-role">MANAGER</div>
+        <h3>Bruce Rioch</h3>
+        <p class="manager-years">1995–1996</p>
+        <p>Bruce Rioch managed Arsenal for a single season. Although he won no trophy, his reign is remembered for helping the club qualify for Europe and, above all, for bringing Dennis Bergkamp to Highbury.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=bruce-rioch">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="PR">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Pat_Rice_2015.jpg/640px-Pat_Rice_2015.jpg" data-sources="[&quot;https://tse1.mm.bing.net/th?q=Pat+Rice+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=Pat+Rice+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=Pat+Rice+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=Pat+Rice+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="Pat Rice, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">23</div>
+      <div class="manager-body">
+        <div class="manager-role">CARETAKER MANAGER</div>
+        <h3>Pat Rice</h3>
+        <p class="manager-years">1996 (caretaker)</p>
+        <p>Arsenal legend Pat Rice briefly took caretaker charge immediately before Arsène Wenger began work. He later became Wenger&#x27;s long-serving assistant and a crucial continuity figure between old Arsenal traditions and a new international era.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=pat-rice">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="AW">
+        <img src="https://24smi.org/public/media/celebrity/2023/03/30/c2uwewfq3mo3-arsen-venger.jpg" data-sources="[&quot;https://tse1.mm.bing.net/th?q=Ars%C3%A8ne+Wenger+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=Ars%C3%A8ne+Wenger+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=Ars%C3%A8ne+Wenger+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=Ars%C3%A8ne+Wenger+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="Arsène Wenger, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">24</div>
+      <div class="manager-body">
+        <div class="manager-role">MANAGER</div>
+        <h3>Arsène Wenger</h3>
+        <p class="manager-years">1996–2018</p>
+        <p>Arsène Wenger is Arsenal&#x27;s longest-serving manager and the defining figure of the club&#x27;s modern history. He transformed training, diet, recruitment and playing style, won three league titles and a record seven FA Cups, and guided Arsenal through the move from Highbury to Emirates Stadium.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=arsene-wenger">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="UE">
+        <img src="https://oss.suning.com/snsis/channel_content/NvmuIc-72diVHDrzV8q6_wtPkLAEBezInpGBKCj-HSpWrlYqMLr7pBTjV994itIq.jpg?imgH=620&imgW=930" data-sources="[&quot;https://tse1.mm.bing.net/th?q=Unai+Emery+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=Unai+Emery+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=Unai+Emery+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=Unai+Emery+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="Unai Emery, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">25</div>
+      <div class="manager-body">
+        <div class="manager-role">HEAD COACH</div>
+        <h3>Unai Emery</h3>
+        <p class="manager-years">2018–2019</p>
+        <p>Unai Emery succeeded Arsène Wenger after twenty-two years of continuity. His first season included a strong unbeaten run and a journey to the 2019 Europa League final, but inconsistent league form eventually ended his tenure in November 2019.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=unai-emery">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="FL">
+        <img src="https://i.guim.co.uk/img/media/eb9973dc9361f422fe4b53b501458c8eb5875065/0_169_3500_2100/master/3500.jpg?auto=format&fit=crop&height=1200&quality=85&s=689d5b95b65eda6b8f7ded25768511a0&width=1200" data-sources="[&quot;https://tse1.mm.bing.net/th?q=Freddie+Ljungberg+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=Freddie+Ljungberg+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=Freddie+Ljungberg+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=Freddie+Ljungberg+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="Freddie Ljungberg, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">26</div>
+      <div class="manager-body">
+        <div class="manager-role">INTERIM HEAD COACH</div>
+        <h3>Freddie Ljungberg</h3>
+        <p class="manager-years">2019 (interim)</p>
+        <p>Invincibles hero Freddie Ljungberg stepped up from Arsenal&#x27;s coaching staff as interim head coach after Unai Emery left. His six-match spell was a holding period while the club completed the appointment of Mikel Arteta.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=freddie-ljungberg">More Details →</a>
+      </div>
+    </article><article class="manager-card">
+      <div class="manager-img" data-initials="MA">
+        <img src="https://globaleng.biz/usr/person/big-person-16815003381.png" data-sources="[&quot;https://tse1.mm.bing.net/th?q=Mikel+Arteta+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse2.mm.bing.net/th?q=Mikel+Arteta+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse3.mm.bing.net/th?q=Mikel+Arteta+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;, &quot;https://tse4.mm.bing.net/th?q=Mikel+Arteta+Arsenal+manager+portrait&amp;w=900&amp;h=1050&amp;c=7&amp;rs=1&amp;p=0&amp;dpr=1.25&amp;pid=1.7&quot;]" data-source-index="0" alt="Mikel Arteta, Arsenal manager" loading="lazy" onerror="tryManagerPhotoFallback(this)">
+      </div>
+      <div class="manager-number">27</div>
+      <div class="manager-body">
+        <div class="manager-role">MANAGER</div>
+        <h3>Mikel Arteta</h3>
+        <p class="manager-years">2019–present</p>
+        <p>Mikel Arteta returned to Arsenal as head coach in December 2019 after serving as Pep Guardiola&#x27;s assistant at Manchester City. A former Arsenal captain, he reshaped the squad and playing identity, winning the FA Cup in his first season and later leading the club back to the Premier League summit.</p>
+        <a class="read gold-btn" href="manager-details.html?manager=mikel-arteta">More Details →</a>
+      </div>
+    </article></section>
+<section class="legacy"><p class="eyebrow">NORTH LONDON FOREVER</p><h2>EVERY ERA.<br><span>EVERY LEADER.</span></h2><p>The Arsenal story has been shaped by innovators, rebuilders, caretakers, champions and club servants across generations.</p><a class="gold-btn" href="history.html">← Back to Arsenal History</a></section>
+</main>
+<footer><b>ARSENAL</b><span>History • Heritage • North London Forever</span></footer>
+
+<script>
+function tryManagerPhotoFallback(img){
+  let sources=[];
+  try{sources=JSON.parse(img.dataset.sources||'[]');}catch(e){}
+  let i=parseInt(img.dataset.sourceIndex||'0',10);
+  if(i<sources.length){
+    img.dataset.sourceIndex=String(i+1);
+    img.src=sources[i];
+    return;
+  }
+  img.style.display='none';
+  if(img.parentElement) img.parentElement.classList.add('image-missing');
+}
+</script>
+
+<script>
+(function addManagerHallOfFameBadges(){
+  const statueManagers=new Set(['herbert-chapman','arsene-wenger']);
+  document.querySelectorAll('.manager-card').forEach(card=>{
+    const link=card.querySelector('a[href*="manager-details.html?manager="]');
+    if(!link) return;
+    const slug=new URL(link.href, location.href).searchParams.get('manager');
+    if(!statueManagers.has(slug)) return;
+    const photo=card.querySelector('.manager-img');
+    if(!photo || photo.querySelector('.manager-hof-badge')) return;
+    const badge=document.createElement('div');
+    badge.className='manager-hof-badge';
+    badge.title='Honoured with a statue at Emirates Stadium';
+    badge.innerHTML='<span class="hof-star">★</span><span>Hall of Fame</span>';
+    photo.appendChild(badge);
+  });
+})();
+</script>
+
+</body>
+</html>
