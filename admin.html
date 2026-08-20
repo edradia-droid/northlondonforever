@@ -195,6 +195,7 @@
       <aside class="side-nav">
         <p class="nav-label">CONTENT</p>
         <button class="nav-link active" data-panel="playersPanel">Players</button>
+        <button class="nav-link" data-panel="currentProfilesPanel">Current Player Profiles</button>
         <button class="nav-link" data-panel="newsPanel">News</button>
         <button class="nav-link" data-panel="fixturesPanel">Fixtures</button>
         <button class="nav-link" data-panel="premierLeaguePanel">Premier League</button>
@@ -216,7 +217,84 @@
           <div id="playersList" class="content-grid"></div>
         </section>
 
-        <section id="newsPanel" class="panel">
+        
+      <section id="currentProfilesPanel" class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">CURRENT GENERATION</p>
+            <h2>Player Profile Editor</h2>
+            <p class="muted">Edit the public text on each Current Generation player page. Saved changes publish through Supabase without editing the HTML file.</p>
+          </div>
+        </div>
+        <div class="current-profile-toolbar">
+          <label>Player
+            <select id="currentProfilePlayer">
+              <option value="saka">Bukayo Saka</option>
+              <option value="ode">Martin Ødegaard</option>
+              <option value="rice">Declan Rice</option>
+              <option value="saliba">William Saliba</option>
+              <option value="gabby">Gabriel Magalhães</option>
+              <option value="kai">Kai Havertz</option>
+              <option value="nelly">Gabriel Martinelli</option>
+            </select>
+          </label>
+          <button id="loadCurrentProfileBtn" class="ghost-btn" type="button">Load Profile</button>
+        </div>
+        <form id="currentProfileForm" class="current-profile-form">
+          <div class="profile-admin-card">
+            <h3>Hero</h3>
+            <div class="form-grid">
+              <label class="full">Profile image URL<input name="image_url" type="url"></label>
+              <label>Hero eyebrow<input name="hero_eyebrow"></label>
+              <label>Hero button<input name="hero_button"></label>
+              <label>Name line 1<input name="hero_name_line1"></label>
+              <label>Name line 2<input name="hero_name_line2"></label>
+              <label class="full">Hero introduction<textarea name="hero_intro"></textarea></label>
+            </div>
+          </div>
+          <div class="profile-admin-card">
+            <h3>Main Heading</h3>
+            <div class="form-grid">
+              <label>Main eyebrow<input name="main_eyebrow"></label>
+              <label>Title line 1<input name="main_title_line1"></label>
+              <label>Title line 2<input name="main_title_line2"></label>
+            </div>
+          </div>
+          <div class="profile-admin-card">
+            <h3>At A Glance</h3>
+            <div class="form-grid">
+              <label>Section eyebrow<input name="facts_eyebrow"></label>
+              <label>Section title<input name="facts_title"></label>
+              <label>Fact 1 label<input name="fact_1_label"></label><label>Fact 1 value<input name="fact_1_value"></label><label>Fact 2 label<input name="fact_2_label"></label><label>Fact 2 value<input name="fact_2_value"></label><label>Fact 3 label<input name="fact_3_label"></label><label>Fact 3 value<input name="fact_3_value"></label><label>Fact 4 label<input name="fact_4_label"></label><label>Fact 4 value<input name="fact_4_value"></label><label>Fact 5 label<input name="fact_5_label"></label><label>Fact 5 value<input name="fact_5_value"></label><label>Fact 6 label<input name="fact_6_label"></label><label>Fact 6 value<input name="fact_6_value"></label>
+            </div>
+          </div>
+          <div class="profile-admin-card">
+            <h3>Player Story</h3>
+            <div class="form-grid">
+              <label>Story eyebrow<input name="story_eyebrow"></label>
+              <label>Story heading<input name="story_title"></label>
+              <label class="full">Story 1 heading<input name="story_1_title"></label><label class="full">Story 1 text<textarea name="story_1_body"></textarea></label><label class="full">Story 2 heading<input name="story_2_title"></label><label class="full">Story 2 text<textarea name="story_2_body"></textarea></label><label class="full">Story 3 heading<input name="story_3_title"></label><label class="full">Story 3 text<textarea name="story_3_body"></textarea></label>
+            </div>
+          </div>
+          <div class="profile-admin-card">
+            <h3>Legacy</h3>
+            <div class="form-grid">
+              <label>Legacy eyebrow<input name="legacy_eyebrow"></label>
+              <label>Title line 1<input name="legacy_title_line1"></label>
+              <label>Title line 2<input name="legacy_title_line2"></label>
+              <label>Back button text<input name="back_button"></label>
+              <label class="full">Legacy text<textarea name="legacy_body"></textarea></label>
+            </div>
+          </div>
+          <div class="dialog-actions current-profile-actions">
+            <label class="profile-publish-check"><input id="currentProfilePublished" type="checkbox" checked> Published</label>
+            <button id="saveCurrentProfileBtn" class="primary-btn" type="submit">Save & Publish Profile</button>
+          </div>
+          <p id="currentProfileMessage" class="message" role="status"></p>
+        </form>
+      </section>
+
+      <section id="newsPanel" class="panel">
           <div class="panel-heading">
             <div><p class="eyebrow">EDITORIAL</p><h2>News</h2></div>
             <button class="primary-btn" data-new="news">+ Add story</button>
@@ -327,6 +405,18 @@
           <div class="panel-heading">
             <div><p class="eyebrow">TREASURE ROOM</p><h2>Trophies</h2></div>
             <button class="primary-btn" data-new="trophies">+ Add trophy</button>
+          </div>
+          <div class="editor-card" style="margin-bottom:18px">
+            <p class="eyebrow">VIEWER TROPHY ROOM ANALYTICS</p>
+            <h3 style="margin:6px 0 8px">Trophy Vault Activity</h3>
+            <p class="muted">Every successful Gooner Gate entry is counted, including repeat entries by the same viewer. Viewer 0/49 trophy progress is never reset or changed here.</p>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px">
+              <span class="status" id="trophyVaultEntryCount">0 VAULT ENTRIES</span>
+              <span class="status" id="trophyCompletionCount">0 COMPLETED 49/49</span>
+              <button class="ghost-btn" id="refreshTrophyCompletionBtn" type="button">Refresh Analytics</button>
+              <button class="ghost-btn" id="resetTrophyCompletionAnalyticsBtn" type="button">↻ Reset Admin Analytics</button>
+            </div>
+            <p id="trophyCompletionMessage" class="message" role="status"></p>
           </div>
           <div id="trophiesList" class="content-grid"></div>
         </section>
@@ -692,7 +782,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
   <script src="supabase-client.js"></script>
-  <script src="admin.js?v=20260819-live-publisher-refresh-v1"></script>
+  <script src="admin.js?v=20260819-trophy-vault-entry-analytics"></script>
   <script src="manual-lineup-patch.js?v=20260818-manual-lineup"></script>
 </body>
 </html>

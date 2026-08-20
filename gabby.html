@@ -1,268 +1,164 @@
 <!DOCTYPE html>
+
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Gabriel Magalhães | Arsenal Player</title>
-
-    <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gabriel Magalhães | Arsenal Player</title>
+<link href="styles.css" rel="stylesheet"/>
 </head>
-
-<body>
-
-    <header class="topbar">
-
-        <a class="brand" href="index.html">
-            <span class="mark">A</span>
-
-            <span>
-                <b>ARSENAL</b>
-                <small>NORTH LONDON FOREVER</small>
-            </span>
-        </a>
-
-        <button
-            id="menuBtn"
-            onclick="document.querySelector('nav').classList.toggle('open')"
-        >
+<body data-current-player-slug="gabby">
+<header class="topbar">
+<a class="brand" href="index.html">
+<span class="mark">A</span>
+<span>
+<b>ARSENAL</b>
+<small>NORTH LONDON FOREVER</small>
+</span>
+</a>
+<button id="menuBtn" onclick="document.querySelector('nav').classList.toggle('open')">
             ☰
         </button>
-
-        <nav>
-            <a href="index.html">Home</a>
-            <a href="history.html">History</a>
-            <a class="active" href="players.html">Players</a>
-            <a href="trophies.html">Treasure Room</a>
-        </nav>
-
-    </header>
-
-
-    <section
-        class="detail-hero"
-        style="--hero: url('https://i.postimg.cc/c19Ht4YT/Getty-Images-2194095253.jpg');"
-    >
-
-        <div class="hero-copy">
-
-            <p class="eyebrow">
+<nav>
+<a href="index.html">Home</a>
+<a href="history.html">History</a>
+<a class="active" href="players.html">Players</a>
+<a href="trophies.html">Treasure Room</a>
+</nav>
+</header>
+<section class="detail-hero" data-profile-image-target="hero" style="--hero: url('https://i.postimg.cc/c19Ht4YT/Getty-Images-2194095253.jpg');">
+<div class="hero-copy">
+<p class="eyebrow" data-profile-field="hero_intro">
                 ARSENAL / CURRENT GENERATION
             </p>
-
-            <h1>
-                GABRIEL<br>
-                <span>MAGALHÃES</span>
-            </h1>
-
-            <p>
+<h1><span data-profile-field="hero_name_line1">GABRIEL</span><br/><span data-profile-field="hero_name_line2">MAGALHÃES</span></h1>
+<p>
                 A powerful Brazilian centre-back whose aerial dominance,
                 physicality, and partnership with Saliba have helped define
                 Arsenal's modern defence.
             </p>
-
-            <a class="gold-btn" href="#story">
+<a class="gold-btn" data-profile-field="hero_button" href="#story">
                 Explore the story ↓
             </a>
-
-        </div>
-
-    </section>
-
-
-    <main class="main">
-
-        <div class="section-head">
-
-            <div>
-
-                <p class="eyebrow">
+</div>
+</section>
+<main class="main">
+<div class="section-head">
+<div>
+<p class="eyebrow" data-profile-field="main_eyebrow">
                     THE COMPLETE STORY
                 </p>
-
-                <h2>
-                    THE WALL<br>
-                    <span>AT THE BACK.</span>
-                </h2>
-
-            </div>
-
-        </div>
-
-
-        <section class="profile">
-
-            <article class="portrait">
-
-                <img
-                    src="https://i.postimg.cc/c19Ht4YT/Getty-Images-2194095253.jpg"
-                    alt="Gabriel Magalhães, Arsenal defender"
-                >
-
-            </article>
-
-
-            <article class="facts">
-
-                <p class="eyebrow">
+<h2><span data-profile-field="main_title_line1">THE WALL</span><br/><span data-profile-field="main_title_line2">AT THE BACK.</span></h2>
+</div>
+</div>
+<section class="profile">
+<article class="portrait">
+<img alt="Gabriel Magalhães, Arsenal defender" data-profile-image-target="portrait" src="https://i.postimg.cc/c19Ht4YT/Getty-Images-2194095253.jpg"/>
+</article>
+<article class="facts">
+<p class="eyebrow" data-profile-field="facts_eyebrow">
                     PLAYER ARCHIVE
                 </p>
-
-                <h2>
+<h2 data-profile-field="facts_title">
                     AT A GLANCE
                 </h2>
-
-                <dl>
-
-                    <div class="fact">
-                        <dt>Full Name</dt>
-                        <dd>Gabriel dos Santos Magalhães</dd>
-                    </div>
-
-                    <div class="fact">
-                        <dt>Born</dt>
-                        <dd>December 19, 1997 – São Paulo, Brazil</dd>
-                    </div>
-
-                    <div class="fact">
-                        <dt>Position</dt>
-                        <dd>Centre-back</dd>
-                    </div>
-
-                    <div class="fact">
-                        <dt>Height</dt>
-                        <dd>1.91 m (6 ft 3 in)</dd>
-                    </div>
-
-                    <div class="fact">
-                        <dt>International</dt>
-                        <dd>Brazil</dd>
-                    </div>
-
-                    <div class="fact">
-                        <dt>Nickname</dt>
-                        <dd>Big Gabby</dd>
-                    </div>
-
-                </dl>
-
-            </article>
-
-        </section>
-
-
-        <section id="story">
-
-            <div class="section-head">
-
-                <div>
-
-                    <p class="eyebrow">
+<dl>
+<div class="fact">
+<dt data-profile-field="fact_1_label">Full Name</dt>
+<dd data-profile-field="fact_1_value">Gabriel dos Santos Magalhães</dd>
+</div>
+<div class="fact">
+<dt data-profile-field="fact_2_label">Born</dt>
+<dd data-profile-field="fact_2_value">December 19, 1997 – São Paulo, Brazil</dd>
+</div>
+<div class="fact">
+<dt data-profile-field="fact_3_label">Position</dt>
+<dd data-profile-field="fact_3_value">Centre-back</dd>
+</div>
+<div class="fact">
+<dt data-profile-field="fact_4_label">Height</dt>
+<dd data-profile-field="fact_4_value">1.91 m (6 ft 3 in)</dd>
+</div>
+<div class="fact">
+<dt data-profile-field="fact_5_label">International</dt>
+<dd data-profile-field="fact_5_value">Brazil</dd>
+</div>
+<div class="fact">
+<dt data-profile-field="fact_6_label">Nickname</dt>
+<dd data-profile-field="fact_6_value">Big Gabby</dd>
+</div>
+</dl>
+</article>
+</section>
+<section id="story">
+<div class="section-head">
+<div>
+<p class="eyebrow" data-profile-field="story_eyebrow">
                         02 / HIS JOURNEY
                     </p>
-
-                    <h2>
+<h2 data-profile-field="story_title">
                         THE GABRIEL MAGALHÃES STORY
                     </h2>
-
-                </div>
-
-            </div>
-
-
-            <div class="story-grid">
-
-                <article class="story">
-
-                    <h3>
+</div>
+</div>
+<div class="story-grid">
+<article class="story">
+<h3 data-profile-field="story_1_title">
                         Early Career
                     </h3>
-
-                    <p>
+<p data-profile-field="story_1_body">
                         Gabriel began his youth career at Avaí in Brazil,
                         making his senior debut in 2016. He later moved to
                         Lille in France, with loan spells at Troyes and
                         Dinamo Zagreb helping him develop into a commanding
                         central defender.
                     </p>
-
-                </article>
-
-
-                <article class="story">
-
-                    <h3>
+</article>
+<article class="story">
+<h3 data-profile-field="story_2_title">
                         Arsenal Career
                     </h3>
-
-                    <p>
+<p data-profile-field="story_2_body">
                         Arsenal signed Gabriel in September 2020. He quickly
                         established himself in Mikel Arteta's starting
                         lineup, becoming an important defensive leader and
                         a major threat from set pieces.
                     </p>
-
-                </article>
-
-
-                <article class="story">
-
-                    <h3>
+</article>
+<article class="story">
+<h3 data-profile-field="story_3_title">
                         Brazil &amp; Defensive Partnership
                     </h3>
-
-                    <p>
+<p data-profile-field="story_3_body">
                         Gabriel earned his senior Brazil call-up in 2023.
                         At Arsenal, his partnership with William Saliba has
                         become central to the club's defensive strength,
                         combining physical aggression with composure and
                         technical quality.
                     </p>
-
-                </article>
-
-            </div>
-
-        </section>
-
-
-        <section class="legacy">
-
-            <p class="eyebrow">
+</article>
+</div>
+</section>
+<section class="legacy">
+<p class="eyebrow" data-profile-field="legacy_eyebrow">
                 NORTH LONDON FOREVER
             </p>
-
-            <h2>
-                STRENGTH.<br>
-                <span>PASSION. PRIDE.</span>
-            </h2>
-
-            <p>
+<h2><span data-profile-field="legacy_title_line1">STRENGTH.</span><br/><span data-profile-field="legacy_title_line2">PASSION. PRIDE.</span></h2>
+<p data-profile-field="legacy_body">
                 Gabriel Magalhães has become one of the faces of Arsenal's
                 defensive resurgence and an important pillar of the modern
                 Gunners.
             </p>
-
-            <a class="gold-btn" href="players.html">
+<a class="gold-btn" data-profile-field="back_button" href="players.html">
                 ← Back to Arsenal Players
             </a>
-
-        </section>
-
-    </main>
-
-
-    <footer>
-
-        <b>ARSENAL</b>
-
-        <span>
+</section>
+</main>
+<footer>
+<b>ARSENAL</b>
+<span>
             History • Heritage • North London Forever
         </span>
-
-    </footer>
-
-</body>
-
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script><script src="supabase-client.js"></script><script src="current-player-profile.js?v=20260819"></script></body>
 </html>

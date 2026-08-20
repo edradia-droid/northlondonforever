@@ -1,266 +1,162 @@
 <!DOCTYPE html>
+
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Martin Ødegaard | Arsenal Captain</title>
-
-    <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Martin Ødegaard | Arsenal Captain</title>
+<link href="styles.css" rel="stylesheet"/>
 </head>
-
-<body>
-
-    <header class="topbar">
-
-        <a class="brand" href="index.html">
-            <span class="mark">A</span>
-
-            <span>
-                <b>ARSENAL</b>
-                <small>NORTH LONDON FOREVER</small>
-            </span>
-        </a>
-
-        <button
-            id="menuBtn"
-            onclick="document.querySelector('nav').classList.toggle('open')"
-        >
+<body data-current-player-slug="ode">
+<header class="topbar">
+<a class="brand" href="index.html">
+<span class="mark">A</span>
+<span>
+<b>ARSENAL</b>
+<small>NORTH LONDON FOREVER</small>
+</span>
+</a>
+<button id="menuBtn" onclick="document.querySelector('nav').classList.toggle('open')">
             ☰
         </button>
-
-        <nav>
-            <a href="index.html">Home</a>
-            <a href="history.html">History</a>
-            <a class="active" href="players.html">Players</a>
-            <a href="trophies.html">Treasure Room</a>
-        </nav>
-
-    </header>
-
-
-    <section
-        class="detail-hero"
-        style="--hero: url('https://i.postimg.cc/76HXSZvx/w640xh480-Getty-Images-2080739797.jpg');"
-    >
-
-        <div class="hero-copy">
-
-            <p class="eyebrow">
+<nav>
+<a href="index.html">Home</a>
+<a href="history.html">History</a>
+<a class="active" href="players.html">Players</a>
+<a href="trophies.html">Treasure Room</a>
+</nav>
+</header>
+<section class="detail-hero" data-profile-image-target="hero" style="--hero: url('https://i.postimg.cc/76HXSZvx/w640xh480-Getty-Images-2080739797.jpg');">
+<div class="hero-copy">
+<p class="eyebrow" data-profile-field="hero_intro">
                 ARSENAL / CURRENT GENERATION
             </p>
-
-            <h1>
-                MARTIN<br>
-                <span>ØDEGAARD</span>
-            </h1>
-
-            <p>
+<h1><span data-profile-field="hero_name_line1">MARTIN</span><br/><span data-profile-field="hero_name_line2">ØDEGAARD</span></h1>
+<p>
                 Arsenal captain, Norwegian international, and a creative
                 midfield conductor whose vision has become central to the
                 club's modern identity.
             </p>
-
-            <a class="gold-btn" href="#story">
+<a class="gold-btn" data-profile-field="hero_button" href="#story">
                 Explore the story ↓
             </a>
-
-        </div>
-
-    </section>
-
-
-    <main class="main">
-
-        <div class="section-head">
-
-            <div>
-
-                <p class="eyebrow">
+</div>
+</section>
+<main class="main">
+<div class="section-head">
+<div>
+<p class="eyebrow" data-profile-field="main_eyebrow">
                     THE COMPLETE STORY
                 </p>
-
-                <h2>
-                    THE CAPTAIN<br>
-                    <span>BEHIND THE VISION.</span>
-                </h2>
-
-            </div>
-
-        </div>
-
-
-        <section class="profile">
-
-            <article class="portrait">
-
-                <img
-                    src="https://i.postimg.cc/76HXSZvx/w640xh480-Getty-Images-2080739797.jpg"
-                    alt="Martin Ødegaard, Arsenal captain"
-                >
-
-            </article>
-
-
-            <article class="facts">
-
-                <p class="eyebrow">
+<h2><span data-profile-field="main_title_line1">THE CAPTAIN</span><br/><span data-profile-field="main_title_line2">BEHIND THE VISION.</span></h2>
+</div>
+</div>
+<section class="profile">
+<article class="portrait">
+<img alt="Martin Ødegaard, Arsenal captain" data-profile-image-target="portrait" src="https://i.postimg.cc/76HXSZvx/w640xh480-Getty-Images-2080739797.jpg"/>
+</article>
+<article class="facts">
+<p class="eyebrow" data-profile-field="facts_eyebrow">
                     PLAYER ARCHIVE
                 </p>
-
-                <h2>
+<h2 data-profile-field="facts_title">
                     AT A GLANCE
                 </h2>
-
-                <dl>
-
-                    <div class="fact">
-                        <dt>Full Name</dt>
-                        <dd>Martin Ødegaard</dd>
-                    </div>
-
-                    <div class="fact">
-                        <dt>Born</dt>
-                        <dd>December 17, 1998 – Drammen, Norway</dd>
-                    </div>
-
-                    <div class="fact">
-                        <dt>Position</dt>
-                        <dd>Attacking midfielder</dd>
-                    </div>
-
-                    <div class="fact">
-                        <dt>Height</dt>
-                        <dd>1.78 m (5 ft 10 in)</dd>
-                    </div>
-
-                    <div class="fact">
-                        <dt>Captain</dt>
-                        <dd>Arsenal &amp; Norway</dd>
-                    </div>
-
-                    <div class="fact">
-                        <dt>Role</dt>
-                        <dd>Creative midfielder</dd>
-                    </div>
-
-                </dl>
-
-            </article>
-
-        </section>
-
-
-        <section id="story">
-
-            <div class="section-head">
-
-                <div>
-
-                    <p class="eyebrow">
+<dl>
+<div class="fact">
+<dt data-profile-field="fact_1_label">Full Name</dt>
+<dd data-profile-field="fact_1_value">Martin Ødegaard</dd>
+</div>
+<div class="fact">
+<dt data-profile-field="fact_2_label">Born</dt>
+<dd data-profile-field="fact_2_value">December 17, 1998 – Drammen, Norway</dd>
+</div>
+<div class="fact">
+<dt data-profile-field="fact_3_label">Position</dt>
+<dd data-profile-field="fact_3_value">Attacking midfielder</dd>
+</div>
+<div class="fact">
+<dt data-profile-field="fact_4_label">Height</dt>
+<dd data-profile-field="fact_4_value">1.78 m (5 ft 10 in)</dd>
+</div>
+<div class="fact">
+<dt data-profile-field="fact_5_label">Captain</dt>
+<dd data-profile-field="fact_5_value">Arsenal &amp; Norway</dd>
+</div>
+<div class="fact">
+<dt data-profile-field="fact_6_label">Role</dt>
+<dd data-profile-field="fact_6_value">Creative midfielder</dd>
+</div>
+</dl>
+</article>
+</section>
+<section id="story">
+<div class="section-head">
+<div>
+<p class="eyebrow" data-profile-field="story_eyebrow">
                         02 / HIS JOURNEY
                     </p>
-
-                    <h2>
+<h2 data-profile-field="story_title">
                         THE ØDEGAARD STORY
                     </h2>
-
-                </div>
-
-            </div>
-
-
-            <div class="story-grid">
-
-                <article class="story">
-
-                    <h3>
+</div>
+</div>
+<div class="story-grid">
+<article class="story">
+<h3 data-profile-field="story_1_title">
                         Teenage Prodigy
                     </h3>
-
-                    <p>
+<p data-profile-field="story_1_body">
                         Ødegaard emerged as one of Norway's greatest teenage
                         talents. At just 15, he became the youngest player and
                         goalscorer in Norway's top division before earning a
                         senior international debut.
                     </p>
-
-                </article>
-
-
-                <article class="story">
-
-                    <h3>
+</article>
+<article class="story">
+<h3 data-profile-field="story_2_title">
                         Real Madrid to Arsenal
                     </h3>
-
-                    <p>
+<p data-profile-field="story_2_body">
                         He signed for Real Madrid in 2015 and gained valuable
                         experience through loan spells with Heerenveen, Vitesse,
                         and Real Sociedad. He joined Arsenal on loan in January
                         2021 before making the move permanent later that year.
                     </p>
-
-                </article>
-
-
-                <article class="story">
-
-                    <h3>
+</article>
+<article class="story">
+<h3 data-profile-field="story_3_title">
                         Captain &amp; Leader
                     </h3>
-
-                    <p>
+<p data-profile-field="story_3_body">
                         Named Arsenal captain in 2022, Ødegaard became one of
                         Mikel Arteta's most influential players. His precise
                         passing, pressing, spatial awareness, and creativity
                         have made him a key part of Arsenal's positional play.
                     </p>
-
-                </article>
-
-            </div>
-
-        </section>
-
-
-        <section class="legacy">
-
-            <p class="eyebrow">
+</article>
+</div>
+</section>
+<section class="legacy">
+<p class="eyebrow" data-profile-field="legacy_eyebrow">
                 NORTH LONDON FOREVER
             </p>
-
-            <h2>
-                LEAD WITH<br>
-                <span>VISION.</span>
-            </h2>
-
-            <p>
+<h2><span data-profile-field="legacy_title_line1">LEAD WITH</span><br/><span data-profile-field="legacy_title_line2">VISION.</span></h2>
+<p data-profile-field="legacy_body">
                 Martin Ødegaard's journey from teenage prodigy to Arsenal
                 captain represents the growth, patience, and ambition of the
                 modern Gunners.
             </p>
-
-            <a class="gold-btn" href="players.html">
+<a class="gold-btn" data-profile-field="back_button" href="players.html">
                 ← Back to Arsenal Players
             </a>
-
-        </section>
-
-    </main>
-
-
-    <footer>
-
-        <b>ARSENAL</b>
-
-        <span>
+</section>
+</main>
+<footer>
+<b>ARSENAL</b>
+<span>
             History • Heritage • North London Forever
         </span>
-
-    </footer>
-
-</body>
-
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script><script src="supabase-client.js"></script><script src="current-player-profile.js?v=20260819"></script></body>
 </html>

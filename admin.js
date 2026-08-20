@@ -957,9 +957,6 @@ async function runOfficialPublicModelAfterScoreUpdate(messageEl = null) {
         // Admin never calculates/overwrites the forecast here.
         // It simply reloads the official snapshot produced by the Public Model.
         document.getElementById('loadLatestModelBtn')?.click();
-        try{
-          document.dispatchEvent(new CustomEvent('nl4:forecast-snapshot-updated',{detail}));
-        }catch(_){}
         resolve(detail);
       } else {
         reject(detail instanceof Error ? detail : new Error(String(detail || 'Public Model refresh failed.')));
@@ -2052,9 +2049,6 @@ db.auth.onAuthStateChange((_event, session) => {
   function renderStats(){
     const host=$('allForecastStatsList');
     if(!host)return;
-    const selectedBefore=new Set(
-      [...document.querySelectorAll('.forecast-stat-check:checked')].map(x=>x.value)
-    );
     let lastGroup='';
     host.innerHTML=forecastStats.map(s=>{
       const heading=s.group!==lastGroup?`<div class="forecast-stat-group-title">${esc(s.group.toUpperCase())}</div>`:'';
@@ -2064,10 +2058,7 @@ db.auth.onAuthStateChange((_event, session) => {
         <span><b>${esc(s.label)}</b><strong>${esc(s.value)}</strong><small>Choose to show this statistic to viewers.</small></span>
       </label>`;
     }).join('');
-    host.querySelectorAll('.forecast-stat-check').forEach(x=>{
-      if(selectedBefore.has(x.value))x.checked=true;
-      x.addEventListener('change',updateSelectedCount);
-    });
+    host.querySelectorAll('.forecast-stat-check').forEach(x=>x.addEventListener('change',updateSelectedCount));
     updateSelectedCount();
   }
   function selectedStats(){
@@ -2083,24 +2074,17 @@ db.auth.onAuthStateChange((_event, session) => {
     say('Loading complete forecast…');
     let q=await client.from('title_probability_history')
       .select('completed_matches,title_probability,top4_probability,top5_probability,expected_points,expected_position,confidence_score,created_at')
-      .eq('season','2026/27')
-      .order('created_at',{ascending:false})
-      .order('completed_matches',{ascending:false})
-      .limit(1);
+      .eq('season','2026/27').order('completed_matches',{ascending:false}).limit(1);
     if(q.error){say(q.error.message);return;}
     if(!q.data?.[0]){say('No live title-probability snapshot found.');return;}
     latest=await loadSupplementaryForecast(client,q.data[0]);
     forecastStats=STAT_DEFS.map(d=>statLabelValue(d,latest)).filter(Boolean);
     renderStats();
-    // Sensible defaults only when nothing has been selected yet.
-    if(!document.querySelector('.forecast-stat-check:checked')){
-      ['title_probability','top4_probability','expected_points','expected_position','confidence_score','completed_matches','history_weight','live_weight']
-        .forEach(k=>{const c=document.querySelector(`.forecast-stat-check[value="${k}"]`);if(c)c.checked=true;});
-    }
+    // Sensible defaults.
+    ['title_probability','top4_probability','expected_points','expected_position','confidence_score','completed_matches','history_weight','live_weight']
+      .forEach(k=>{const c=document.querySelector(`.forecast-stat-check[value="${k}"]`);if(c)c.checked=true;});
     updateSelectedCount();
-    const snapshotTime=latest?.created_at?new Date(latest.created_at):null;
-    const stamp=snapshotTime&&!Number.isNaN(snapshotTime.getTime())?snapshotTime.toLocaleString():'latest save';
-    say(`Loaded ${forecastStats.length} live forecast statistics • ${latest.completed_matches}/380 matches • saved ${stamp}.`,true);
+    say(`Loaded ${forecastStats.length} forecast statistics. Choose what viewers should see.`,true);
   }
 
   function context(){
@@ -2272,29 +2256,188 @@ db.auth.onAuthStateChange((_event, session) => {
   loadPublicForecastVisibilityAdmin();
 
   $('loadLatestModelBtn')?.addEventListener('click',loadLatest);
-
-  let nl4PublisherRefreshTimer=null;
-  function schedulePublisherRefresh(delay=250){
-    clearTimeout(nl4PublisherRefreshTimer);
-    nl4PublisherRefreshTimer=setTimeout(()=>loadLatest(),delay);
-  }
-
-  document.addEventListener('nl4:forecast-snapshot-updated',()=>schedulePublisherRefresh(150));
-  window.addEventListener('focus',()=>schedulePublisherRefresh(200));
-  document.addEventListener('visibilitychange',()=>{
-    if(document.visibilityState==='visible')schedulePublisherRefresh(200);
-  });
-
-  // Initial lightweight read so the studio always starts from the newest saved snapshot.
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',()=>schedulePublisherRefresh(350),{once:true});
-  }else{
-    schedulePublisherRefresh(350);
-  }
   $('selectAllForecastStatsBtn')?.addEventListener('click',()=>{document.querySelectorAll('.forecast-stat-check').forEach(x=>x.checked=true);updateSelectedCount();});
   $('clearForecastStatsBtn')?.addEventListener('click',()=>{document.querySelectorAll('.forecast-stat-check').forEach(x=>x.checked=false);updateSelectedCount();});
   document.querySelectorAll('.interpret-style-btn').forEach(b=>b.addEventListener('click',()=>showAuto(b.dataset.style)));
   $('publishInterpretationBtn')?.addEventListener('click',publish);
   $('unpublishInterpretationBtn')?.addEventListener('click',unpublish);
   $('clearInterpretationBtn')?.addEventListener('click',clearInterpretation);
+})();
+
+// =====================================================
+// NL4 TREASURE ROOM • VAULT ENTRY + COMPLETION ANALYTICS
+// Viewer 0/49 progress is NEVER modified here.
+// =====================================================
+(() => {
+  const entryCountEl = document.getElementById("trophyVaultEntryCount");
+  const completionCountEl = document.getElementById("trophyCompletionCount");
+  const refreshBtn = document.getElementById("refreshTrophyCompletionBtn");
+  const resetBtn = document.getElementById("resetTrophyCompletionAnalyticsBtn");
+  const message = document.getElementById("trophyCompletionMessage");
+  if (!entryCountEl && !completionCountEl && !refreshBtn && !resetBtn) return;
+
+  const client = window.nl4Supabase || window.supabaseClient || window.supabaseDb || null;
+
+  function setMessage(text, ok = false) {
+    if (!message) return;
+    message.textContent = text;
+    message.style.color = ok ? "#d8ad45" : "";
+  }
+
+  async function getAnalyticsVersion() {
+    const { data, error } = await client
+      .from("nl4_trophy_settings")
+      .select("analytics_version")
+      .eq("id", "collection")
+      .maybeSingle();
+    if (error) throw error;
+    return Number(data?.analytics_version || 0);
+  }
+
+  async function loadTrophyAnalytics() {
+    if (!client || typeof client.from !== "function") {
+      if (entryCountEl) entryCountEl.textContent = "SUPABASE UNAVAILABLE";
+      if (completionCountEl) completionCountEl.textContent = "SUPABASE UNAVAILABLE";
+      return;
+    }
+    try {
+      const version = await getAnalyticsVersion();
+      const [entriesResult, completionsResult] = await Promise.all([
+        client.from("nl4_trophy_entries").select("id", { count: "exact", head: true }).eq("analytics_version", version),
+        client.from("nl4_trophy_completions").select("id", { count: "exact", head: true }).eq("analytics_version", version)
+      ]);
+      if (entriesResult.error) throw entriesResult.error;
+      if (completionsResult.error) throw completionsResult.error;
+      if (entryCountEl) entryCountEl.textContent = `${Number(entriesResult.count || 0)} VAULT ENTRIES`;
+      if (completionCountEl) completionCountEl.textContent = `${Number(completionsResult.count || 0)} COMPLETED 49/49`;
+      setMessage(`Every successful quiz entry is counted. Analytics period: ${version}. Viewer trophy progress is untouched.`, true);
+    } catch (error) {
+      console.error("NL4 trophy analytics load failed:", error);
+      if (entryCountEl) entryCountEl.textContent = "SETUP REQUIRED";
+      if (completionCountEl) completionCountEl.textContent = "SETUP REQUIRED";
+      setMessage("Run NL4-trophy-progress-admin-setup.sql in Supabase SQL Editor.");
+    }
+  }
+
+  refreshBtn?.addEventListener("click", loadTrophyAnalytics);
+
+  resetBtn?.addEventListener("click", async () => {
+    if (!client || typeof client.from !== "function") {
+      setMessage("Supabase client is not available.");
+      return;
+    }
+    const confirmed = window.confirm(
+      "Reset ONLY the Admin vault-entry and 49/49 analytics counters? Viewer trophy progress will NOT be changed."
+    );
+    if (!confirmed) return;
+
+    resetBtn.disabled = true;
+    setMessage("");
+    try {
+      const current = await getAnalyticsVersion();
+      const nextVersion = current + 1;
+      const { error } = await client
+        .from("nl4_trophy_settings")
+        .update({ analytics_version: nextVersion, updated_at: new Date().toISOString() })
+        .eq("id", "collection");
+      if (error) throw error;
+      if (entryCountEl) entryCountEl.textContent = "0 VAULT ENTRIES";
+      if (completionCountEl) completionCountEl.textContent = "0 COMPLETED 49/49";
+      setMessage("Admin analytics reset to 0. No viewer's trophy progress was changed.", true);
+    } catch (error) {
+      console.error("NL4 trophy analytics reset failed:", error);
+      setMessage(error?.message || "Could not reset Admin trophy analytics.");
+    } finally {
+      resetBtn.disabled = false;
+    }
+  });
+
+  loadTrophyAnalytics();
+})();;
+
+
+
+// ===== NL4 CURRENT GENERATION PROFILE ADMIN =====
+(() => {
+  const form = document.getElementById("currentProfileForm");
+  const select = document.getElementById("currentProfilePlayer");
+  const loadBtn = document.getElementById("loadCurrentProfileBtn");
+  const msg = document.getElementById("currentProfileMessage");
+  const published = document.getElementById("currentProfilePublished");
+  if(!form || !select) return;
+
+  const say = (text,type="") => {
+    msg.textContent = text || "";
+    msg.className = "message" + (type ? ` ${type}` : "");
+  };
+  const setVal = (name,val) => {
+    const el = form.elements.namedItem(name);
+    if(el) el.value = val ?? "";
+  };
+
+  function fill(row){
+    const c = row?.content || {};
+    setVal("image_url", row?.image_url || "");
+    Object.entries(c).forEach(([k,v]) => {
+      if(k !== "facts" && k !== "stories") setVal(k,v);
+    });
+    (c.facts || []).forEach((x,i) => {
+      setVal(`fact_${i+1}_label`,x?.label);
+      setVal(`fact_${i+1}_value`,x?.value);
+    });
+    (c.stories || []).forEach((x,i) => {
+      setVal(`story_${i+1}_title`,x?.title);
+      setVal(`story_${i+1}_body`,x?.body);
+    });
+    published.checked = row?.is_published !== false;
+  }
+
+  async function load(){
+    say("Loading profile…");
+    try{
+      const {data,error} = await db.from("nl4_current_player_profiles").select("*").eq("slug",select.value).maybeSingle();
+      if(error) throw error;
+      if(!data) throw new Error("Profile not found. Run NL4-current-player-profiles-setup.sql in Supabase first.");
+      fill(data);
+      say("Profile loaded from Supabase.","success");
+    }catch(e){ say(e.message || String(e),"error"); }
+  }
+
+  function buildContent(){
+    const fd = new FormData(form);
+    const get = n => String(fd.get(n) || "").trim();
+    return {
+      hero_eyebrow:get("hero_eyebrow"), hero_name_line1:get("hero_name_line1"), hero_name_line2:get("hero_name_line2"),
+      hero_intro:get("hero_intro"), hero_button:get("hero_button"),
+      main_eyebrow:get("main_eyebrow"), main_title_line1:get("main_title_line1"), main_title_line2:get("main_title_line2"),
+      facts_eyebrow:get("facts_eyebrow"), facts_title:get("facts_title"),
+      facts:Array.from({length:6},(_,i)=>({label:get(`fact_${i+1}_label`),value:get(`fact_${i+1}_value`)})),
+      story_eyebrow:get("story_eyebrow"), story_title:get("story_title"),
+      stories:Array.from({length:3},(_,i)=>({title:get(`story_${i+1}_title`),body:get(`story_${i+1}_body`)})),
+      legacy_eyebrow:get("legacy_eyebrow"), legacy_title_line1:get("legacy_title_line1"), legacy_title_line2:get("legacy_title_line2"),
+      legacy_body:get("legacy_body"), back_button:get("back_button")
+    };
+  }
+
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    say("Saving profile…");
+    try{
+      const fd = new FormData(form);
+      const payload = {
+        slug:select.value,
+        image_url:String(fd.get("image_url") || "").trim(),
+        content:buildContent(),
+        is_published:published.checked,
+        updated_at:new Date().toISOString()
+      };
+      const {error} = await db.from("nl4_current_player_profiles").upsert(payload,{onConflict:"slug"});
+      if(error) throw error;
+      say("Saved. The public player page will now read this profile from Supabase.","success");
+    }catch(e){ say(e.message || String(e),"error"); }
+  });
+  loadBtn?.addEventListener("click",load);
+  select.addEventListener("change",load);
+
+  document.querySelector('[data-panel="currentProfilesPanel"]')?.addEventListener("click",() => setTimeout(load,0));
 })();

@@ -46,17 +46,6 @@
 }
 </style>
 <style>
-    .reset-progress-button{
-      min-height:44px;padding:11px 18px;border:1px solid rgba(255,215,0,.55);
-      border-radius:999px;background:rgba(0,0,0,.42);color:#ffd700;
-      font:inherit;font-weight:800;cursor:pointer;touch-action:manipulation;
-    }
-    .reset-progress-button:hover,.reset-progress-button:focus-visible{
-      background:#ffd700;color:#111;outline:none;
-    }
-    @media(max-width:600px){.reset-progress-button{width:100%;max-width:320px}}
-  </style>
-<style>
     /* Trophy viewed / unviewed status */
     .trophy-card{
       position:relative;
@@ -104,8 +93,210 @@
       }
     }
   </style>
-<link href="shared-sidebar.css" rel="stylesheet"/><link href="sidebar-toggle-fix.css" rel="stylesheet"/></head>
-<body class="treasure-home collection-page nl4-unified-sidebar"><button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button>
+<link href="shared-sidebar.css" rel="stylesheet"/><link href="sidebar-toggle-fix.css" rel="stylesheet"/>
+<style id="nl4GoonerGateStyles">
+  body.nl4-gate-locked{overflow:hidden}
+  .gooner-gate{
+    position:fixed;inset:0;z-index:500000;display:grid;place-items:center;
+    padding:clamp(14px,3vw,32px);background:
+      radial-gradient(circle at 50% 12%,rgba(255,215,0,.18),transparent 30%),
+      linear-gradient(145deg,rgba(5,5,5,.98),rgba(25,0,0,.98));
+    overflow:auto;
+  }
+  .gooner-gate[hidden]{display:none!important}
+  .gooner-gate::before,.gooner-gate::after{
+    content:"";position:fixed;width:42vw;height:42vw;max-width:520px;max-height:520px;
+    border-radius:50%;filter:blur(90px);opacity:.13;pointer-events:none
+  }
+  .gooner-gate::before{background:#d71920;left:-16vw;top:-12vw}
+  .gooner-gate::after{background:#ffd700;right:-18vw;bottom:-18vw}
+  .gooner-gate-card{
+    position:relative;width:min(760px,100%);border:1px solid rgba(255,215,0,.45);
+    border-radius:28px;padding:clamp(22px,4vw,42px);background:rgba(12,12,12,.94);
+    box-shadow:0 30px 90px rgba(0,0,0,.6),0 0 45px rgba(255,215,0,.09);overflow:hidden
+  }
+  .gooner-gate-card::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:linear-gradient(90deg,#d71920,#ffd700,#d71920)}
+  .gate-kicker{margin:0 0 7px;color:#ffd700;font-size:.78rem;font-weight:900;letter-spacing:.18em;text-transform:uppercase;text-align:center}
+  .gate-title{margin:0;color:#fff;text-align:center;font-size:clamp(2rem,6vw,4.1rem);line-height:.95;text-transform:uppercase}
+  .gate-title span{color:#ffd700}
+  .gate-copy{max-width:600px;margin:14px auto 26px;color:#d8d8d8;text-align:center;line-height:1.6}
+  .gate-progress{display:flex;align-items:center;gap:8px;justify-content:center;margin:0 0 22px}
+  .gate-progress span{width:42px;height:5px;border-radius:99px;background:rgba(255,255,255,.16);transition:.25s ease}
+  .gate-progress span.active{background:#ffd700;box-shadow:0 0 15px rgba(255,215,0,.55)}
+  .gate-question{margin:0 0 18px;padding:18px;border:1px solid rgba(255,255,255,.1);border-radius:18px;background:rgba(255,255,255,.035)}
+  .gate-question legend{padding:0 7px;color:#fff;font-weight:850;line-height:1.45}
+  .gate-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+  .gate-option{position:relative;display:flex;align-items:center;justify-content:center;min-height:48px;padding:10px 12px;border:1px solid rgba(255,255,255,.16);border-radius:13px;color:#eee;background:rgba(0,0,0,.28);font-weight:800;cursor:pointer;transition:.18s ease;text-align:center}
+  .gate-option:hover{transform:translateY(-2px);border-color:rgba(255,215,0,.65)}
+  .gate-option input{position:absolute;opacity:0;pointer-events:none}
+  .gate-option:has(input:checked){border-color:#ffd700;background:rgba(255,215,0,.12);color:#ffd700;box-shadow:inset 0 0 0 1px rgba(255,215,0,.25)}
+  .gate-yesno{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .gate-submit{width:100%;min-height:55px;border:0;border-radius:16px;background:linear-gradient(135deg,#ffd700,#f3b800);color:#111;font:inherit;font-size:1rem;font-weight:950;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;box-shadow:0 12px 30px rgba(255,215,0,.18);transition:.18s ease}
+  .gate-submit:hover{transform:translateY(-2px);box-shadow:0 16px 38px rgba(255,215,0,.26)}
+  .gate-message{min-height:27px;margin:15px 0 0;text-align:center;font-weight:850;color:#f6f6f6}
+  .gate-message.error{color:#ff7777;animation:gateShake .35s ease}
+  .gate-message.success{color:#ffd700}
+  .gooner-gate-card.wrong{animation:gateShake .35s ease}
+  .gooner-gate-card.unlocked{animation:gateUnlock .7s ease forwards}
+  .gate-confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:500001}
+  .gate-confetti i{position:absolute;top:-30px;width:9px;height:18px;background:#ffd700;animation:gateFall 1.5s linear forwards;transform:rotate(20deg)}
+  .gate-confetti i:nth-child(even){background:#d71920}
+  @keyframes gateShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+  @keyframes gateUnlock{0%{transform:scale(1);opacity:1}60%{transform:scale(1.025)}100%{transform:scale(.96);opacity:0}}
+  @keyframes gateFall{to{transform:translate3d(var(--drift),110vh,0) rotate(720deg);opacity:.9}}
+  .gate-welcome{position:fixed;inset:0;z-index:500010;display:grid;place-items:center;padding:20px;background:rgba(4,4,4,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  .gate-welcome[hidden]{display:none !important}
+  .gate-welcome-card{width:min(92vw,480px);padding:34px 24px 28px;border:1px solid rgba(255,215,0,.6);border-radius:26px;background:radial-gradient(circle at top,rgba(255,215,0,.13),transparent 42%),linear-gradient(160deg,#17120b,#080808 72%);box-shadow:0 28px 90px rgba(0,0,0,.6),0 0 38px rgba(255,215,0,.15);text-align:center;animation:welcomePop .42s cubic-bezier(.2,.9,.25,1.2)}
+  .gate-welcome-icon{font-size:3.2rem;line-height:1;margin-bottom:12px;filter:drop-shadow(0 0 14px rgba(255,215,0,.45))}
+  .gate-welcome-title{margin:0;color:#ffd700;font-family:Cinzel,serif;font-size:clamp(2rem,8vw,3rem);letter-spacing:.08em}
+  .gate-welcome-body{margin:14px auto 22px;max-width:360px;color:#fff;font-size:clamp(1rem,3.5vw,1.15rem);font-weight:800;line-height:1.55;letter-spacing:.025em}
+  .gate-welcome-enter{min-width:min(100%,280px);min-height:52px;border:0;border-radius:999px;background:linear-gradient(135deg,#ffd700,#efb900);color:#111;font:inherit;font-weight:950;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;box-shadow:0 12px 32px rgba(255,215,0,.22)}
+  .gate-welcome-enter:hover{transform:translateY(-2px)}
+  @keyframes welcomePop{from{opacity:0;transform:scale(.82) translateY(18px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  @media(max-width:600px){
+    .gooner-gate{align-items:start;padding-top:16px}
+    .gooner-gate-card{border-radius:22px;padding:21px 14px 24px}
+    .gate-options{grid-template-columns:1fr 1fr}
+    .gate-question{padding:14px 12px}
+    .gate-copy{font-size:.92rem;margin-bottom:19px}
+  }
+</style>
+
+<style id="nl4GateHeadingVisibilityFix">
+  #goonerGate .gate-kicker,
+  #goonerGate .gate-title,
+  #goonerGate .gate-title span,
+  #goonerGate .gate-copy,
+  #goonerGate .gate-question legend {
+    opacity: 1 !important;
+    visibility: visible !important;
+    -webkit-text-fill-color: currentColor !important;
+    text-shadow: 0 2px 12px rgba(0,0,0,.75) !important;
+  }
+  #goonerGate .gate-title {
+    color: #ffffff !important;
+    display: block !important;
+  }
+  #goonerGate .gate-title span,
+  #goonerGate .gate-kicker {
+    color: #ffd700 !important;
+  }
+  #goonerGate .gate-copy,
+  #goonerGate .gate-question legend {
+    color: #ffffff !important;
+  }
+</style>
+
+
+<style id="nl4GateDesktopHardFix">
+  #goonerGate .gooner-gate-card > *{
+    position:relative !important;
+    z-index:5 !important;
+  }
+  #goonerGate .gate-kicker{
+    display:block !important;
+    opacity:1 !important;
+    visibility:visible !important;
+    color:#ffd700 !important;
+    -webkit-text-fill-color:#ffd700 !important;
+    font-size:13px !important;
+    line-height:1.35 !important;
+  }
+  #goonerGate #goonerGateTitle{
+    display:block !important;
+    opacity:1 !important;
+    visibility:visible !important;
+    color:#ffffff !important;
+    -webkit-text-fill-color:#ffffff !important;
+    font-size:clamp(32px,4.6vw,66px) !important;
+    line-height:1.02 !important;
+    font-weight:900 !important;
+    min-height:1em !important;
+  }
+  #goonerGate #goonerGateTitle .gate-gunner-text{
+    display:inline !important;
+    opacity:1 !important;
+    visibility:visible !important;
+    color:#ffd700 !important;
+    -webkit-text-fill-color:#ffd700 !important;
+    font:inherit !important;
+  }
+  #goonerGate .gate-copy{
+    display:block !important;
+    opacity:1 !important;
+    visibility:visible !important;
+    color:#f2f2f2 !important;
+    -webkit-text-fill-color:#f2f2f2 !important;
+    font-size:16px !important;
+    line-height:1.6 !important;
+  }
+  #goonerGate .gate-question legend{
+    display:block !important;
+    opacity:1 !important;
+    visibility:visible !important;
+    color:#ffffff !important;
+    -webkit-text-fill-color:#ffffff !important;
+    font-size:16px !important;
+    line-height:1.45 !important;
+    width:auto !important;
+    max-width:100% !important;
+  }
+  @media (min-width: 601px){
+    #goonerGate .gooner-gate-card{
+      isolation:isolate !important;
+    }
+  }
+</style>
+
+</head>
+<body class="treasure-home collection-page nl4-unified-sidebar">
+<div class="gooner-gate" id="goonerGate" role="dialog" aria-modal="true" aria-labelledby="goonerGateTitle">
+  <div class="gooner-gate-card" id="goonerGateCard">
+    <p class="gate-kicker">NL4 • GOONER GATE</p>
+    <div class="gate-title" id="goonerGateTitle" role="heading" aria-level="1">PROVE YOU ARE A <span class="gate-gunner-text">GUNNER 🔴⚪</span></div>
+    <p class="gate-copy">The Trophy Room is locked. Get all three questions right to open the vault.</p>
+    <div class="gate-progress" aria-hidden="true"><span></span><span></span><span></span></div>
+    <form id="goonerGateForm" autocomplete="off">
+      <fieldset class="gate-question">
+        <legend>1. London is what?</legend>
+        <div class="gate-options">
+          <label class="gate-option"><input type="radio" name="q1" value="red">A. Red</label>
+          <label class="gate-option"><input type="radio" name="q1" value="blue">B. Blue</label>
+          <label class="gate-option"><input type="radio" name="q1" value="green">C. Green</label>
+          <label class="gate-option"><input type="radio" name="q1" value="white">D. White</label>
+        </div>
+      </fieldset>
+      <fieldset class="gate-question">
+        <legend>2. Which year was the year of the Invincibles?</legend>
+        <div class="gate-options">
+          <label class="gate-option"><input type="radio" name="q2" value="2001">A. 2001</label>
+          <label class="gate-option"><input type="radio" name="q2" value="1998">B. 1998</label>
+          <label class="gate-option"><input type="radio" name="q2" value="2004">C. 2004</label>
+          <label class="gate-option"><input type="radio" name="q2" value="2011">D. 2011</label>
+        </div>
+      </fieldset>
+      <fieldset class="gate-question">
+        <legend>3. North London is forever?</legend>
+        <div class="gate-options gate-yesno">
+          <label class="gate-option"><input type="radio" name="q3" value="yes">YES</label>
+          <label class="gate-option"><input type="radio" name="q3" value="no">NO</label>
+        </div>
+      </fieldset>
+      <button class="gate-submit" type="submit">Unlock the Trophy Room 🔓</button>
+      <p class="gate-message" id="goonerGateMessage" role="status" aria-live="polite">Choose your answers, Gooner.</p>
+    </form>
+  </div>
+  <div class="gate-confetti" id="gateConfetti" aria-hidden="true"></div>
+</div>
+<div class="gate-welcome" id="gateWelcome" role="dialog" aria-modal="true" aria-labelledby="gateWelcomeTitle" hidden>
+  <div class="gate-welcome-card">
+    <div class="gate-welcome-icon" aria-hidden="true">🏆</div>
+    <h2 class="gate-welcome-title" id="gateWelcomeTitle">WELCOME</h2>
+    <p class="gate-welcome-body">YOU CAN NOW EXPLORE THE TROPHY ROOM</p>
+    <button class="gate-welcome-enter" id="gateWelcomeEnter" type="button">Enter Trophy Room</button>
+  </div>
+</div>
+<button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button>
 <div class="app-shell">
 <aside class="sidebar" id="sidebar">
 <div class="sidebar-top">
@@ -151,7 +342,7 @@
 <div class="collection-hero-actions">
 <a class="gold-button" href="#trophyVault">Enter the vault <span>↓</span></a>
 <a class="ghost-button" href="trophies.html">← Back to Treasure Room</a>
-<button class="reset-progress-button" id="resetTrophyProgress" type="button">↻ Reset Trophy Progress</button>
+
 </div>
 </div>
 <div aria-live="polite" class="score-board">🏆 Trophies Viewed: <span id="score">0</span> / 49</div>
@@ -403,6 +594,6 @@ English First Division Champions
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
 <script src="supabase-client.js"></script>
 <script src="nl4-data.js"></script>
-<script src="collection.js"></script>
+<script src="collection.js?v=20260819-admin-reset"></script>
 <script src="shared-sidebar.js"></script></body>
 </html>

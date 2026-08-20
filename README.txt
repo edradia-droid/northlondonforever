@@ -1,21 +1,28 @@
-NL4 PREMIER LEAGUE TITLE PROBABILITY V1
+NL4 CURRENT GENERATION → ADMIN PROFILE EDITOR
 
-Adds an NL4 Statistical Title Forecast to premier-league.html.
+FILES
+- current-generation.html
+- saka.html
+- ode.html
+- rice.html
+- saliba.html
+- gabby.html
+- kai.html
+- nelly.html
+- current-player-profile.js
+- admin.html
+- admin.js
+- admin.css
+- NL4-current-player-profiles-setup.sql
 
-Uses all 20 rows from premier_league_standings:
-- points per game
-- goals scored per game
-- goals conceded per game
-- goal difference per game
-- current points and games played
+INSTALL
+1. Run NL4-current-player-profiles-setup.sql once in Supabase SQL Editor.
+2. Copy the HTML/JS/CSS files into the NL4 project, replacing the matching current versions.
+3. Keep your existing supabase-client.js unchanged.
+4. Open Admin → Current Player Profiles.
+5. Choose a player, edit the text, and click Save & Publish Profile.
+6. Refresh that player's public page to see the saved Supabase text.
 
-Runs 25,000 Monte Carlo simulations and shows:
-- title probability for all 20 clubs
-- top-four probability for all 20 clubs
-- expected final points for all 20 clubs
-- Arsenal expected finishing position
-
-IMPORTANT:
-Your database currently contains all 20 standings rows and 38 Arsenal fixtures, but premier_league_matches currently has only 2 rows. Therefore V1 is a performance-based forecast using each club's remaining match count and the strength distribution of the other 19 teams. It is NOT yet an exact remaining-fixture simulation.
-
-Next step: add the complete 380-match Premier League fixture/result matrix. V2 can then simulate every real remaining fixture with home advantage and exact opponents.
+SAFETY
+The original HTML text remains in each profile as a fallback. If Supabase cannot load,
+the page still shows the existing profile instead of becoming blank.

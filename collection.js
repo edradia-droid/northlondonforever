@@ -1,3 +1,140 @@
+
+
+// =====================================================
+// NL4 GOONER GATE — Trophy Room entrance quiz
+// Requires a perfect 3/3 before the collection is accessible.
+// Every page entry requires a fresh perfect 3/3. Nothing is remembered.
+// =====================================================
+document.addEventListener("DOMContentLoaded", () => {
+    const gate = document.getElementById("goonerGate");
+    const card = document.getElementById("goonerGateCard");
+    const form = document.getElementById("goonerGateForm");
+    const message = document.getElementById("goonerGateMessage");
+    const confetti = document.getElementById("gateConfetti");
+    const appShell = document.querySelector(".app-shell");
+    const footer = document.querySelector(".site-footer");
+    const welcome = document.getElementById("gateWelcome");
+    const welcomeEnter = document.getElementById("gateWelcomeEnter");
+
+    if (!gate || !form) return;
+
+    const setLocked = (locked) => {
+        document.body.classList.toggle("nl4-gate-locked", locked);
+        if (locked) {
+            appShell?.setAttribute("inert", "");
+            footer?.setAttribute("inert", "");
+            gate.hidden = false;
+        } else {
+            appShell?.removeAttribute("inert");
+            footer?.removeAttribute("inert");
+            gate.hidden = true;
+        }
+    };
+
+    // Always start locked. Do not remember a successful quiz across visits.
+    setLocked(true);
+
+    const resetGate = () => {
+        form.reset();
+        message.className = "gate-message";
+        message.textContent = "Get all 3 right to unlock the Arsenal Trophy Room.";
+        card?.classList.remove("wrong", "unlocked");
+        if (welcome) welcome.hidden = true;
+        [...gate.querySelectorAll(".gate-progress span")].forEach(bar => bar.classList.remove("active"));
+        setLocked(true);
+    };
+
+    // Browsers may restore this page from the back/forward cache. Relock it there too.
+    window.addEventListener("pagehide", resetGate);
+    window.addEventListener("pageshow", (event) => { if (event.persisted) resetGate(); });
+
+    const progressBars = [...gate.querySelectorAll(".gate-progress span")];
+    const refreshProgress = () => {
+        ["q1", "q2", "q3"].forEach((name, index) => {
+            progressBars[index]?.classList.toggle("active", !!form.querySelector(`input[name="${name}"]:checked`));
+        });
+    };
+    form.addEventListener("change", refreshProgress);
+
+    const celebrate = () => {
+        if (!confetti) return;
+        confetti.innerHTML = "";
+        for (let i = 0; i < 70; i++) {
+            const piece = document.createElement("i");
+            piece.style.left = `${Math.random() * 100}%`;
+            piece.style.animationDelay = `${Math.random() * .45}s`;
+            piece.style.animationDuration = `${1.15 + Math.random() * .9}s`;
+            piece.style.setProperty("--drift", `${-90 + Math.random() * 180}px`);
+            confetti.appendChild(piece);
+            setTimeout(() => piece.remove(), 2600);
+        }
+    };
+
+    async function reportVaultEntry() {
+        const client = window.nl4Supabase || window.supabaseClient || window.supabaseDb || null;
+        if (!client || typeof client.from !== "function") return;
+        try {
+            const { data: settings, error: settingsError } = await client
+                .from("nl4_trophy_settings")
+                .select("analytics_version")
+                .eq("id", "collection")
+                .maybeSingle();
+            if (settingsError || !settings) return;
+            const version = Number(settings.analytics_version || 0);
+            const { error } = await client.from("nl4_trophy_entries").insert({
+                analytics_version: version,
+                entered_at: new Date().toISOString()
+            });
+            if (error) throw error;
+        } catch (error) {
+            console.warn("NL4 trophy vault entry analytics failed:", error);
+        }
+    }
+
+    welcomeEnter?.addEventListener("click", () => {
+        if (welcome) welcome.hidden = true;
+        setLocked(false);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const data = new FormData(form);
+        const answers = [data.get("q1"), data.get("q2"), data.get("q3")];
+
+        if (answers.some(answer => !answer)) {
+            message.className = "gate-message error";
+            message.textContent = "Answer all three questions first. The vault is still locked 🔒";
+            card?.classList.remove("wrong");
+            void card?.offsetWidth;
+            card?.classList.add("wrong");
+            return;
+        }
+
+        const perfect = answers[0] === "red" && answers[1] === "2004" && answers[2] === "yes";
+        if (!perfect) {
+            message.className = "gate-message error";
+            message.textContent = "Not quite, Gooner! The vault stays locked. Try again 🔒";
+            card?.classList.remove("wrong");
+            void card?.offsetWidth;
+            card?.classList.add("wrong");
+            return;
+        }
+
+        // Count EVERY successful vault entry, including repeat entries by the same viewer.
+        void reportVaultEntry();
+        message.className = "gate-message success";
+        message.textContent = "3/3! NORTH LONDON FOREVER 🏆";
+        celebrate();
+        card?.classList.remove("wrong");
+        card?.classList.add("unlocked");
+        setTimeout(() => {
+            gate.hidden = true;
+            if (welcome) welcome.hidden = false;
+            welcomeEnter?.focus();
+        }, 520);
+    });
+});
 // ==========================================
 // Arsenal Trophy Collection JavaScript
 // Restores the original Treasure Room interactions
@@ -58,7 +195,6 @@ document.addEventListener("DOMContentLoaded", () => {
     trophies.forEach(ensureTrophyStatus);
 
     const score = document.getElementById("score");
-    const resetTrophyProgress = document.getElementById("resetTrophyProgress");
     const secretDoor = document.querySelector(".secret-door");
     const closeSecretDoor = document.getElementById("closeSecretDoor");
     const closeSecretDoorBtn = document.getElementById("closeSecretDoorBtn");
@@ -146,6 +282,51 @@ document.addEventListener("DOMContentLoaded", () => {
     const TOTAL_TROPHIES = 49;
     let secretVaultDismissed = false;
 
+    // ---------------- Anonymous completion analytics ----------------
+    // Each viewer keeps their own progress in localStorage. Admin never resets it.
+    // When all 49 trophies are viewed, one anonymous browser ID is counted in Supabase.
+    const TROPHY_VISITOR_ID_KEY = "nl4-trophy-visitor-id";
+    let completionReportedForVersion = null;
+
+    function getTrophyVisitorId() {
+        let id = localStorage.getItem(TROPHY_VISITOR_ID_KEY);
+        if (!id) {
+            id = (globalThis.crypto?.randomUUID?.() || `nl4-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+            try { localStorage.setItem(TROPHY_VISITOR_ID_KEY, id); } catch (_) {}
+        }
+        return id;
+    }
+
+    async function reportCompletedCollection() {
+        if (seen.size < TOTAL_TROPHIES) return;
+        const client = window.nl4Supabase || window.supabaseClient || window.supabaseDb || null;
+        if (!client || typeof client.from !== "function") return;
+
+        try {
+            const { data: settings, error: settingsError } = await client
+                .from("nl4_trophy_settings")
+                .select("analytics_version")
+                .eq("id", "collection")
+                .maybeSingle();
+            if (settingsError || !settings) return;
+
+            const version = Number(settings.analytics_version || 0);
+            if (completionReportedForVersion === version) return;
+
+            const { error } = await client.from("nl4_trophy_completions").insert({
+                visitor_id: getTrophyVisitorId(),
+                analytics_version: version,
+                completed_at: new Date().toISOString()
+            });
+
+            // Duplicate means this browser was already counted in this admin period.
+            if (error && String(error.code || "") !== "23505") throw error;
+            completionReportedForVersion = version;
+        } catch (error) {
+            console.warn("NL4 trophy completion analytics failed:", error);
+        }
+    }
+
     function openSecretVault() {
         if (!secretDoor) return;
         secretVaultDismissed = false;
@@ -174,8 +355,9 @@ document.addEventListener("DOMContentLoaded", () => {
             else card.classList.remove("seen");
         });
 
-        if (count >= TOTAL_TROPHIES && !secretVaultDismissed) {
-            openSecretVault();
+        if (count >= TOTAL_TROPHIES) {
+            reportCompletedCollection();
+            if (!secretVaultDismissed) openSecretVault();
         }
     }
 
@@ -227,26 +409,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     closeSecretDoor?.addEventListener("click", closeSecretVaultPanel);
     closeSecretDoorBtn?.addEventListener("click", closeSecretVaultPanel);
-    resetTrophyProgress?.addEventListener("click", () => {
-        const confirmed = window.confirm("Reset all trophy progress back to 0 / 49?");
-        if (!confirmed) return;
-
-        seen.clear();
-        try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
-
-        secretVaultDismissed = true;
-        if (secretDoor) {
-            secretDoor.classList.remove("show");
-            secretDoor.setAttribute("aria-hidden", "true");
-        }
-
-        trophies.forEach(card => {
-            card.classList.remove("seen");
-            ensureTrophyStatus(card);
-        });
-        if (score) score.textContent = "0";
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    });
 
     updateProgress();
 
@@ -399,33 +561,3 @@ document.addEventListener("DOMContentLoaded", () => {
     overlay.addEventListener("click", closeSidebar);
     window.addEventListener("keydown", e => { if (e.key === "Escape") closeSidebar(); });
 });
-
-// =====================================================
-// NL4 SUPABASE TROPHY DATA HOOK
-// Requires these scripts to load before collection.js:
-// 1. @supabase/supabase-js
-// 2. supabase-client.js
-// 3. nl4-data.js
-// =====================================================
-
-document.addEventListener("DOMContentLoaded", () => {
-  if (!window.NL4Data) {
-    console.warn("NL4Data is not available. Load supabase-client.js and nl4-data.js before collection.js.");
-    return;
-  }
-
-  async function loadNL4Trophies() {
-    try {
-      const trophies = await window.NL4Data.trophies();
-      window.nl4Trophies = trophies;
-      console.log("NL4 trophies loaded from Supabase:", trophies);
-      document.dispatchEvent(new CustomEvent("nl4:trophies-loaded", { detail: trophies }));
-    } catch (error) {
-      console.error("Could not load NL4 trophies from Supabase:", error);
-    }
-  }
-
-  loadNL4Trophies();
-  window.loadNL4Trophies = loadNL4Trophies;
-});
-

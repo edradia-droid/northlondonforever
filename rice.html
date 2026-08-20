@@ -1,266 +1,162 @@
 <!DOCTYPE html>
+
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Declan Rice | Arsenal Player</title>
-
-    <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Declan Rice | Arsenal Player</title>
+<link href="styles.css" rel="stylesheet"/>
 </head>
-
-<body>
-
-    <header class="topbar">
-
-        <a class="brand" href="index.html">
-            <span class="mark">A</span>
-
-            <span>
-                <b>ARSENAL</b>
-                <small>NORTH LONDON FOREVER</small>
-            </span>
-        </a>
-
-        <button
-            id="menuBtn"
-            onclick="document.querySelector('nav').classList.toggle('open')"
-        >
+<body data-current-player-slug="rice">
+<header class="topbar">
+<a class="brand" href="index.html">
+<span class="mark">A</span>
+<span>
+<b>ARSENAL</b>
+<small>NORTH LONDON FOREVER</small>
+</span>
+</a>
+<button id="menuBtn" onclick="document.querySelector('nav').classList.toggle('open')">
             ☰
         </button>
-
-        <nav>
-            <a href="index.html">Home</a>
-            <a href="history.html">History</a>
-            <a class="active" href="players.html">Players</a>
-            <a href="trophies.html">Treasure Room</a>
-        </nav>
-
-    </header>
-
-
-    <section
-        class="detail-hero"
-        style="--hero: url('https://i.postimg.cc/hvTt1cRJ/357662-1687962936.jpg');"
-    >
-
-        <div class="hero-copy">
-
-            <p class="eyebrow">
+<nav>
+<a href="index.html">Home</a>
+<a href="history.html">History</a>
+<a class="active" href="players.html">Players</a>
+<a href="trophies.html">Treasure Room</a>
+</nav>
+</header>
+<section class="detail-hero" data-profile-image-target="hero" style="--hero: url('https://i.postimg.cc/hvTt1cRJ/357662-1687962936.jpg');">
+<div class="hero-copy">
+<p class="eyebrow" data-profile-field="hero_intro">
                 ARSENAL / CURRENT GENERATION
             </p>
-
-            <h1>
-                DECLAN<br>
-                <span>RICE</span>
-            </h1>
-
-            <p>
+<h1><span data-profile-field="hero_name_line1">DECLAN</span><br/><span data-profile-field="hero_name_line2">RICE</span></h1>
+<p>
                 A powerful and intelligent midfielder whose composure,
                 ball-carrying, and leadership have made him one of Arsenal's
                 defining modern signings.
             </p>
-
-            <a class="gold-btn" href="#story">
+<a class="gold-btn" data-profile-field="hero_button" href="#story">
                 Explore the story ↓
             </a>
-
-        </div>
-
-    </section>
-
-
-    <main class="main">
-
-        <div class="section-head">
-
-            <div>
-
-                <p class="eyebrow">
+</div>
+</section>
+<main class="main">
+<div class="section-head">
+<div>
+<p class="eyebrow" data-profile-field="main_eyebrow">
                     THE COMPLETE STORY
                 </p>
-
-                <h2>
-                    THE ENGINE<br>
-                    <span>BEHIND THE MIDFIELD.</span>
-                </h2>
-
-            </div>
-
-        </div>
-
-
-        <section class="profile">
-
-            <article class="portrait">
-
-                <img
-                    src="https://i.postimg.cc/hvTt1cRJ/357662-1687962936.jpg"
-                    alt="Declan Rice, Arsenal midfielder"
-                >
-
-            </article>
-
-
-            <article class="facts">
-
-                <p class="eyebrow">
+<h2><span data-profile-field="main_title_line1">THE ENGINE</span><br/><span data-profile-field="main_title_line2">BEHIND THE MIDFIELD.</span></h2>
+</div>
+</div>
+<section class="profile">
+<article class="portrait">
+<img alt="Declan Rice, Arsenal midfielder" data-profile-image-target="portrait" src="https://i.postimg.cc/hvTt1cRJ/357662-1687962936.jpg"/>
+</article>
+<article class="facts">
+<p class="eyebrow" data-profile-field="facts_eyebrow">
                     PLAYER ARCHIVE
                 </p>
-
-                <h2>
+<h2 data-profile-field="facts_title">
                     AT A GLANCE
                 </h2>
-
-                <dl>
-
-                    <div class="fact">
-                        <dt>Full Name</dt>
-                        <dd>Declan Rice</dd>
-                    </div>
-
-                    <div class="fact">
-                        <dt>Born</dt>
-                        <dd>January 14, 1999 – Kingston upon Thames, England</dd>
-                    </div>
-
-                    <div class="fact">
-                        <dt>Position</dt>
-                        <dd>Midfielder</dd>
-                    </div>
-
-                    <div class="fact">
-                        <dt>Height</dt>
-                        <dd>1.88 m (6 ft 2 in)</dd>
-                    </div>
-
-                    <div class="fact">
-                        <dt>International</dt>
-                        <dd>England</dd>
-                    </div>
-
-                    <div class="fact">
-                        <dt>Nickname</dt>
-                        <dd>Rice Rice Baby</dd>
-                    </div>
-
-                </dl>
-
-            </article>
-
-        </section>
-
-
-        <section id="story">
-
-            <div class="section-head">
-
-                <div>
-
-                    <p class="eyebrow">
+<dl>
+<div class="fact">
+<dt data-profile-field="fact_1_label">Full Name</dt>
+<dd data-profile-field="fact_1_value">Declan Rice</dd>
+</div>
+<div class="fact">
+<dt data-profile-field="fact_2_label">Born</dt>
+<dd data-profile-field="fact_2_value">January 14, 1999 – Kingston upon Thames, England</dd>
+</div>
+<div class="fact">
+<dt data-profile-field="fact_3_label">Position</dt>
+<dd data-profile-field="fact_3_value">Midfielder</dd>
+</div>
+<div class="fact">
+<dt data-profile-field="fact_4_label">Height</dt>
+<dd data-profile-field="fact_4_value">1.88 m (6 ft 2 in)</dd>
+</div>
+<div class="fact">
+<dt data-profile-field="fact_5_label">International</dt>
+<dd data-profile-field="fact_5_value">England</dd>
+</div>
+<div class="fact">
+<dt data-profile-field="fact_6_label">Nickname</dt>
+<dd data-profile-field="fact_6_value">Rice Rice Baby</dd>
+</div>
+</dl>
+</article>
+</section>
+<section id="story">
+<div class="section-head">
+<div>
+<p class="eyebrow" data-profile-field="story_eyebrow">
                         02 / HIS JOURNEY
                     </p>
-
-                    <h2>
+<h2 data-profile-field="story_title">
                         THE DECLAN RICE STORY
                     </h2>
-
-                </div>
-
-            </div>
-
-
-            <div class="story-grid">
-
-                <article class="story">
-
-                    <h3>
+</div>
+</div>
+<div class="story-grid">
+<article class="story">
+<h3 data-profile-field="story_1_title">
                         West Ham Rise
                     </h3>
-
-                    <p>
+<p data-profile-field="story_1_body">
                         Rice joined Chelsea's academy at seven before being
                         released at 14. He later developed at West Ham United,
                         making his Premier League debut in 2017 and becoming
                         one of the club's most important players.
                     </p>
-
-                </article>
-
-
-                <article class="story">
-
-                    <h3>
+</article>
+<article class="story">
+<h3 data-profile-field="story_2_title">
                         Arsenal Record Signing
                     </h3>
-
-                    <p>
+<p data-profile-field="story_2_body">
                         Rice joined Arsenal in July 2023 for £105 million,
                         becoming the club's record signing. Under Mikel Arteta,
                         he developed into a versatile box-to-box midfielder,
                         combining defensive recovery with attacking influence.
                     </p>
-
-                </article>
-
-
-                <article class="story">
-
-                    <h3>
+</article>
+<article class="story">
+<h3 data-profile-field="story_3_title">
                         England &amp; Recognition
                     </h3>
-
-                    <p>
+<p data-profile-field="story_3_body">
                         After representing the Republic of Ireland before
                         switching allegiance, Rice became a regular for
                         England. His progressive passing, interceptions,
                         physicality, and ball-carrying have established him
                         as one of Europe's leading midfielders.
                     </p>
-
-                </article>
-
-            </div>
-
-        </section>
-
-
-        <section class="legacy">
-
-            <p class="eyebrow">
+</article>
+</div>
+</section>
+<section class="legacy">
+<p class="eyebrow" data-profile-field="legacy_eyebrow">
                 NORTH LONDON FOREVER
             </p>
-
-            <h2>
-                POWER.<br>
-                <span>COMPOSURE. PURPOSE.</span>
-            </h2>
-
-            <p>
+<h2><span data-profile-field="legacy_title_line1">POWER.</span><br/><span data-profile-field="legacy_title_line2">COMPOSURE. PURPOSE.</span></h2>
+<p data-profile-field="legacy_body">
                 Declan Rice has quickly become one of the foundations of
                 Arsenal's modern midfield and a symbol of the club's ambition.
             </p>
-
-            <a class="gold-btn" href="players.html">
+<a class="gold-btn" data-profile-field="back_button" href="players.html">
                 ← Back to Arsenal Players
             </a>
-
-        </section>
-
-    </main>
-
-
-    <footer>
-
-        <b>ARSENAL</b>
-
-        <span>
+</section>
+</main>
+<footer>
+<b>ARSENAL</b>
+<span>
             History • Heritage • North London Forever
         </span>
-
-    </footer>
-
-</body>
-
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script><script src="supabase-client.js"></script><script src="current-player-profile.js?v=20260819"></script></body>
 </html>

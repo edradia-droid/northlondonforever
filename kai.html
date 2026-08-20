@@ -1,265 +1,161 @@
 <!DOCTYPE html>
+
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Kai Havertz | Arsenal Player</title>
-
-    <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kai Havertz | Arsenal Player</title>
+<link href="styles.css" rel="stylesheet"/>
 </head>
-
-<body>
-
-    <header class="topbar">
-
-        <a class="brand" href="index.html">
-            <span class="mark">A</span>
-
-            <span>
-                <b>ARSENAL</b>
-                <small>NORTH LONDON FOREVER</small>
-            </span>
-        </a>
-
-        <button
-            id="menuBtn"
-            onclick="document.querySelector('nav').classList.toggle('open')"
-        >
+<body data-current-player-slug="kai">
+<header class="topbar">
+<a class="brand" href="index.html">
+<span class="mark">A</span>
+<span>
+<b>ARSENAL</b>
+<small>NORTH LONDON FOREVER</small>
+</span>
+</a>
+<button id="menuBtn" onclick="document.querySelector('nav').classList.toggle('open')">
             ☰
         </button>
-
-        <nav>
-            <a href="index.html">Home</a>
-            <a href="history.html">History</a>
-            <a class="active" href="players.html">Players</a>
-            <a href="trophies.html">Treasure Room</a>
-        </nav>
-
-    </header>
-
-
-    <section
-        class="detail-hero"
-        style="--hero: url('https://i.postimg.cc/FHtJ1H5w/AFCKaigoal-j3dqjnli.jpg');"
-    >
-
-        <div class="hero-copy">
-
-            <p class="eyebrow">
+<nav>
+<a href="index.html">Home</a>
+<a href="history.html">History</a>
+<a class="active" href="players.html">Players</a>
+<a href="trophies.html">Treasure Room</a>
+</nav>
+</header>
+<section class="detail-hero" data-profile-image-target="hero" style="--hero: url('https://i.postimg.cc/FHtJ1H5w/AFCKaigoal-j3dqjnli.jpg');">
+<div class="hero-copy">
+<p class="eyebrow" data-profile-field="hero_intro">
                 ARSENAL / CURRENT GENERATION
             </p>
-
-            <h1>
-                KAI<br>
-                <span>HAVERTZ</span>
-            </h1>
-
-            <p>
+<h1><span data-profile-field="hero_name_line1">KAI</span><br/><span data-profile-field="hero_name_line2">HAVERTZ</span></h1>
+<p>
                 A versatile German attacker whose height, technique,
                 intelligence, and movement give Arsenal's attack another
                 dimension.
             </p>
-
-            <a class="gold-btn" href="#story">
+<a class="gold-btn" data-profile-field="hero_button" href="#story">
                 Explore the story ↓
             </a>
-
-        </div>
-
-    </section>
-
-
-    <main class="main">
-
-        <div class="section-head">
-
-            <div>
-
-                <p class="eyebrow">
+</div>
+</section>
+<main class="main">
+<div class="section-head">
+<div>
+<p class="eyebrow" data-profile-field="main_eyebrow">
                     THE COMPLETE STORY
                 </p>
-
-                <h2>
-                    THE PLAYER<br>
-                    <span>BETWEEN THE LINES.</span>
-                </h2>
-
-            </div>
-
-        </div>
-
-
-        <section class="profile">
-
-            <article class="portrait">
-
-                <img
-                    src="https://i.postimg.cc/FHtJ1H5w/AFCKaigoal-j3dqjnli.jpg"
-                    alt="Kai Havertz, Arsenal player"
-                >
-
-            </article>
-
-
-            <article class="facts">
-
-                <p class="eyebrow">
+<h2><span data-profile-field="main_title_line1">THE PLAYER</span><br/><span data-profile-field="main_title_line2">BETWEEN THE LINES.</span></h2>
+</div>
+</div>
+<section class="profile">
+<article class="portrait">
+<img alt="Kai Havertz, Arsenal player" data-profile-image-target="portrait" src="https://i.postimg.cc/FHtJ1H5w/AFCKaigoal-j3dqjnli.jpg"/>
+</article>
+<article class="facts">
+<p class="eyebrow" data-profile-field="facts_eyebrow">
                     PLAYER ARCHIVE
                 </p>
-
-                <h2>
+<h2 data-profile-field="facts_title">
                     AT A GLANCE
                 </h2>
-
-                <dl>
-
-                    <div class="fact">
-                        <dt>Full Name</dt>
-                        <dd>Kai Lukas Havertz</dd>
-                    </div>
-
-                    <div class="fact">
-                        <dt>Born</dt>
-                        <dd>June 11, 1999 – Aachen, Germany</dd>
-                    </div>
-
-                    <div class="fact">
-                        <dt>Position</dt>
-                        <dd>Forward / attacking midfielder</dd>
-                    </div>
-
-                    <div class="fact">
-                        <dt>Height</dt>
-                        <dd>1.93 m (6 ft 4 in)</dd>
-                    </div>
-
-                    <div class="fact">
-                        <dt>International</dt>
-                        <dd>Germany</dd>
-                    </div>
-
-                    <div class="fact">
-                        <dt>Role</dt>
-                        <dd>Forward / false nine</dd>
-                    </div>
-
-                </dl>
-
-            </article>
-
-        </section>
-
-
-        <section id="story">
-
-            <div class="section-head">
-
-                <div>
-
-                    <p class="eyebrow">
+<dl>
+<div class="fact">
+<dt data-profile-field="fact_1_label">Full Name</dt>
+<dd data-profile-field="fact_1_value">Kai Lukas Havertz</dd>
+</div>
+<div class="fact">
+<dt data-profile-field="fact_2_label">Born</dt>
+<dd data-profile-field="fact_2_value">June 11, 1999 – Aachen, Germany</dd>
+</div>
+<div class="fact">
+<dt data-profile-field="fact_3_label">Position</dt>
+<dd data-profile-field="fact_3_value">Forward / attacking midfielder</dd>
+</div>
+<div class="fact">
+<dt data-profile-field="fact_4_label">Height</dt>
+<dd data-profile-field="fact_4_value">1.93 m (6 ft 4 in)</dd>
+</div>
+<div class="fact">
+<dt data-profile-field="fact_5_label">International</dt>
+<dd data-profile-field="fact_5_value">Germany</dd>
+</div>
+<div class="fact">
+<dt data-profile-field="fact_6_label">Role</dt>
+<dd data-profile-field="fact_6_value">Forward / false nine</dd>
+</div>
+</dl>
+</article>
+</section>
+<section id="story">
+<div class="section-head">
+<div>
+<p class="eyebrow" data-profile-field="story_eyebrow">
                         02 / HIS JOURNEY
                     </p>
-
-                    <h2>
+<h2 data-profile-field="story_title">
                         THE KAI HAVERTZ STORY
                     </h2>
-
-                </div>
-
-            </div>
-
-
-            <div class="story-grid">
-
-                <article class="story">
-
-                    <h3>
+</div>
+</div>
+<div class="story-grid">
+<article class="story">
+<h3 data-profile-field="story_1_title">
                         Bayer Leverkusen Rise
                     </h3>
-
-                    <p>
+<p data-profile-field="story_1_body">
                         Havertz developed through Alemannia Mariadorf and
                         Alemannia Aachen before joining Bayer Leverkusen's
                         academy. He made his Bundesliga debut at 17 and quickly
                         became one of Germany's most exciting young talents.
                     </p>
-
-                </article>
-
-
-                <article class="story">
-
-                    <h3>
+</article>
+<article class="story">
+<h3 data-profile-field="story_2_title">
                         Chelsea &amp; Champions League Glory
                     </h3>
-
-                    <p>
+<p data-profile-field="story_2_body">
                         Havertz joined Chelsea in 2020. He became a club
                         history-maker by scoring the winning goal in the
                         2021 UEFA Champions League Final against Manchester
                         City and later scored in the FIFA Club World Cup Final.
                     </p>
-
-                </article>
-
-
-                <article class="story">
-
-                    <h3>
+</article>
+<article class="story">
+<h3 data-profile-field="story_3_title">
                         Arsenal Role
                     </h3>
-
-                    <p>
+<p data-profile-field="story_3_body">
                         Havertz joined Arsenal in 2023. Initially used in
                         midfield, he increasingly found his role as a forward,
                         where his height, aerial ability, movement, and
                         finishing became important elements of Arsenal's attack.
                     </p>
-
-                </article>
-
-            </div>
-
-        </section>
-
-
-        <section class="legacy">
-
-            <p class="eyebrow">
+</article>
+</div>
+</section>
+<section class="legacy">
+<p class="eyebrow" data-profile-field="legacy_eyebrow">
                 NORTH LONDON FOREVER
             </p>
-
-            <h2>
-                DIFFERENT.<br>
-                <span>VERSATILE. DECISIVE.</span>
-            </h2>
-
-            <p>
+<h2><span data-profile-field="legacy_title_line1">DIFFERENT.</span><br/><span data-profile-field="legacy_title_line2">VERSATILE. DECISIVE.</span></h2>
+<p data-profile-field="legacy_body">
                 Kai Havertz brings a unique blend of size, intelligence,
                 technique, and versatility to Arsenal's modern attack.
             </p>
-
-            <a class="gold-btn" href="players.html">
+<a class="gold-btn" data-profile-field="back_button" href="players.html">
                 ← Back to Arsenal Players
             </a>
-
-        </section>
-
-    </main>
-
-
-    <footer>
-
-        <b>ARSENAL</b>
-
-        <span>
+</section>
+</main>
+<footer>
+<b>ARSENAL</b>
+<span>
             History • Heritage • North London Forever
         </span>
-
-    </footer>
-
-</body>
-
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script><script src="supabase-client.js"></script><script src="current-player-profile.js?v=20260819"></script></body>
 </html>
