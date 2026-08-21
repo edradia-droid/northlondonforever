@@ -882,47 +882,121 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
 <style>
 body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview,#leagueTable,.pl-next-section,.pl-form-section,.pl-results-section,.pl-title-race-section,#arsenalPlayerStats,.pl-coming,.pl-footer{display:none!important}.main{margin:0!important;padding:18px!important;width:100%!important;max-width:none!important}#nl4PublicForecastRoot{display:block!important}#titleProbability{display:block!important;margin:0!important}.pl-section-head .pl-kicker{color:#d8ad45}.pl-section-head h2:after{content:' • ADMIN MODEL';color:#d8ad45}
 </style>
-<style id="nl4-heavy-diagnostics-control-style">
-.nl4-admin-model-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
-.nl4-heavy-diagnostics-btn{border:1px solid rgba(216,173,69,.35);background:#111;color:#d8ad45;border-radius:999px;padding:8px 11px;font-size:7px;font-weight:1000;letter-spacing:.7px;cursor:pointer}
-.nl4-heavy-diagnostics-btn:hover{background:rgba(216,173,69,.09)}
-.nl4-heavy-diagnostics-btn:disabled{opacity:.55;cursor:wait}
-#nl4HeavyDiagnosticsStatus{margin:10px 0 0;color:#777;font-size:8px;line-height:1.5}
-@media(max-width:650px){.nl4-admin-model-actions{justify-content:flex-start}}
+
+
+<style id="nl4-explicit-download-style">
+.nl4-explicit-download-target{
+  position:relative !important;
+}
+.nl4-explicit-download-bar{
+  display:flex !important;
+  justify-content:flex-end !important;
+  align-items:center !important;
+  gap:8px !important;
+  width:100% !important;
+  margin-top:12px !important;
+  padding-top:9px !important;
+  border-top:1px solid rgba(255,255,255,.06) !important;
+}
+.nl4-explicit-download-btn{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:7px !important;
+  min-height:36px !important;
+  padding:8px 12px !important;
+  border:1px solid rgba(231,189,88,.68) !important;
+  border-radius:9px !important;
+  background:#090909 !important;
+  color:#e7bd58 !important;
+  font:900 9px/1 Arial,sans-serif !important;
+  letter-spacing:.55px !important;
+  cursor:pointer !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  z-index:100 !important;
+}
+.nl4-explicit-download-btn .icon{
+  font-size:17px !important;
+  line-height:1 !important;
+}
+.nl4-explicit-download-btn:hover{
+  background:#e7bd58 !important;
+  color:#111 !important;
+}
+.nl4-explicit-download-btn:disabled{
+  opacity:.55 !important;
+  cursor:wait !important;
+}
 </style>
 
 
-<style id="nl4-admin-top4-light-style">
-.nl4-admin-top4-light{margin-top:14px;border:1px solid rgba(216,173,69,.2);border-radius:16px;background:#0f0f0f;padding:14px}
-.nl4-admin-top4-light-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
-.nl4-admin-top4-light-head h3{margin:4px 0 0;color:#fff;font-size:17px}
-.nl4-admin-top4-light-head>strong{color:#d8ad45;font-size:8px;text-align:right}
-.nl4-admin-top4-light-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
-.nl4-admin-top4-light-card{border:1px solid rgba(255,255,255,.07);border-radius:11px;background:#151515;padding:11px}
-.nl4-admin-top4-light-card:first-child{border-color:rgba(216,173,69,.35);background:rgba(216,173,69,.07)}
-.nl4-admin-top4-light-rank{display:block;color:#d8ad45;font-size:7px;font-weight:1000;letter-spacing:.8px}
-.nl4-admin-top4-light-club{display:block;color:#fff;font-size:11px;font-weight:1000;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.nl4-admin-top4-light-prob{display:block;color:#d8ad45;font-size:22px;font-weight:1000;margin-top:7px}
-.nl4-admin-top4-light-meta{display:block;color:#666;font-size:7px;margin-top:4px}
-.nl4-admin-top4-light-track{height:5px;background:#242424;border-radius:999px;overflow:hidden;margin-top:8px}
-.nl4-admin-top4-light-fill{height:100%;background:#d8ad45;border-radius:inherit}
-@media(max-width:760px){.nl4-admin-top4-light-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:430px){.nl4-admin-top4-light-grid{grid-template-columns:1fr}.nl4-admin-top4-light-head{flex-direction:column}.nl4-admin-top4-light-head>strong{text-align:left}}
+<style id="nl4-complete-summary-download-style">
+#nl4CompleteSummaryDownloadBar{
+  display:flex !important;
+  justify-content:flex-end !important;
+  align-items:center !important;
+  width:100% !important;
+  margin:18px 0 10px !important;
+}
+#nl4CompleteSummaryDownloadBtn{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:8px !important;
+  min-height:40px !important;
+  padding:10px 14px !important;
+  border:1px solid rgba(231,189,88,.78) !important;
+  border-radius:10px !important;
+  background:#111 !important;
+  color:#e7bd58 !important;
+  font:900 10px/1 Arial,sans-serif !important;
+  letter-spacing:.55px !important;
+  cursor:pointer !important;
+}
+#nl4CompleteSummaryDownloadBtn:hover{
+  background:#e7bd58 !important;
+  color:#111 !important;
+}
 </style>
 
-
-<style id="nl4-admin-top4-last5-style">
-.nl4-admin-top4-form{display:flex;gap:4px;margin-top:9px;flex-wrap:wrap}
-.nl4-admin-top4-form i{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;background:#1b1b1b;color:#aaa;font-style:normal;font-size:8px;font-weight:1000}
-.nl4-admin-top4-form i.w{color:#6fd58e}.nl4-admin-top4-form i.d{color:#d8ad45}.nl4-admin-top4-form i.l{color:#ff7185}
-.nl4-admin-top4-race-state{display:inline-block;margin-top:8px;padding:4px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.08);font-size:7px;font-weight:1000;letter-spacing:.5px}
-.nl4-admin-top4-race-state.in{color:#6fd58e;border-color:rgba(111,213,142,.25)}
-.nl4-admin-top4-race-state.entering{color:#d8ad45;border-color:rgba(216,173,69,.3)}
-.nl4-admin-top4-race-state.drifting{color:#ff9d66;border-color:rgba(255,157,102,.3)}
-.nl4-admin-top4-race-state.out{color:#888}
-.nl4-admin-top4-effect{margin:8px 0 0;color:#888;font-size:7.5px;line-height:1.5}
+<style id="nl4-section-download-style">
+.nl4-download-section{
+  position:relative !important;
+}
+.nl4-section-download-btn{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:7px !important;
+  min-height:34px !important;
+  padding:7px 11px !important;
+  margin:12px 0 8px !important;
+  border:1px solid rgba(231,189,88,.65) !important;
+  border-radius:9px !important;
+  background:#090909 !important;
+  color:#e7bd58 !important;
+  font:800 10px/1 Arial,sans-serif !important;
+  letter-spacing:.4px !important;
+  cursor:pointer !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  z-index:60 !important;
+}
+.nl4-section-download-btn .nl4-download-icon{
+  font-size:17px;
+  line-height:1;
+}
+.nl4-section-download-btn:hover{
+  background:#e7bd58 !important;
+  color:#111 !important;
+}
+.nl4-section-download-toolbar{
+  display:flex !important;
+  justify-content:flex-end !important;
+  width:100% !important;
+}
 </style>
-
 </head>
 <body class="nl4-unified-sidebar premier-league-page">
 <button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button>
@@ -983,7 +1057,7 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
 </div>
 </aside>
 <div class="mobile-overlay" id="overlay"></div>
-<main class="main">
+<main class="main" id="nl4DownloadCompleteModelSummary">
 <div class="nl4-public-forecast-root" hidden="" id="nl4PublicForecastRoot">
 
 <section class="pl-hero">
@@ -1193,12 +1267,9 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
 <p class="pl-kicker">07 / NL4 FORECAST</p>
 <h2>PREMIER LEAGUE TITLE PROBABILITY</h2>
 </div>
-<div class="nl4-admin-model-actions">
-  <span class="pl-table-note" id="titleModelRunLabel">25,000 V13.0 SIMULATIONS</span>
-  <button type="button" id="nl4RunHeavyDiagnosticsBtn" class="nl4-heavy-diagnostics-btn">RUN HEAVY DIAGNOSTICS</button>
+<span class="pl-table-note" id="titleModelRunLabel">25,000 V13.0 SIMULATIONS</span>
 </div>
-</div>
-<div class="nl4-title-forecast-shell">
+<div class="nl4-title-forecast-shell" id="nl4DownloadStatisticalForecast">
 <article class="nl4-arsenal-probability-card">
 <span class="nl4-model-label" id="nl4PrimaryModelLabel">NL4 PUBLIC MODEL • STATISTICAL TITLE FORECAST</span>
 <div class="nl4-probability-main">
@@ -1214,7 +1285,6 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
 <div><strong id="arsenalRelegationProbability">—</strong><span>RELEGATION</span></div>
 </div>
 <p class="nl4-model-note" id="titleModelStatus">Loading current Premier League performance data…</p>
-<p id="nl4HeavyDiagnosticsStatus">Heavy diagnostics are paused by default for faster Admin Model loading.</p>
 <div class="nl4-fixture-coverage">
 <div><span>FIXTURE COVERAGE</span><strong id="titleFixtureCoverage">—</strong></div>
 <div class="nl4-coverage-track"><div class="nl4-coverage-fill" id="titleFixtureCoverageBar"></div></div>
@@ -1386,32 +1456,16 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
 <p id="previousSeasonWarning">Loading previous-season standings…</p>
 </div>
 </article>
-<div class="nl4-title-probability-table-wrap">
+<div class="nl4-title-probability-table-wrap" id="nl4DownloadTableSection">
 <div class="nl4-title-probability-head">
 <span>CLUB</span><span>TITLE</span><span>TOP 4</span><span>TOP 5</span><span>RELEG.</span><span>EXP PTS</span>
 </div>
 <section class="v128-validation"><div class="v128-head"><div><small>V12.9 FROZEN BASELINE • 25,000-SIMULATION AUDIT</small><h3>Monte Carlo Validation Dashboard</h3><p>The V12.7 match engine is frozen while this panel audits the distribution behind the forecast.</p></div><b>MATCH ENGINE FROZEN</b></div><div class="v128-grid"><article><small>ARSENAL MEDIAN</small><strong id="v128ArsenalMedian">—</strong></article><article><small>10TH PERCENTILE</small><strong id="v128ArsenalP10">—</strong></article><article><small>25TH PERCENTILE</small><strong id="v128ArsenalP25">—</strong></article><article><small>75TH PERCENTILE</small><strong id="v128ArsenalP75">—</strong></article><article><small>90TH PERCENTILE</small><strong id="v128ArsenalP90">—</strong></article></div><div class="v128-two"><article class="v128-panel"><h4>When Arsenal Win the League</h4><p>Title-winning simulations <strong id="v128TitleSamples">—</strong></p><p>Average points <strong id="v128TitleAvg">—</strong></p><p>Lowest title total <strong id="v128TitleMin">—</strong></p><p>Highest title total <strong id="v128TitleMax">—</strong></p><p>Average when Arsenal don't win <strong id="v128NonTitleAvg">—</strong></p></article><article class="v128-panel"><h4>League Champion Points</h4><p>Average <strong id="v128ChampionAvg">—</strong></p><p>Median <strong id="v128ChampionMedian">—</strong></p><p>10th percentile <strong id="v128ChampionP10">—</strong></p><p>90th percentile <strong id="v128ChampionP90">—</strong></p></article></div><article class="v128-panel"><h4>Share of Simulated Titles</h4><div id="v128TitleWinnerShare"></div></article></section><section class="v129-reliability"><div class="v129-head"><div><small>V12.9 • RELIABILITY AUDIT</small><h3>Simulation Reliability &amp; Tail Diagnostics</h3><p>The match engine remains frozen. This panel measures rare outcomes and Monte Carlo sampling noise.</p></div><b>STATISTICS ONLY</b></div><div class="v129-grid"><article><small>1ST PERCENTILE</small><strong id="v129ArsenalP01">—</strong></article><article><small>5TH PERCENTILE</small><strong id="v129ArsenalP05">—</strong></article><article><small>95TH PERCENTILE</small><strong id="v129ArsenalP95">—</strong></article><article><small>99TH PERCENTILE</small><strong id="v129ArsenalP99">—</strong></article></div><div class="v129-two"><article class="v129-panel"><h4>Arsenal Points Thresholds</h4><div><span>80+ points</span><strong id="v129Arsenal80">—</strong></div><div><span>85+ points</span><strong id="v129Arsenal85">—</strong></div><div><span>90+ points</span><strong id="v129Arsenal90">—</strong></div><div><span>95+ points</span><strong id="v129Arsenal95">—</strong></div><div><span>100+ points</span><strong id="v129Arsenal100">—</strong></div></article><article class="v129-panel"><h4>Champion Tail Frequency</h4><div><span>Champion below 75</span><strong id="v129ChampionBelow75">—</strong></div><div><span>Champion above 95</span><strong id="v129ChampionAbove95">—</strong></div><div><span>100+ point champion</span><strong id="v129Champion100">—</strong></div></article></div><article class="v129-panel v129-mc"><h4>Monte Carlo Sampling Uncertainty</h4><div><span>Approx. 95% sampling margin</span><strong id="v129MonteCarloSE">—</strong></div><div><span>Approx. 95% interval for Arsenal title estimate</span><strong id="v129MonteCarloCI">—</strong></div><p>This interval measures simulation noise only, not real football uncertainty.</p></article></section><div class="nl4-title-probability-table" id="titleProbabilityTable">
 <div class="nl4-title-model-loading">Running title simulations…</div>
 </div>
-
-<section id="nl4AdminTop4Light" class="nl4-admin-top4-light">
-  <div class="nl4-admin-top4-light-head">
-    <div>
-      <span class="nl4-model-label">ADMIN MODEL • TOP FOUR TITLE RACE</span>
-      <h3>Current Contenders & Last Five Result Effect</h3>
-    </div>
-    <strong id="nl4AdminTop4LightStatus">WAITING FOR MAIN FORECAST…</strong>
-  </div>
-  <div class="nl4-admin-top4-light-grid" id="nl4AdminTop4LightGrid">
-    <div class="nl4-title-model-loading">Top 4 will appear after the main Admin Model finishes.</div>
-  </div>
-  <p class="nl4-model-note">
-    Display-only. It reads the finished Admin Model probabilities plus the already-loaded league results. No extra simulations or Supabase reads are triggered.
-  </p>
-</section>
 </div>
 </div>
-<div class="v123-timeline">
+<div class="v123-timeline" id="nl4DownloadPublicAdminTimeline">
 <div class="v123-timeline-head">
 <div>
 <span class="nl4-model-label">PUBLIC / ADMIN MODEL PROBABILITY TIMELINE</span>
@@ -1432,7 +1486,7 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
       Arsenal's title chance, expected points, expected finish, model confidence and the important new Arsenal/rival results associated with that update.
     </p>
 </div>
-<div class="v12-matchday-tracker">
+<div class="v12-matchday-tracker" id="nl4DownloadLiveMatchdayTracker">
 <div class="v12-tracker-head">
 <div>
 <span class="nl4-model-label">V13.2 • LIVE MATCHDAY TRACKER</span>
@@ -1644,7 +1698,7 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
       The simulation remains free to finish outside these bands.
     </p>
 </div>
-<div class="nl4-title-target">
+<div class="nl4-title-target" id="nl4DownloadTitleWinningPoints">
 <div class="nl4-scenario-head">
 <div>
 <span class="nl4-model-label">TITLE-WINNING POINTS</span>
@@ -1683,7 +1737,7 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
       are champions in simulations where they finish on or above each points target.
     </p>
 </div>
-<div class="nl4-race-momentum">
+<div class="nl4-race-momentum" id="nl4DownloadTitleRaceMomentum">
 <div class="nl4-scenario-head">
 <div>
 <span class="nl4-model-label">TITLE RACE MOMENTUM</span>
@@ -1744,7 +1798,7 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
     V12.9 separates the raw simulation runner-up from a credible title threat. V12.9 reads the 2025/26 Premier League table from Supabase and derives preseason strength from points, goal difference, goals for/against and final position. Arsenal's championship is therefore model evidence, not just a manual Elo label. Promoted clubs are detected by comparing the two seasons. “Likely drivers” remain evidence signals, not isolated causal percentages.
   </p>
 </div>
-<div class="nl4-history-card">
+<div class="nl4-history-card" id="nl4DownloadModelProbabilityHistory">
 <div class="nl4-history-head">
 <div>
 <span class="nl4-model-label">PUBLIC / ADMIN MODEL PROBABILITY HISTORY</span>
@@ -1752,7 +1806,7 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
 </div>
 <strong id="titleHistoryLatest">WAITING FOR FIRST RESULT</strong>
 </div>
-<div class="nl4-history-chart-wrap">
+<div class="nl4-history-chart-wrap" id="nl4DownloadGraphSection">
 <svg aria-label="Arsenal title probability history" class="nl4-history-chart" id="titleHistoryChart" role="img" viewbox="0 0 760 240"></svg>
 </div>
 <div class="nl4-history-legend">
@@ -1763,7 +1817,7 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
       Public Model snapshots use the live Supabase season history. Admin Model snapshots use a separate authenticated Supabase history and never alter the public record.
     </p>
 </div>
-<div class="nl4-scenario-lab">
+<div class="nl4-scenario-lab" id="nl4DownloadNextMatchImpact">
 <div class="nl4-scenario-head">
 <div>
 <span class="nl4-model-label">NEXT MATCH IMPACT</span>
@@ -1801,7 +1855,7 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
       how often Arsenal become champions among simulations where their next league match ends in a win, draw or defeat.
     </p>
 </div>
-<div class="nl4-impact-map">
+<div class="nl4-impact-map" id="nl4DownloadTitleRaceImpactMap">
 <div class="nl4-scenario-head">
 <div>
 <span class="nl4-model-label">TITLE RACE IMPACT MAP</span>
@@ -2524,7 +2578,7 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
 <script src="nl4-data.js"></script>
 <script src="shared-sidebar.js"></script>
 <script src="premier-league.js?v=20260817-admin-public-model-split"></script>
-<script src="title-probability.js?v=20260819-admin-public-sync-v1"></script>
+<script src="title-probability.js?v=20260817-admin-only"></script>
 <script>
   (function(){
     const season = "2026/27";
@@ -2715,5 +2769,523 @@ body{background:#090909!important}.sidebar,.mobile-overlay,.pl-hero,.pl-overview
     setTimeout(loadLatestArsenalLineup,500);
   })();
   </script>
+  <script src="admin-model-top4-interpretation.js?v=20260819-admin-only-v1"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<script id="nl4-explicit-section-downloads">
+(function(){
+  if(window.__nl4ExplicitDownloadsReady) return;
+  window.__nl4ExplicitDownloadsReady = true;
+
+  const DOWNLOADS = [
+    { id:'nl4DownloadStatisticalForecast', label:'STATISTICAL TITLE FORECAST' },
+    { id:'nl4DownloadTableSection', label:'TABLE SECTION' },
+    { id:'nl4DownloadGraphSection', label:'GRAPH SECTION', graphOnly:true },
+    { id:'nl4DownloadTitleRaceImpactMap', label:'TITLE RACE IMPACT MAP' },
+    { id:'nl4DownloadNextMatchImpact', label:'NEXT MATCH IMPACT' },
+    { id:'nl4DownloadModelProbabilityHistory', label:'MODEL PROBABILITY HISTORY' },
+    { id:'nl4DownloadTitleRaceMomentum', label:'TITLE RACE MOMENTUM' },
+    { id:'nl4DownloadTitleWinningPoints', label:'TITLE-WINNING POINTS' },
+    { id:'nl4DownloadLiveMatchdayTracker', label:'LIVE MATCHDAY TRACKER' },
+    { id:'nl4DownloadPublicAdminTimeline', label:'PUBLIC / ADMIN PROBABILITY TIMELINE' }
+  ];
+
+  function safeName(value){
+    return String(value||'nl4-model-section')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^a-zA-Z0-9]+/g,'-')
+      .replace(/^-+|-+$/g,'')
+      .toLowerCase().slice(0,90) || 'nl4-model-section';
+  }
+
+  function triggerDownload(dataUrl, name){
+    const a=document.createElement('a');
+    a.download=safeName(name)+'.png';
+    a.href=dataUrl;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  function downloadSvgGraph(target,label){
+    const svg=target.querySelector('svg');
+    if(!svg) return false;
+
+    const clone=svg.cloneNode(true);
+    clone.setAttribute('xmlns','http://www.w3.org/2000/svg');
+    const rect=svg.getBoundingClientRect();
+    const width=Math.max(760,Math.round(rect.width||760));
+    const height=Math.max(240,Math.round(rect.height||240));
+    clone.setAttribute('width',width);
+    clone.setAttribute('height',height);
+
+    const serialized=new XMLSerializer().serializeToString(clone);
+    const blob=new Blob([serialized],{type:'image/svg+xml;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const image=new Image();
+
+    image.onload=function(){
+      const canvas=document.createElement('canvas');
+      canvas.width=width*2;
+      canvas.height=height*2;
+      const ctx=canvas.getContext('2d');
+      ctx.scale(2,2);
+      ctx.fillStyle='#0b0b0b';
+      ctx.fillRect(0,0,width,height);
+      ctx.drawImage(image,0,0,width,height);
+      URL.revokeObjectURL(url);
+      triggerDownload(canvas.toDataURL('image/png'),label);
+    };
+    image.src=url;
+    return true;
+  }
+
+  async function capture(target,label,graphOnly){
+    if(graphOnly && downloadSvgGraph(target,label)) return;
+
+    const bar=target.querySelector(':scope > .nl4-explicit-download-bar');
+    if(bar) bar.style.display='none';
+
+    try{
+      if(typeof window.html2canvas === 'function'){
+        const canvas=await window.html2canvas(target,{
+          backgroundColor:'#070707',
+          scale:2,
+          useCORS:true,
+          logging:false,
+          allowTaint:false
+        });
+        triggerDownload(canvas.toDataURL('image/png'),label);
+        return;
+      }
+
+      // Fallback if html2canvas fails to load: joined section text in one image.
+      const clone=target.cloneNode(true);
+      clone.querySelectorAll('.nl4-explicit-download-bar,button,input,select,textarea').forEach(el=>el.remove());
+      const lines=(clone.innerText||clone.textContent||'').split(/\n+/).map(x=>x.trim()).filter(Boolean);
+      const width=1500;
+      const height=Math.max(900,Math.min(2400,220+lines.length*38));
+      const canvas=document.createElement('canvas');
+      canvas.width=width;canvas.height=height;
+      const ctx=canvas.getContext('2d');
+      ctx.fillStyle='#070707';ctx.fillRect(0,0,width,height);
+      ctx.fillStyle='#101010';ctx.fillRect(50,50,width-100,height-100);
+      ctx.strokeStyle='#e7bd58';ctx.lineWidth=3;ctx.strokeRect(50,50,width-100,height-100);
+      ctx.fillStyle='#e7bd58';ctx.font='800 30px Arial';
+      ctx.fillText('NL4 • ADMIN MODEL',90,112);
+      ctx.fillStyle='#d8001f';ctx.fillRect(90,140,160,5);
+      ctx.fillStyle='#f5f5f2';ctx.font='900 43px Arial';
+      ctx.fillText(label.slice(0,58),90,215);
+      let y=280;
+      for(const line of lines.slice(0,48)){
+        if(y>height-90) break;
+        ctx.fillStyle='#c8c8c8';ctx.font='600 24px Arial';
+        const words=line.split(/\s+/);let current='';
+        for(const word of words){
+          const test=current?current+' '+word:word;
+          if(current && ctx.measureText(test).width>width-180){
+            ctx.fillText(current,90,y);y+=34;current=word;
+          }else current=test;
+        }
+        if(current){ctx.fillText(current,90,y);y+=36;}
+      }
+      triggerDownload(canvas.toDataURL('image/png'),label);
+    } finally {
+      if(bar) bar.style.display='';
+    }
+  }
+
+  function install(item){
+    const target=document.getElementById(item.id);
+    if(!target || target.dataset.nl4ExplicitDownloadReady==='1') return;
+
+    target.dataset.nl4ExplicitDownloadReady='1';
+    target.classList.add('nl4-explicit-download-target');
+
+    const bar=document.createElement('div');
+    bar.className='nl4-explicit-download-bar';
+
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='nl4-explicit-download-btn';
+    btn.innerHTML='<span class="icon">⇩</span><span>DOWNLOAD '+item.label+'</span>';
+    btn.title='Download '+item.label+' as one complete image';
+    btn.setAttribute('aria-label','Download '+item.label+' as one complete image');
+
+    btn.addEventListener('click',async function(event){
+      event.preventDefault();
+      event.stopPropagation();
+      btn.disabled=true;
+      const original=btn.innerHTML;
+      btn.innerHTML='<span class="icon">…</span><span>PREPARING IMAGE</span>';
+      try{
+        await capture(target,item.label,item.graphOnly);
+      }catch(error){
+        console.error('NL4 download failed:',item.label,error);
+        alert('Could not download '+item.label+': '+error.message);
+      }finally{
+        btn.disabled=false;
+        btn.innerHTML=original;
+      }
+    },true);
+
+    bar.appendChild(btn);
+    target.appendChild(bar);
+  }
+
+  function installAll(){
+    DOWNLOADS.forEach(install);
+  }
+
+  installAll();
+  setTimeout(installAll,250);
+  setTimeout(installAll,1000);
+  const observer=new MutationObserver(installAll);
+  observer.observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
+
+
+<script id="nl4-complete-model-summary-download">
+(function(){
+  if(window.__nl4CompleteModelDownloadReady) return;
+  window.__nl4CompleteModelDownloadReady = true;
+
+  function safeName(v){
+    return String(v||'nl4-complete-model-summary')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^a-zA-Z0-9]+/g,'-')
+      .replace(/^-+|-+$/g,'')
+      .toLowerCase().slice(0,90) || 'nl4-complete-model-summary';
+  }
+
+  function trigger(dataUrl,name){
+    const a=document.createElement('a');
+    a.download=safeName(name)+'.png';
+    a.href=dataUrl;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  async function downloadComplete(){
+    const target=document.getElementById('nl4DownloadCompleteModelSummary');
+    if(!target) return;
+
+    const bars=[
+      ...target.querySelectorAll('.nl4-explicit-download-bar'),
+      document.getElementById('nl4CompleteSummaryDownloadBar')
+    ].filter(Boolean);
+
+    bars.forEach(el=>el.style.display='none');
+
+    try{
+      if(typeof window.html2canvas === 'function'){
+        const canvas=await window.html2canvas(target,{
+          backgroundColor:'#070707',
+          scale:1.5,
+          useCORS:true,
+          logging:false,
+          allowTaint:false,
+          windowWidth:Math.max(document.documentElement.scrollWidth, target.scrollWidth)
+        });
+        trigger(canvas.toDataURL('image/png'),'NL4 Complete Model Summary');
+        return;
+      }
+
+      const copy=target.cloneNode(true);
+      copy.querySelectorAll('.nl4-explicit-download-bar,#nl4CompleteSummaryDownloadBar,button,input,select,textarea').forEach(el=>el.remove());
+      const lines=(copy.innerText||copy.textContent||'')
+        .split(/\n+/).map(x=>x.trim()).filter(Boolean);
+
+      const W=1700;
+      const H=Math.max(1200,Math.min(5000,260+lines.length*36));
+      const canvas=document.createElement('canvas');
+      canvas.width=W;canvas.height=H;
+      const ctx=canvas.getContext('2d');
+
+      ctx.fillStyle='#070707';ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='#101010';ctx.fillRect(55,55,W-110,H-110);
+      ctx.strokeStyle='#e7bd58';ctx.lineWidth=3;ctx.strokeRect(55,55,W-110,H-110);
+
+      ctx.fillStyle='#e7bd58';ctx.font='800 32px Arial';
+      ctx.fillText('NL4 • COMPLETE MODEL SUMMARY',95,118);
+      ctx.fillStyle='#d8001f';ctx.fillRect(95,148,180,5);
+
+      let y=220;
+      for(const line of lines.slice(0,110)){
+        if(y>H-100) break;
+        const isHeading=/forecast|table|graph|impact|history|momentum|points|tracker|timeline|probability/i.test(line);
+        ctx.fillStyle=isHeading?'#e7bd58':'#c9c9c9';
+        ctx.font=isHeading?'800 28px Arial':'600 23px Arial';
+
+        const words=line.split(/\s+/);let current='';
+        for(const word of words){
+          const test=current?current+' '+word:word;
+          if(current && ctx.measureText(test).width>W-190){
+            ctx.fillText(current,95,y);y+=34;current=word;
+          }else current=test;
+        }
+        if(current){ctx.fillText(current,95,y);y+=36;}
+      }
+
+      ctx.fillStyle='#666';ctx.font='600 21px Arial';
+      ctx.fillText('North London Forever • 2026/27',95,H-75);
+
+      trigger(canvas.toDataURL('image/png'),'NL4 Complete Model Summary');
+    } finally {
+      bars.forEach(el=>el.style.display='');
+    }
+  }
+
+  function install(){
+    const target=document.getElementById('nl4DownloadCompleteModelSummary');
+    if(!target || document.getElementById('nl4CompleteSummaryDownloadBtn')) return;
+
+    const bar=document.createElement('div');
+    bar.id='nl4CompleteSummaryDownloadBar';
+
+    const btn=document.createElement('button');
+    btn.id='nl4CompleteSummaryDownloadBtn';
+    btn.type='button';
+    btn.innerHTML='<span style="font-size:18px">⇩</span><span>DOWNLOAD COMPLETE MODEL SUMMARY</span>';
+    btn.title='Download all model sections together as one image';
+
+    btn.addEventListener('click',async function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      btn.disabled=true;
+      const old=btn.innerHTML;
+      btn.innerHTML='<span style="font-size:18px">…</span><span>PREPARING COMPLETE SUMMARY</span>';
+      try{
+        await downloadComplete();
+      }catch(err){
+        console.error('Complete model summary download failed:',err);
+        alert('Could not download complete model summary: '+err.message);
+      }finally{
+        btn.disabled=false;
+        btn.innerHTML=old;
+      }
+    },true);
+
+    bar.appendChild(btn);
+    target.appendChild(bar);
+  }
+
+  install();
+  setTimeout(install,500);
+})();
+</script>
+
+<script id="nl4-section-downloads">
+(function(){
+  if(window.__nl4SectionDownloadsReady) return;
+  window.__nl4SectionDownloadsReady = true;
+
+  // Download whole joined sections, not individual stat cells.
+  const SECTION_SELECTORS = [
+    // Main Premier League / title model block
+    '.nl4-title-probability',
+    '.nl4-title-model',
+    '.nl4-model-panel',
+    '.title-probability-section',
+
+    // Charts / graphs
+    '.nl4-probability-chart-wrap',
+    '.nl4-probability-history',
+    '.nl4-timeline-chart',
+    '.nl4-chart-card',
+    '.v13-chart-wrap',
+    '.v14-chart-wrap',
+    'canvas',
+
+    // Evidence and diagnostics blocks
+    '.v13-evidence-engine',
+    '.nl4-v3-diagnostics',
+    '.nl4-fixture-coverage',
+    '.nl4-race-momentum',
+    '.nl4-title-target',
+    '.nl4-scenario-analysis',
+
+    // Audit / dashboard groups
+    '.v128-audit',
+    '.v129-reliability',
+    '.v131-audit',
+    '.v133-audit',
+    '.v135-audit',
+    '.v136-audit',
+    '.v138-audit',
+    '.v139-audit',
+    '.v140-audit',
+    '.v141-audit',
+    '.v142-audit',
+
+    // Generic major sections/cards used by the model page
+    'section'
+  ].join(',');
+
+  function safeName(v){
+    return String(v||'nl4-section')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^a-zA-Z0-9]+/g,'-')
+      .replace(/^-+|-+$/g,'')
+      .toLowerCase().slice(0,90) || 'nl4-section';
+  }
+
+  function sectionTitle(section){
+    const own = section.querySelector(':scope > h1,:scope > h2,:scope > h3,:scope > header h1,:scope > header h2,:scope > header h3');
+    if(own?.textContent?.trim()) return own.textContent.trim();
+
+    const heading = section.querySelector('h1,h2,h3,.nl4-model-title,.section-title,.nl4-model-label');
+    if(heading?.textContent?.trim()) return heading.textContent.trim();
+
+    if(section.tagName === 'CANVAS') return 'NL4 Model Graph';
+    return 'NL4 Model Section';
+  }
+
+  function isUseful(section){
+    if(!section || section.closest('dialog')) return false;
+    if(section.classList?.contains('nl4-section-download-toolbar')) return false;
+    if(section.querySelector?.('.nl4-section-download-btn')) return false;
+
+    const text=(section.innerText||section.textContent||'').trim();
+    const hasCanvas=section.tagName==='CANVAS' || !!section.querySelector?.('canvas,svg');
+    const hasStats=!!section.querySelector?.('strong');
+    return hasCanvas || hasStats || text.length>120;
+  }
+
+  // Use html2canvas if page already has it; otherwise generate a clean section snapshot
+  // directly from rendered text + canvas chart where possible.
+  async function downloadSection(section){
+    const title=sectionTitle(section);
+
+    // Prefer native html2canvas when present in the project.
+    if(typeof window.html2canvas === 'function'){
+      const toolbar=section.querySelector(':scope > .nl4-section-download-toolbar');
+      if(toolbar) toolbar.style.visibility='hidden';
+      try{
+        const canvas=await window.html2canvas(section,{
+          backgroundColor:'#070707',
+          scale:2,
+          useCORS:true,
+          logging:false
+        });
+        const a=document.createElement('a');
+        a.download=safeName(title)+'.png';
+        a.href=canvas.toDataURL('image/png');
+        document.body.appendChild(a);a.click();a.remove();
+        return;
+      } finally {
+        if(toolbar) toolbar.style.visibility='';
+      }
+    }
+
+    // If this is a chart canvas, export exact graph pixels.
+    const chartCanvas = section.tagName==='CANVAS' ? section : section.querySelector('canvas');
+    if(chartCanvas && chartCanvas.toDataURL){
+      try{
+        const a=document.createElement('a');
+        a.download=safeName(title)+'.png';
+        a.href=chartCanvas.toDataURL('image/png');
+        document.body.appendChild(a);a.click();a.remove();
+        return;
+      }catch(_){}
+    }
+
+    // Reliable fallback: capture the whole section content as one joined branded image.
+    const copy=section.cloneNode(true);
+    copy.querySelectorAll('.nl4-section-download-toolbar,button,input,select,textarea').forEach(el=>el.remove());
+    const lines=(copy.innerText||copy.textContent||'')
+      .split(/\n+/).map(v=>v.trim()).filter(Boolean);
+
+    const W=1500,H=Math.max(900,Math.min(2200,220+lines.length*42));
+    const canvas=document.createElement('canvas');
+    canvas.width=W;canvas.height=H;
+    const ctx=canvas.getContext('2d');
+
+    ctx.fillStyle='#070707';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#101010';ctx.fillRect(55,55,W-110,H-110);
+    ctx.strokeStyle='#e7bd58';ctx.lineWidth=3;ctx.strokeRect(55,55,W-110,H-110);
+
+    ctx.fillStyle='#e7bd58';ctx.font='800 30px Arial,sans-serif';
+    ctx.fillText('NL4 • ADMIN MODEL',95,115);
+    ctx.fillStyle='#d8001f';ctx.fillRect(95,145,160,5);
+
+    let y=225;
+    ctx.fillStyle='#f5f5f2';ctx.font='900 46px Arial,sans-serif';
+    ctx.fillText(title.toUpperCase().slice(0,55),95,y);
+    y+=72;
+
+    for(const line of lines.slice(0,42)){
+      if(y>H-100) break;
+      const isValue=/^\d+([.,]\d+)?%?$/.test(line)||/pts|matches|active|low|high|medium/i.test(line);
+      ctx.fillStyle=isValue?'#e7bd58':'#c8c8c8';
+      ctx.font=isValue?'800 30px Arial,sans-serif':'600 25px Arial,sans-serif';
+      const words=line.split(/\s+/);
+      let current='';
+      for(const word of words){
+        const test=current?current+' '+word:word;
+        if(ctx.measureText(test).width>W-190 && current){
+          ctx.fillText(current,95,y);y+=36;current=word;
+        } else current=test;
+      }
+      if(current){ctx.fillText(current,95,y);y+=38;}
+    }
+
+    ctx.fillStyle='#666';ctx.font='600 21px Arial,sans-serif';
+    ctx.fillText('North London Forever • 2026/27',95,H-75);
+
+    const a=document.createElement('a');
+    a.download=safeName(title)+'.png';
+    a.href=canvas.toDataURL('image/png');
+    document.body.appendChild(a);a.click();a.remove();
+  }
+
+  function attach(section){
+    if(!isUseful(section)) return;
+    if(section.dataset.nl4SectionDownloadReady==='1') return;
+
+    // Do not attach to tiny nested sections when a clear major parent already exists.
+    const majorParent=section.parentElement?.closest?.('.nl4-download-section');
+    if(majorParent && section.tagName!=='CANVAS') return;
+
+    section.dataset.nl4SectionDownloadReady='1';
+    section.classList.add('nl4-download-section');
+
+    const toolbar=document.createElement('div');
+    toolbar.className='nl4-section-download-toolbar';
+
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='nl4-section-download-btn';
+    btn.innerHTML='<span class="nl4-download-icon">⇩</span><span>DOWNLOAD SECTION</span>';
+    btn.title='Download this complete section as one image';
+    btn.addEventListener('click',function(e){
+      e.preventDefault();e.stopPropagation();
+      downloadSection(section).catch(err=>{
+        console.error('NL4 section download failed:',err);
+        alert('Could not download this section: '+err.message);
+      });
+    },true);
+
+    toolbar.appendChild(btn);
+
+    // Put symbol below the whole conjoined section.
+    section.appendChild(toolbar);
+  }
+
+  function scan(){
+    document.querySelectorAll(SECTION_SELECTORS).forEach(attach);
+  }
+
+  scan();
+  setTimeout(scan,250);
+  setTimeout(scan,1000);
+  const observer=new MutationObserver(scan);
+  observer.observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
 </body>
 </html>
