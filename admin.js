@@ -80,6 +80,7 @@ const schemas = {
     ]
   },
   premier_league_player_stats: {
+    title: "2026/27 Player Stats",
     label: "Arsenal Player Stat",
     order: "goals",
     descending: true,
@@ -430,6 +431,8 @@ async function applySession(session) {
   logoutBtn.hidden = false;
   adminEmail.textContent = session.user.email || "NL4 Admin";
   await loadAll();
+  loadFootballApiSyncStatus();
+syncDerivedPlayerStats(); // initial derived sync
 }
 
 loginForm.addEventListener("submit", async (event) => {
@@ -628,6 +631,18 @@ async function loadFixturesAdmin() {
 }
 
 
+async function syncDerivedPlayerStats(messageEl = null) {
+  if (!window.NL4PlayerStatsSync?.syncSeasonStats) return;
+  try {
+    const result = await window.NL4PlayerStatsSync.syncSeasonStats({silent:true});
+    await loadTable('premier_league_player_stats');
+    if (messageEl) setMessage(messageEl, `Player season stats synced from ${result.completed} completed Premier League match${result.completed === 1 ? '' : 'es'}.`, 'success');
+  } catch (error) {
+    console.error('NL4 player stat sync failed:', error);
+    if (messageEl) setMessage(messageEl, `Saved, but player-stat sync failed: ${error.message}`, 'error');
+  }
+}
+
 async function populateLineupPlayers() {
   const { data, error } = await db.from('premier_league_player_stats')
     .select('player_name,position').eq('season','2026/27').order('player_name');
@@ -695,7 +710,7 @@ document.getElementById('clearLineupBtn').addEventListener('click', async () => 
 
   setMessage(lineupMessage, 'Lineup and substitutions cleared.', 'success');
   await loadMatchLineup();
-  await loadTable('premier_league_player_stats');
+  await syncDerivedPlayerStats(lineupMessage);
 });
 
 document.getElementById('saveLineupPlayerBtn').addEventListener('click', async () => {
@@ -740,7 +755,7 @@ document.getElementById('saveLineupPlayerBtn').addEventListener('click', async (
   lineupMinuteOn.disabled = true;
   lineupMinuteOff.value = '';
   await loadMatchLineup();
-  await loadTable('premier_league_player_stats');
+  await syncDerivedPlayerStats(lineupMessage);
 });
 
 window.nl4DeleteLineupPlayer = async id => {
@@ -748,7 +763,7 @@ window.nl4DeleteLineupPlayer = async id => {
   const { error } = await db.from('match_lineups').delete().eq('id',id);
   if (error) return setMessage(lineupMessage,error.message,'error');
   await loadMatchLineup();
-  await loadTable('premier_league_player_stats');
+  await syncDerivedPlayerStats(lineupMessage);
 };
 
 async function loadMatchEvents() {
@@ -793,7 +808,7 @@ window.nl4ManageMatch = async function(id) {
   document.getElementById('matchHTOpponentScore').value = data.halftime_opponent_score ?? '';
   document.getElementById('matchReferee').value = data.referee || '';
   document.getElementById('matchAttendance').value = data.attendance ?? '';
-  document.getElementById('matchMOTM').value = data.man_of_the_match || '';
+  populateMatchMOTMSelect(data.man_of_the_match || '');
   document.getElementById('statsHomeName').textContent = home;
   document.getElementById('statsAwayName').textContent = away;
   document.getElementById('statHomePossession').value = data.home_possession ?? '';
@@ -924,7 +939,7 @@ async function saveCurrentMatch() {
   }
 
   await loadFixturesAdmin();
-  if (isPremierLeague) await loadTable('premier_league_player_stats');
+  if (isPremierLeague) await syncDerivedPlayerStats(matchSaveMessage);
 }
 
 document.getElementById('saveMatchBtn').addEventListener('click', saveCurrentMatch);
@@ -1163,20 +1178,46 @@ document.getElementById('clearStatsBtn').addEventListener('click', async () => {
   setMessage(msg, 'Match statistics cleared.', 'success');
 });
 
+function populateMatchEventPlayerSelects(selectedPlayer = "", selectedRelated = "") {
+  const playerSelect = document.getElementById("eventPlayer");
+  const relatedSelect = document.getElementById("eventRelatedPlayer");
+  if (!playerSelect || !relatedSelect) return;
+
+  const squad = (typeof NL4_2026_27_SQUAD_STATS !== "undefined" ? NL4_2026_27_SQUAD_STATS : []).map(([name, position]) => ({ name, position }));
+  const optionHtml = squad.map(({name, position}) =>
+    `<option value="${escapeHtml(name)}">${escapeHtml(name)} — ${escapeHtml(position)}</option>`
+  ).join("");
+
+  playerSelect.innerHTML = `<option value="">Select player</option>${optionHtml}`;
+  relatedSelect.innerHTML = `<option value="">No related player / no assist</option>${optionHtml}`;
+
+  // Preserve an older saved name even if it is no longer in the current squad list.
+  if (selectedPlayer && !squad.some(p => p.name === selectedPlayer)) {
+    playerSelect.insertAdjacentHTML("beforeend", `<option value="${escapeHtml(selectedPlayer)}">${escapeHtml(selectedPlayer)} — Saved player</option>`);
+  }
+  if (selectedRelated && !squad.some(p => p.name === selectedRelated)) {
+    relatedSelect.insertAdjacentHTML("beforeend", `<option value="${escapeHtml(selectedRelated)}">${escapeHtml(selectedRelated)} — Saved player</option>`);
+  }
+
+  playerSelect.value = selectedPlayer || "";
+  relatedSelect.value = selectedRelated || "";
+}
+
 function openEventEditor(event = null) {
   if (!currentFixture) return;
   currentEventId = event?.id || null;
   document.getElementById('eventDialogTitle').textContent = event ? 'Edit event' : 'Add event';
   document.getElementById('eventType').value = event?.event_type || 'goal';
-  document.getElementById('eventPlayer').value = event?.player_name || '';
+  populateMatchEventPlayerSelects(event?.player_name || '', event?.related_player_name || '');
   document.getElementById('eventMinute').value = event?.minute ?? '';
   document.getElementById('eventStoppage').value = event?.stoppage_minute ?? '';
-  document.getElementById('eventRelatedPlayer').value = event?.related_player_name || '';
   const home = currentFixture.home_team || (currentFixture.is_home ? 'Arsenal' : currentFixture.opponent);
   const away = currentFixture.away_team || (currentFixture.is_home ? currentFixture.opponent : 'Arsenal');
   const teamSelect = document.getElementById('eventTeam');
-  teamSelect.innerHTML = `<option value="${escapeHtml(home)}">${escapeHtml(home)}</option><option value="${escapeHtml(away)}">${escapeHtml(away)}</option>`;
-  teamSelect.value = event?.team_name || home;
+  const arsenalTeam = [home, away].find(team => String(team || '').toLowerCase().includes('arsenal')) || 'Arsenal';
+  const opponentTeam = arsenalTeam === home ? away : home;
+  teamSelect.innerHTML = `<option value="${escapeHtml(arsenalTeam)}">${escapeHtml(arsenalTeam)}</option><option value="${escapeHtml(opponentTeam)}">${escapeHtml(opponentTeam)}</option>`;
+  teamSelect.value = event?.team_name || arsenalTeam;
   setMessage(eventMessage);
   eventDialog.showModal();
 }
@@ -1204,6 +1245,7 @@ document.getElementById('clearAllEventsBtn').addEventListener('click', async () 
   const { error } = await db.from('match_events').delete().eq('fixture_id', currentFixture.id);
   if (error) return alert(error.message);
   await loadMatchEvents();
+  await syncDerivedPlayerStats();
 });
 
 
@@ -1218,6 +1260,7 @@ window.nl4DeleteMatchEvent = async function(id) {
   const { error } = await db.from('match_events').delete().eq('id', id);
   if (error) return alert(error.message);
   await loadMatchEvents();
+  await syncDerivedPlayerStats();
 };
 
 document.getElementById('saveEventBtn').addEventListener('click', async () => {
@@ -1242,9 +1285,97 @@ document.getElementById('saveEventBtn').addEventListener('click', async () => {
   if (response.error) return setMessage(eventMessage, response.error.message, 'error');
   setMessage(eventMessage, 'Event saved.', 'success');
   await loadMatchEvents();
+  await syncDerivedPlayerStats(eventMessage);
   setTimeout(() => eventDialog.close(), 250);
 });
 
+
+
+
+const NL4_2026_27_SQUAD_STATS = [
+  ["David Raya","Goalkeeper"],["Kepa Arrizabalaga","Goalkeeper"],["Illan Meslier","Goalkeeper"],["Tommy Setford","Goalkeeper"],
+  ["William Saliba","Defender"],["Cristhian Mosquera","Defender"],["Ben White","Defender"],["Piero Hincapié","Defender"],
+  ["Gabriel Magalhães","Defender"],["Jurriën Timber","Defender"],["Riccardo Calafiori","Defender"],["Myles Lewis-Skelly","Defender"],
+  ["Martin Ødegaard","Midfielder"],["Eberechi Eze","Midfielder"],["Fabio Vieira","Midfielder"],["Ethan Nwaneri","Midfielder"],
+  ["Mikel Merino","Midfielder"],["Martín Zubimendi","Midfielder"],["Bruno Guimarães","Midfielder"],["Declan Rice","Midfielder"],
+  ["Bukayo Saka","Forward"],["Gabriel Jesus","Forward"],["Gabriel Martinelli","Forward"],["Viktor Gyökeres","Forward"],
+  ["Christos Tzolis","Forward"],["Noni Madueke","Forward"],["Reiss Nelson","Forward"],["Kai Havertz","Forward"]
+];
+
+function populateMatchMOTMSelect(selected = "") {
+  const select = document.getElementById("matchMOTM");
+  if (!select) return;
+  const selectedName = String(selected || "").trim();
+  const options = ['<option value="">Select Arsenal player / no MOM</option>'];
+  NL4_2026_27_SQUAD_STATS.forEach(([name, position]) => {
+    const safeName = escapeHtml(name);
+    const safePosition = escapeHtml(position || "Player");
+    const isSelected = name === selectedName ? " selected" : "";
+    options.push(`<option value="${safeName}"${isSelected}>${safeName} — ${safePosition}</option>`);
+  });
+  // Preserve an older saved name even if the squad list later changes.
+  if (selectedName && !NL4_2026_27_SQUAD_STATS.some(([name]) => name === selectedName)) {
+    const safe = escapeHtml(selectedName);
+    options.push(`<option value="${safe}" selected>${safe}</option>`);
+  }
+  select.innerHTML = options.join("");
+}
+
+
+async function ensurePremierLeaguePlayerStatsSquad(){
+  const { data, error } = await db.from("premier_league_player_stats")
+    .select("player_name").eq("season","2026/27");
+  if (error) {
+    console.warn("NL4 player stats squad check:", error.message);
+    return;
+  }
+  const existing = new Set((data || []).map(row => String(row.player_name || "").trim().toLowerCase()));
+  const missing = NL4_2026_27_SQUAD_STATS
+    .filter(([name]) => !existing.has(name.toLowerCase()))
+    .map(([player_name, position]) => ({
+      season:"2026/27", player_name, position, appearances:0, starts:0, minutes:0, goals:0, assists:0,
+      clean_sheets:0, yellow_cards:0, red_cards:0, man_of_the_match:0, shots:0, shots_on_target:0,
+      chances_created:0, tackles:0, interceptions:0, saves:0
+    }));
+  if (!missing.length) return;
+  const { error: insertError } = await db.from("premier_league_player_stats").insert(missing);
+  if (insertError) console.warn("NL4 player stats squad initialize:", insertError.message);
+}
+
+function nl4DefaultPlayerStatRow(name, position) {
+  return {
+    id: null,
+    season: "2026/27",
+    player_name: name,
+    position,
+    appearances: 0,
+    starts: 0,
+    minutes: 0,
+    goals: 0,
+    assists: 0,
+    clean_sheets: 0,
+    yellow_cards: 0,
+    red_cards: 0,
+    man_of_the_match: 0,
+    shots: 0,
+    shots_on_target: 0,
+    chances_created: 0,
+    tackles: 0,
+    interceptions: 0,
+    saves: 0
+  };
+}
+
+function mergePremierLeaguePlayerStats(rows = []) {
+  const normalize = value => String(value || "").trim().toLowerCase();
+  const byName = new Map((rows || []).map(row => [normalize(row.player_name), row]));
+  return NL4_2026_27_SQUAD_STATS.map(([name, position]) => {
+    const saved = byName.get(normalize(name));
+    return saved
+      ? { ...nl4DefaultPlayerStatRow(name, position), ...saved, player_name: name, position: saved.position || position }
+      : nl4DefaultPlayerStatRow(name, position);
+  });
+}
 
 let plPlayerStatsRows = [];
 let plPlayerStatsPositionFilter = "all";
@@ -1290,14 +1421,15 @@ function renderPremierLeaguePlayerStatsAdmin() {
             <div class="meta">${escapeHtml(row.position || "Player")} • ${escapeHtml(row.season || "")}</div>
 
             <div class="pl-admin-player-stats">
-              <div class="pl-admin-mini-stat"><strong>${row.appearances ?? 0}</strong><span>APP</span><button type="button" class="nl4-direct-stat-download" data-stat-label="${esc(row.player_name)} • APPEARANCES" data-stat-value="${row.appearances ?? 0}" title="Download appearances">⇩</button></div>
-              <div class="pl-admin-mini-stat"><strong>${row.goals ?? 0}</strong><span>GOALS</span><button type="button" class="nl4-direct-stat-download" data-stat-label="${esc(row.player_name)} • GOALS" data-stat-value="${row.goals ?? 0}" title="Download goals">⇩</button></div>
-              <div class="pl-admin-mini-stat"><strong>${row.assists ?? 0}</strong><span>ASSISTS</span><button type="button" class="nl4-direct-stat-download" data-stat-label="${esc(row.player_name)} • ASSISTS" data-stat-value="${row.assists ?? 0}" title="Download assists">⇩</button></div>
-              <div class="pl-admin-mini-stat"><strong>${row.man_of_the_match ?? 0}</strong><span>MOTM</span><button type="button" class="nl4-direct-stat-download" data-stat-label="${esc(row.player_name)} • MAN OF THE MATCH" data-stat-value="${row.man_of_the_match ?? 0}" title="Download MOTM">⇩</button></div>
+              <div class="pl-admin-mini-stat"><strong>${row.appearances ?? 0}</strong><span>APP</span></div>
+              <div class="pl-admin-mini-stat"><strong>${row.goals ?? 0}</strong><span>GOALS</span></div>
+              <div class="pl-admin-mini-stat"><strong>${row.assists ?? 0}</strong><span>ASSISTS</span></div>
+              ${String(row.player_name||'') === 'David Raya' || String(row.player_name||'') === 'Kepa Arrizabalaga' ? `<div class="pl-admin-mini-stat"><strong>${row.saves ?? 0}</strong><span>SAVES</span></div>` : ''}
+              <div class="pl-admin-mini-stat"><strong>${row.man_of_the_match ?? 0}</strong><span>MOTM</span></div>
             </div>
 
             <div class="card-actions">
-              <button class="primary-btn" type="button" onclick="window.nl4Edit('premier_league_player_stats','${row.id}')">
+              <button class="primary-btn pl-edit-stats-btn" type="button" data-player-name="${escapeHtml(row.player_name || "")}" data-player-position="${escapeHtml(row.position || "")}">
                 Edit Stats
               </button>
             </div>
@@ -1307,6 +1439,15 @@ function renderPremierLeaguePlayerStatsAdmin() {
     </section>`;
   }).join("");
 }
+
+document.addEventListener("click", event => {
+  const button = event.target.closest(".pl-edit-stats-btn");
+  if (!button) return;
+  event.preventDefault();
+  const playerName = button.dataset.playerName || "";
+  const position = button.dataset.playerPosition || "";
+  window.nl4EditPlayerStatsByName(playerName, position);
+});
 
 const plPlayerSearch = document.getElementById("plPlayerSearch");
 if (plPlayerSearch) {
@@ -1358,24 +1499,28 @@ document.addEventListener("click", event => {
 async function loadTable(table) {
   if (table === "fixtures") return loadFixturesAdmin();
   if (table === "premier_league_standings") await ensurePremierLeagueStandingsClubs();
+  if (table === "premier_league_player_stats") await ensurePremierLeaguePlayerStatsSquad();
   const schema = schemas[table];
   const ascending = table !== "news";
   let query = db.from(table).select("*");
-  if (table === "premier_league_standings") query = query.eq("season", "2026/27");
+  if (table === "premier_league_standings" || table === "premier_league_player_stats") query = query.eq("season", "2026/27");
   const { data, error } = await query.order(schema.order, { ascending });
 
   const holder = document.getElementById(`${table}List`);
   if (error) {
     if (holder) holder.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
     if (table === "premier_league_player_stats") {
-      const grouped = document.getElementById("premier_league_player_statsGrouped");
-      if (grouped) grouped.innerHTML = `<div class="pl-admin-empty">${escapeHtml(error.message)}</div>`;
+      console.warn("NL4 player stats read failed; showing built-in 2026/27 squad:", error.message);
+      plPlayerStatsRows = mergePremierLeaguePlayerStats([]);
+      renderPremierLeaguePlayerStatsAdmin();
+      if (holder) holder.innerHTML = "";
+      return;
     }
     return;
   }
 
   if (table === "premier_league_player_stats") {
-    plPlayerStatsRows = data || [];
+    plPlayerStatsRows = mergePremierLeaguePlayerStats(data || []);
     renderPremierLeaguePlayerStatsAdmin();
     if (holder) holder.innerHTML = "";
     return;
@@ -1544,6 +1689,35 @@ editorForm.addEventListener("submit", async (event) => {
 });
 
 window.nl4Edit = openEditor;
+window.nl4EditPlayerStatsByName = async (playerName, position) => {
+  // Open the editor even when this player does not yet have a Supabase row.
+  // If a row exists, edit it. Otherwise open a prefilled new-row editor and
+  // let the normal Save action create it.
+  try {
+    const { data, error } = await db
+      .from("premier_league_player_stats")
+      .select("*")
+      .eq("season", "2026/27")
+      .eq("player_name", playerName)
+      .maybeSingle();
+
+    if (!error && data?.id) {
+      return openEditor("premier_league_player_stats", data.id);
+    }
+  } catch (error) {
+    console.warn("NL4 player-stat lookup failed; opening local editor instead:", error);
+  }
+
+  await openEditor("premier_league_player_stats");
+  const nameInput = editorForm.elements["player_name"];
+  const positionInput = editorForm.elements["position"];
+  const seasonInput = editorForm.elements["season"];
+  if (seasonInput) seasonInput.value = "2026/27";
+  if (nameInput) nameInput.value = playerName || "";
+  if (positionInput) positionInput.value = position || "";
+  editorTitle.textContent = `Edit ${playerName} • 2026/27 Player Stats`;
+};
+
 window.nl4Delete = async (table, id) => {
   if (!confirm("Delete this item permanently?")) return;
   const { error } = await db.from(table).delete().eq("id", id);
@@ -2056,7 +2230,7 @@ db.auth.onAuthStateChange((_event, session) => {
       return heading+`<label class="forecast-stat-option">
         <input type="checkbox" class="forecast-stat-check" value="${esc(s.key)}">
         <span><b>${esc(s.label)}</b><strong>${esc(s.value)}</strong><small>Choose to show this statistic to viewers.</small></span>
-        <button type="button" class="nl4-direct-stat-download" title="Download this stat" aria-label="Download ${esc(s.label)} stat" data-stat-label="${esc(s.label)}" data-stat-value="${esc(s.value)}">⇩</button>
+        
       </label>`;
     }).join('');
     host.querySelectorAll('.forecast-stat-check').forEach(x=>x.addEventListener('change',updateSelectedCount));
@@ -2415,3 +2589,166 @@ db.auth.onAuthStateChange((_event, session) => {
   const obs=new MutationObserver(addStaticButtons);
   obs.observe(document.documentElement,{subtree:true,childList:true});
 })();
+
+
+// Restored Current Generation profile editor (from commit 2e25b11)
+(() => {
+  const form = document.getElementById("currentProfileForm");
+  const select = document.getElementById("currentProfilePlayer");
+  const loadBtn = document.getElementById("loadCurrentProfileBtn");
+  const msg = document.getElementById("currentProfileMessage");
+  const published = document.getElementById("currentProfilePublished");
+  if(!form || !select) return;
+
+  const say = (text,type="") => {
+    msg.textContent = text || "";
+    msg.className = "message" + (type ? ` ${type}` : "");
+  };
+  const setVal = (name,val) => {
+    const el = form.elements.namedItem(name);
+    if(el) el.value = val ?? "";
+  };
+
+  function fill(row){
+    const c = row?.content || {};
+    setVal("image_url", row?.image_url || "");
+    Object.entries(c).forEach(([k,v]) => {
+      if(k !== "facts" && k !== "stories") setVal(k,v);
+    });
+    (c.facts || []).forEach((x,i) => {
+      setVal(`fact_${i+1}_label`,x?.label);
+      setVal(`fact_${i+1}_value`,x?.value);
+    });
+    (c.stories || []).forEach((x,i) => {
+      setVal(`story_${i+1}_title`,x?.title);
+      setVal(`story_${i+1}_body`,x?.body);
+    });
+    published.checked = row?.is_published !== false;
+  }
+
+  async function load(){
+    say("Loading profile…");
+    try{
+      const {data,error} = await db.from("nl4_current_player_profiles").select("*").eq("slug",select.value).maybeSingle();
+      if(error) throw error;
+      if(!data) throw new Error("Profile not found. Run NL4-current-player-profiles-setup.sql in Supabase first.");
+      fill(data);
+      say("Profile loaded from Supabase.","success");
+    }catch(e){ say(e.message || String(e),"error"); }
+  }
+
+  function buildContent(){
+    const fd = new FormData(form);
+    const get = n => String(fd.get(n) || "").trim();
+    return {
+      hero_eyebrow:get("hero_eyebrow"), hero_name_line1:get("hero_name_line1"), hero_name_line2:get("hero_name_line2"),
+      hero_intro:get("hero_intro"), hero_button:get("hero_button"),
+      main_eyebrow:get("main_eyebrow"), main_title_line1:get("main_title_line1"), main_title_line2:get("main_title_line2"),
+      facts_eyebrow:get("facts_eyebrow"), facts_title:get("facts_title"),
+      facts:Array.from({length:6},(_,i)=>({label:get(`fact_${i+1}_label`),value:get(`fact_${i+1}_value`)})),
+      story_eyebrow:get("story_eyebrow"), story_title:get("story_title"),
+      stories:Array.from({length:3},(_,i)=>({title:get(`story_${i+1}_title`),body:get(`story_${i+1}_body`)})),
+      legacy_eyebrow:get("legacy_eyebrow"), legacy_title_line1:get("legacy_title_line1"), legacy_title_line2:get("legacy_title_line2"),
+      legacy_body:get("legacy_body"), back_button:get("back_button")
+    };
+  }
+
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    say("Saving profile…");
+    try{
+      const fd = new FormData(form);
+      const payload = {
+        slug:select.value,
+        image_url:String(fd.get("image_url") || "").trim(),
+        content:buildContent(),
+        is_published:published.checked,
+        updated_at:new Date().toISOString()
+      };
+      const {error} = await db.from("nl4_current_player_profiles").upsert(payload,{onConflict:"slug"});
+      if(error) throw error;
+      say("Saved. The public player page will now read this profile from Supabase.","success");
+    }catch(e){ say(e.message || String(e),"error"); }
+  });
+  loadBtn?.addEventListener("click",load);
+  select.addEventListener("change",load);
+
+  document.querySelector('[data-panel="currentProfilesPanel"]')?.addEventListener("click",() => setTimeout(load,0));
+})();
+
+
+// ===== NL4 FOOTBALL-DATA.ORG API SYNC STATUS =====
+function nl4FormatSyncTime(value) {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+}
+
+function nl4SetSyncHealth(text, cls = "") {
+  const el = document.getElementById("apiSyncHealth");
+  if (!el) return;
+  el.textContent = text;
+  el.classList.remove("api-sync-good", "api-sync-bad", "api-sync-warn");
+  if (cls) el.classList.add(cls);
+}
+
+async function loadFootballApiSyncStatus() {
+  const message = document.getElementById("apiSyncMessage");
+  if (!document.getElementById("apiSyncPanel") || !db) return;
+  try {
+    const { data, error } = await db.rpc("nl4_football_api_sync_status");
+    if (error) throw error;
+    const s = data || {};
+    const healthy = Boolean(s.cronActive) && (!s.lastCronStatus || ["succeeded", "running"].includes(String(s.lastCronStatus).toLowerCase()));
+    nl4SetSyncHealth(healthy ? "ONLINE" : (s.cronActive ? "CHECK" : "INACTIVE"), healthy ? "api-sync-good" : "api-sync-bad");
+    document.getElementById("apiSyncCronState").textContent = s.cronActive ? `Cron active • ${s.schedule || "*/30 * * * *"}` : "Cron job inactive";
+    document.getElementById("apiSyncLast").textContent = nl4FormatSyncTime(s.lastApiSync);
+    document.getElementById("apiSyncNext").textContent = nl4FormatSyncTime(s.nextSync);
+    const leagueCount = Number(s.leagueMatches || 0);
+    document.getElementById("apiSyncCoverage").textContent = `${leagueCount}/380`;
+    document.getElementById("apiSyncCoverageDetail").textContent = `${leagueCount} total league fixtures • ${s.apiLinkedArsenal || 0}/38 Arsenal API-linked`;
+    document.getElementById("apiSyncArsenal").textContent = `${s.arsenalFixtures || 0}/38`;
+    document.getElementById("apiSyncStandings").textContent = `${s.standingsRows || 0}/20`;
+    document.getElementById("apiSyncJob").textContent = s.jobName || "nl4-football-data-sync-30m";
+    document.getElementById("apiSyncCronRun").textContent = `${s.lastCronStatus || "No run yet"}${s.lastCronStart ? ` • ${nl4FormatSyncTime(s.lastCronStart)}` : ""}`;
+    const errorEl = document.getElementById("apiSyncError");
+    errorEl.textContent = s.lastCronMessage || "None";
+    errorEl.classList.toggle("api-sync-bad", Boolean(s.lastCronMessage));
+    if (message) setMessage(message, `Status refreshed ${new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})}.`, "success");
+  } catch (error) {
+    console.error("NL4 API sync status failed:", error);
+    nl4SetSyncHealth("UNAVAILABLE", "api-sync-bad");
+    if (message) setMessage(message, `Could not read API sync status: ${error.message}`, "error");
+  }
+}
+
+async function syncFootballDataNow() {
+  const button = document.getElementById("syncFootballDataNowBtn");
+  const message = document.getElementById("apiSyncMessage");
+  if (!button || !db) return;
+  const old = button.textContent;
+  button.disabled = true;
+  button.textContent = "SYNCING…";
+  if (message) setMessage(message, "Running protected football-data.org sync…");
+  try {
+    const { data, error } = await db.functions.invoke("sync-football-data", { body: { preview: false, source: "admin-sync-now" } });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+    if (message) setMessage(message, "Football data sync completed. Refreshing live status…", "success");
+    await new Promise(resolve => setTimeout(resolve, 900));
+    await loadFootballApiSyncStatus();
+    await loadAll();
+  } catch (error) {
+    console.error("Manual football data sync failed:", error);
+    if (message) setMessage(message, `Sync failed: ${error.message}`, "error");
+    await loadFootballApiSyncStatus();
+  } finally {
+    button.disabled = false;
+    button.textContent = old;
+  }
+}
+
+document.getElementById("refreshApiSyncBtn")?.addEventListener("click", loadFootballApiSyncStatus);
+document.getElementById("syncFootballDataNowBtn")?.addEventListener("click", syncFootballDataNow);
+document.querySelector('[data-panel="apiSyncPanel"]')?.addEventListener("click", () => setTimeout(loadFootballApiSyncStatus, 0));

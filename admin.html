@@ -179,13 +179,6 @@
 .nl4-direct-stat-download:hover{background:#d8ad45;color:#111}
 .nl4-direct-stat-download:focus-visible{outline:2px solid #fff;outline-offset:2px}
 .pl-admin-mini-stat{position:relative;padding-bottom:44px !important}
-.pl-admin-mini-stat > .nl4-direct-stat-download{
-  position:absolute;
-  left:50%;
-  bottom:7px;
-  transform:translateX(-50%);
-  margin:0;
-}
 .model-test-summary article,
 .interpretation-metrics article{position:relative;padding-bottom:48px !important}
 .model-test-summary article > .nl4-direct-stat-download,
@@ -198,6 +191,10 @@
 }
 </style>
 
+
+<style id="apiSyncAdminStyles">
+.api-sync-actions{display:flex;gap:8px;flex-wrap:wrap}.api-sync-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0}.api-sync-card{padding:18px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:#121212;min-width:0}.api-sync-card span,.api-sync-log span{display:block;color:#d8ad45;font-size:9px;font-weight:900;letter-spacing:1.2px}.api-sync-card strong{display:block;color:#fff;font-size:22px;margin:8px 0 5px;overflow-wrap:anywhere}.api-sync-card small{color:#777}.api-sync-log{display:grid;gap:8px;padding:15px;border:1px solid rgba(216,173,69,.2);border-radius:14px;background:rgba(216,173,69,.035)}.api-sync-log>div{display:grid;grid-template-columns:140px 1fr;gap:12px;align-items:center}.api-sync-log strong{color:#ddd;font-size:12px;overflow-wrap:anywhere}.api-sync-good{color:#58d68d!important}.api-sync-bad{color:#ff6b6b!important}.api-sync-warn{color:#d8ad45!important}@media(max-width:850px){.api-sync-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.api-sync-grid{grid-template-columns:1fr}.api-sync-log>div{grid-template-columns:1fr;gap:4px}.api-sync-actions{width:100%}.api-sync-actions button{flex:1}}
+</style>
 </head>
 <body>
   <header class="topbar">
@@ -238,12 +235,15 @@
       <aside class="side-nav">
         <p class="nav-label">CONTENT</p>
         <button class="nav-link active" data-panel="playersPanel">Players</button>
+        <button class="nav-link" data-panel="currentProfilesPanel">Current Generation</button>
         <button class="nav-link" data-panel="newsPanel">News</button>
         <button class="nav-link" data-panel="fixturesPanel">Fixtures</button>
         <button class="nav-link" data-panel="premierLeaguePanel">Premier League</button>
         <button class="nav-link" data-panel="premierLeagueResultsPanel">Other Teams Results</button>
-        <button class="nav-link" data-panel="plPlayerStatsPanel">PL Player Stats</button>
+        <button class="nav-link" data-panel="plPlayerStatsPanel">2026/27 Player Stats</button>
+        <button class="nav-link" data-panel="apiSyncPanel">API Sync Status</button>
         <button class="nav-link" data-panel="fanPredictionsPanel">Fan Predictions</button>
+        <button class="nav-link" data-panel="treasureAnalyticsPanel">Treasure Viewer Analytics</button>
         <button class="nav-link" data-panel="trophiesPanel">Trophies</button>
         <button class="nav-link" data-panel="mediaPanel">Media</button>
         <a class="nav-link model-admin-link" href="admin-model.html">⚙ Model Admin</a>
@@ -258,6 +258,85 @@
           </div>
           <div id="playersList" class="content-grid"></div>
         </section>
+
+
+
+        
+      <section id="currentProfilesPanel" class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">ARSENAL • CURRENT GENERATION</p>
+            <h2>Current Generation</h2>
+            <p class="muted">Edit the public text on each Current Generation player page. Saved changes publish through Supabase without editing the HTML file.</p>
+          </div>
+        </div>
+        <div class="current-profile-toolbar">
+          <label>Player
+            <select id="currentProfilePlayer">
+              <option value="saka">Bukayo Saka</option>
+              <option value="ode">Martin Ødegaard</option>
+              <option value="rice">Declan Rice</option>
+              <option value="saliba">William Saliba</option>
+              <option value="gabby">Gabriel Magalhães</option>
+              <option value="kai">Kai Havertz</option>
+              <option value="nelly">Gabriel Martinelli</option>
+            </select>
+          </label>
+          <button id="loadCurrentProfileBtn" class="ghost-btn" type="button">Load Profile</button>
+        </div>
+        <form id="currentProfileForm" class="current-profile-form">
+          <div class="profile-admin-card">
+            <h3>Hero</h3>
+            <div class="form-grid">
+              <label class="full">Profile image URL<input name="image_url" type="url"></label>
+              <label>Hero eyebrow<input name="hero_eyebrow"></label>
+              <label>Hero button<input name="hero_button"></label>
+              <label>Name line 1<input name="hero_name_line1"></label>
+              <label>Name line 2<input name="hero_name_line2"></label>
+              <label class="full">Hero introduction<textarea name="hero_intro"></textarea></label>
+            </div>
+          </div>
+          <div class="profile-admin-card">
+            <h3>Main Heading</h3>
+            <div class="form-grid">
+              <label>Main eyebrow<input name="main_eyebrow"></label>
+              <label>Title line 1<input name="main_title_line1"></label>
+              <label>Title line 2<input name="main_title_line2"></label>
+            </div>
+          </div>
+          <div class="profile-admin-card">
+            <h3>At A Glance</h3>
+            <div class="form-grid">
+              <label>Section eyebrow<input name="facts_eyebrow"></label>
+              <label>Section title<input name="facts_title"></label>
+              <label>Fact 1 label<input name="fact_1_label"></label><label>Fact 1 value<input name="fact_1_value"></label><label>Fact 2 label<input name="fact_2_label"></label><label>Fact 2 value<input name="fact_2_value"></label><label>Fact 3 label<input name="fact_3_label"></label><label>Fact 3 value<input name="fact_3_value"></label><label>Fact 4 label<input name="fact_4_label"></label><label>Fact 4 value<input name="fact_4_value"></label><label>Fact 5 label<input name="fact_5_label"></label><label>Fact 5 value<input name="fact_5_value"></label><label>Fact 6 label<input name="fact_6_label"></label><label>Fact 6 value<input name="fact_6_value"></label>
+            </div>
+          </div>
+          <div class="profile-admin-card">
+            <h3>Player Story</h3>
+            <div class="form-grid">
+              <label>Story eyebrow<input name="story_eyebrow"></label>
+              <label>Story heading<input name="story_title"></label>
+              <label class="full">Story 1 heading<input name="story_1_title"></label><label class="full">Story 1 text<textarea name="story_1_body"></textarea></label><label class="full">Story 2 heading<input name="story_2_title"></label><label class="full">Story 2 text<textarea name="story_2_body"></textarea></label><label class="full">Story 3 heading<input name="story_3_title"></label><label class="full">Story 3 text<textarea name="story_3_body"></textarea></label>
+            </div>
+          </div>
+          <div class="profile-admin-card">
+            <h3>Legacy</h3>
+            <div class="form-grid">
+              <label>Legacy eyebrow<input name="legacy_eyebrow"></label>
+              <label>Title line 1<input name="legacy_title_line1"></label>
+              <label>Title line 2<input name="legacy_title_line2"></label>
+              <label>Back button text<input name="back_button"></label>
+              <label class="full">Legacy text<textarea name="legacy_body"></textarea></label>
+            </div>
+          </div>
+          <div class="dialog-actions current-profile-actions">
+            <label class="profile-publish-check"><input id="currentProfilePublished" type="checkbox" checked> Published</label>
+            <button id="saveCurrentProfileBtn" class="primary-btn" type="submit">Save & Publish Profile</button>
+          </div>
+          <p id="currentProfileMessage" class="message" role="status"></p>
+        </form>
+      </section>
 
         <section id="newsPanel" class="panel">
           <div class="panel-heading">
@@ -327,8 +406,8 @@
         <section id="plPlayerStatsPanel" class="panel">
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">ARSENAL ONLY</p>
-              <h2>Premier League Player Stats</h2>
+              <p class="eyebrow">ARSENAL • 2026/27</p>
+              <h2>Player Stats Admin</h2>
               <p class="muted">Manage Arsenal players used by the Player Leaders section on premier-league.html.</p>
             </div>
             <button class="primary-btn" data-new="premier_league_player_stats">+ Add player stats</button>
@@ -346,6 +425,36 @@
             </div>
             <div id="premier_league_player_statsGrouped" class="pl-player-groups"></div>
             <div id="premier_league_player_statsList" class="content-grid" hidden></div>
+        </section>
+
+
+
+        <section id="apiSyncPanel" class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">FOOTBALL-DATA.ORG • AUTOMATION</p>
+              <h2>API Sync Status</h2>
+              <p class="muted">Monitor the automatic Premier League data import. The scheduled job runs every 30 minutes; Sync Now uses the same protected importer.</p>
+            </div>
+            <div class="api-sync-actions">
+              <button id="refreshApiSyncBtn" class="ghost-btn" type="button">↻ Refresh Status</button>
+              <button id="syncFootballDataNowBtn" class="primary-btn" type="button">⚡ Sync Now</button>
+            </div>
+          </div>
+          <div class="api-sync-grid">
+            <article class="api-sync-card"><span>API STATUS</span><strong id="apiSyncHealth">CHECKING…</strong><small id="apiSyncCronState">Reading automation</small></article>
+            <article class="api-sync-card"><span>LAST API SYNC</span><strong id="apiSyncLast">—</strong><small>Latest football-data.org fixture update</small></article>
+            <article class="api-sync-card"><span>NEXT SYNC</span><strong id="apiSyncNext">—</strong><small>Automatic 30-minute schedule</small></article>
+            <article class="api-sync-card"><span>FIXTURE COVERAGE</span><strong id="apiSyncCoverage">—</strong><small id="apiSyncCoverageDetail">Premier League 2026/27</small></article>
+            <article class="api-sync-card"><span>ARSENAL FIXTURES</span><strong id="apiSyncArsenal">—</strong><small>Expected 38 league fixtures</small></article>
+            <article class="api-sync-card"><span>STANDINGS</span><strong id="apiSyncStandings">—</strong><small>Expected 20 clubs</small></article>
+          </div>
+          <div class="api-sync-log">
+            <div><span>CRON JOB</span><strong id="apiSyncJob">nl4-football-data-sync-30m</strong></div>
+            <div><span>LAST CRON RUN</span><strong id="apiSyncCronRun">—</strong></div>
+            <div><span>LAST ERROR</span><strong id="apiSyncError">None</strong></div>
+          </div>
+          <p id="apiSyncMessage" class="message" role="status"></p>
         </section>
 
 <section id="fanPredictionsPanel" class="panel fan-predictions-admin">
@@ -366,10 +475,13 @@
   </div>
 </section>
 
-        <section id="trophiesPanel" class="panel">
+        <section id="treasureAnalyticsPanel" class="panel">
           <div class="panel-heading">
-            <div><p class="eyebrow">TREASURE ROOM</p><h2>Trophies</h2></div>
-            <button class="primary-btn" data-new="trophies">+ Add trophy</button>
+            <div>
+              <p class="eyebrow">TREASURE ROOM</p>
+              <h2>Treasure Viewer Analytics</h2>
+              <p class="muted">See how many viewers entered the Trophy Vault and how many completed all 49 treasures. This does not alter viewer progress.</p>
+            </div>
           </div>
           <div class="editor-card" style="margin-bottom:18px">
             <p class="eyebrow">VIEWER TROPHY ROOM ANALYTICS</p>
@@ -382,6 +494,13 @@
               <button class="ghost-btn" id="resetTrophyCompletionAnalyticsBtn" type="button">↻ Reset Admin Analytics</button>
             </div>
             <p id="trophyCompletionMessage" class="message" role="status"></p>
+          </div>
+        </section>
+
+        <section id="trophiesPanel" class="panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">TREASURE ROOM</p><h2>Trophies</h2></div>
+            <button class="primary-btn" data-new="trophies">+ Add trophy</button>
           </div>
           <div id="trophiesList" class="content-grid"></div>
         </section>
@@ -620,7 +739,9 @@
             <input id="matchAttendance" type="number" min="0" placeholder="e.g. 60312">
           </label>
           <label>Man of the Match
-            <input id="matchMOTM" type="text" placeholder="Player name">
+            <select id="matchMOTM">
+              <option value="">Select Arsenal player / no MOM</option>
+            </select>
           </label>
         </div>
         <div class="dialog-actions match-save-row">
@@ -721,7 +842,9 @@
           </select>
         </label>
         <label>Player name
-          <input id="eventPlayer" type="text" required>
+          <select id="eventPlayer" required>
+            <option value="">Select player</option>
+          </select>
         </label>
         <label>Team
           <select id="eventTeam" required></select>
@@ -732,8 +855,10 @@
         <label>Stoppage minute
           <input id="eventStoppage" type="number" min="0" max="30" placeholder="e.g. 3 for 90+3">
         </label>
-        <label>Related player (optional)
-          <input id="eventRelatedPlayer" type="text" placeholder="Assist/scorer relationship">
+        <label>Related player / Assist (optional)
+          <select id="eventRelatedPlayer">
+            <option value="">No related player / no assist</option>
+          </select>
         </label>
       </div>
       <div class="dialog-actions">
@@ -747,7 +872,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
   <script src="supabase-client.js"></script>
-  <script src="admin.js?v=20260820-direct-stat-downloads"></script>
+  <script src="player-stats-sync.js?v=20260821-lineup-event-sync"></script>
+  <script src="admin.js?v=20260821-api-sync-status"></script>
   <script src="manual-lineup-patch.js?v=20260818-manual-lineup"></script>
 </body>
 </html>

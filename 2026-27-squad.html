@@ -132,7 +132,7 @@
             <div class="popup-content">
                 <button class="close" type="button" aria-label="Close">&times;</button>
                 <h2>2026/2027 EPL STATS</h2>
-                <p>APPEARANCES: 0<br>GOALS: 0<br>ASSISTS: 0</p>
+                <p>APPEARANCES: 0<br>GOALS: 0<br>ASSISTS: 0<br>SAVES: 0</p>
             </div>
         </div>
     </article>
@@ -149,7 +149,7 @@
             <div class="popup-content">
                 <button class="close" type="button" aria-label="Close">&times;</button>
                 <h2>2026/2027 EPL STATS</h2>
-                <p>APPEARANCES: 0<br>GOALS: 0<br>ASSISTS: 0</p>
+                <p>APPEARANCES: 0<br>GOALS: 0<br>ASSISTS: 0<br>SAVES: 0</p>
             </div>
         </div>
     </article>
@@ -925,10 +925,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const statP = card.querySelector(".popup p") || card.querySelector(".live-squad-stats");
     if (statP) {
+      const isSaveKeeper = name === "David Raya" || name === "Kepa Arrizabalaga";
       statP.innerHTML =
         `APPEARANCES: ${Number(row.appearances || 0)}<br>` +
         `GOALS: ${Number(row.goals || 0)}<br>` +
-        `ASSISTS: ${Number(row.assists || 0)}`;
+        `ASSISTS: ${Number(row.assists || 0)}<br>` +
+        `MOM: ${Number(row.man_of_the_match || 0)}` +
+        (isSaveKeeper ? `<br>SAVES: ${Number(row.saves || 0)}` : "");
     }
 
     let more = card.querySelector(".more-details");
