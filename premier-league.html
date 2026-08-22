@@ -937,48 +937,6 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
 </style>
 
 
-
-<style id="nl4-mobile-graph-pan-zoom">
-/* Mobile-only season graph expansion + pan/zoom */
-@media (max-width: 700px){
-  #publicModelHistoryCard .nl4-history-chart-wrap{
-    overflow:auto!important;
-    -webkit-overflow-scrolling:touch;
-    touch-action:pan-x pan-y pinch-zoom;
-    overscroll-behavior:contain;
-    position:relative;
-  }
-
-  #publicTitleHistoryChart{
-    width:1100px!important;
-    min-width:1100px!important;
-    max-width:none!important;
-    height:auto!important;
-    min-height:300px!important;
-    display:block!important;
-    transform-origin:0 0;
-  }
-
-  #publicModelHistoryCard .nl4-history-chart-wrap::after{
-    content:"Swipe horizontally • pinch to zoom";
-    position:sticky;
-    left:10px;
-    bottom:8px;
-    display:inline-block;
-    margin:8px 0 0 8px;
-    padding:5px 8px;
-    border-radius:999px;
-    background:rgba(10,10,10,.82);
-    border:1px solid rgba(216,173,69,.25);
-    color:#d8ad45;
-    font-size:7px;
-    font-weight:900;
-    letter-spacing:.5px;
-    pointer-events:none;
-  }
-}
-</style>
-
 </head>
 <body class="nl4-unified-sidebar premier-league-page">
 <button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button>
@@ -1062,13 +1020,35 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
           </div>
         </div>
 
-        <!-- Hero stats card removed. Hidden compatibility targets retained so existing JS can update safely. -->
-        <div hidden aria-hidden="true">
-          <span id="heroPosition"></span>
-          <span id="heroPoints"></span>
-          <span id="heroPlayed"></span>
-          <span id="heroWins"></span>
-          <span id="heroGD"></span>
+        <div class="pl-hero-card">
+          <span class="pl-season-label">ARSENAL • 2026/27</span>
+
+          <div class="pl-position-wrap">
+            <strong id="heroPosition">—</strong>
+            <span>CURRENT POSITION</span>
+          </div>
+
+          <div class="pl-hero-stat-grid">
+            <div>
+              <strong id="heroPoints">—</strong>
+              <span>POINTS</span>
+            </div>
+
+            <div>
+              <strong id="heroPlayed">—</strong>
+              <span>PLAYED</span>
+            </div>
+
+            <div>
+              <strong id="heroWins">—</strong>
+              <span>WINS</span>
+            </div>
+
+            <div>
+              <strong id="heroGD">—</strong>
+              <span>GOAL DIFF.</span>
+            </div>
+          </div>
         </div>
       </section>
 <section class="pl-section pl-overview">
@@ -1871,7 +1851,7 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
   <span id="publicModelLiveStatus"></span>
   <div id="publicProbabilityTable"></div>
 </div>
-<p class="summary" id="nl4InterpretationSummary">Loading the latest published NL4 Model forecast…</p>
+<p class="summary" id="nl4InterpretationSummary">Running the Public Model and building automatic interpretation…</p>
 <div class="takeaway" id="nl4InterpretationTakeaway"></div>
 <div class="viewer-stats" id="nl4InterpretationViewerStats"></div>
 <div class="factors" id="nl4InterpretationFactors"></div>
@@ -1897,7 +1877,7 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
 <span id="nl4GraphInterpretationLabel">AUTOMATIC GRAPH ANALYSIS</span>
 <strong id="nl4GraphInterpretationChange">—</strong>
 </div>
-<p id="nl4GraphInterpretationText">Loading the latest saved NL4 Model movement…</p>
+<p id="nl4GraphInterpretationText">NL4 will explain the title-probability movement automatically when the Public Model finishes calculating.</p>
 <small id="nl4GraphInterpretationMeta">Generated from the same Public Model history shown in the graph.</small>
 </div>
 <small class="published" id="nl4InterpretationPublished"></small>
@@ -2383,6 +2363,28 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
 <td data-stat="tackles">0</td>
 <td data-stat="interceptions">0</td>
 <td data-stat="saves">0</td>
+</tr><tr data-player="Max Dowman" data-position="Midfielder">
+<td class="player-cell">
+<div class="pl-player-name">
+<span class="pl-player-number">56</span>
+<span><strong>Max Dowman</strong><small>Midfielder</small></span>
+</div>
+</td>
+<td data-stat="appearances">0</td>
+<td data-stat="starts">0</td>
+<td data-stat="minutes">0</td>
+<td class="pl-stat-hot" data-stat="goals">0</td>
+<td class="pl-stat-hot" data-stat="assists">0</td>
+<td data-stat="clean_sheets">0</td>
+<td data-stat="yellow_cards">0</td>
+<td data-stat="red_cards">0</td>
+<td data-stat="man_of_the_match">0</td>
+<td data-stat="shots">0</td>
+<td data-stat="shots_on_target">0</td>
+<td data-stat="chances_created">0</td>
+<td data-stat="tackles">0</td>
+<td data-stat="interceptions">0</td>
+<td data-stat="saves">0</td>
 </tr><tr data-player="Bukayo Saka" data-position="Forward">
 <td class="player-cell">
 <div class="pl-player-name">
@@ -2570,6 +2572,51 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
 <!-- Kept for compatibility with the existing premier-league.js leaders renderer. -->
 <div hidden="" id="playerLeadersGrid"></div>
 </section>
+
+<section class="pl-section nl4-arsenal-team-season-stats" id="arsenalPremierLeagueStats">
+  <div class="pl-section-head">
+    <div>
+      <p class="pl-kicker">09 / ARSENAL TEAM STATS</p>
+      <h2>2026/27 ARSENAL PREMIER LEAGUE STATS</h2>
+    </div>
+    <span class="pl-table-note">AUTOMATIC • COMPLETED PREMIER LEAGUE MATCHES</span>
+  </div>
+
+  <div class="nl4-team-stats-intro">
+    Season totals are calculated from Arsenal's saved match statistics. Possession is shown as the
+    average across completed Premier League matches; yellow and red cards are calculated from player card totals.
+  </div>
+
+  <div class="nl4-team-season-grid" id="arsenalTeamSeasonStatsGrid">
+    <article><span>MATCHES</span><strong data-team-stat="matches">0</strong><small>completed</small></article>
+    <article><span>AVG POSSESSION</span><strong data-team-stat="possession">0.0%</strong><small>per match</small></article>
+    <article><span>TOTAL SHOTS</span><strong data-team-stat="shots">0</strong><small data-team-avg="shots">0.0 / match</small></article>
+    <article><span>SHOTS ON TARGET</span><strong data-team-stat="shots_on_target">0</strong><small data-team-avg="shots_on_target">0.0 / match</small></article>
+    <article><span>CORNERS</span><strong data-team-stat="corners">0</strong><small data-team-avg="corners">0.0 / match</small></article>
+    <article class="nl4-corner-goal-stat"><span>CORNER GOALS</span><strong data-team-stat="corner_goals">0</strong><small>goals scored from corners</small></article>
+    <article><span>FOULS</span><strong data-team-stat="fouls">0</strong><small data-team-avg="fouls">0.0 / match</small></article>
+    <article><span>OFFSIDES</span><strong data-team-stat="offsides">0</strong><small data-team-avg="offsides">0.0 / match</small></article>
+    <article><span>YELLOW CARDS</span><strong data-team-stat="yellow_cards">0</strong><small>from player stats</small></article>
+    <article><span>RED CARDS</span><strong data-team-stat="red_cards">0</strong><small>from player stats</small></article>
+  </div>
+
+  <p class="pl-player-stats-note" id="arsenalTeamSeasonStatsStatus">
+    Waiting for completed 2026/27 Premier League match statistics…
+  </p>
+</section>
+
+<style>
+.nl4-team-stats-intro{margin:0 0 18px;color:var(--muted,#8b8b8b);line-height:1.65}
+.nl4-team-season-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.nl4-team-season-grid article{min-height:118px;padding:18px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.015));display:flex;flex-direction:column;justify-content:center}
+.nl4-team-season-grid article span{font-size:.72rem;letter-spacing:.12em;font-weight:800;opacity:.72}
+.nl4-team-season-grid article strong{font-size:2rem;line-height:1.1;margin:8px 0 5px}
+.nl4-team-season-grid article small{opacity:.68;font-size:.78rem}
+.nl4-team-season-grid .nl4-corner-goal-stat{box-shadow:inset 0 0 0 1px rgba(212,175,55,.18)}
+@media(max-width:1050px){.nl4-team-season-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:650px){.nl4-team-season-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.nl4-team-season-grid article{min-height:105px;padding:14px}.nl4-team-season-grid article strong{font-size:1.55rem}}
+</style>
+
 <section class="pl-coming">
 <p class="pl-kicker">COMING NEXT</p>
 <h2>SEASON STORY</h2>
@@ -2589,7 +2636,7 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
 <script src="nl4-data.js"></script>
 <script src="shared-sidebar.js"></script>
 <script src="premier-league.js?v=20260818-hero-restored-v1"></script>
-<script defer src="public-model.js?v=20260819-admin-interpretation-sync-v1"></script>
+<script src="public-model.js?v=20260818-canonical-interpretation-bridge-v1"></script>
 <script>
   (function(){
     const season = "2026/27";
@@ -2663,6 +2710,115 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
     setTimeout(loadFullSquadStats, 400);
   })();
   </script>
+
+<script>
+(function(){
+  const season = "2026/27";
+  const db = window.nl4Supabase;
+  const grid = document.getElementById("arsenalTeamSeasonStatsGrid");
+  const status = document.getElementById("arsenalTeamSeasonStatsStatus");
+  if (!db || !grid || !status) return;
+
+  const isArsenal = value => String(value || "").trim().toLowerCase().includes("arsenal");
+  const number = value => Number.isFinite(Number(value)) ? Number(value) : 0;
+  const isCompleted = row => {
+    const s = String(row.status || "").toLowerCase().replace(/[\s_-]/g,"");
+    return ["fulltime","finished","completed","ft"].includes(s);
+  };
+
+  function setStat(name, value){
+    const el = grid.querySelector(`[data-team-stat="${name}"]`);
+    if (el) el.textContent = value;
+  }
+  function setAvg(name, total, matches){
+    const el = grid.querySelector(`[data-team-avg="${name}"]`);
+    if (el) el.textContent = `${matches ? (total / matches).toFixed(1) : "0.0"} / match`;
+  }
+
+  function arsenalSide(row, homeField, awayField){
+    if (isArsenal(row.home_team)) return number(row[homeField]);
+    if (isArsenal(row.away_team)) return number(row[awayField]);
+    if (row.is_home === true) return number(row[homeField]);
+    if (row.is_home === false) return number(row[awayField]);
+    return 0;
+  }
+
+  async function loadArsenalTeamSeasonStats(){
+    status.textContent = "Calculating Arsenal's 2026/27 Premier League team statistics…";
+
+    const [fixturesRes, playersRes] = await Promise.all([
+      db.from("fixtures")
+        .select("id,season,competition,status,home_team,away_team,is_home,home_possession,away_possession,home_shots,away_shots,home_shots_on_target,away_shots_on_target,home_corners,away_corners,home_corner_goals,away_corner_goals,home_fouls,away_fouls,home_offsides,away_offsides")
+        .eq("season", season),
+      db.from("premier_league_player_stats")
+        .select("yellow_cards,red_cards")
+        .eq("season", season)
+    ]);
+
+    if (fixturesRes.error) {
+      status.textContent = `Could not calculate team stats: ${fixturesRes.error.message}`;
+      return;
+    }
+    if (playersRes.error) {
+      status.textContent = `Could not calculate player cards: ${playersRes.error.message}`;
+      return;
+    }
+
+    const matches = (fixturesRes.data || []).filter(row => {
+      const comp = String(row.competition || "").toLowerCase();
+      return comp.includes("premier") && isCompleted(row) &&
+        (isArsenal(row.home_team) || isArsenal(row.away_team) || row.is_home === true || row.is_home === false);
+    });
+
+    const totals = {
+      possession:0, shots:0, shots_on_target:0, corners:0,
+      corner_goals:0, fouls:0, offsides:0
+    };
+    let possessionSamples = 0;
+
+    matches.forEach(row => {
+      const possession = arsenalSide(row,"home_possession","away_possession");
+      const rawPossession = isArsenal(row.home_team) || row.is_home === true ? row.home_possession : row.away_possession;
+      if (rawPossession !== null && rawPossession !== undefined && rawPossession !== "") {
+        totals.possession += possession;
+        possessionSamples += 1;
+      }
+      totals.shots += arsenalSide(row,"home_shots","away_shots");
+      totals.shots_on_target += arsenalSide(row,"home_shots_on_target","away_shots_on_target");
+      totals.corners += arsenalSide(row,"home_corners","away_corners");
+      totals.corner_goals += arsenalSide(row,"home_corner_goals","away_corner_goals");
+      totals.fouls += arsenalSide(row,"home_fouls","away_fouls");
+      totals.offsides += arsenalSide(row,"home_offsides","away_offsides");
+    });
+
+    const cards = (playersRes.data || []).reduce((acc,row) => {
+      acc.yellow += number(row.yellow_cards);
+      acc.red += number(row.red_cards);
+      return acc;
+    }, {yellow:0,red:0});
+
+    setStat("matches", matches.length);
+    setStat("possession", `${possessionSamples ? (totals.possession / possessionSamples).toFixed(1) : "0.0"}%`);
+    setStat("shots", totals.shots);
+    setStat("shots_on_target", totals.shots_on_target);
+    setStat("corners", totals.corners);
+    setStat("corner_goals", totals.corner_goals);
+    setStat("fouls", totals.fouls);
+    setStat("offsides", totals.offsides);
+    setStat("yellow_cards", cards.yellow);
+    setStat("red_cards", cards.red);
+
+    ["shots","shots_on_target","corners","fouls","offsides"].forEach(key => setAvg(key, totals[key], matches.length));
+
+    status.textContent = `${matches.length} completed Arsenal Premier League match${matches.length === 1 ? "" : "es"} aggregated automatically • cards synced from player stats`;
+  }
+
+  window.nl4LoadArsenalTeamSeasonStats = loadArsenalTeamSeasonStats;
+  window.addEventListener("load", loadArsenalTeamSeasonStats);
+  setTimeout(loadArsenalTeamSeasonStats, 650);
+})();
+</script>
+
 <script>
   (function(){
     const db = window.nl4Supabase;
@@ -2779,95 +2935,5 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
     setTimeout(loadLatestArsenalLineup,500);
   })();
   </script>
-
-<script>
-(function(){
-  function initNL4MobileGraphZoom(){
-    const wrap=document.querySelector('#publicModelHistoryCard .nl4-history-chart-wrap');
-    const svg=document.getElementById('publicTitleHistoryChart');
-    if(!wrap||!svg||window.innerWidth>700)return;
-
-    let scale=1;
-    let startDistance=0;
-    let startScale=1;
-    const minScale=1;
-    const maxScale=2.4;
-
-    const distance=(touches)=>{
-      if(!touches||touches.length<2)return 0;
-      const dx=touches[0].clientX-touches[1].clientX;
-      const dy=touches[0].clientY-touches[1].clientY;
-      return Math.hypot(dx,dy);
-    };
-
-    wrap.addEventListener('touchstart',e=>{
-      if(e.touches.length===2){
-        startDistance=distance(e.touches);
-        startScale=scale;
-      }
-    },{passive:true});
-
-    wrap.addEventListener('touchmove',e=>{
-      if(e.touches.length!==2||!startDistance)return;
-      const ratio=distance(e.touches)/startDistance;
-      scale=Math.max(minScale,Math.min(maxScale,startScale*ratio));
-      svg.style.transform=`scale(${scale})`;
-      svg.style.marginBottom=`${Math.max(0,(scale-1)*svg.getBoundingClientRect().height)}px`;
-    },{passive:true});
-
-    wrap.addEventListener('touchend',e=>{
-      if(e.touches.length<2)startDistance=0;
-    },{passive:true});
-
-    // Double-tap toggles a useful zoom level.
-    let lastTap=0;
-    wrap.addEventListener('touchend',()=>{
-      const now=Date.now();
-      if(now-lastTap<300){
-        scale=scale>1.05?1:1.65;
-        svg.style.transform=`scale(${scale})`;
-        svg.style.marginBottom=scale>1?`${(scale-1)*300}px`:'0px';
-      }
-      lastTap=now;
-    },{passive:true});
-  }
-
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',initNL4MobileGraphZoom,{once:true});
-  }else{
-    initNL4MobileGraphZoom();
-  }
-})();
-</script>
-
-
-<script>
-/* NL4 safe live-match refresh
-   Public refreshes only request a sync inside a PL match window.
-   Supabase applies a global 90-second claim, so many viewers cannot fan out API calls. */
-(function(){
-  const reloadKey = 'nl4LiveRefreshReloaded';
-  async function nl4SafeLiveRefresh(){
-    const db = window.nl4Supabase;
-    if (!db || !db.functions) return;
-    try {
-      const { data, error } = await db.functions.invoke('live-football-refresh', { body: { page: 'premier-league' } });
-      if (error) { console.warn('NL4 live refresh:', error.message || error); return; }
-      window.dispatchEvent(new CustomEvent('nl4:live-refresh', { detail: data || {} }));
-      if (data && data.synced === true && sessionStorage.getItem(reloadKey) !== '1') {
-        sessionStorage.setItem(reloadKey, '1');
-        location.reload();
-        return;
-      }
-      sessionStorage.removeItem(reloadKey);
-    } catch (err) {
-      console.warn('NL4 live refresh unavailable:', err);
-    }
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', nl4SafeLiveRefresh, { once:true });
-  else nl4SafeLiveRefresh();
-})();
-</script>
-
 </body>
 </html>

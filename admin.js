@@ -431,7 +431,6 @@ async function applySession(session) {
   logoutBtn.hidden = false;
   adminEmail.textContent = session.user.email || "NL4 Admin";
   await loadAll();
-  loadFootballApiSyncStatus();
 syncDerivedPlayerStats(); // initial derived sync
 }
 
@@ -545,6 +544,13 @@ const lineupMinuteOn = document.getElementById('lineupMinuteOn');
 const lineupMinuteOff = document.getElementById('lineupMinuteOff');
 const lineupMessage = document.getElementById('lineupMessage');
 const lineupList = document.getElementById('lineupList');
+const matchAddedTime = document.getElementById('matchAddedTime');
+const saveAddedTimeBtn = document.getElementById('saveAddedTimeBtn');
+const subPlayerOff = document.getElementById('subPlayerOff');
+const subPlayerOn = document.getElementById('subPlayerOn');
+const substitutionMinute = document.getElementById('substitutionMinute');
+const substitutionMessage = document.getElementById('substitutionMessage');
+const recordSubstitutionBtn = document.getElementById('recordSubstitutionBtn');
 
 const matchSaveMessage = document.getElementById('matchSaveMessage');
 const eventMessage = document.getElementById('eventMessage');
@@ -652,10 +658,12 @@ async function populateLineupPlayers() {
     return;
   }
 
-  lineupPlayer.innerHTML = '<option value="">Select Arsenal player</option>' +
-    (data || []).map(p =>
-      `<option value="${escapeHtml(p.player_name)}" data-position="${escapeHtml(p.position || '')}">${escapeHtml(p.player_name)} — ${escapeHtml(p.position || 'Player')}</option>`
-    ).join('');
+  const options = (data || []).map(p =>
+    `<option value="${escapeHtml(p.player_name)}" data-position="${escapeHtml(p.position || '')}">${escapeHtml(p.player_name)} — ${escapeHtml(p.position || 'Player')}</option>`
+  ).join('');
+
+  lineupPlayer.innerHTML = '<option value="">Select Arsenal player</option>' + options;
+  if (subPlayerOn) subPlayerOn.innerHTML = '<option value="">Select player coming on</option>' + options;
 }
 
 async function loadMatchLineup() {
@@ -672,9 +680,10 @@ async function loadMatchLineup() {
     return;
   }
 
+  const matchEnd = 90 + Math.max(0, Number(currentFixture?.added_time) || 0);
   lineupList.innerHTML = (data || []).length ? data.map(row => {
-    const end = row.minute_off ?? 90;
-    const mins = Math.max(0, Math.min(90,end) - Math.min(90,row.minute_on ?? 0));
+    const end = row.minute_off ?? matchEnd;
+    const mins = Math.max(0, Math.min(matchEnd,end) - Math.min(matchEnd,row.minute_on ?? 0));
     return `<div class="admin-event-row">
       <span class="admin-event-type">${row.is_starter ? 'START' : 'SUB'}</span>
       <div class="admin-event-player"><strong>${escapeHtml(row.player_name)}</strong><small>${escapeHtml(row.position || 'Player')} • ${mins} min</small></div>
@@ -684,6 +693,12 @@ async function loadMatchLineup() {
       </div>
     </div>`;
   }).join('') : '<div class="match-empty">No Arsenal lineup recorded yet.</div>';
+
+  if (subPlayerOff) {
+    const onField = (data || []).filter(row => row.minute_off === null || row.minute_off === undefined || row.minute_off === '');
+    subPlayerOff.innerHTML = '<option value="">Select player going off</option>' +
+      onField.map(row => `<option value="${escapeHtml(row.player_name)}">${escapeHtml(row.player_name)} — ${escapeHtml(row.position || 'Player')}</option>`).join('');
+  }
 }
 
 lineupRole.addEventListener('change', () => {
@@ -693,6 +708,114 @@ lineupRole.addEventListener('change', () => {
 });
 lineupMinuteOn.disabled = true;
 
+
+
+async function saveCurrentAddedTime(messageEl = lineupMessage) {
+  if (!currentFixture) return false;
+  const added = Math.max(0, Number(matchAddedTime?.value) || 0);
+  const { data, error } = await db.from('fixtures')
+    .update({ added_time: added, updated_at: new Date().toISOString() })
+    .eq('id', currentFixture.id)
+    .select('*')
+    .single();
+
+  if (error) {
+    setMessage(messageEl, `Could not save added time: ${error.message}`, 'error');
+    return false;
+  }
+  currentFixture = data;
+  if (matchAddedTime) matchAddedTime.value = String(data.added_time ?? 0);
+  return true;
+}
+
+if (saveAddedTimeBtn) {
+  saveAddedTimeBtn.addEventListener('click', async () => {
+    setMessage(lineupMessage, 'Saving added time…');
+    const ok = await saveCurrentAddedTime(lineupMessage);
+    if (!ok) return;
+    await loadMatchLineup();
+    await syncDerivedPlayerStats(lineupMessage);
+    setMessage(lineupMessage, `Added time saved: +${Math.max(0, Number(currentFixture.added_time) || 0)}.`, 'success');
+  });
+}
+
+if (recordSubstitutionBtn) {
+  recordSubstitutionBtn.addEventListener('click', async () => {
+    if (!currentFixture) return;
+    const offName = subPlayerOff?.value || '';
+    const onName = subPlayerOn?.value || '';
+    const minute = Number(substitutionMinute?.value);
+
+    if (!offName) return setMessage(substitutionMessage, 'Select the player going off.', 'error');
+    if (!onName) return setMessage(substitutionMessage, 'Select the player coming on.', 'error');
+    if (offName === onName) return setMessage(substitutionMessage, 'Player OFF and Player ON must be different.', 'error');
+    if (!Number.isFinite(minute) || minute < 0 || minute > 130)
+      return setMessage(substitutionMessage, 'Enter a valid substitution minute.', 'error');
+
+    setMessage(substitutionMessage, 'Recording substitution…');
+
+    if (!(await saveCurrentAddedTime(substitutionMessage))) return;
+
+    const { data: offRow, error: offFindError } = await db.from('match_lineups')
+      .select('*')
+      .eq('fixture_id', currentFixture.id)
+      .eq('player_name', offName)
+      .maybeSingle();
+    if (offFindError) return setMessage(substitutionMessage, offFindError.message, 'error');
+    if (!offRow) return setMessage(substitutionMessage, `${offName} is not in this match lineup.`, 'error');
+
+    const onOption = subPlayerOn.options[subPlayerOn.selectedIndex];
+    const onPosition = onOption?.dataset?.position || null;
+
+    const { data: onExisting, error: onFindError } = await db.from('match_lineups')
+      .select('*')
+      .eq('fixture_id', currentFixture.id)
+      .eq('player_name', onName)
+      .maybeSingle();
+    if (onFindError) return setMessage(substitutionMessage, onFindError.message, 'error');
+
+    // Apply both sides of the substitution using the exact same minute.
+    const offUpdate = await db.from('match_lineups')
+      .update({ minute_off: minute, updated_at: new Date().toISOString() })
+      .eq('id', offRow.id);
+    if (offUpdate.error) return setMessage(substitutionMessage, offUpdate.error.message, 'error');
+
+    const onPayload = {
+      fixture_id: currentFixture.id,
+      player_name: onName,
+      position: onPosition,
+      is_starter: false,
+      minute_on: minute,
+      minute_off: null,
+      updated_at: new Date().toISOString()
+    };
+
+    const onSave = onExisting?.id
+      ? await db.from('match_lineups').update(onPayload).eq('id', onExisting.id)
+      : await db.from('match_lineups').insert(onPayload);
+
+    if (onSave.error) {
+      // Roll back outgoing minute if incoming player failed to save.
+      await db.from('match_lineups').update({ minute_off: offRow.minute_off ?? null }).eq('id', offRow.id);
+      return setMessage(substitutionMessage, onSave.error.message, 'error');
+    }
+
+    await loadMatchLineup();
+    await syncDerivedPlayerStats(substitutionMessage);
+
+    const endMinute = 90 + Math.max(0, Number(currentFixture.added_time) || 0);
+    const incomingMinutes = Math.max(0, endMinute - minute);
+    setMessage(
+      substitutionMessage,
+      `${offName} OFF ${minute}' • ${onName} ON ${minute}' • ${onName}: ${incomingMinutes} min if the match ends at ${endMinute}'.`,
+      'success'
+    );
+
+    if (subPlayerOff) subPlayerOff.value = '';
+    if (subPlayerOn) subPlayerOn.value = '';
+    if (substitutionMinute) substitutionMinute.value = '';
+  });
+}
 
 document.getElementById('clearLineupBtn').addEventListener('click', async () => {
   if (!currentFixture) return;
@@ -808,7 +931,7 @@ window.nl4ManageMatch = async function(id) {
   document.getElementById('matchHTOpponentScore').value = data.halftime_opponent_score ?? '';
   document.getElementById('matchReferee').value = data.referee || '';
   document.getElementById('matchAttendance').value = data.attendance ?? '';
-  populateMatchMOTMSelect(data.man_of_the_match || '');
+  document.getElementById('matchMOTM').value = data.man_of_the_match || '';
   document.getElementById('statsHomeName').textContent = home;
   document.getElementById('statsAwayName').textContent = away;
   document.getElementById('statHomePossession').value = data.home_possession ?? '';
@@ -819,14 +942,18 @@ window.nl4ManageMatch = async function(id) {
   document.getElementById('statAwaySOT').value = data.away_shots_on_target ?? '';
   document.getElementById('statHomeCorners').value = data.home_corners ?? '';
   document.getElementById('statAwayCorners').value = data.away_corners ?? '';
+  document.getElementById('statHomeCornerGoals').value = data.home_corner_goals ?? '';
+  document.getElementById('statAwayCornerGoals').value = data.away_corner_goals ?? '';
   document.getElementById('statHomeFouls').value = data.home_fouls ?? '';
   document.getElementById('statAwayFouls').value = data.away_fouls ?? '';
   document.getElementById('statHomeOffsides').value = data.home_offsides ?? '';
   document.getElementById('statAwayOffsides').value = data.away_offsides ?? '';
   document.getElementById('statHomeSaves').value = data.home_saves ?? '';
   document.getElementById('statAwaySaves').value = data.away_saves ?? '';
+  if (matchAddedTime) matchAddedTime.value = String(data.added_time ?? 0);
 
   setMessage(matchSaveMessage);
+  if (substitutionMessage) setMessage(substitutionMessage);
   setMessage(lineupMessage);
   await populateLineupPlayers();
   await loadMatchLineup();
@@ -1131,6 +1258,8 @@ document.getElementById('saveStatsBtn').addEventListener('click', async () => {
     away_shots_on_target: adminStatValue('statAwaySOT'),
     home_corners: adminStatValue('statHomeCorners'),
     away_corners: adminStatValue('statAwayCorners'),
+    home_corner_goals: adminStatValue('statHomeCornerGoals'),
+    away_corner_goals: adminStatValue('statAwayCornerGoals'),
     home_fouls: adminStatValue('statHomeFouls'),
     away_fouls: adminStatValue('statAwayFouls'),
     home_offsides: adminStatValue('statHomeOffsides'),
@@ -1147,7 +1276,11 @@ document.getElementById('saveStatsBtn').addEventListener('click', async () => {
   const { data, error } = await db.from('fixtures').update(payload).eq('id', currentFixture.id).select('*').single();
   if (error) return setMessage(msg, error.message, 'error');
   currentFixture = data;
-  setMessage(msg, 'Statistics saved.', 'success');
+  await syncDerivedPlayerStats(msg);
+
+  const arsenalHome = String(data.home_team || '').trim().toLowerCase().includes('arsenal') || data.is_home === true;
+  const arsenalSaves = Math.max(0, Number(arsenalHome ? data.home_saves : data.away_saves) || 0);
+  setMessage(msg, `Statistics saved. Arsenal goalkeeper saves recorded: ${arsenalSaves}. Season player stats recalculated.`, 'success');
 });
 
 
@@ -1172,52 +1305,27 @@ document.getElementById('clearStatsBtn').addEventListener('click', async () => {
   if (error) return setMessage(msg, error.message, 'error');
   currentFixture = data;
 
-  ['statHomePossession','statAwayPossession','statHomeShots','statAwayShots','statHomeSOT','statAwaySOT','statHomeCorners','statAwayCorners','statHomeFouls','statAwayFouls','statHomeOffsides','statAwayOffsides','statHomeSaves','statAwaySaves']
+  ['statHomePossession','statAwayPossession','statHomeShots','statAwayShots','statHomeSOT','statAwaySOT','statHomeCorners','statAwayCorners','statHomeCornerGoals','statAwayCornerGoals','statHomeFouls','statAwayFouls','statHomeOffsides','statAwayOffsides','statHomeSaves','statAwaySaves']
     .forEach(id => { const el=document.getElementById(id); if (el) el.value=''; });
 
-  setMessage(msg, 'Match statistics cleared.', 'success');
+  await syncDerivedPlayerStats(msg);
+  setMessage(msg, 'Match statistics cleared. Goalkeeper saves removed from the season recalculation.', 'success');
 });
-
-function populateMatchEventPlayerSelects(selectedPlayer = "", selectedRelated = "") {
-  const playerSelect = document.getElementById("eventPlayer");
-  const relatedSelect = document.getElementById("eventRelatedPlayer");
-  if (!playerSelect || !relatedSelect) return;
-
-  const squad = (typeof NL4_2026_27_SQUAD_STATS !== "undefined" ? NL4_2026_27_SQUAD_STATS : []).map(([name, position]) => ({ name, position }));
-  const optionHtml = squad.map(({name, position}) =>
-    `<option value="${escapeHtml(name)}">${escapeHtml(name)} — ${escapeHtml(position)}</option>`
-  ).join("");
-
-  playerSelect.innerHTML = `<option value="">Select player</option>${optionHtml}`;
-  relatedSelect.innerHTML = `<option value="">No related player / no assist</option>${optionHtml}`;
-
-  // Preserve an older saved name even if it is no longer in the current squad list.
-  if (selectedPlayer && !squad.some(p => p.name === selectedPlayer)) {
-    playerSelect.insertAdjacentHTML("beforeend", `<option value="${escapeHtml(selectedPlayer)}">${escapeHtml(selectedPlayer)} — Saved player</option>`);
-  }
-  if (selectedRelated && !squad.some(p => p.name === selectedRelated)) {
-    relatedSelect.insertAdjacentHTML("beforeend", `<option value="${escapeHtml(selectedRelated)}">${escapeHtml(selectedRelated)} — Saved player</option>`);
-  }
-
-  playerSelect.value = selectedPlayer || "";
-  relatedSelect.value = selectedRelated || "";
-}
 
 function openEventEditor(event = null) {
   if (!currentFixture) return;
   currentEventId = event?.id || null;
   document.getElementById('eventDialogTitle').textContent = event ? 'Edit event' : 'Add event';
   document.getElementById('eventType').value = event?.event_type || 'goal';
-  populateMatchEventPlayerSelects(event?.player_name || '', event?.related_player_name || '');
+  document.getElementById('eventPlayer').value = event?.player_name || '';
   document.getElementById('eventMinute').value = event?.minute ?? '';
   document.getElementById('eventStoppage').value = event?.stoppage_minute ?? '';
+  document.getElementById('eventRelatedPlayer').value = event?.related_player_name || '';
   const home = currentFixture.home_team || (currentFixture.is_home ? 'Arsenal' : currentFixture.opponent);
   const away = currentFixture.away_team || (currentFixture.is_home ? currentFixture.opponent : 'Arsenal');
   const teamSelect = document.getElementById('eventTeam');
-  const arsenalTeam = [home, away].find(team => String(team || '').toLowerCase().includes('arsenal')) || 'Arsenal';
-  const opponentTeam = arsenalTeam === home ? away : home;
-  teamSelect.innerHTML = `<option value="${escapeHtml(arsenalTeam)}">${escapeHtml(arsenalTeam)}</option><option value="${escapeHtml(opponentTeam)}">${escapeHtml(opponentTeam)}</option>`;
-  teamSelect.value = event?.team_name || arsenalTeam;
+  teamSelect.innerHTML = `<option value="${escapeHtml(home)}">${escapeHtml(home)}</option><option value="${escapeHtml(away)}">${escapeHtml(away)}</option>`;
+  teamSelect.value = event?.team_name || home;
   setMessage(eventMessage);
   eventDialog.showModal();
 }
@@ -1297,30 +1405,10 @@ const NL4_2026_27_SQUAD_STATS = [
   ["William Saliba","Defender"],["Cristhian Mosquera","Defender"],["Ben White","Defender"],["Piero Hincapié","Defender"],
   ["Gabriel Magalhães","Defender"],["Jurriën Timber","Defender"],["Riccardo Calafiori","Defender"],["Myles Lewis-Skelly","Defender"],
   ["Martin Ødegaard","Midfielder"],["Eberechi Eze","Midfielder"],["Fabio Vieira","Midfielder"],["Ethan Nwaneri","Midfielder"],
-  ["Mikel Merino","Midfielder"],["Martín Zubimendi","Midfielder"],["Bruno Guimarães","Midfielder"],["Declan Rice","Midfielder"],
+  ["Mikel Merino","Midfielder"],["Martín Zubimendi","Midfielder"],["Bruno Guimarães","Midfielder"],["Declan Rice","Midfielder"],["Max Dowman","Midfielder"],
   ["Bukayo Saka","Forward"],["Gabriel Jesus","Forward"],["Gabriel Martinelli","Forward"],["Viktor Gyökeres","Forward"],
   ["Christos Tzolis","Forward"],["Noni Madueke","Forward"],["Reiss Nelson","Forward"],["Kai Havertz","Forward"]
 ];
-
-function populateMatchMOTMSelect(selected = "") {
-  const select = document.getElementById("matchMOTM");
-  if (!select) return;
-  const selectedName = String(selected || "").trim();
-  const options = ['<option value="">Select Arsenal player / no MOM</option>'];
-  NL4_2026_27_SQUAD_STATS.forEach(([name, position]) => {
-    const safeName = escapeHtml(name);
-    const safePosition = escapeHtml(position || "Player");
-    const isSelected = name === selectedName ? " selected" : "";
-    options.push(`<option value="${safeName}"${isSelected}>${safeName} — ${safePosition}</option>`);
-  });
-  // Preserve an older saved name even if the squad list later changes.
-  if (selectedName && !NL4_2026_27_SQUAD_STATS.some(([name]) => name === selectedName)) {
-    const safe = escapeHtml(selectedName);
-    options.push(`<option value="${safe}" selected>${safe}</option>`);
-  }
-  select.innerHTML = options.join("");
-}
-
 
 async function ensurePremierLeaguePlayerStatsSquad(){
   const { data, error } = await db.from("premier_league_player_stats")
@@ -1424,7 +1512,6 @@ function renderPremierLeaguePlayerStatsAdmin() {
               <div class="pl-admin-mini-stat"><strong>${row.appearances ?? 0}</strong><span>APP</span></div>
               <div class="pl-admin-mini-stat"><strong>${row.goals ?? 0}</strong><span>GOALS</span></div>
               <div class="pl-admin-mini-stat"><strong>${row.assists ?? 0}</strong><span>ASSISTS</span></div>
-              ${String(row.player_name||'') === 'David Raya' || String(row.player_name||'') === 'Kepa Arrizabalaga' ? `<div class="pl-admin-mini-stat"><strong>${row.saves ?? 0}</strong><span>SAVES</span></div>` : ''}
               <div class="pl-admin-mini-stat"><strong>${row.man_of_the_match ?? 0}</strong><span>MOTM</span></div>
             </div>
 
@@ -2675,80 +2762,3 @@ db.auth.onAuthStateChange((_event, session) => {
 
   document.querySelector('[data-panel="currentProfilesPanel"]')?.addEventListener("click",() => setTimeout(load,0));
 })();
-
-
-// ===== NL4 FOOTBALL-DATA.ORG API SYNC STATUS =====
-function nl4FormatSyncTime(value) {
-  if (!value) return "—";
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
-}
-
-function nl4SetSyncHealth(text, cls = "") {
-  const el = document.getElementById("apiSyncHealth");
-  if (!el) return;
-  el.textContent = text;
-  el.classList.remove("api-sync-good", "api-sync-bad", "api-sync-warn");
-  if (cls) el.classList.add(cls);
-}
-
-async function loadFootballApiSyncStatus() {
-  const message = document.getElementById("apiSyncMessage");
-  if (!document.getElementById("apiSyncPanel") || !db) return;
-  try {
-    const { data, error } = await db.rpc("nl4_football_api_sync_status");
-    if (error) throw error;
-    const s = data || {};
-    const healthy = Boolean(s.cronActive) && (!s.lastCronStatus || ["succeeded", "running"].includes(String(s.lastCronStatus).toLowerCase()));
-    nl4SetSyncHealth(healthy ? "ONLINE" : (s.cronActive ? "CHECK" : "INACTIVE"), healthy ? "api-sync-good" : "api-sync-bad");
-    document.getElementById("apiSyncCronState").textContent = s.cronActive ? `Cron active • ${s.schedule || "*/30 * * * *"}` : "Cron job inactive";
-    document.getElementById("apiSyncLast").textContent = nl4FormatSyncTime(s.lastApiSync);
-    document.getElementById("apiSyncNext").textContent = nl4FormatSyncTime(s.nextSync);
-    const leagueCount = Number(s.leagueMatches || 0);
-    document.getElementById("apiSyncCoverage").textContent = `${leagueCount}/380`;
-    document.getElementById("apiSyncCoverageDetail").textContent = `${leagueCount} total league fixtures • ${s.apiLinkedArsenal || 0}/38 Arsenal API-linked`;
-    document.getElementById("apiSyncArsenal").textContent = `${s.arsenalFixtures || 0}/38`;
-    document.getElementById("apiSyncStandings").textContent = `${s.standingsRows || 0}/20`;
-    document.getElementById("apiSyncJob").textContent = s.jobName || "nl4-football-data-sync-30m";
-    document.getElementById("apiSyncCronRun").textContent = `${s.lastCronStatus || "No run yet"}${s.lastCronStart ? ` • ${nl4FormatSyncTime(s.lastCronStart)}` : ""}`;
-    const errorEl = document.getElementById("apiSyncError");
-    errorEl.textContent = s.lastCronMessage || "None";
-    errorEl.classList.toggle("api-sync-bad", Boolean(s.lastCronMessage));
-    if (message) setMessage(message, `Status refreshed ${new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})}.`, "success");
-  } catch (error) {
-    console.error("NL4 API sync status failed:", error);
-    nl4SetSyncHealth("UNAVAILABLE", "api-sync-bad");
-    if (message) setMessage(message, `Could not read API sync status: ${error.message}`, "error");
-  }
-}
-
-async function syncFootballDataNow() {
-  const button = document.getElementById("syncFootballDataNowBtn");
-  const message = document.getElementById("apiSyncMessage");
-  if (!button || !db) return;
-  const old = button.textContent;
-  button.disabled = true;
-  button.textContent = "SYNCING…";
-  if (message) setMessage(message, "Running protected football-data.org sync…");
-  try {
-    const { data, error } = await db.functions.invoke("sync-football-data", { body: { preview: false, source: "admin-sync-now" } });
-    if (error) throw error;
-    if (data?.error) throw new Error(data.error);
-    if (message) setMessage(message, "Football data sync completed. Refreshing live status…", "success");
-    await new Promise(resolve => setTimeout(resolve, 900));
-    await loadFootballApiSyncStatus();
-    await loadAll();
-  } catch (error) {
-    console.error("Manual football data sync failed:", error);
-    if (message) setMessage(message, `Sync failed: ${error.message}`, "error");
-    await loadFootballApiSyncStatus();
-  } finally {
-    button.disabled = false;
-    button.textContent = old;
-  }
-}
-
-document.getElementById("refreshApiSyncBtn")?.addEventListener("click", loadFootballApiSyncStatus);
-document.getElementById("syncFootballDataNowBtn")?.addEventListener("click", syncFootballDataNow);
-document.querySelector('[data-panel="apiSyncPanel"]')?.addEventListener("click", () => setTimeout(loadFootballApiSyncStatus, 0));
