@@ -2762,3 +2762,81 @@ db.auth.onAuthStateChange((_event, session) => {
 
   document.querySelector('[data-panel="currentProfilesPanel"]')?.addEventListener("click",() => setTimeout(load,0));
 })();
+
+
+// ===== NL4 FOOTBALL-DATA.ORG API SYNC STATUS =====
+function nl4FormatSyncTime(value) {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+}
+
+function nl4SetSyncHealth(text, cls = "") {
+  const el = document.getElementById("apiSyncHealth");
+  if (!el) return;
+  el.textContent = text;
+  el.classList.remove("api-sync-good", "api-sync-bad", "api-sync-warn");
+  if (cls) el.classList.add(cls);
+}
+
+async function loadFootballApiSyncStatus() {
+  const message = document.getElementById("apiSyncMessage");
+  if (!document.getElementById("apiSyncPanel") || !db) return;
+  try {
+    const { data, error } = await db.rpc("nl4_football_api_sync_status");
+    if (error) throw error;
+    const s = data || {};
+    const healthy = Boolean(s.cronActive) && (!s.lastCronStatus || ["succeeded", "running"].includes(String(s.lastCronStatus).toLowerCase()));
+    nl4SetSyncHealth(healthy ? "ONLINE" : (s.cronActive ? "CHECK" : "INACTIVE"), healthy ? "api-sync-good" : "api-sync-bad");
+    document.getElementById("apiSyncCronState").textContent = s.cronActive ? `Cron active • ${s.schedule || "*/30 * * * *"}` : "Cron job inactive";
+    document.getElementById("apiSyncLast").textContent = nl4FormatSyncTime(s.lastApiSync);
+    document.getElementById("apiSyncNext").textContent = nl4FormatSyncTime(s.nextSync);
+    const leagueCount = Number(s.leagueMatches || 0);
+    document.getElementById("apiSyncCoverage").textContent = `${leagueCount}/380`;
+    document.getElementById("apiSyncCoverageDetail").textContent = `${leagueCount} total league fixtures • ${s.apiLinkedArsenal || 0}/38 Arsenal API-linked`;
+    document.getElementById("apiSyncArsenal").textContent = `${s.arsenalFixtures || 0}/38`;
+    document.getElementById("apiSyncStandings").textContent = `${s.standingsRows || 0}/20`;
+    document.getElementById("apiSyncJob").textContent = s.jobName || "nl4-football-data-sync-30m";
+    document.getElementById("apiSyncCronRun").textContent = `${s.lastCronStatus || "No run yet"}${s.lastCronStart ? ` • ${nl4FormatSyncTime(s.lastCronStart)}` : ""}`;
+    const errorEl = document.getElementById("apiSyncError");
+    errorEl.textContent = s.lastCronMessage || "None";
+    errorEl.classList.toggle("api-sync-bad", Boolean(s.lastCronMessage));
+    if (message) setMessage(message, `Status refreshed ${new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})}.`, "success");
+  } catch (error) {
+    console.error("NL4 API sync status failed:", error);
+    nl4SetSyncHealth("UNAVAILABLE", "api-sync-bad");
+    if (message) setMessage(message, `Could not read API sync status: ${error.message}`, "error");
+  }
+}
+
+async function syncFootballDataNow() {
+  const button = document.getElementById("syncFootballDataNowBtn");
+  const message = document.getElementById("apiSyncMessage");
+  if (!button || !db) return;
+  const old = button.textContent;
+  button.disabled = true;
+  button.textContent = "SYNCING…";
+  if (message) setMessage(message, "Running protected football-data.org sync…");
+  try {
+    const { data, error } = await db.functions.invoke("sync-football-data", { body: { preview: false, source: "admin-sync-now" } });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+    if (message) setMessage(message, "Football data sync completed. Refreshing live status…", "success");
+    await new Promise(resolve => setTimeout(resolve, 900));
+    await loadFootballApiSyncStatus();
+    await loadAll();
+  } catch (error) {
+    console.error("Manual football data sync failed:", error);
+    if (message) setMessage(message, `Sync failed: ${error.message}`, "error");
+    await loadFootballApiSyncStatus();
+  } finally {
+    button.disabled = false;
+    button.textContent = old;
+  }
+}
+
+document.getElementById("refreshApiSyncBtn")?.addEventListener("click", loadFootballApiSyncStatus);
+document.getElementById("syncFootballDataNowBtn")?.addEventListener("click", syncFootballDataNow);
+document.querySelector('[data-panel="apiSyncPanel"]')?.addEventListener("click", () => setTimeout(loadFootballApiSyncStatus, 0));
+
