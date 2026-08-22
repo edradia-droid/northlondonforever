@@ -658,12 +658,9 @@ async function populateLineupPlayers() {
     return;
   }
 
-  const accidentalShortNames = new Set(["odegaard", "raya", "saka"]);
-  const options = (data || [])
-    .filter(p => !accidentalShortNames.has(String(p.player_name || "").trim()))
-    .map(p =>
-      `<option value="${escapeHtml(p.player_name)}" data-position="${escapeHtml(p.position || '')}">${escapeHtml(p.player_name)} — ${escapeHtml(p.position || 'Player')}</option>`
-    ).join('');
+  const options = (data || []).map(p =>
+    `<option value="${escapeHtml(p.player_name)}" data-position="${escapeHtml(p.position || '')}">${escapeHtml(p.player_name)} — ${escapeHtml(p.position || 'Player')}</option>`
+  ).join('');
 
   lineupPlayer.innerHTML = '<option value="">Select Arsenal player</option>' + options;
   if (subPlayerOn) subPlayerOn.innerHTML = '<option value="">Select player coming on</option>' + options;
@@ -1624,92 +1621,7 @@ async function loadTable(table) {
   holder.innerHTML = data.length ? data.map(row => cardHtml(table,row)).join("") : `<div class="empty">No ${table} yet.</div>`;
 }
 
-
-async function removeAccidental2026SquadPlayerCards(){
-  // Remove only the three accidental generic Player records that created
-  // public squad cards 30, 31 and 32. Proper canonical squad-stat records
-  // (Martin Ødegaard, David Raya and Bukayo Saka) are untouched.
-  const accidentalNames = ["odegaard", "raya", "saka"];
-
-  const { data, error } = await db
-    .from("players")
-    .select("id,name,era")
-    .in("name", accidentalNames);
-
-  if (error) {
-    console.warn("NL4 duplicate squad-card cleanup check:", error.message);
-    return;
-  }
-
-  const rows = (data || []).filter(row => {
-    const name = String(row.name || "").trim().toLowerCase();
-    const era = String(row.era || "").trim().toLowerCase();
-    const isTargetName = accidentalNames.includes(name);
-    const is2026SquadEra =
-      !era ||
-      era.includes("2026/2027") ||
-      era.includes("2026/27") ||
-      era.includes("current");
-    return isTargetName && is2026SquadEra;
-  });
-
-  if (!rows.length) return;
-
-  const ids = rows.map(row => row.id).filter(Boolean);
-  if (!ids.length) return;
-
-  const { error: deleteError } = await db
-    .from("players")
-    .delete()
-    .in("id", ids);
-
-  if (deleteError) {
-    console.warn("NL4 duplicate squad-card cleanup:", deleteError.message);
-    return;
-  }
-
-  console.log("NL4: removed accidental squad cards 30, 31 and 32 only.");
-}
-
-async function removeAccidental2026DropdownPlayerRows(){
-  // These are the accidental short-name duplicates only.
-  // Keep the proper canonical rows:
-  // Martin Ødegaard, David Raya and Bukayo Saka.
-  const accidentalShortNames = ["odegaard", "raya", "saka"];
-
-  const { data, error } = await db
-    .from("premier_league_player_stats")
-    .select("id,player_name,season")
-    .eq("season", "2026/27");
-
-  if (error) {
-    console.warn("NL4 duplicate dropdown-player cleanup check:", error.message);
-    return;
-  }
-
-  const duplicateIds = (data || [])
-    .filter(row => accidentalShortNames.includes(String(row.player_name || "").trim()))
-    .map(row => row.id)
-    .filter(Boolean);
-
-  if (!duplicateIds.length) return;
-
-  const { error: deleteError } = await db
-    .from("premier_league_player_stats")
-    .delete()
-    .in("id", duplicateIds);
-
-  if (deleteError) {
-    console.warn("NL4 duplicate dropdown-player cleanup:", deleteError.message);
-    return;
-  }
-
-  console.log("NL4: removed accidental odegaard/raya/saka dropdown rows only.");
-}
-
 async function loadAll() {
-  await removeAccidental2026SquadPlayerCards();
-  await removeAccidental2026DropdownPlayerRows();
   await Promise.all(Object.keys(schemas).map(loadTable));
 }
 
