@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>NL4 Admin • Record Room</title>
+<style>
+:root{--bg:#070707;--panel:#111;--panel2:#171717;--line:rgba(255,255,255,.09);--text:#f6f6f6;--muted:#8b8b8b;--gold:#d8ad45;--red:#d6001c;--green:#49d17d}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#171717 0,#080808 34%,#050505 100%);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+button,input,select{font:inherit}.page{width:min(1500px,94vw);margin:auto;padding:32px 0 70px}
+.hero{border:1px solid var(--line);background:linear-gradient(145deg,#141414,#090909);border-radius:26px;padding:28px;display:flex;justify-content:space-between;gap:24px;align-items:end;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.kicker,.eyebrow{font-size:11px;font-weight:900;letter-spacing:1.8px;color:var(--gold)}h1{font-size:clamp(31px,5vw,68px);line-height:.92;margin:10px 0 12px;letter-spacing:-2.8px}h1 span{color:var(--red)}
+.hero p{color:#aaa;max-width:760px;line-height:1.65;margin:0}.badge{border:1px solid rgba(216,173,69,.25);padding:10px 14px;border-radius:999px;color:var(--gold);font-size:10px;font-weight:900;white-space:nowrap}
+.toolbar{display:grid;grid-template-columns:minmax(230px,1fr) minmax(190px,.45fr) auto;gap:10px;margin:18px 0}
+select,input{width:100%;background:#0f0f0f;border:1px solid var(--line);color:#fff;border-radius:12px;padding:12px 13px;outline:none}
+.btn{border:0;border-radius:12px;padding:12px 15px;font-weight:900;cursor:pointer}.btn-gold{background:var(--gold);color:#090909}.btn-dark{background:#171717;color:#fff;border:1px solid var(--line)}.btn-red{background:var(--red);color:#fff}
+.club-summary{border:1px solid var(--line);background:#0d0d0d;border-radius:22px;padding:20px;margin-bottom:18px}
+.club-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:15px}.club-head h2{margin:4px 0 0;font-size:26px}
+.stat-grid{display:grid;grid-template-columns:repeat(10,minmax(90px,1fr));gap:8px}.stat-card{border:1px solid var(--line);background:linear-gradient(145deg,#151515,#0c0c0c);border-radius:14px;padding:12px;min-width:0}.stat-card span{display:block;color:#707070;font-size:8px;font-weight:900;letter-spacing:.8px}.stat-card strong{display:block;margin-top:7px;font-size:19px}
+.section{border:1px solid var(--line);background:#0c0c0c;border-radius:22px;margin-top:18px;overflow:hidden}.section-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;align-items:center}.section-head h3{margin:3px 0 0;font-size:22px}.section-head p{margin:6px 0 0;color:#777;font-size:11px}
+.table-wrap{overflow:auto}.stats-table{width:100%;border-collapse:collapse;min-width:1200px}.stats-table th,.stats-table td{padding:10px 9px;border-bottom:1px solid rgba(255,255,255,.055);text-align:left;font-size:10px;white-space:nowrap}.stats-table th{position:sticky;top:0;background:#101010;color:var(--gold);font-size:8px;letter-spacing:.6px;z-index:1}.stats-table td:first-child{font-weight:900;color:#fff}.stats-table td:nth-child(2){color:#999}
+.empty{padding:32px;text-align:center;color:#777}
+.admin{margin-top:18px;border:1px solid rgba(216,173,69,.25);background:linear-gradient(145deg,#111,#090909);border-radius:22px;padding:20px}.admin h3{margin:5px 0 4px}.admin-note{color:#777;font-size:11px;line-height:1.6}.admin-grid{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:9px;margin-top:14px}.field label{display:block;color:#777;font-size:8px;font-weight:900;letter-spacing:.7px;margin:0 0 5px}.field input,.field select{padding:10px;font-size:11px}.admin-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.saved{display:none;color:var(--green);font-size:10px;font-weight:900;margin-left:8px}
+.player-name-cell{min-width:180px}.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 8px;color:#aaa;font-size:8px}
+.footer-note{color:#666;font-size:10px;line-height:1.6;margin-top:14px}
+@media(max-width:1100px){.stat-grid{grid-template-columns:repeat(5,1fr)}.admin-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:720px){.page{width:min(94vw,100%);padding-top:14px}.hero{display:block;padding:20px}.badge{display:inline-block;margin-top:16px}.toolbar{grid-template-columns:1fr}.stat-grid{grid-template-columns:repeat(2,1fr)}.admin-grid{grid-template-columns:1fr 1fr}.section-head{align-items:flex-start;flex-direction:column}.club-head{align-items:flex-start;flex-direction:column}}
+
+.fixtures-section{margin-top:18px;border:1px solid var(--line);background:#0c0c0c;border-radius:22px;overflow:hidden}
+.fixture-list{display:grid;gap:8px;padding:14px}
+.fixture-card{display:grid;grid-template-columns:74px minmax(0,1fr) 92px 140px;gap:10px;align-items:center;border:1px solid rgba(255,255,255,.07);background:linear-gradient(145deg,#141414,#0b0b0b);border-radius:14px;padding:12px}
+.fixture-card:hover{border-color:rgba(216,173,69,.35)}.fixture-mw{font-size:8px;color:var(--gold);font-weight:900;letter-spacing:.6px}
+.fixture-pair{font-size:11px;font-weight:900}.fixture-pair span{color:#777;font-weight:700;padding:0 5px}.fixture-date{font-size:9px;color:#888}.fixture-score{text-align:center;font-size:15px;font-weight:1000}
+.fixture-open{background:#1b1b1b;border:1px solid var(--line);color:#fff;border-radius:10px;padding:9px;cursor:pointer;font-size:9px;font-weight:900}
+.fixture-detail{display:none;border-top:1px solid var(--line);padding:18px;background:#090909}.fixture-detail.open{display:block}
+.match-detail-head{display:flex;justify-content:space-between;gap:15px;align-items:flex-start}.match-detail-head h3{margin:4px 0}.match-detail-actions{display:flex;gap:8px;flex-wrap:wrap}
+.detail-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:15px}
+.detail-box{border:1px solid var(--line);border-radius:16px;background:#101010;padding:14px}.detail-box h4{margin:0 0 10px;font-size:13px}.detail-box h5{margin:14px 0 7px;color:var(--gold);font-size:9px;letter-spacing:.6px}
+.score-grid{display:grid;grid-template-columns:1fr 80px 80px 1fr;gap:8px;align-items:end}.score-grid .team-label{font-size:11px;font-weight:900}
+.lineup-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.lineup-side{border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:10px}
+.lineup-row,.sub-row,.event-row,.match-stat-row{display:grid;gap:6px;align-items:center;margin-bottom:6px}
+.lineup-row{grid-template-columns:28px 1fr}.sub-row{grid-template-columns:1fr 64px 1fr 64px 34px}.event-row{grid-template-columns:76px 62px 1fr 1fr 34px}.match-stat-row{grid-template-columns:90px 1fr 1fr}
+.lineup-row select,.sub-row select,.sub-row input,.event-row select,.event-row input,.match-stat-row input,.score-grid input{padding:8px;font-size:9px}
+.mini-btn{border:1px solid var(--line);background:#171717;color:#fff;border-radius:8px;padding:7px 9px;cursor:pointer;font-size:8px;font-weight:900}
+.remove-row{border:0;background:#321018;color:#fff;border-radius:7px;height:30px;cursor:pointer}.detail-save{background:var(--gold);color:#090909;border:0;border-radius:10px;padding:10px 14px;font-weight:1000;cursor:pointer}
+.fixture-empty{padding:20px;color:#777;text-align:center}
+@media(max-width:900px){.fixture-card{grid-template-columns:58px 1fr 76px}.fixture-card .fixture-date{grid-column:2/4}.detail-grid-2,.lineup-grid{grid-template-columns:1fr}.score-grid{grid-template-columns:1fr 70px 70px 1fr}.event-row{grid-template-columns:70px 56px 1fr}.event-row select:nth-of-type(3){grid-column:3}.event-row .assist-select{grid-column:3}.remove-row{grid-column:4}.sub-row{grid-template-columns:1fr 54px 1fr 54px 30px}}
+
+.collapsible-head-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.section-toggle,.fixtures-toggle{border:1px solid rgba(216,173,69,.28);background:#171717;color:var(--gold);border-radius:10px;padding:9px 12px;cursor:pointer;font-size:9px;font-weight:900}
+.section-toggle[aria-expanded="true"],.fixtures-toggle[aria-expanded="true"]{background:var(--gold);color:#090909}
+.collapsible-content[hidden]{display:none!important}
+.fixture-view-controls{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);background:#0a0a0a}
+.fixture-view-controls span{color:#777;font-size:9px;font-weight:900}
+@media(max-width:720px){.collapsible-head-actions,.fixture-view-controls{align-items:stretch;flex-direction:column}.section-toggle,.fixtures-toggle{width:100%}}
+
+
+.admin-record-bar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 3vw;background:rgba(5,5,5,.96);border-bottom:1px solid rgba(255,255,255,.09);backdrop-filter:blur(14px)}
+.admin-record-brand{display:flex;align-items:center;gap:10px;font-weight:900}.admin-record-brand b{display:grid;place-items:center;width:40px;height:40px;border-radius:10px;background:#d6001c;color:#fff}.admin-record-brand span{font-size:12px;color:#ddd}.admin-record-actions{display:flex;gap:8px;flex-wrap:wrap}.admin-record-actions a,.admin-record-actions button{border:1px solid rgba(255,255,255,.12);background:#151515;color:#fff;border-radius:10px;padding:9px 12px;text-decoration:none;font-size:10px;font-weight:900;cursor:pointer}.admin-record-actions a.active{border-color:rgba(216,173,69,.45);color:#d8ad45}.record-auth-block{min-height:100vh;display:grid;place-items:center;padding:30px;background:#070707;color:#fff;font-family:Arial,sans-serif}.record-auth-card{width:min(520px,92vw);border:1px solid rgba(255,255,255,.1);border-radius:20px;background:#111;padding:24px}.record-auth-card h1{font-size:28px;letter-spacing:-1px}.record-auth-card p{color:#888;line-height:1.6}.record-auth-card a{display:inline-block;margin-top:12px;background:#d8ad45;color:#090909;text-decoration:none;font-weight:900;padding:11px 14px;border-radius:10px}
+</style>
+</head>
+<body>
+<div class="admin-record-bar" id="adminRecordBar" hidden>
+  <div class="admin-record-brand"><b>NL4</b><span>Content Administration • Record Room</span></div>
+  <div class="admin-record-actions">
+    <a href="admin.html">Admin Home</a>
+    <a href="admin-model.html">Model Admin</a>
+    <a class="active" href="record-room.html">Record Room</a>
+    <button id="recordRoomLogout" type="button">Sign out</button>
+  </div>
+</div>
+
+<div class="page" id="recordRoomPage" hidden>
+<section class="hero">
+  <div>
+    <div class="kicker">NL4 • ADMIN • RECORD ROOM • 2026/27</div>
+    <h1>RECORD <span>ROOM.</span></h1>
+    <p>Admin record workspace for the other 19 Premier League clubs. It preserves the Arsenal-style 2026/27 club, player and fixture stat structure while remaining isolated from NL4 forecast calculations.</p>
+  </div>
+  <div><div class="badge">ADMIN RECORDS • MODEL-SAFE ISOLATION</div><div id="buildMarker" style="margin-top:8px;color:#49d17d;font-size:9px;font-weight:900;text-align:right">BUILD V9 • PLAYER TABLE DIRECT ROSTER</div></div>
+</section>
+
+<div class="toolbar">
+  <select id="teamSelect" aria-label="Select Premier League team"></select>
+  <input id="playerSearch" placeholder="Search players in selected team">
+  <button class="btn btn-dark" id="resetView">Reset view</button>
+</div>
+
+<section class="club-summary">
+  <div class="club-head">
+    <div><div class="eyebrow">2026/27 PREMIER LEAGUE STATS</div><h2 id="clubName">—</h2></div>
+    <span class="pill">ARSENAL-STYLE CLUB SUMMARY</span>
+  </div>
+  <div class="stat-grid" id="clubStatsGrid"></div>
+</section>
+
+
+<section class="section" id="playerStatsSection">
+  <div class="section-head">
+    <div><div class="eyebrow">2026/2027 SQUAD</div><h3 id="playerHeading">PLAYER STATS</h3><p>Same core categories used by the Arsenal Premier League player-stat system.</p></div>
+    <div class="collapsible-head-actions"><span class="pill" id="playerCount">0 PLAYERS</span><button class="section-toggle" id="togglePlayerStats" type="button" aria-expanded="false">SHOW PLAYER STATS</button></div>
+  </div>
+  <div class="collapsible-content" id="playerStatsContent" hidden>
+  <div class="table-wrap">
+    <table class="stats-table">
+      <thead><tr>
+        <th>PLAYER</th><th>#</th><th>POSITION</th><th>APP</th><th>STARTS</th><th>MIN</th><th>G</th><th>A</th><th>CS</th><th>YC</th><th>RC</th><th>MOM</th><th>SHOTS</th><th>SOT</th><th>CHANCES</th><th>TACKLES</th><th>INT</th><th>SAVES</th>
+      </tr></thead>
+      <tbody id="playerRows"></tbody>
+    </table>
+  </div>
+  </div>
+</section>
+
+
+<section class="fixtures-section" id="fixturesSection">
+  <div class="section-head">
+    <div>
+      <div class="eyebrow">2026/27 PREMIER LEAGUE</div>
+      <h3 id="fixtureHeading">38 LEAGUE FIXTURES</h3>
+      <p>Open any fixture to enter the score, both lineups, substitutions with player-out/player-in minutes, match stats, goals, assists and cards.</p>
+    </div>
+    <div class="collapsible-head-actions"><span class="pill" id="fixtureCount">38 MATCHES</span><button class="section-toggle" id="toggleFixtures" type="button" aria-expanded="false">SHOW FIXTURES</button></div>
+  </div>
+  <div class="collapsible-content" id="fixturesContent" hidden>
+    <div class="fixture-view-controls"><span id="fixtureViewStatus">NEXT MATCH ONLY</span><button class="fixtures-toggle" id="toggleAllFixtures" type="button" aria-expanded="false">SHOW ALL FIXTURES</button></div>
+    <div class="fixture-list" id="fixtureList"></div>
+    <div class="fixture-detail" id="fixtureDetail"></div>
+  </div>
+</section>
+
+<section class="admin">
+  <div class="eyebrow">MANUAL INPUT • STANDALONE</div>
+  <h3>Other 19 Teams Stat Input</h3>
+  <div class="admin-note">Select a current 2026/27 Premier League player from the preloaded club roster, then enter/update the stats. Use Manual Player Name only for a new player not yet in the preload list. This Record Room is now reachable from the main Admin section, but its football records remain isolated from NL4 forecast calculations. Data is stored under its own <b>nl4_other_19_stats_v1</b> browser key and does not use Arsenal's storage key.</div>
+
+  <div class="admin-grid">
+    <div class="field"><label>TEAM</label><select id="inputTeam"></select></div>
+    <div class="field"><label>MATCHES COMPLETED</label><input id="matches" type="number" min="0" max="38" value="0"></div>
+    <div class="field"><label>AVG POSSESSION %</label><input id="avgPossession" type="number" min="0" max="100" step="0.1" value="0"></div>
+    <div class="field"><label>TOTAL SHOTS</label><input id="totalShots" type="number" min="0" value="0"></div>
+    <div class="field"><label>SHOTS ON TARGET</label><input id="shotsOnTargetClub" type="number" min="0" value="0"></div>
+    <div class="field"><label>CORNERS</label><input id="corners" type="number" min="0" value="0"></div>
+    <div class="field"><label>CORNER GOALS</label><input id="cornerGoals" type="number" min="0" value="0"></div>
+    <div class="field"><label>FOULS</label><input id="fouls" type="number" min="0" value="0"></div>
+    <div class="field"><label>OFFSIDES</label><input id="offsides" type="number" min="0" value="0"></div>
+    <div class="field"><label>YELLOW CARDS</label><input id="yellowCardsClub" type="number" min="0" value="0"></div>
+    <div class="field"><label>RED CARDS</label><input id="redCardsClub" type="number" min="0" value="0"></div>
+    <div class="field"><label>POINTS</label><input id="points" type="number" min="0" value="0"></div>
+  </div>
+  <div class="admin-actions">
+    <button class="btn btn-gold" id="saveClub">Save club stats</button>
+    <span class="saved" id="clubSaved">CLUB STATS SAVED</span>
+  </div>
+
+  <hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
+
+  <div class="admin-grid">
+    <div class="field"><label>PLAYER</label><select id="playerName"></select></div>
+    <div class="field"><label>MANUAL PLAYER NAME</label><input id="manualPlayerName" placeholder="Only use for a newly added player"></div>
+    <div class="field"><label>POSITION</label><select id="playerPosition"><option>Goalkeeper</option><option>Defender</option><option>Midfielder</option><option>Forward</option></select></div>
+    <div class="field"><label>APPEARANCES</label><input id="appearances" type="number" min="0" value="0"></div>
+    <div class="field"><label>STARTS</label><input id="starts" type="number" min="0" value="0"></div>
+    <div class="field"><label>MINUTES</label><input id="minutes" type="number" min="0" value="0"></div>
+    <div class="field"><label>GOALS</label><input id="goals" type="number" min="0" value="0"></div>
+    <div class="field"><label>ASSISTS</label><input id="assists" type="number" min="0" value="0"></div>
+    <div class="field"><label>CLEAN SHEETS</label><input id="cleanSheets" type="number" min="0" value="0"></div>
+    <div class="field"><label>YELLOW CARDS</label><input id="yellowCards" type="number" min="0" value="0"></div>
+    <div class="field"><label>RED CARDS</label><input id="redCards" type="number" min="0" value="0"></div>
+    <div class="field"><label>MAN OF MATCH</label><input id="mom" type="number" min="0" value="0"></div>
+    <div class="field"><label>SHOTS</label><input id="shots" type="number" min="0" value="0"></div>
+    <div class="field"><label>SHOTS ON TARGET</label><input id="shotsOnTarget" type="number" min="0" value="0"></div>
+    <div class="field"><label>CHANCES CREATED</label><input id="chancesCreated" type="number" min="0" value="0"></div>
+    <div class="field"><label>TACKLES</label><input id="tackles" type="number" min="0" value="0"></div>
+    <div class="field"><label>INTERCEPTIONS</label><input id="interceptions" type="number" min="0" value="0"></div>
+    <div class="field"><label>SAVES</label><input id="saves" type="number" min="0" value="0"></div>
+  </div>
+  <div class="admin-actions">
+    <button class="btn btn-gold" id="savePlayer">Add / update player</button>
+    <button class="btn btn-dark" id="clearPlayerForm">Clear player form</button>
+    <span class="saved" id="playerSaved">PLAYER SAVED</span>
+  </div>
+  <div class="footer-note">Record Room intentionally contains no Supabase write call into the existing Admin Model and does not import or mutate forecast logic. Current player names are preloaded from the 2026/27 FPL player pool; final Premier League 25-man registrations can still change after the summer window closes. It can later be wired to dedicated tables such as <b>premier_league_other_team_stats</b> and <b>premier_league_other_player_stats</b> after the standalone layout/data flow is approved.</div>
+</section>
+</div>
+
+<script>
+const TEAMS = ["Aston Villa", "AFC Bournemouth", "Brentford", "Brighton & Hove Albion", "Chelsea", "Coventry City", "Crystal Palace", "Everton", "Fulham", "Hull City", "Ipswich Town", "Leeds United", "Liverpool", "Manchester City", "Manchester United", "Newcastle United", "Nottingham Forest", "Tottenham Hotspur", "Sunderland"];
+const TEAM_ROSTERS = {"Aston Villa":[{"name":"Emiliano Martínez","position":"Goalkeeper","number":null},{"name":"Marco Bizot","position":"Goalkeeper","number":null},{"name":"Zion Suzuki","position":"Goalkeeper","number":null},{"name":"Andrés García","position":"Defender","number":null},{"name":"Ezri Konsa Ngoyo","position":"Defender","number":null},{"name":"Ian Maatsen","position":"Defender","number":null},{"name":"Matteo Ruggeri","position":"Defender","number":null},{"name":"Matty Cash","position":"Defender","number":null},{"name":"Pau Torres","position":"Defender","number":null},{"name":"Tyrone Mings","position":"Defender","number":null},{"name":"Victor Lindelöf","position":"Defender","number":null},{"name":"Alejandro Garnacho Ferreyra","position":"Midfielder","number":null},{"name":"Alysson Edward","position":"Midfielder","number":null},{"name":"Amadou Onana","position":"Midfielder","number":null},{"name":"Boubacar Kamara","position":"Midfielder","number":null},{"name":"Bradley Burrowes","position":"Midfielder","number":null},{"name":"Emiliano Buendía Stati","position":"Midfielder","number":null},{"name":"George Hemmings","position":"Midfielder","number":null},{"name":"Johan Manzambi","position":"Midfielder","number":null},{"name":"John McGinn","position":"Midfielder","number":null},{"name":"João Gomes","position":"Midfielder","number":null},{"name":"Lamare Bogarde","position":"Midfielder","number":null},{"name":"Leon Bailey","position":"Midfielder","number":null},{"name":"Ross Barkley","position":"Midfielder","number":null},{"name":"Brian Madjo","position":"Forward","number":null},{"name":"Ollie Watkins","position":"Forward","number":null},{"name":"Tammy Abraham","position":"Forward","number":null}],"AFC Bournemouth":[{"name":"Fraser Forster","position":"Goalkeeper","number":null},{"name":"Will Dennis","position":"Goalkeeper","number":null},{"name":"Đorđe Petrović","position":"Goalkeeper","number":null},{"name":"Adam Smith","position":"Defender","number":null},{"name":"Adrien Truffert","position":"Defender","number":null},{"name":"António Silva","position":"Defender","number":null},{"name":"Bafodé Diakité","position":"Defender","number":null},{"name":"James Hill","position":"Defender","number":null},{"name":"Juanlu Sánchez","position":"Defender","number":null},{"name":"Julio Soler Barreto","position":"Defender","number":null},{"name":"Julián Araujo Zúñiga","position":"Defender","number":null},{"name":"Veljko Milosavljevic","position":"Defender","number":null},{"name":"Alex Scott","position":"Midfielder","number":null},{"name":"Alex Tóth","position":"Midfielder","number":null},{"name":"Amine Adli","position":"Midfielder","number":null},{"name":"Ben Gannon-Doak","position":"Midfielder","number":null},{"name":"David Brooks","position":"Midfielder","number":null},{"name":"Junior Kroupi","position":"Midfielder","number":null},{"name":"Justin Kluivert","position":"Midfielder","number":null},{"name":"Lewis Cook","position":"Midfielder","number":null},{"name":"Marcus Tavernier","position":"Midfielder","number":null},{"name":"Rayan","position":"Midfielder","number":null},{"name":"Ryan Christie","position":"Midfielder","number":null},{"name":"Tyler Adams","position":"Midfielder","number":null},{"name":"Evanilson","position":"Forward","number":null},{"name":"Álvaro Rodríguez","position":"Forward","number":null}],"Brentford":[{"name":"Caoimhín Kelleher","position":"Goalkeeper","number":null},{"name":"Hákon Rafn Valdimarsson","position":"Goalkeeper","number":null},{"name":"Aaron Hickey","position":"Defender","number":null},{"name":"Ethan Pinnock","position":"Defender","number":null},{"name":"Jannik Schuster","position":"Defender","number":null},{"name":"Kim Ji-Soo","position":"Defender","number":null},{"name":"Kristoffer Ajer","position":"Defender","number":null},{"name":"Michael Kayode","position":"Defender","number":null},{"name":"Nathan Collins","position":"Defender","number":null},{"name":"Rico Henry","position":"Defender","number":null},{"name":"Sepp van den Berg","position":"Defender","number":null},{"name":"Antoni Milambo","position":"Midfielder","number":null},{"name":"Dango Ouattara","position":"Midfielder","number":null},{"name":"Fábio Carvalho","position":"Midfielder","number":null},{"name":"Jaidon Anthony","position":"Midfielder","number":null},{"name":"Josh Dasilva","position":"Midfielder","number":null},{"name":"Keane Lewis-Potter","position":"Midfielder","number":null},{"name":"Kevin Schade","position":"Midfielder","number":null},{"name":"Mamadou Sangaré","position":"Midfielder","number":null},{"name":"Mathias Jensen","position":"Midfielder","number":null},{"name":"Mikkel Damsgaard","position":"Midfielder","number":null},{"name":"Vitaly Janelt","position":"Midfielder","number":null},{"name":"Yehor Yarmoliuk","position":"Midfielder","number":null},{"name":"Callum Wilson","position":"Forward","number":null},{"name":"Igor Thiago","position":"Forward","number":null},{"name":"Kaye Furo","position":"Forward","number":null}],"Brighton & Hove Albion":[{"name":"Bart Verbruggen","position":"Goalkeeper","number":null},{"name":"Jason Steele","position":"Goalkeeper","number":null},{"name":"Costinha","position":"Defender","number":null},{"name":"Diego Coppola","position":"Defender","number":null},{"name":"Ferdi Kadıoğlu","position":"Defender","number":null},{"name":"Igor Julio","position":"Defender","number":null},{"name":"Lewis Dunk","position":"Defender","number":null},{"name":"Luka Vušković","position":"Defender","number":null},{"name":"Mats Wieffer","position":"Defender","number":null},{"name":"Maxim De Cuyper","position":"Defender","number":null},{"name":"Michael Svoboda","position":"Defender","number":null},{"name":"Olivier Boscagli","position":"Defender","number":null},{"name":"Pascal Struijk","position":"Defender","number":null},{"name":"Carlos Baleba","position":"Midfielder","number":null},{"name":"Diego Gómez","position":"Midfielder","number":null},{"name":"Jack Hinshelwood","position":"Midfielder","number":null},{"name":"Matt O'Riley","position":"Midfielder","number":null},{"name":"Mitoma Kaoru","position":"Midfielder","number":null},{"name":"Nehemiah Oriola","position":"Midfielder","number":null},{"name":"Pascal Groß","position":"Midfielder","number":null},{"name":"Yankuba Minteh","position":"Midfielder","number":null},{"name":"Yasin Ayari","position":"Midfielder","number":null},{"name":"Zadok Yohanna","position":"Midfielder","number":null},{"name":"Charalampos Kostoulas","position":"Forward","number":null},{"name":"Evan Ferguson","position":"Forward","number":null},{"name":"Georginio Rutter","position":"Forward","number":null},{"name":"Promise David","position":"Forward","number":null},{"name":"Stefanos Tzimas","position":"Forward","number":null}],"Chelsea":[{"name":"Mike Penders","position":"Goalkeeper","number":null},{"name":"Robert Lynch Sánchez","position":"Goalkeeper","number":null},{"name":"Aaron Anselmino","position":"Defender","number":null},{"name":"Axel Disasi","position":"Defender","number":null},{"name":"Benoît Badiashile Mukinayi","position":"Defender","number":null},{"name":"Jorrel Hato","position":"Defender","number":null},{"name":"Josh Acheampong","position":"Defender","number":null},{"name":"Levi Samuels Colwill","position":"Defender","number":null},{"name":"Malo Gusto","position":"Defender","number":null},{"name":"Mamadou Sarr","position":"Defender","number":null},{"name":"Marco Palestra","position":"Defender","number":null},{"name":"Maxence Lacroix","position":"Defender","number":null},{"name":"Pep Chavarría","position":"Defender","number":null},{"name":"Reece James","position":"Defender","number":null},{"name":"Tosin Adarabioyo","position":"Defender","number":null},{"name":"Wesley Fofana","position":"Defender","number":null},{"name":"Cole Palmer","position":"Midfielder","number":null},{"name":"Dário Essugo","position":"Midfielder","number":null},{"name":"Enzo Fernández","position":"Midfielder","number":null},{"name":"Estêvão","position":"Midfielder","number":null},{"name":"Geovany Quenda","position":"Midfielder","number":null},{"name":"Jamie Bynoe-Gittens","position":"Midfielder","number":null},{"name":"Jordan Henderson","position":"Midfielder","number":null},{"name":"Moisés Caicedo","position":"Midfielder","number":null},{"name":"Morgan Rogers","position":"Midfielder","number":null},{"name":"Mykhailo Mudryk","position":"Midfielder","number":null},{"name":"Pedro Neto","position":"Midfielder","number":null},{"name":"Roméo Lavia","position":"Midfielder","number":null},{"name":"Valentín Barco","position":"Midfielder","number":null},{"name":"Danny Welbeck","position":"Forward","number":null},{"name":"Emmanuel Emegha","position":"Forward","number":null},{"name":"João Pedro","position":"Forward","number":null},{"name":"Liam Delap","position":"Forward","number":null},{"name":"Marc Guiu Paz","position":"Forward","number":null},{"name":"Nicolas Jackson","position":"Forward","number":null},{"name":"Shumaira Mheuka","position":"Forward","number":null}],"Coventry City":[{"name":"Ben Wilson","position":"Goalkeeper","number":null},{"name":"Carl Rushworth","position":"Goalkeeper","number":null},{"name":"Oliver Dovin","position":"Goalkeeper","number":null},{"name":"Aurèle Amenda","position":"Defender","number":null},{"name":"Bobby Thomas","position":"Defender","number":null},{"name":"Jake Bidwell","position":"Defender","number":null},{"name":"Jay Dasilva","position":"Defender","number":null},{"name":"Joel Latibeaudiere","position":"Defender","number":null},{"name":"Kaine Kesler-Hayden","position":"Defender","number":null},{"name":"Liam Kitching","position":"Defender","number":null},{"name":"Luke Woolfenden","position":"Defender","number":null},{"name":"Miguel Brau","position":"Defender","number":null},{"name":"Milan van Ewijk","position":"Defender","number":null},{"name":"Caleb Yirenkyi","position":"Midfielder","number":null},{"name":"Ephron Mason-Clark","position":"Midfielder","number":null},{"name":"Frank Onyeka","position":"Midfielder","number":null},{"name":"George Shepherd","position":"Midfielder","number":null},{"name":"Gustavo Hamer","position":"Midfielder","number":null},{"name":"Jack Rudoni","position":"Midfielder","number":null},{"name":"Josh Eccles","position":"Midfielder","number":null},{"name":"Kaine Andrews","position":"Midfielder","number":null},{"name":"Loum Tchaouna","position":"Midfielder","number":null},{"name":"Matt Grimes","position":"Midfielder","number":null},{"name":"Raphael Borges Rodrigues","position":"Midfielder","number":null},{"name":"Tatsuhiro Sakamoto","position":"Midfielder","number":null},{"name":"Victor Torp","position":"Midfielder","number":null},{"name":"Brandon Thomas-Asante","position":"Forward","number":null},{"name":"Ellis Simms","position":"Forward","number":null},{"name":"Haji Wright","position":"Forward","number":null},{"name":"Sidiki Cherif","position":"Forward","number":null},{"name":"Taiwo Awoniyi","position":"Forward","number":null}],"Crystal Palace":[{"name":"Dean Henderson","position":"Goalkeeper","number":null},{"name":"Remi Matthews","position":"Goalkeeper","number":null},{"name":"Walter Benítez","position":"Goalkeeper","number":null},{"name":"Anan Khalaili","position":"Defender","number":null},{"name":"Borna Sosa","position":"Defender","number":null},{"name":"Chadi Riad Dnanou","position":"Defender","number":null},{"name":"Chris Richards","position":"Defender","number":null},{"name":"Daniel Muñoz Mejía","position":"Defender","number":null},{"name":"Jaydee Canvot","position":"Defender","number":null},{"name":"Oscar Mingueza","position":"Defender","number":null},{"name":"Takehiro Tomiyasu","position":"Defender","number":null},{"name":"Tyrick Mitchell","position":"Defender","number":null},{"name":"Adam Wharton","position":"Midfielder","number":null},{"name":"Cheick Doucouré","position":"Midfielder","number":null},{"name":"Daichi Kamada","position":"Midfielder","number":null},{"name":"Dwight McNeil","position":"Midfielder","number":null},{"name":"Evann Guessand","position":"Midfielder","number":null},{"name":"Ismaïla Sarr","position":"Midfielder","number":null},{"name":"Jefferson Lerma Solís","position":"Midfielder","number":null},{"name":"Jesurun Rak-Sakyi","position":"Midfielder","number":null},{"name":"Joél Drakes-Thomas","position":"Midfielder","number":null},{"name":"Justin Devenny","position":"Midfielder","number":null},{"name":"Matheus França","position":"Midfielder","number":null},{"name":"Romain Esse","position":"Midfielder","number":null},{"name":"Will Hughes","position":"Midfielder","number":null},{"name":"Yéremy Pino Santos","position":"Midfielder","number":null},{"name":"Zavier Gozo","position":"Midfielder","number":null},{"name":"Eddie Nketiah","position":"Forward","number":null},{"name":"Jean-Philippe Mateta","position":"Forward","number":null},{"name":"Jørgen Strand Larsen","position":"Forward","number":null}],"Everton":[{"name":"Jordan Pickford","position":"Goalkeeper","number":null},{"name":"Mark Travers","position":"Goalkeeper","number":null},{"name":"Tom King","position":"Goalkeeper","number":null},{"name":"Adam Aznou","position":"Defender","number":null},{"name":"Jake O'Brien","position":"Defender","number":null},{"name":"James Tarkowski","position":"Defender","number":null},{"name":"Jarrad Branthwaite","position":"Defender","number":null},{"name":"Michael Keane","position":"Defender","number":null},{"name":"Nathan Patterson","position":"Defender","number":null},{"name":"Vitalii Mykolenko","position":"Defender","number":null},{"name":"Brennan Johnson","position":"Midfielder","number":null},{"name":"Carlos Alcaraz Durán","position":"Midfielder","number":null},{"name":"Christian Nørgaard","position":"Midfielder","number":null},{"name":"Harrison Armstrong","position":"Midfielder","number":null},{"name":"Hayden Hackney","position":"Midfielder","number":null},{"name":"Iliman Ndiaye","position":"Midfielder","number":null},{"name":"James Garner","position":"Midfielder","number":null},{"name":"Kiernan Dewsbury-Hall","position":"Midfielder","number":null},{"name":"Merlin Röhl","position":"Midfielder","number":null},{"name":"Tim Iroegbunam","position":"Midfielder","number":null},{"name":"Tyler Dibling","position":"Midfielder","number":null},{"name":"Tyrique George","position":"Midfielder","number":null},{"name":"Beto","position":"Forward","number":null},{"name":"Thierno Barry","position":"Forward","number":null}],"Fulham":[{"name":"Alfie McNally","position":"Goalkeeper","number":null},{"name":"Benjamin Lecomte","position":"Goalkeeper","number":null},{"name":"Bernd Leno","position":"Goalkeeper","number":null},{"name":"Antonee Robinson","position":"Defender","number":null},{"name":"Calvin Bassey","position":"Defender","number":null},{"name":"Joachim Andersen","position":"Defender","number":null},{"name":"Jorge Cuenca Barreno","position":"Defender","number":null},{"name":"Kenny Tete","position":"Defender","number":null},{"name":"Ryan Sessegnon","position":"Defender","number":null},{"name":"Timothy Castagne","position":"Defender","number":null},{"name":"Alex Iwobi","position":"Midfielder","number":null},{"name":"César Palacios","position":"Midfielder","number":null},{"name":"Emile Smith Rowe","position":"Midfielder","number":null},{"name":"Harrison Reed","position":"Midfielder","number":null},{"name":"Josh King","position":"Midfielder","number":null},{"name":"Kevin","position":"Midfielder","number":null},{"name":"Oscar Bobb","position":"Midfielder","number":null},{"name":"Sander Berge","position":"Midfielder","number":null},{"name":"Shea Charles","position":"Midfielder","number":null},{"name":"Tom Cairney","position":"Midfielder","number":null},{"name":"Gonzalo García","position":"Forward","number":null},{"name":"Jonah Kusi-Asare","position":"Forward","number":null},{"name":"Rodrigo Muniz","position":"Forward","number":null}],"Hull City":[{"name":"Dillon Phillips","position":"Goalkeeper","number":null},{"name":"Jack Butland","position":"Goalkeeper","number":null},{"name":"Konstantinos Tzolakis","position":"Goalkeeper","number":null},{"name":"Cathal McCarthy","position":"Defender","number":null},{"name":"Charlie Hughes","position":"Defender","number":null},{"name":"Cody Drameh","position":"Defender","number":null},{"name":"John Egan","position":"Defender","number":null},{"name":"Lewie Coyle","position":"Defender","number":null},{"name":"Lucas Herrington","position":"Defender","number":null},{"name":"Matt Targett","position":"Defender","number":null},{"name":"Matty Jacob","position":"Defender","number":null},{"name":"Nobel Mendy","position":"Defender","number":null},{"name":"Paddy McNair","position":"Defender","number":null},{"name":"Ryan Giles","position":"Defender","number":null},{"name":"Semi Ajayi","position":"Defender","number":null},{"name":"Abdülkadir Ömür","position":"Midfielder","number":null},{"name":"Darko Gyabi","position":"Midfielder","number":null},{"name":"David Akintola","position":"Midfielder","number":null},{"name":"Eliot Matazo","position":"Midfielder","number":null},{"name":"Elliot Stroud","position":"Midfielder","number":null},{"name":"Hidemasa Morita","position":"Midfielder","number":null},{"name":"Jens Hjertø-Dahl","position":"Midfielder","number":null},{"name":"Joe Gelhardt","position":"Midfielder","number":null},{"name":"Kieran Dowell","position":"Midfielder","number":null},{"name":"Liam Millar","position":"Midfielder","number":null},{"name":"Lucas Gourna-Douath","position":"Midfielder","number":null},{"name":"Matt Crooks","position":"Midfielder","number":null},{"name":"Mohamed Belloumi","position":"Midfielder","number":null},{"name":"Regan Slater","position":"Midfielder","number":null},{"name":"Óscar Zambrano","position":"Midfielder","number":null},{"name":"Oli McBurnie","position":"Forward","number":null}],"Ipswich Town":[{"name":"Alex Palmer","position":"Goalkeeper","number":null},{"name":"Christian Walton","position":"Goalkeeper","number":null},{"name":"David Button","position":"Goalkeeper","number":null},{"name":"Kayne van Oevelen","position":"Goalkeeper","number":null},{"name":"Kjell Scherpen","position":"Goalkeeper","number":null},{"name":"Abdoul Ouattara","position":"Defender","number":null},{"name":"Ben Johnson","position":"Defender","number":null},{"name":"Cédric Kipré","position":"Defender","number":null},{"name":"Dara O'Shea","position":"Defender","number":null},{"name":"Darnell Furlong","position":"Defender","number":null},{"name":"Issa Diop","position":"Defender","number":null},{"name":"Jacob Greaves","position":"Defender","number":null},{"name":"Leif Davis","position":"Defender","number":null},{"name":"Abdul Fatawu","position":"Midfielder","number":null},{"name":"Anis Mehmeti","position":"Midfielder","number":null},{"name":"Azor Matusiwa","position":"Midfielder","number":null},{"name":"Chiedozie Ogbene","position":"Midfielder","number":null},{"name":"Daizen Maeda","position":"Midfielder","number":null},{"name":"Florentino","position":"Midfielder","number":null},{"name":"Jack Clarke","position":"Midfielder","number":null},{"name":"Jack Taylor","position":"Midfielder","number":null},{"name":"Jaden Philogene","position":"Midfielder","number":null},{"name":"Julio Enciso","position":"Midfielder","number":null},{"name":"Kasey McAteer","position":"Midfielder","number":null},{"name":"Marcelino Núñez","position":"Midfielder","number":null},{"name":"Saša Lukić","position":"Midfielder","number":null},{"name":"Ali Al Hamadi","position":"Forward","number":null},{"name":"Chuba Akpom","position":"Forward","number":null},{"name":"Emersonn","position":"Forward","number":null},{"name":"George Hirst","position":"Forward","number":null},{"name":"Sindre Walle Egeli","position":"Forward","number":null}],"Leeds United":[{"name":"James Trafford","position":"Goalkeeper","number":null},{"name":"Lucas Perri","position":"Goalkeeper","number":null},{"name":"Gabriel Gudmundsson","position":"Defender","number":null},{"name":"Jaka Bijol","position":"Defender","number":null},{"name":"James Justin","position":"Defender","number":null},{"name":"Jayden Bogle","position":"Defender","number":null},{"name":"Joe Rodon","position":"Defender","number":null},{"name":"Nico Elvedi","position":"Defender","number":null},{"name":"Tarik Muharemović","position":"Defender","number":null},{"name":"Anton Stach","position":"Midfielder","number":null},{"name":"Brenden Aaronson","position":"Midfielder","number":null},{"name":"Daniel James","position":"Midfielder","number":null},{"name":"Ethan Ampadu","position":"Midfielder","number":null},{"name":"Harry Wilson","position":"Midfielder","number":null},{"name":"Ilia Gruev","position":"Midfielder","number":null},{"name":"Noah Okafor","position":"Midfielder","number":null},{"name":"Sean Longstaff","position":"Midfielder","number":null},{"name":"Tanaka Ao","position":"Midfielder","number":null},{"name":"Wilfried Gnonto","position":"Midfielder","number":null},{"name":"Dominic Calvert-Lewin","position":"Forward","number":null},{"name":"Lukas Nmecha","position":"Forward","number":null},{"name":"Mateo Joseph Fernández-Regatillo","position":"Forward","number":null}],"Liverpool":[{"name":"Alisson Becker","position":"Goalkeeper","number":null},{"name":"Freddie Woodman","position":"Goalkeeper","number":null},{"name":"Giorgi Mamardashvili","position":"Goalkeeper","number":null},{"name":"Harvey Davies","position":"Goalkeeper","number":null},{"name":"Vitezslav Jaros","position":"Goalkeeper","number":null},{"name":"Calvin Ramsay","position":"Defender","number":null},{"name":"Conor Bradley","position":"Defender","number":null},{"name":"Giovanni Leoni","position":"Defender","number":null},{"name":"Jeremie Frimpong","position":"Defender","number":null},{"name":"Jeremy Jacquet","position":"Defender","number":null},{"name":"Joe Gomez","position":"Defender","number":null},{"name":"Kostas Tsimikas","position":"Defender","number":null},{"name":"Milos Kerkez","position":"Defender","number":null},{"name":"Ronald Araujo","position":"Defender","number":null},{"name":"Virgil van Dijk","position":"Defender","number":null},{"name":"Wellity Lucky","position":"Defender","number":null},{"name":"Alexis Mac Allister","position":"Midfielder","number":null},{"name":"Cody Gakpo","position":"Midfielder","number":null},{"name":"Curtis Jones","position":"Midfielder","number":null},{"name":"Dominik Szoboszlai","position":"Midfielder","number":null},{"name":"Endo Wataru","position":"Midfielder","number":null},{"name":"Federico Chiesa","position":"Midfielder","number":null},{"name":"Florian Wirtz","position":"Midfielder","number":null},{"name":"Harvey Elliott","position":"Midfielder","number":null},{"name":"James McConnell","position":"Midfielder","number":null},{"name":"Lewis Koumas","position":"Midfielder","number":null},{"name":"Rio Ngumoha","position":"Midfielder","number":null},{"name":"Ryan Gravenberch","position":"Midfielder","number":null},{"name":"Stefan Bajčetić Maquieira","position":"Midfielder","number":null},{"name":"Trey Nyoni","position":"Midfielder","number":null},{"name":"Victor Munoz","position":"Midfielder","number":null},{"name":"Alexander Isak","position":"Forward","number":null},{"name":"Hugo Ekitiké","position":"Forward","number":null},{"name":"Jayden Danns","position":"Forward","number":null}],"Manchester City":[{"name":"Gerónimo Rulli","position":"Goalkeeper","number":null},{"name":"Gianluigi Donnarumma","position":"Goalkeeper","number":null},{"name":"Marcus Bettinelli","position":"Goalkeeper","number":null},{"name":"Abdukodir Khusanov","position":"Defender","number":null},{"name":"Joško Gvardiol","position":"Defender","number":null},{"name":"Marc Guéhi","position":"Defender","number":null},{"name":"Matheus Nunes","position":"Defender","number":null},{"name":"Nico O'Reilly","position":"Defender","number":null},{"name":"Rayan Aït-Nouri","position":"Defender","number":null},{"name":"Rico Lewis","position":"Defender","number":null},{"name":"Rúben Dias","position":"Defender","number":null},{"name":"Vitor Reis","position":"Defender","number":null},{"name":"Antoine Semenyo","position":"Midfielder","number":null},{"name":"Claudio Echeverri","position":"Midfielder","number":null},{"name":"Divine Mukasa","position":"Midfielder","number":null},{"name":"Elliot Anderson","position":"Midfielder","number":null},{"name":"Jack Grealish","position":"Midfielder","number":null},{"name":"Jeremy Monga","position":"Midfielder","number":null},{"name":"Jérémy Doku","position":"Midfielder","number":null},{"name":"Mateo Kovačić","position":"Midfielder","number":null},{"name":"Nico González Iglesias","position":"Midfielder","number":null},{"name":"Phil Foden","position":"Midfielder","number":null},{"name":"Rayan Cherki","position":"Midfielder","number":null},{"name":"Savinho","position":"Midfielder","number":null},{"name":"Erling Haaland","position":"Forward","number":null},{"name":"Omar Marmoush","position":"Forward","number":null}],"Manchester United":[{"name":"Karl Darlow","position":"Goalkeeper","number":null},{"name":"Senne Lammens","position":"Goalkeeper","number":null},{"name":"Tom Heaton","position":"Goalkeeper","number":null},{"name":"Ayden Heaven","position":"Defender","number":null},{"name":"Diogo Dalot","position":"Defender","number":null},{"name":"Harry Amass","position":"Defender","number":null},{"name":"Harry Maguire","position":"Defender","number":null},{"name":"Leny Yoro","position":"Defender","number":null},{"name":"Lisandro Martínez","position":"Defender","number":null},{"name":"Luke Shaw","position":"Defender","number":null},{"name":"Matthijs de Ligt","position":"Defender","number":null},{"name":"Noussair Mazraoui","position":"Defender","number":null},{"name":"Amad Diallo","position":"Midfielder","number":null},{"name":"Andrey Santos","position":"Midfielder","number":null},{"name":"Bendito Mantato","position":"Midfielder","number":null},{"name":"Bruno Fernandes","position":"Midfielder","number":null},{"name":"Bryan Mbeumo","position":"Midfielder","number":null},{"name":"Jack Fletcher","position":"Midfielder","number":null},{"name":"Kobbie Mainoo","position":"Midfielder","number":null},{"name":"Manuel Ugarte Ribeiro","position":"Midfielder","number":null},{"name":"Marcus Rashford","position":"Midfielder","number":null},{"name":"Mason Mount","position":"Midfielder","number":null},{"name":"Matheus Cunha","position":"Midfielder","number":null},{"name":"Patrick Dorgu","position":"Midfielder","number":null},{"name":"Shea Lacey","position":"Midfielder","number":null},{"name":"Toby Collyer","position":"Midfielder","number":null},{"name":"Tyler Fletcher","position":"Midfielder","number":null},{"name":"Youri Tielemans","position":"Midfielder","number":null},{"name":"Benjamin Sesko","position":"Forward","number":null},{"name":"Chido Obi","position":"Forward","number":null},{"name":"Joshua Zirkzee","position":"Forward","number":null}],"Newcastle United":[{"name":"Ewen Jaouen","position":"Goalkeeper","number":null},{"name":"Lukás Hornícek","position":"Goalkeeper","number":null},{"name":"Mark Gillespie","position":"Goalkeeper","number":null},{"name":"Nick Pope","position":"Goalkeeper","number":null},{"name":"Amar Dedic","position":"Defender","number":null},{"name":"Dan Burn","position":"Defender","number":null},{"name":"Fabian Schär","position":"Defender","number":null},{"name":"Lewis Hall","position":"Defender","number":null},{"name":"Malick Thiaw","position":"Defender","number":null},{"name":"Sven Botman","position":"Defender","number":null},{"name":"Tino Livramento","position":"Defender","number":null},{"name":"Aladji Bamba","position":"Midfielder","number":null},{"name":"Anthony Elanga","position":"Midfielder","number":null},{"name":"Bazoumana Touré","position":"Midfielder","number":null},{"name":"Harvey Barnes","position":"Midfielder","number":null},{"name":"Jacob Murphy","position":"Midfielder","number":null},{"name":"Jacob Ramsey","position":"Midfielder","number":null},{"name":"Joe Willock","position":"Midfielder","number":null},{"name":"Joelinton","position":"Midfielder","number":null},{"name":"Lewis Miley","position":"Midfielder","number":null},{"name":"Sean Steur","position":"Midfielder","number":null},{"name":"Nick Woltemade","position":"Forward","number":null},{"name":"Sean Neave","position":"Forward","number":null},{"name":"William Osula","position":"Forward","number":null},{"name":"Yoane Wissa","position":"Forward","number":null}],"Nottingham Forest":[{"name":"John Victor","position":"Goalkeeper","number":null},{"name":"Matz Sels","position":"Goalkeeper","number":null},{"name":"Steven Benda","position":"Goalkeeper","number":null},{"name":"Jair Cunha","position":"Defender","number":null},{"name":"Luca Netz","position":"Defender","number":null},{"name":"Morato","position":"Defender","number":null},{"name":"Murillo","position":"Defender","number":null},{"name":"Neco Williams","position":"Defender","number":null},{"name":"Nicolò Savona","position":"Defender","number":null},{"name":"Nikola Milenković","position":"Defender","number":null},{"name":"Ola Aina","position":"Defender","number":null},{"name":"Omar Richards","position":"Defender","number":null},{"name":"Ousmane Diomande","position":"Defender","number":null},{"name":"Tyler Bindon","position":"Defender","number":null},{"name":"Zach Abbott","position":"Defender","number":null},{"name":"Callum Hudson-Odoi","position":"Midfielder","number":null},{"name":"Dan Ndoye","position":"Midfielder","number":null},{"name":"Dilane Bakwa","position":"Midfielder","number":null},{"name":"Ibrahim Sangaré","position":"Midfielder","number":null},{"name":"James McAtee","position":"Midfielder","number":null},{"name":"Morgan Gibbs-White","position":"Midfielder","number":null},{"name":"Nicolás Domínguez","position":"Midfielder","number":null},{"name":"Omari Hutchinson","position":"Midfielder","number":null},{"name":"Ryan Yates","position":"Midfielder","number":null},{"name":"Xaver Schlager","position":"Midfielder","number":null},{"name":"Arnaud Kalimuendo","position":"Forward","number":null},{"name":"Chris Wood","position":"Forward","number":null},{"name":"Igor Jesus","position":"Forward","number":null}],"Tottenham Hotspur":[{"name":"Antonín Kinský","position":"Goalkeeper","number":null},{"name":"Brandon Austin","position":"Goalkeeper","number":null},{"name":"Martin Dubravka","position":"Goalkeeper","number":null},{"name":"Andrew Robertson","position":"Defender","number":null},{"name":"Ben Davies","position":"Defender","number":null},{"name":"Destiny Udogie","position":"Defender","number":null},{"name":"James Rowswell","position":"Defender","number":null},{"name":"Jan Paul van Hecke","position":"Defender","number":null},{"name":"Jun'ai Byfield","position":"Defender","number":null},{"name":"Kevin Danso","position":"Defender","number":null},{"name":"Marcos Senesi Barón","position":"Defender","number":null},{"name":"Micky van de Ven","position":"Defender","number":null},{"name":"Pedro Porro Sauceda","position":"Defender","number":null},{"name":"Souza","position":"Defender","number":null},{"name":"Archie Gray","position":"Midfielder","number":null},{"name":"Callum Olusesi","position":"Midfielder","number":null},{"name":"Conor Gallagher","position":"Midfielder","number":null},{"name":"Dejan Kulusevski","position":"Midfielder","number":null},{"name":"James Maddison","position":"Midfielder","number":null},{"name":"Lucas Bergvall","position":"Midfielder","number":null},{"name":"Mateus Fernandes","position":"Midfielder","number":null},{"name":"Mathys Tel","position":"Midfielder","number":null},{"name":"Mikey Moore","position":"Midfielder","number":null},{"name":"Mohammed Kudus","position":"Midfielder","number":null},{"name":"Pape Matar Sarr","position":"Midfielder","number":null},{"name":"Rodrigo Bentancur","position":"Midfielder","number":null},{"name":"Sandro Tonali","position":"Midfielder","number":null},{"name":"Wilson Odobert","position":"Midfielder","number":null},{"name":"Xavi Simons","position":"Midfielder","number":null},{"name":"Dane Scarlett","position":"Forward","number":null},{"name":"Dominic Solanke-Mitchell","position":"Forward","number":null},{"name":"Richarlison","position":"Forward","number":null}],"Sunderland":[{"name":"Melker Ellborg","position":"Goalkeeper","number":null},{"name":"Robin Roefs","position":"Goalkeeper","number":null},{"name":"Daniel Ballard","position":"Defender","number":null},{"name":"Jenson Seelt","position":"Defender","number":null},{"name":"Luke O'Nien","position":"Defender","number":null},{"name":"Nordi Mukiele","position":"Defender","number":null},{"name":"Omar Alderete","position":"Defender","number":null},{"name":"Reinildo Mandava","position":"Defender","number":null},{"name":"Thomas Meunier","position":"Defender","number":null},{"name":"Trai Hume","position":"Defender","number":null},{"name":"Chemsdine Talbi","position":"Midfielder","number":null},{"name":"Chris Rigg","position":"Midfielder","number":null},{"name":"Djiamgone Jocelin Ta Bi","position":"Midfielder","number":null},{"name":"Enzo Le Fée","position":"Midfielder","number":null},{"name":"Granit Xhaka","position":"Midfielder","number":null},{"name":"Habib Diarra","position":"Midfielder","number":null},{"name":"Nilson Angulo","position":"Midfielder","number":null},{"name":"Noah Sadiki","position":"Midfielder","number":null},{"name":"Romaine Mundle","position":"Midfielder","number":null},{"name":"Simon Adingra","position":"Midfielder","number":null},{"name":"Brian Brobbey","position":"Forward","number":null},{"name":"Wilson Isidor","position":"Forward","number":null}]};
+const PLAYER_DIRECTORY = Object.fromEntries(Object.entries(TEAM_ROSTERS).map(([k,v])=>[String(k).trim().toLowerCase(),v]));
+const ALL_FIXTURES = [{"id":1,"mw":1,"kickoff":"2026-08-21T19:00:00Z","home":"Arsenal","away":"Coventry City","homeScore":null,"awayScore":null},{"id":4,"mw":1,"kickoff":"2026-08-22T11:30:00Z","home":"Hull City","away":"Manchester United","homeScore":null,"awayScore":null},{"id":3,"mw":1,"kickoff":"2026-08-22T14:00:00Z","home":"Everton","away":"Crystal Palace","homeScore":null,"awayScore":null},{"id":5,"mw":1,"kickoff":"2026-08-22T14:00:00Z","home":"Ipswich Town","away":"Sunderland","homeScore":null,"awayScore":null},{"id":6,"mw":1,"kickoff":"2026-08-22T14:00:00Z","home":"Nottingham Forest","away":"Leeds United","homeScore":null,"awayScore":null},{"id":2,"mw":1,"kickoff":"2026-08-22T16:30:00Z","home":"Brentford","away":"Tottenham Hotspur","homeScore":null,"awayScore":null},{"id":7,"mw":1,"kickoff":"2026-08-23T13:00:00Z","home":"Brighton & Hove Albion","away":"Aston Villa","homeScore":null,"awayScore":null},{"id":8,"mw":1,"kickoff":"2026-08-23T13:00:00Z","home":"Manchester City","away":"AFC Bournemouth","homeScore":null,"awayScore":null},{"id":9,"mw":1,"kickoff":"2026-08-23T15:30:00Z","home":"Newcastle United","away":"Liverpool","homeScore":null,"awayScore":null},{"id":10,"mw":1,"kickoff":"2026-08-24T19:00:00Z","home":"Fulham","away":"Chelsea","homeScore":null,"awayScore":null},{"id":11,"mw":2,"kickoff":"2026-08-28T19:00:00Z","home":"Crystal Palace","away":"Manchester City","homeScore":null,"awayScore":null},{"id":14,"mw":2,"kickoff":"2026-08-29T11:30:00Z","home":"Liverpool","away":"Nottingham Forest","homeScore":null,"awayScore":null},{"id":12,"mw":2,"kickoff":"2026-08-29T14:00:00Z","home":"AFC Bournemouth","away":"Everton","homeScore":null,"awayScore":null},{"id":13,"mw":2,"kickoff":"2026-08-29T14:00:00Z","home":"Coventry City","away":"Hull City","homeScore":null,"awayScore":null},{"id":15,"mw":2,"kickoff":"2026-08-29T16:30:00Z","home":"Tottenham Hotspur","away":"Newcastle United","homeScore":null,"awayScore":null},{"id":16,"mw":2,"kickoff":"2026-08-30T13:00:00Z","home":"Chelsea","away":"Brighton & Hove Albion","homeScore":null,"awayScore":null},{"id":17,"mw":2,"kickoff":"2026-08-30T13:00:00Z","home":"Leeds United","away":"Brentford","homeScore":null,"awayScore":null},{"id":19,"mw":2,"kickoff":"2026-08-30T13:00:00Z","home":"Sunderland","away":"Fulham","homeScore":null,"awayScore":null},{"id":18,"mw":2,"kickoff":"2026-08-30T15:30:00Z","home":"Manchester United","away":"Ipswich Town","homeScore":null,"awayScore":null},{"id":20,"mw":2,"kickoff":"2026-08-31T19:00:00Z","home":"Aston Villa","away":"Arsenal","homeScore":null,"awayScore":null},{"id":21,"mw":3,"kickoff":"2026-09-04T19:00:00Z","home":"Ipswich Town","away":"Liverpool","homeScore":null,"awayScore":null},{"id":27,"mw":3,"kickoff":"2026-09-05T11:30:00Z","home":"Newcastle United","away":"AFC Bournemouth","homeScore":null,"awayScore":null},{"id":22,"mw":3,"kickoff":"2026-09-05T14:00:00Z","home":"Brentford","away":"Sunderland","homeScore":null,"awayScore":null},{"id":23,"mw":3,"kickoff":"2026-09-05T14:00:00Z","home":"Brighton & Hove Albion","away":"Leeds United","homeScore":null,"awayScore":null},{"id":24,"mw":3,"kickoff":"2026-09-05T14:00:00Z","home":"Fulham","away":"Crystal Palace","homeScore":null,"awayScore":null},{"id":26,"mw":3,"kickoff":"2026-09-05T14:00:00Z","home":"Manchester City","away":"Coventry City","homeScore":null,"awayScore":null},{"id":28,"mw":3,"kickoff":"2026-09-05T14:00:00Z","home":"Nottingham Forest","away":"Tottenham Hotspur","homeScore":null,"awayScore":null},{"id":25,"mw":3,"kickoff":"2026-09-05T16:30:00Z","home":"Hull City","away":"Aston Villa","homeScore":null,"awayScore":null},{"id":30,"mw":3,"kickoff":"2026-09-06T13:00:00Z","home":"Everton","away":"Manchester United","homeScore":null,"awayScore":null},{"id":29,"mw":3,"kickoff":"2026-09-06T15:30:00Z","home":"Arsenal","away":"Chelsea","homeScore":null,"awayScore":null},{"id":31,"mw":4,"kickoff":"2026-09-12T14:00:00Z","home":"Aston Villa","away":"Nottingham Forest","homeScore":null,"awayScore":null},{"id":32,"mw":4,"kickoff":"2026-09-12T14:00:00Z","home":"AFC Bournemouth","away":"Brentford","homeScore":null,"awayScore":null},{"id":33,"mw":4,"kickoff":"2026-09-12T14:00:00Z","home":"Chelsea","away":"Hull City","homeScore":null,"awayScore":null},{"id":34,"mw":4,"kickoff":"2026-09-12T14:00:00Z","home":"Crystal Palace","away":"Ipswich Town","homeScore":null,"awayScore":null},{"id":35,"mw":4,"kickoff":"2026-09-12T14:00:00Z","home":"Liverpool","away":"Fulham","homeScore":null,"awayScore":null},{"id":37,"mw":4,"kickoff":"2026-09-12T16:30:00Z","home":"Tottenham Hotspur","away":"Everton","homeScore":null,"awayScore":null},{"id":36,"mw":4,"kickoff":"2026-09-12T19:00:00Z","home":"Sunderland","away":"Arsenal","homeScore":null,"awayScore":null},{"id":38,"mw":4,"kickoff":"2026-09-13T13:00:00Z","home":"Coventry City","away":"Brighton & Hove Albion","homeScore":null,"awayScore":null},{"id":39,"mw":4,"kickoff":"2026-09-13T15:30:00Z","home":"Manchester United","away":"Manchester City","homeScore":null,"awayScore":null},{"id":40,"mw":4,"kickoff":"2026-09-14T19:00:00Z","home":"Leeds United","away":"Newcastle United","homeScore":null,"awayScore":null},{"id":41,"mw":5,"kickoff":"2026-09-18T19:00:00Z","home":"Brentford","away":"Chelsea","homeScore":null,"awayScore":null},{"id":48,"mw":5,"kickoff":"2026-09-19T11:30:00Z","home":"Tottenham Hotspur","away":"Aston Villa","homeScore":null,"awayScore":null},{"id":42,"mw":5,"kickoff":"2026-09-19T14:00:00Z","home":"Brighton & Hove Albion","away":"Arsenal","homeScore":null,"awayScore":null},{"id":43,"mw":5,"kickoff":"2026-09-19T14:00:00Z","home":"Everton","away":"Ipswich Town","homeScore":null,"awayScore":null},{"id":44,"mw":5,"kickoff":"2026-09-19T14:00:00Z","home":"Leeds United","away":"Crystal Palace","homeScore":null,"awayScore":null},{"id":45,"mw":5,"kickoff":"2026-09-19T14:00:00Z","home":"Manchester City","away":"Sunderland","homeScore":null,"awayScore":null},{"id":46,"mw":5,"kickoff":"2026-09-19T14:00:00Z","home":"Newcastle United","away":"Hull City","homeScore":null,"awayScore":null},{"id":47,"mw":5,"kickoff":"2026-09-19T16:30:00Z","home":"Nottingham Forest","away":"Coventry City","homeScore":null,"awayScore":null},{"id":49,"mw":5,"kickoff":"2026-09-20T13:00:00Z","home":"AFC Bournemouth","away":"Liverpool","homeScore":null,"awayScore":null},{"id":50,"mw":5,"kickoff":"2026-09-20T15:30:00Z","home":"Fulham","away":"Manchester United","homeScore":null,"awayScore":null},{"id":51,"mw":6,"kickoff":"2026-10-10T11:30:00Z","home":"Arsenal","away":"Leeds United","homeScore":null,"awayScore":null},{"id":52,"mw":6,"kickoff":"2026-10-10T14:00:00Z","home":"Aston Villa","away":"Brentford","homeScore":null,"awayScore":null},{"id":53,"mw":6,"kickoff":"2026-10-10T14:00:00Z","home":"Chelsea","away":"AFC Bournemouth","homeScore":null,"awayScore":null},{"id":57,"mw":6,"kickoff":"2026-10-10T14:00:00Z","home":"Ipswich Town","away":"Fulham","homeScore":null,"awayScore":null},{"id":60,"mw":6,"kickoff":"2026-10-10T14:00:00Z","home":"Sunderland","away":"Brighton & Hove Albion","homeScore":null,"awayScore":null},{"id":59,"mw":6,"kickoff":"2026-10-10T16:30:00Z","home":"Manchester United","away":"Tottenham Hotspur","homeScore":null,"awayScore":null},{"id":55,"mw":6,"kickoff":"2026-10-11T13:00:00Z","home":"Crystal Palace","away":"Nottingham Forest","homeScore":null,"awayScore":null},{"id":56,"mw":6,"kickoff":"2026-10-11T13:00:00Z","home":"Hull City","away":"Everton","homeScore":null,"awayScore":null},{"id":58,"mw":6,"kickoff":"2026-10-11T15:30:00Z","home":"Liverpool","away":"Manchester City","homeScore":null,"awayScore":null},{"id":54,"mw":6,"kickoff":"2026-10-12T19:00:00Z","home":"Coventry City","away":"Newcastle United","homeScore":null,"awayScore":null},{"id":64,"mw":7,"kickoff":"2026-10-17T11:30:00Z","home":"Everton","away":"Chelsea","homeScore":null,"awayScore":null},{"id":62,"mw":7,"kickoff":"2026-10-17T14:00:00Z","home":"Brentford","away":"Liverpool","homeScore":null,"awayScore":null},{"id":65,"mw":7,"kickoff":"2026-10-17T14:00:00Z","home":"Fulham","away":"Hull City","homeScore":null,"awayScore":null},{"id":67,"mw":7,"kickoff":"2026-10-17T14:00:00Z","home":"Manchester City","away":"Ipswich Town","homeScore":null,"awayScore":null},{"id":68,"mw":7,"kickoff":"2026-10-17T16:30:00Z","home":"Newcastle United","away":"Aston Villa","homeScore":null,"awayScore":null},{"id":61,"mw":7,"kickoff":"2026-10-18T13:00:00Z","home":"AFC Bournemouth","away":"Sunderland","homeScore":null,"awayScore":null},{"id":63,"mw":7,"kickoff":"2026-10-18T13:00:00Z","home":"Brighton & Hove Albion","away":"Crystal Palace","homeScore":null,"awayScore":null},{"id":66,"mw":7,"kickoff":"2026-10-18T13:00:00Z","home":"Leeds United","away":"Manchester United","homeScore":null,"awayScore":null},{"id":69,"mw":7,"kickoff":"2026-10-18T15:30:00Z","home":"Nottingham Forest","away":"Arsenal","homeScore":null,"awayScore":null},{"id":70,"mw":7,"kickoff":"2026-10-19T19:00:00Z","home":"Tottenham Hotspur","away":"Coventry City","homeScore":null,"awayScore":null},{"id":77,"mw":8,"kickoff":"2026-10-23T19:00:00Z","home":"Ipswich Town","away":"Nottingham Forest","homeScore":null,"awayScore":null},{"id":72,"mw":8,"kickoff":"2026-10-24T11:30:00Z","home":"Aston Villa","away":"Manchester City","homeScore":null,"awayScore":null},{"id":71,"mw":8,"kickoff":"2026-10-24T14:00:00Z","home":"Arsenal","away":"Everton","homeScore":null,"awayScore":null},{"id":74,"mw":8,"kickoff":"2026-10-24T14:00:00Z","home":"Coventry City","away":"Fulham","homeScore":null,"awayScore":null},{"id":78,"mw":8,"kickoff":"2026-10-24T14:00:00Z","home":"Liverpool","away":"Brighton & Hove Albion","homeScore":null,"awayScore":null},{"id":73,"mw":8,"kickoff":"2026-10-24T16:30:00Z","home":"Chelsea","away":"Tottenham Hotspur","homeScore":null,"awayScore":null},{"id":75,"mw":8,"kickoff":"2026-10-25T14:00:00Z","home":"Crystal Palace","away":"Newcastle United","homeScore":null,"awayScore":null},{"id":76,"mw":8,"kickoff":"2026-10-25T14:00:00Z","home":"Hull City","away":"Brentford","homeScore":null,"awayScore":null},{"id":79,"mw":8,"kickoff":"2026-10-25T14:00:00Z","home":"Manchester United","away":"AFC Bournemouth","homeScore":null,"awayScore":null},{"id":80,"mw":8,"kickoff":"2026-10-25T16:30:00Z","home":"Sunderland","away":"Leeds United","homeScore":null,"awayScore":null},{"id":84,"mw":9,"kickoff":"2026-10-31T12:30:00Z","home":"Chelsea","away":"Manchester United","homeScore":null,"awayScore":null},{"id":82,"mw":9,"kickoff":"2026-10-31T15:00:00Z","home":"AFC Bournemouth","away":"Leeds United","homeScore":null,"awayScore":null},{"id":83,"mw":9,"kickoff":"2026-10-31T15:00:00Z","home":"Brentford","away":"Nottingham Forest","homeScore":null,"awayScore":null},{"id":85,"mw":9,"kickoff":"2026-10-31T15:00:00Z","home":"Coventry City","away":"Sunderland","homeScore":null,"awayScore":null},{"id":86,"mw":9,"kickoff":"2026-10-31T15:00:00Z","home":"Hull City","away":"Ipswich Town","homeScore":null,"awayScore":null},{"id":88,"mw":9,"kickoff":"2026-10-31T15:00:00Z","home":"Manchester City","away":"Brighton & Hove Albion","homeScore":null,"awayScore":null},{"id":90,"mw":9,"kickoff":"2026-10-31T17:30:00Z","home":"Tottenham Hotspur","away":"Crystal Palace","homeScore":null,"awayScore":null},{"id":81,"mw":9,"kickoff":"2026-11-01T14:00:00Z","home":"Aston Villa","away":"Fulham","homeScore":null,"awayScore":null},{"id":87,"mw":9,"kickoff":"2026-11-01T16:30:00Z","home":"Liverpool","away":"Arsenal","homeScore":null,"awayScore":null},{"id":89,"mw":9,"kickoff":"2026-11-02T20:00:00Z","home":"Newcastle United","away":"Everton","homeScore":null,"awayScore":null},{"id":91,"mw":10,"kickoff":"2026-11-07T15:00:00Z","home":"Arsenal","away":"Hull City","homeScore":null,"awayScore":null},{"id":92,"mw":10,"kickoff":"2026-11-07T15:00:00Z","home":"Brighton & Hove Albion","away":"Brentford","homeScore":null,"awayScore":null},{"id":93,"mw":10,"kickoff":"2026-11-07T15:00:00Z","home":"Crystal Palace","away":"Liverpool","homeScore":null,"awayScore":null},{"id":94,"mw":10,"kickoff":"2026-11-07T15:00:00Z","home":"Everton","away":"Coventry City","homeScore":null,"awayScore":null},{"id":95,"mw":10,"kickoff":"2026-11-07T15:00:00Z","home":"Fulham","away":"Newcastle United","homeScore":null,"awayScore":null},{"id":96,"mw":10,"kickoff":"2026-11-07T15:00:00Z","home":"Ipswich Town","away":"AFC Bournemouth","homeScore":null,"awayScore":null},{"id":97,"mw":10,"kickoff":"2026-11-07T15:00:00Z","home":"Leeds United","away":"Tottenham Hotspur","homeScore":null,"awayScore":null},{"id":98,"mw":10,"kickoff":"2026-11-07T15:00:00Z","home":"Manchester United","away":"Aston Villa","homeScore":null,"awayScore":null},{"id":99,"mw":10,"kickoff":"2026-11-07T15:00:00Z","home":"Nottingham Forest","away":"Manchester City","homeScore":null,"awayScore":null},{"id":100,"mw":10,"kickoff":"2026-11-07T15:00:00Z","home":"Sunderland","away":"Chelsea","homeScore":null,"awayScore":null},{"id":101,"mw":11,"kickoff":"2026-11-21T15:00:00Z","home":"Aston Villa","away":"Sunderland","homeScore":null,"awayScore":null},{"id":102,"mw":11,"kickoff":"2026-11-21T15:00:00Z","home":"AFC Bournemouth","away":"Nottingham Forest","homeScore":null,"awayScore":null},{"id":103,"mw":11,"kickoff":"2026-11-21T15:00:00Z","home":"Brentford","away":"Everton","homeScore":null,"awayScore":null},{"id":104,"mw":11,"kickoff":"2026-11-21T15:00:00Z","home":"Chelsea","away":"Leeds United","homeScore":null,"awayScore":null},{"id":105,"mw":11,"kickoff":"2026-11-21T15:00:00Z","home":"Coventry City","away":"Crystal Palace","homeScore":null,"awayScore":null},{"id":106,"mw":11,"kickoff":"2026-11-21T15:00:00Z","home":"Hull City","away":"Brighton & Hove Albion","homeScore":null,"awayScore":null},{"id":107,"mw":11,"kickoff":"2026-11-21T15:00:00Z","home":"Liverpool","away":"Manchester United","homeScore":null,"awayScore":null},{"id":108,"mw":11,"kickoff":"2026-11-21T15:00:00Z","home":"Manchester City","away":"Fulham","homeScore":null,"awayScore":null},{"id":109,"mw":11,"kickoff":"2026-11-21T15:00:00Z","home":"Newcastle United","away":"Arsenal","homeScore":null,"awayScore":null},{"id":110,"mw":11,"kickoff":"2026-11-21T15:00:00Z","home":"Tottenham Hotspur","away":"Ipswich Town","homeScore":null,"awayScore":null},{"id":111,"mw":12,"kickoff":"2026-11-28T15:00:00Z","home":"Arsenal","away":"Manchester City","homeScore":null,"awayScore":null},{"id":112,"mw":12,"kickoff":"2026-11-28T15:00:00Z","home":"Brighton & Hove Albion","away":"Newcastle United","homeScore":null,"awayScore":null},{"id":113,"mw":12,"kickoff":"2026-11-28T15:00:00Z","home":"Crystal Palace","away":"Hull City","homeScore":null,"awayScore":null},{"id":114,"mw":12,"kickoff":"2026-11-28T15:00:00Z","home":"Everton","away":"Liverpool","homeScore":null,"awayScore":null},{"id":115,"mw":12,"kickoff":"2026-11-28T15:00:00Z","home":"Fulham","away":"AFC Bournemouth","homeScore":null,"awayScore":null},{"id":116,"mw":12,"kickoff":"2026-11-28T15:00:00Z","home":"Ipswich Town","away":"Aston Villa","homeScore":null,"awayScore":null},{"id":117,"mw":12,"kickoff":"2026-11-28T15:00:00Z","home":"Leeds United","away":"Coventry City","homeScore":null,"awayScore":null},{"id":118,"mw":12,"kickoff":"2026-11-28T15:00:00Z","home":"Manchester United","away":"Brentford","homeScore":null,"awayScore":null},{"id":119,"mw":12,"kickoff":"2026-11-28T15:00:00Z","home":"Nottingham Forest","away":"Chelsea","homeScore":null,"awayScore":null},{"id":120,"mw":12,"kickoff":"2026-11-28T15:00:00Z","home":"Sunderland","away":"Tottenham Hotspur","homeScore":null,"awayScore":null},{"id":121,"mw":13,"kickoff":"2026-12-02T20:00:00Z","home":"Aston Villa","away":"Everton","homeScore":null,"awayScore":null},{"id":122,"mw":13,"kickoff":"2026-12-02T20:00:00Z","home":"AFC Bournemouth","away":"Brighton & Hove Albion","homeScore":null,"awayScore":null},{"id":123,"mw":13,"kickoff":"2026-12-02T20:00:00Z","home":"Brentford","away":"Arsenal","homeScore":null,"awayScore":null},{"id":124,"mw":13,"kickoff":"2026-12-02T20:00:00Z","home":"Chelsea","away":"Crystal Palace","homeScore":null,"awayScore":null},{"id":125,"mw":13,"kickoff":"2026-12-02T20:00:00Z","home":"Coventry City","away":"Ipswich Town","homeScore":null,"awayScore":null},{"id":126,"mw":13,"kickoff":"2026-12-02T20:00:00Z","home":"Hull City","away":"Nottingham Forest","homeScore":null,"awayScore":null},{"id":127,"mw":13,"kickoff":"2026-12-02T20:00:00Z","home":"Liverpool","away":"Sunderland","homeScore":null,"awayScore":null},{"id":128,"mw":13,"kickoff":"2026-12-02T20:00:00Z","home":"Manchester City","away":"Leeds United","homeScore":null,"awayScore":null},{"id":129,"mw":13,"kickoff":"2026-12-02T20:00:00Z","home":"Newcastle United","away":"Manchester United","homeScore":null,"awayScore":null},{"id":130,"mw":13,"kickoff":"2026-12-02T20:00:00Z","home":"Tottenham Hotspur","away":"Fulham","homeScore":null,"awayScore":null},{"id":131,"mw":14,"kickoff":"2026-12-05T15:00:00Z","home":"Aston Villa","away":"Crystal Palace","homeScore":null,"awayScore":null},{"id":132,"mw":14,"kickoff":"2026-12-05T15:00:00Z","home":"AFC Bournemouth","away":"Hull City","homeScore":null,"awayScore":null},{"id":133,"mw":14,"kickoff":"2026-12-05T15:00:00Z","home":"Brentford","away":"Manchester City","homeScore":null,"awayScore":null},{"id":134,"mw":14,"kickoff":"2026-12-05T15:00:00Z","home":"Chelsea","away":"Liverpool","homeScore":null,"awayScore":null},{"id":135,"mw":14,"kickoff":"2026-12-05T15:00:00Z","home":"Everton","away":"Fulham","homeScore":null,"awayScore":null},{"id":136,"mw":14,"kickoff":"2026-12-05T15:00:00Z","home":"Leeds United","away":"Ipswich Town","homeScore":null,"awayScore":null},{"id":137,"mw":14,"kickoff":"2026-12-05T15:00:00Z","home":"Manchester United","away":"Coventry City","homeScore":null,"awayScore":null},{"id":138,"mw":14,"kickoff":"2026-12-05T15:00:00Z","home":"Newcastle United","away":"Sunderland","homeScore":null,"awayScore":null},{"id":139,"mw":14,"kickoff":"2026-12-05T15:00:00Z","home":"Nottingham Forest","away":"Brighton & Hove Albion","homeScore":null,"awayScore":null},{"id":140,"mw":14,"kickoff":"2026-12-05T15:00:00Z","home":"Tottenham Hotspur","away":"Arsenal","homeScore":null,"awayScore":null},{"id":141,"mw":15,"kickoff":"2026-12-12T15:00:00Z","home":"Arsenal","away":"AFC Bournemouth","homeScore":null,"awayScore":null},{"id":142,"mw":15,"kickoff":"2026-12-12T15:00:00Z","home":"Brighton & Hove Albion","away":"Everton","homeScore":null,"awayScore":null},{"id":143,"mw":15,"kickoff":"2026-12-12T15:00:00Z","home":"Coventry City","away":"Aston Villa","homeScore":null,"awayScore":null},{"id":144,"mw":15,"kickoff":"2026-12-12T15:00:00Z","home":"Crystal Palace","away":"Manchester United","homeScore":null,"awayScore":null},{"id":145,"mw":15,"kickoff":"2026-12-12T15:00:00Z","home":"Fulham","away":"Brentford","homeScore":null,"awayScore":null},{"id":146,"mw":15,"kickoff":"2026-12-12T15:00:00Z","home":"Hull City","away":"Tottenham Hotspur","homeScore":null,"awayScore":null},{"id":147,"mw":15,"kickoff":"2026-12-12T15:00:00Z","home":"Ipswich Town","away":"Newcastle United","homeScore":null,"awayScore":null},{"id":148,"mw":15,"kickoff":"2026-12-12T15:00:00Z","home":"Liverpool","away":"Leeds United","homeScore":null,"awayScore":null},{"id":149,"mw":15,"kickoff":"2026-12-12T15:00:00Z","home":"Manchester City","away":"Chelsea","homeScore":null,"awayScore":null},{"id":150,"mw":15,"kickoff":"2026-12-12T15:00:00Z","home":"Sunderland","away":"Nottingham Forest","homeScore":null,"awayScore":null},{"id":151,"mw":16,"kickoff":"2026-12-19T15:00:00Z","home":"Arsenal","away":"Manchester United","homeScore":null,"awayScore":null},{"id":152,"mw":16,"kickoff":"2026-12-19T15:00:00Z","home":"AFC Bournemouth","away":"Coventry City","homeScore":null,"awayScore":null},{"id":153,"mw":16,"kickoff":"2026-12-19T15:00:00Z","home":"Brentford","away":"Newcastle United","homeScore":null,"awayScore":null},{"id":154,"mw":16,"kickoff":"2026-12-19T15:00:00Z","home":"Brighton & Hove Albion","away":"Ipswich Town","homeScore":null,"awayScore":null},{"id":155,"mw":16,"kickoff":"2026-12-19T15:00:00Z","home":"Chelsea","away":"Aston Villa","homeScore":null,"awayScore":null},{"id":156,"mw":16,"kickoff":"2026-12-19T15:00:00Z","home":"Leeds United","away":"Fulham","homeScore":null,"awayScore":null},{"id":157,"mw":16,"kickoff":"2026-12-19T15:00:00Z","home":"Liverpool","away":"Tottenham Hotspur","homeScore":null,"awayScore":null},{"id":158,"mw":16,"kickoff":"2026-12-19T15:00:00Z","home":"Manchester City","away":"Hull City","homeScore":null,"awayScore":null},{"id":159,"mw":16,"kickoff":"2026-12-19T15:00:00Z","home":"Nottingham Forest","away":"Everton","homeScore":null,"awayScore":null},{"id":160,"mw":16,"kickoff":"2026-12-19T15:00:00Z","home":"Sunderland","away":"Crystal Palace","homeScore":null,"awayScore":null},{"id":161,"mw":17,"kickoff":"2026-12-26T15:00:00Z","home":"Aston Villa","away":"Leeds United","homeScore":null,"awayScore":null},{"id":162,"mw":17,"kickoff":"2026-12-26T15:00:00Z","home":"Coventry City","away":"Chelsea","homeScore":null,"awayScore":null},{"id":163,"mw":17,"kickoff":"2026-12-26T15:00:00Z","home":"Crystal Palace","away":"Arsenal","homeScore":null,"awayScore":null},{"id":164,"mw":17,"kickoff":"2026-12-26T15:00:00Z","home":"Everton","away":"Sunderland","homeScore":null,"awayScore":null},{"id":165,"mw":17,"kickoff":"2026-12-26T15:00:00Z","home":"Fulham","away":"Brighton & Hove Albion","homeScore":null,"awayScore":null},{"id":166,"mw":17,"kickoff":"2026-12-26T15:00:00Z","home":"Hull City","away":"Liverpool","homeScore":null,"awayScore":null},{"id":167,"mw":17,"kickoff":"2026-12-26T15:00:00Z","home":"Ipswich Town","away":"Brentford","homeScore":null,"awayScore":null},{"id":168,"mw":17,"kickoff":"2026-12-26T15:00:00Z","home":"Manchester United","away":"Nottingham Forest","homeScore":null,"awayScore":null},{"id":169,"mw":17,"kickoff":"2026-12-26T15:00:00Z","home":"Newcastle United","away":"Manchester City","homeScore":null,"awayScore":null},{"id":170,"mw":17,"kickoff":"2026-12-26T15:00:00Z","home":"Tottenham Hotspur","away":"AFC Bournemouth","homeScore":null,"awayScore":null},{"id":171,"mw":18,"kickoff":"2026-12-30T20:00:00Z","home":"Aston Villa","away":"Liverpool","homeScore":null,"awayScore":null},{"id":172,"mw":18,"kickoff":"2026-12-30T20:00:00Z","home":"Coventry City","away":"Brentford","homeScore":null,"awayScore":null},{"id":173,"mw":18,"kickoff":"2026-12-30T20:00:00Z","home":"Crystal Palace","away":"AFC Bournemouth","homeScore":null,"awayScore":null},{"id":174,"mw":18,"kickoff":"2026-12-30T20:00:00Z","home":"Everton","away":"Manchester City","homeScore":null,"awayScore":null},{"id":175,"mw":18,"kickoff":"2026-12-30T20:00:00Z","home":"Fulham","away":"Arsenal","homeScore":null,"awayScore":null},{"id":176,"mw":18,"kickoff":"2026-12-30T20:00:00Z","home":"Hull City","away":"Leeds United","homeScore":null,"awayScore":null},{"id":177,"mw":18,"kickoff":"2026-12-30T20:00:00Z","home":"Ipswich Town","away":"Chelsea","homeScore":null,"awayScore":null},{"id":178,"mw":18,"kickoff":"2026-12-30T20:00:00Z","home":"Manchester United","away":"Sunderland","homeScore":null,"awayScore":null},{"id":179,"mw":18,"kickoff":"2026-12-30T20:00:00Z","home":"Newcastle United","away":"Nottingham Forest","homeScore":null,"awayScore":null},{"id":180,"mw":18,"kickoff":"2026-12-30T20:00:00Z","home":"Tottenham Hotspur","away":"Brighton & Hove Albion","homeScore":null,"awayScore":null},{"id":181,"mw":19,"kickoff":"2027-01-02T15:00:00Z","home":"Arsenal","away":"Ipswich Town","homeScore":null,"awayScore":null},{"id":182,"mw":19,"kickoff":"2027-01-02T15:00:00Z","home":"AFC Bournemouth","away":"Aston Villa","homeScore":null,"awayScore":null},{"id":183,"mw":19,"kickoff":"2027-01-02T15:00:00Z","home":"Brentford","away":"Crystal Palace","homeScore":null,"awayScore":null},{"id":184,"mw":19,"kickoff":"2027-01-02T15:00:00Z","home":"Brighton & Hove Albion","away":"Manchester United","homeScore":null,"awayScore":null},{"id":185,"mw":19,"kickoff":"2027-01-02T15:00:00Z","home":"Chelsea","away":"Newcastle United","homeScore":null,"awayScore":null},{"id":186,"mw":19,"kickoff":"2027-01-02T15:00:00Z","home":"Leeds United","away":"Everton","homeScore":null,"awayScore":null},{"id":187,"mw":19,"kickoff":"2027-01-02T15:00:00Z","home":"Liverpool","away":"Coventry City","homeScore":null,"awayScore":null},{"id":188,"mw":19,"kickoff":"2027-01-02T15:00:00Z","home":"Manchester City","away":"Tottenham Hotspur","homeScore":null,"awayScore":null},{"id":189,"mw":19,"kickoff":"2027-01-02T15:00:00Z","home":"Nottingham Forest","away":"Fulham","homeScore":null,"awayScore":null},{"id":190,"mw":19,"kickoff":"2027-01-02T15:00:00Z","home":"Sunderland","away":"Hull City","homeScore":null,"awayScore":null},{"id":191,"mw":20,"kickoff":"2027-01-06T20:00:00Z","home":"Arsenal","away":"Brentford","homeScore":null,"awayScore":null},{"id":192,"mw":20,"kickoff":"2027-01-06T20:00:00Z","home":"Brighton & Hove Albion","away":"AFC Bournemouth","homeScore":null,"awayScore":null},{"id":193,"mw":20,"kickoff":"2027-01-06T20:00:00Z","home":"Crystal Palace","away":"Chelsea","homeScore":null,"awayScore":null},{"id":194,"mw":20,"kickoff":"2027-01-06T20:00:00Z","home":"Everton","away":"Aston Villa","homeScore":null,"awayScore":null},{"id":195,"mw":20,"kickoff":"2027-01-06T20:00:00Z","home":"Fulham","away":"Tottenham Hotspur","homeScore":null,"awayScore":null},{"id":196,"mw":20,"kickoff":"2027-01-06T20:00:00Z","home":"Ipswich Town","away":"Coventry City","homeScore":null,"awayScore":null},{"id":197,"mw":20,"kickoff":"2027-01-06T20:00:00Z","home":"Leeds United","away":"Manchester City","homeScore":null,"awayScore":null},{"id":198,"mw":20,"kickoff":"2027-01-06T20:00:00Z","home":"Manchester United","away":"Newcastle United","homeScore":null,"awayScore":null},{"id":199,"mw":20,"kickoff":"2027-01-06T20:00:00Z","home":"Nottingham Forest","away":"Hull City","homeScore":null,"awayScore":null},{"id":200,"mw":20,"kickoff":"2027-01-06T20:00:00Z","home":"Sunderland","away":"Liverpool","homeScore":null,"awayScore":null},{"id":201,"mw":21,"kickoff":"2027-01-16T15:00:00Z","home":"Aston Villa","away":"Manchester United","homeScore":null,"awayScore":null},{"id":202,"mw":21,"kickoff":"2027-01-16T15:00:00Z","home":"AFC Bournemouth","away":"Ipswich Town","homeScore":null,"awayScore":null},{"id":203,"mw":21,"kickoff":"2027-01-16T15:00:00Z","home":"Brentford","away":"Brighton & Hove Albion","homeScore":null,"awayScore":null},{"id":204,"mw":21,"kickoff":"2027-01-16T15:00:00Z","home":"Chelsea","away":"Sunderland","homeScore":null,"awayScore":null},{"id":205,"mw":21,"kickoff":"2027-01-16T15:00:00Z","home":"Coventry City","away":"Everton","homeScore":null,"awayScore":null},{"id":206,"mw":21,"kickoff":"2027-01-16T15:00:00Z","home":"Hull City","away":"Arsenal","homeScore":null,"awayScore":null},{"id":207,"mw":21,"kickoff":"2027-01-16T15:00:00Z","home":"Liverpool","away":"Crystal Palace","homeScore":null,"awayScore":null},{"id":208,"mw":21,"kickoff":"2027-01-16T15:00:00Z","home":"Manchester City","away":"Nottingham Forest","homeScore":null,"awayScore":null},{"id":209,"mw":21,"kickoff":"2027-01-16T15:00:00Z","home":"Newcastle United","away":"Fulham","homeScore":null,"awayScore":null},{"id":210,"mw":21,"kickoff":"2027-01-16T15:00:00Z","home":"Tottenham Hotspur","away":"Leeds United","homeScore":null,"awayScore":null},{"id":211,"mw":22,"kickoff":"2027-01-23T15:00:00Z","home":"Arsenal","away":"Newcastle United","homeScore":null,"awayScore":null},{"id":212,"mw":22,"kickoff":"2027-01-23T15:00:00Z","home":"Brighton & Hove Albion","away":"Manchester City","homeScore":null,"awayScore":null},{"id":213,"mw":22,"kickoff":"2027-01-23T15:00:00Z","home":"Crystal Palace","away":"Tottenham Hotspur","homeScore":null,"awayScore":null},{"id":214,"mw":22,"kickoff":"2027-01-23T15:00:00Z","home":"Everton","away":"Brentford","homeScore":null,"awayScore":null},{"id":215,"mw":22,"kickoff":"2027-01-23T15:00:00Z","home":"Fulham","away":"Aston Villa","homeScore":null,"awayScore":null},{"id":216,"mw":22,"kickoff":"2027-01-23T15:00:00Z","home":"Ipswich Town","away":"Hull City","homeScore":null,"awayScore":null},{"id":217,"mw":22,"kickoff":"2027-01-23T15:00:00Z","home":"Leeds United","away":"Chelsea","homeScore":null,"awayScore":null},{"id":218,"mw":22,"kickoff":"2027-01-23T15:00:00Z","home":"Manchester United","away":"Liverpool","homeScore":null,"awayScore":null},{"id":219,"mw":22,"kickoff":"2027-01-23T15:00:00Z","home":"Nottingham Forest","away":"AFC Bournemouth","homeScore":null,"awayScore":null},{"id":220,"mw":22,"kickoff":"2027-01-23T15:00:00Z","home":"Sunderland","away":"Coventry City","homeScore":null,"awayScore":null},{"id":221,"mw":23,"kickoff":"2027-01-30T15:00:00Z","home":"Aston Villa","away":"Ipswich Town","homeScore":null,"awayScore":null},{"id":222,"mw":23,"kickoff":"2027-01-30T15:00:00Z","home":"AFC Bournemouth","away":"Fulham","homeScore":null,"awayScore":null},{"id":223,"mw":23,"kickoff":"2027-01-30T15:00:00Z","home":"Brentford","away":"Manchester United","homeScore":null,"awayScore":null},{"id":224,"mw":23,"kickoff":"2027-01-30T15:00:00Z","home":"Chelsea","away":"Nottingham Forest","homeScore":null,"awayScore":null},{"id":225,"mw":23,"kickoff":"2027-01-30T15:00:00Z","home":"Coventry City","away":"Leeds United","homeScore":null,"awayScore":null},{"id":226,"mw":23,"kickoff":"2027-01-30T15:00:00Z","home":"Hull City","away":"Crystal Palace","homeScore":null,"awayScore":null},{"id":227,"mw":23,"kickoff":"2027-01-30T15:00:00Z","home":"Liverpool","away":"Everton","homeScore":null,"awayScore":null},{"id":228,"mw":23,"kickoff":"2027-01-30T15:00:00Z","home":"Manchester City","away":"Arsenal","homeScore":null,"awayScore":null},{"id":229,"mw":23,"kickoff":"2027-01-30T15:00:00Z","home":"Newcastle United","away":"Brighton & Hove Albion","homeScore":null,"awayScore":null},{"id":230,"mw":23,"kickoff":"2027-01-30T15:00:00Z","home":"Tottenham Hotspur","away":"Sunderland","homeScore":null,"awayScore":null},{"id":231,"mw":24,"kickoff":"2027-02-06T15:00:00Z","home":"Arsenal","away":"Liverpool","homeScore":null,"awayScore":null},{"id":232,"mw":24,"kickoff":"2027-02-06T15:00:00Z","home":"Brighton & Hove Albion","away":"Hull City","homeScore":null,"awayScore":null},{"id":233,"mw":24,"kickoff":"2027-02-06T15:00:00Z","home":"Crystal Palace","away":"Coventry City","homeScore":null,"awayScore":null},{"id":234,"mw":24,"kickoff":"2027-02-06T15:00:00Z","home":"Everton","away":"Newcastle United","homeScore":null,"awayScore":null},{"id":235,"mw":24,"kickoff":"2027-02-06T15:00:00Z","home":"Fulham","away":"Manchester City","homeScore":null,"awayScore":null},{"id":236,"mw":24,"kickoff":"2027-02-06T15:00:00Z","home":"Ipswich Town","away":"Tottenham Hotspur","homeScore":null,"awayScore":null},{"id":237,"mw":24,"kickoff":"2027-02-06T15:00:00Z","home":"Leeds United","away":"AFC Bournemouth","homeScore":null,"awayScore":null},{"id":238,"mw":24,"kickoff":"2027-02-06T15:00:00Z","home":"Manchester United","away":"Chelsea","homeScore":null,"awayScore":null},{"id":239,"mw":24,"kickoff":"2027-02-06T15:00:00Z","home":"Nottingham Forest","away":"Brentford","homeScore":null,"awayScore":null},{"id":240,"mw":24,"kickoff":"2027-02-06T15:00:00Z","home":"Sunderland","away":"Aston Villa","homeScore":null,"awayScore":null},{"id":241,"mw":25,"kickoff":"2027-02-10T20:00:00Z","home":"Aston Villa","away":"AFC Bournemouth","homeScore":null,"awayScore":null},{"id":242,"mw":25,"kickoff":"2027-02-10T20:00:00Z","home":"Coventry City","away":"Liverpool","homeScore":null,"awayScore":null},{"id":243,"mw":25,"kickoff":"2027-02-10T20:00:00Z","home":"Crystal Palace","away":"Brentford","homeScore":null,"awayScore":null},{"id":244,"mw":25,"kickoff":"2027-02-10T20:00:00Z","home":"Everton","away":"Leeds United","homeScore":null,"awayScore":null},{"id":245,"mw":25,"kickoff":"2027-02-10T20:00:00Z","home":"Fulham","away":"Nottingham Forest","homeScore":null,"awayScore":null},{"id":246,"mw":25,"kickoff":"2027-02-10T20:00:00Z","home":"Hull City","away":"Sunderland","homeScore":null,"awayScore":null},{"id":247,"mw":25,"kickoff":"2027-02-10T20:00:00Z","home":"Ipswich Town","away":"Arsenal","homeScore":null,"awayScore":null},{"id":248,"mw":25,"kickoff":"2027-02-10T20:00:00Z","home":"Manchester United","away":"Brighton & Hove Albion","homeScore":null,"awayScore":null},{"id":249,"mw":25,"kickoff":"2027-02-10T20:00:00Z","home":"Newcastle United","away":"Chelsea","homeScore":null,"awayScore":null},{"id":250,"mw":25,"kickoff":"2027-02-10T20:00:00Z","home":"Tottenham Hotspur","away":"Manchester City","homeScore":null,"awayScore":null},{"id":251,"mw":26,"kickoff":"2027-02-20T15:00:00Z","home":"Arsenal","away":"Fulham","homeScore":null,"awayScore":null},{"id":252,"mw":26,"kickoff":"2027-02-20T15:00:00Z","home":"AFC Bournemouth","away":"Crystal Palace","homeScore":null,"awayScore":null},{"id":253,"mw":26,"kickoff":"2027-02-20T15:00:00Z","home":"Brentford","away":"Coventry City","homeScore":null,"awayScore":null},{"id":254,"mw":26,"kickoff":"2027-02-20T15:00:00Z","home":"Brighton & Hove Albion","away":"Tottenham Hotspur","homeScore":null,"awayScore":null},{"id":255,"mw":26,"kickoff":"2027-02-20T15:00:00Z","home":"Chelsea","away":"Ipswich Town","homeScore":null,"awayScore":null},{"id":256,"mw":26,"kickoff":"2027-02-20T15:00:00Z","home":"Leeds United","away":"Aston Villa","homeScore":null,"awayScore":null},{"id":257,"mw":26,"kickoff":"2027-02-20T15:00:00Z","home":"Liverpool","away":"Hull City","homeScore":null,"awayScore":null},{"id":258,"mw":26,"kickoff":"2027-02-20T15:00:00Z","home":"Manchester City","away":"Newcastle United","homeScore":null,"awayScore":null},{"id":259,"mw":26,"kickoff":"2027-02-20T15:00:00Z","home":"Nottingham Forest","away":"Manchester United","homeScore":null,"awayScore":null},{"id":260,"mw":26,"kickoff":"2027-02-20T15:00:00Z","home":"Sunderland","away":"Everton","homeScore":null,"awayScore":null},{"id":261,"mw":27,"kickoff":"2027-02-27T15:00:00Z","home":"Aston Villa","away":"Chelsea","homeScore":null,"awayScore":null},{"id":262,"mw":27,"kickoff":"2027-02-27T15:00:00Z","home":"Coventry City","away":"AFC Bournemouth","homeScore":null,"awayScore":null},{"id":263,"mw":27,"kickoff":"2027-02-27T15:00:00Z","home":"Crystal Palace","away":"Sunderland","homeScore":null,"awayScore":null},{"id":264,"mw":27,"kickoff":"2027-02-27T15:00:00Z","home":"Everton","away":"Nottingham Forest","homeScore":null,"awayScore":null},{"id":265,"mw":27,"kickoff":"2027-02-27T15:00:00Z","home":"Fulham","away":"Leeds United","homeScore":null,"awayScore":null},{"id":266,"mw":27,"kickoff":"2027-02-27T15:00:00Z","home":"Hull City","away":"Manchester City","homeScore":null,"awayScore":null},{"id":267,"mw":27,"kickoff":"2027-02-27T15:00:00Z","home":"Ipswich Town","away":"Brighton & Hove Albion","homeScore":null,"awayScore":null},{"id":268,"mw":27,"kickoff":"2027-02-27T15:00:00Z","home":"Manchester United","away":"Arsenal","homeScore":null,"awayScore":null},{"id":269,"mw":27,"kickoff":"2027-02-27T15:00:00Z","home":"Newcastle United","away":"Brentford","homeScore":null,"awayScore":null},{"id":270,"mw":27,"kickoff":"2027-02-27T15:00:00Z","home":"Tottenham Hotspur","away":"Liverpool","homeScore":null,"awayScore":null},{"id":271,"mw":28,"kickoff":"2027-03-03T20:00:00Z","home":"Arsenal","away":"Crystal Palace","homeScore":null,"awayScore":null},{"id":272,"mw":28,"kickoff":"2027-03-03T20:00:00Z","home":"AFC Bournemouth","away":"Tottenham Hotspur","homeScore":null,"awayScore":null},{"id":273,"mw":28,"kickoff":"2027-03-03T20:00:00Z","home":"Brentford","away":"Ipswich Town","homeScore":null,"awayScore":null},{"id":274,"mw":28,"kickoff":"2027-03-03T20:00:00Z","home":"Brighton & Hove Albion","away":"Fulham","homeScore":null,"awayScore":null},{"id":275,"mw":28,"kickoff":"2027-03-03T20:00:00Z","home":"Chelsea","away":"Coventry City","homeScore":null,"awayScore":null},{"id":276,"mw":28,"kickoff":"2027-03-03T20:00:00Z","home":"Leeds United","away":"Hull City","homeScore":null,"awayScore":null},{"id":277,"mw":28,"kickoff":"2027-03-03T20:00:00Z","home":"Liverpool","away":"Aston Villa","homeScore":null,"awayScore":null},{"id":278,"mw":28,"kickoff":"2027-03-03T20:00:00Z","home":"Manchester City","away":"Everton","homeScore":null,"awayScore":null},{"id":279,"mw":28,"kickoff":"2027-03-03T20:00:00Z","home":"Nottingham Forest","away":"Newcastle United","homeScore":null,"awayScore":null},{"id":280,"mw":28,"kickoff":"2027-03-03T20:00:00Z","home":"Sunderland","away":"Manchester United","homeScore":null,"awayScore":null},{"id":281,"mw":29,"kickoff":"2027-03-13T15:00:00Z","home":"Aston Villa","away":"Hull City","homeScore":null,"awayScore":null},{"id":282,"mw":29,"kickoff":"2027-03-13T15:00:00Z","home":"AFC Bournemouth","away":"Newcastle United","homeScore":null,"awayScore":null},{"id":283,"mw":29,"kickoff":"2027-03-13T15:00:00Z","home":"Chelsea","away":"Arsenal","homeScore":null,"awayScore":null},{"id":284,"mw":29,"kickoff":"2027-03-13T15:00:00Z","home":"Coventry City","away":"Manchester City","homeScore":null,"awayScore":null},{"id":285,"mw":29,"kickoff":"2027-03-13T15:00:00Z","home":"Crystal Palace","away":"Fulham","homeScore":null,"awayScore":null},{"id":286,"mw":29,"kickoff":"2027-03-13T15:00:00Z","home":"Leeds United","away":"Brighton & Hove Albion","homeScore":null,"awayScore":null},{"id":287,"mw":29,"kickoff":"2027-03-13T15:00:00Z","home":"Liverpool","away":"Ipswich Town","homeScore":null,"awayScore":null},{"id":288,"mw":29,"kickoff":"2027-03-13T15:00:00Z","home":"Manchester United","away":"Everton","homeScore":null,"awayScore":null},{"id":290,"mw":29,"kickoff":"2027-03-13T15:00:00Z","home":"Tottenham Hotspur","away":"Nottingham Forest","homeScore":null,"awayScore":null},{"id":289,"mw":29,"kickoff":"2027-03-13T15:00:00Z","home":"Sunderland","away":"Brentford","homeScore":null,"awayScore":null},{"id":291,"mw":30,"kickoff":"2027-03-20T15:00:00Z","home":"Arsenal","away":"Sunderland","homeScore":null,"awayScore":null},{"id":292,"mw":30,"kickoff":"2027-03-20T15:00:00Z","home":"Brentford","away":"AFC Bournemouth","homeScore":null,"awayScore":null},{"id":293,"mw":30,"kickoff":"2027-03-20T15:00:00Z","home":"Brighton & Hove Albion","away":"Coventry City","homeScore":null,"awayScore":null},{"id":294,"mw":30,"kickoff":"2027-03-20T15:00:00Z","home":"Everton","away":"Tottenham Hotspur","homeScore":null,"awayScore":null},{"id":295,"mw":30,"kickoff":"2027-03-20T15:00:00Z","home":"Fulham","away":"Liverpool","homeScore":null,"awayScore":null},{"id":296,"mw":30,"kickoff":"2027-03-20T15:00:00Z","home":"Hull City","away":"Chelsea","homeScore":null,"awayScore":null},{"id":297,"mw":30,"kickoff":"2027-03-20T15:00:00Z","home":"Ipswich Town","away":"Crystal Palace","homeScore":null,"awayScore":null},{"id":298,"mw":30,"kickoff":"2027-03-20T15:00:00Z","home":"Manchester City","away":"Manchester United","homeScore":null,"awayScore":null},{"id":299,"mw":30,"kickoff":"2027-03-20T15:00:00Z","home":"Newcastle United","away":"Leeds United","homeScore":null,"awayScore":null},{"id":300,"mw":30,"kickoff":"2027-03-20T15:00:00Z","home":"Nottingham Forest","away":"Aston Villa","homeScore":null,"awayScore":null},{"id":301,"mw":31,"kickoff":"2027-04-10T14:00:00Z","home":"Aston Villa","away":"Brighton & Hove Albion","homeScore":null,"awayScore":null},{"id":302,"mw":31,"kickoff":"2027-04-10T14:00:00Z","home":"AFC Bournemouth","away":"Manchester City","homeScore":null,"awayScore":null},{"id":303,"mw":31,"kickoff":"2027-04-10T14:00:00Z","home":"Chelsea","away":"Fulham","homeScore":null,"awayScore":null},{"id":304,"mw":31,"kickoff":"2027-04-10T14:00:00Z","home":"Coventry City","away":"Arsenal","homeScore":null,"awayScore":null},{"id":305,"mw":31,"kickoff":"2027-04-10T14:00:00Z","home":"Crystal Palace","away":"Everton","homeScore":null,"awayScore":null},{"id":306,"mw":31,"kickoff":"2027-04-10T14:00:00Z","home":"Leeds United","away":"Nottingham Forest","homeScore":null,"awayScore":null},{"id":307,"mw":31,"kickoff":"2027-04-10T14:00:00Z","home":"Liverpool","away":"Newcastle United","homeScore":null,"awayScore":null},{"id":308,"mw":31,"kickoff":"2027-04-10T14:00:00Z","home":"Manchester United","away":"Hull City","homeScore":null,"awayScore":null},{"id":310,"mw":31,"kickoff":"2027-04-10T14:00:00Z","home":"Tottenham Hotspur","away":"Brentford","homeScore":null,"awayScore":null},{"id":309,"mw":31,"kickoff":"2027-04-10T14:00:00Z","home":"Sunderland","away":"Ipswich Town","homeScore":null,"awayScore":null},{"id":311,"mw":32,"kickoff":"2027-04-17T14:00:00Z","home":"Arsenal","away":"Aston Villa","homeScore":null,"awayScore":null},{"id":312,"mw":32,"kickoff":"2027-04-17T14:00:00Z","home":"Brentford","away":"Leeds United","homeScore":null,"awayScore":null},{"id":313,"mw":32,"kickoff":"2027-04-17T14:00:00Z","home":"Brighton & Hove Albion","away":"Chelsea","homeScore":null,"awayScore":null},{"id":314,"mw":32,"kickoff":"2027-04-17T14:00:00Z","home":"Everton","away":"AFC Bournemouth","homeScore":null,"awayScore":null},{"id":315,"mw":32,"kickoff":"2027-04-17T14:00:00Z","home":"Fulham","away":"Sunderland","homeScore":null,"awayScore":null},{"id":316,"mw":32,"kickoff":"2027-04-17T14:00:00Z","home":"Hull City","away":"Coventry City","homeScore":null,"awayScore":null},{"id":317,"mw":32,"kickoff":"2027-04-17T14:00:00Z","home":"Ipswich Town","away":"Manchester United","homeScore":null,"awayScore":null},{"id":318,"mw":32,"kickoff":"2027-04-17T14:00:00Z","home":"Manchester City","away":"Crystal Palace","homeScore":null,"awayScore":null},{"id":319,"mw":32,"kickoff":"2027-04-17T14:00:00Z","home":"Newcastle United","away":"Tottenham Hotspur","homeScore":null,"awayScore":null},{"id":320,"mw":32,"kickoff":"2027-04-17T14:00:00Z","home":"Nottingham Forest","away":"Liverpool","homeScore":null,"awayScore":null},{"id":321,"mw":33,"kickoff":"2027-04-24T14:00:00Z","home":"Aston Villa","away":"Coventry City","homeScore":null,"awayScore":null},{"id":322,"mw":33,"kickoff":"2027-04-24T14:00:00Z","home":"AFC Bournemouth","away":"Arsenal","homeScore":null,"awayScore":null},{"id":323,"mw":33,"kickoff":"2027-04-24T14:00:00Z","home":"Brentford","away":"Fulham","homeScore":null,"awayScore":null},{"id":324,"mw":33,"kickoff":"2027-04-24T14:00:00Z","home":"Chelsea","away":"Manchester City","homeScore":null,"awayScore":null},{"id":325,"mw":33,"kickoff":"2027-04-24T14:00:00Z","home":"Everton","away":"Brighton & Hove Albion","homeScore":null,"awayScore":null},{"id":326,"mw":33,"kickoff":"2027-04-24T14:00:00Z","home":"Leeds United","away":"Liverpool","homeScore":null,"awayScore":null},{"id":327,"mw":33,"kickoff":"2027-04-24T14:00:00Z","home":"Manchester United","away":"Crystal Palace","homeScore":null,"awayScore":null},{"id":328,"mw":33,"kickoff":"2027-04-24T14:00:00Z","home":"Newcastle United","away":"Ipswich Town","homeScore":null,"awayScore":null},{"id":329,"mw":33,"kickoff":"2027-04-24T14:00:00Z","home":"Nottingham Forest","away":"Sunderland","homeScore":null,"awayScore":null},{"id":330,"mw":33,"kickoff":"2027-04-24T14:00:00Z","home":"Tottenham Hotspur","away":"Hull City","homeScore":null,"awayScore":null},{"id":331,"mw":34,"kickoff":"2027-05-01T14:00:00Z","home":"Arsenal","away":"Tottenham Hotspur","homeScore":null,"awayScore":null},{"id":332,"mw":34,"kickoff":"2027-05-01T14:00:00Z","home":"Brighton & Hove Albion","away":"Nottingham Forest","homeScore":null,"awayScore":null},{"id":333,"mw":34,"kickoff":"2027-05-01T14:00:00Z","home":"Coventry City","away":"Manchester United","homeScore":null,"awayScore":null},{"id":334,"mw":34,"kickoff":"2027-05-01T14:00:00Z","home":"Crystal Palace","away":"Aston Villa","homeScore":null,"awayScore":null},{"id":335,"mw":34,"kickoff":"2027-05-01T14:00:00Z","home":"Fulham","away":"Everton","homeScore":null,"awayScore":null},{"id":336,"mw":34,"kickoff":"2027-05-01T14:00:00Z","home":"Hull City","away":"AFC Bournemouth","homeScore":null,"awayScore":null},{"id":337,"mw":34,"kickoff":"2027-05-01T14:00:00Z","home":"Ipswich Town","away":"Leeds United","homeScore":null,"awayScore":null},{"id":338,"mw":34,"kickoff":"2027-05-01T14:00:00Z","home":"Liverpool","away":"Chelsea","homeScore":null,"awayScore":null},{"id":339,"mw":34,"kickoff":"2027-05-01T14:00:00Z","home":"Manchester City","away":"Brentford","homeScore":null,"awayScore":null},{"id":340,"mw":34,"kickoff":"2027-05-01T14:00:00Z","home":"Sunderland","away":"Newcastle United","homeScore":null,"awayScore":null},{"id":341,"mw":35,"kickoff":"2027-05-08T14:00:00Z","home":"AFC Bournemouth","away":"Manchester United","homeScore":null,"awayScore":null},{"id":342,"mw":35,"kickoff":"2027-05-08T14:00:00Z","home":"Brentford","away":"Aston Villa","homeScore":null,"awayScore":null},{"id":343,"mw":35,"kickoff":"2027-05-08T14:00:00Z","home":"Brighton & Hove Albion","away":"Sunderland","homeScore":null,"awayScore":null},{"id":344,"mw":35,"kickoff":"2027-05-08T14:00:00Z","home":"Everton","away":"Hull City","homeScore":null,"awayScore":null},{"id":345,"mw":35,"kickoff":"2027-05-08T14:00:00Z","home":"Fulham","away":"Ipswich Town","homeScore":null,"awayScore":null},{"id":346,"mw":35,"kickoff":"2027-05-08T14:00:00Z","home":"Leeds United","away":"Arsenal","homeScore":null,"awayScore":null},{"id":347,"mw":35,"kickoff":"2027-05-08T14:00:00Z","home":"Manchester City","away":"Liverpool","homeScore":null,"awayScore":null},{"id":348,"mw":35,"kickoff":"2027-05-08T14:00:00Z","home":"Newcastle United","away":"Coventry City","homeScore":null,"awayScore":null},{"id":349,"mw":35,"kickoff":"2027-05-08T14:00:00Z","home":"Nottingham Forest","away":"Crystal Palace","homeScore":null,"awayScore":null},{"id":350,"mw":35,"kickoff":"2027-05-08T14:00:00Z","home":"Tottenham Hotspur","away":"Chelsea","homeScore":null,"awayScore":null},{"id":351,"mw":36,"kickoff":"2027-05-15T14:00:00Z","home":"Arsenal","away":"Nottingham Forest","homeScore":null,"awayScore":null},{"id":352,"mw":36,"kickoff":"2027-05-15T14:00:00Z","home":"Aston Villa","away":"Newcastle United","homeScore":null,"awayScore":null},{"id":353,"mw":36,"kickoff":"2027-05-15T14:00:00Z","home":"Chelsea","away":"Everton","homeScore":null,"awayScore":null},{"id":354,"mw":36,"kickoff":"2027-05-15T14:00:00Z","home":"Coventry City","away":"Tottenham Hotspur","homeScore":null,"awayScore":null},{"id":355,"mw":36,"kickoff":"2027-05-15T14:00:00Z","home":"Crystal Palace","away":"Brighton & Hove Albion","homeScore":null,"awayScore":null},{"id":356,"mw":36,"kickoff":"2027-05-15T14:00:00Z","home":"Hull City","away":"Fulham","homeScore":null,"awayScore":null},{"id":357,"mw":36,"kickoff":"2027-05-15T14:00:00Z","home":"Ipswich Town","away":"Manchester City","homeScore":null,"awayScore":null},{"id":358,"mw":36,"kickoff":"2027-05-15T14:00:00Z","home":"Liverpool","away":"Brentford","homeScore":null,"awayScore":null},{"id":359,"mw":36,"kickoff":"2027-05-15T14:00:00Z","home":"Manchester United","away":"Leeds United","homeScore":null,"awayScore":null},{"id":360,"mw":36,"kickoff":"2027-05-15T14:00:00Z","home":"Sunderland","away":"AFC Bournemouth","homeScore":null,"awayScore":null},{"id":361,"mw":37,"kickoff":"2027-05-23T14:00:00Z","home":"AFC Bournemouth","away":"Chelsea","homeScore":null,"awayScore":null},{"id":362,"mw":37,"kickoff":"2027-05-23T14:00:00Z","home":"Brentford","away":"Hull City","homeScore":null,"awayScore":null},{"id":363,"mw":37,"kickoff":"2027-05-23T14:00:00Z","home":"Brighton & Hove Albion","away":"Liverpool","homeScore":null,"awayScore":null},{"id":364,"mw":37,"kickoff":"2027-05-23T14:00:00Z","home":"Everton","away":"Arsenal","homeScore":null,"awayScore":null},{"id":365,"mw":37,"kickoff":"2027-05-23T14:00:00Z","home":"Fulham","away":"Coventry City","homeScore":null,"awayScore":null},{"id":366,"mw":37,"kickoff":"2027-05-23T14:00:00Z","home":"Leeds United","away":"Sunderland","homeScore":null,"awayScore":null},{"id":367,"mw":37,"kickoff":"2027-05-23T14:00:00Z","home":"Manchester City","away":"Aston Villa","homeScore":null,"awayScore":null},{"id":368,"mw":37,"kickoff":"2027-05-23T14:00:00Z","home":"Newcastle United","away":"Crystal Palace","homeScore":null,"awayScore":null},{"id":369,"mw":37,"kickoff":"2027-05-23T14:00:00Z","home":"Nottingham Forest","away":"Ipswich Town","homeScore":null,"awayScore":null},{"id":370,"mw":37,"kickoff":"2027-05-23T14:00:00Z","home":"Tottenham Hotspur","away":"Manchester United","homeScore":null,"awayScore":null},{"id":371,"mw":38,"kickoff":"2027-05-30T15:00:00Z","home":"Arsenal","away":"Brighton & Hove Albion","homeScore":null,"awayScore":null},{"id":372,"mw":38,"kickoff":"2027-05-30T15:00:00Z","home":"Aston Villa","away":"Tottenham Hotspur","homeScore":null,"awayScore":null},{"id":373,"mw":38,"kickoff":"2027-05-30T15:00:00Z","home":"Chelsea","away":"Brentford","homeScore":null,"awayScore":null},{"id":374,"mw":38,"kickoff":"2027-05-30T15:00:00Z","home":"Coventry City","away":"Nottingham Forest","homeScore":null,"awayScore":null},{"id":375,"mw":38,"kickoff":"2027-05-30T15:00:00Z","home":"Crystal Palace","away":"Leeds United","homeScore":null,"awayScore":null},{"id":376,"mw":38,"kickoff":"2027-05-30T15:00:00Z","home":"Hull City","away":"Newcastle United","homeScore":null,"awayScore":null},{"id":377,"mw":38,"kickoff":"2027-05-30T15:00:00Z","home":"Ipswich Town","away":"Everton","homeScore":null,"awayScore":null},{"id":378,"mw":38,"kickoff":"2027-05-30T15:00:00Z","home":"Liverpool","away":"AFC Bournemouth","homeScore":null,"awayScore":null},{"id":379,"mw":38,"kickoff":"2027-05-30T15:00:00Z","home":"Manchester United","away":"Fulham","homeScore":null,"awayScore":null},{"id":380,"mw":38,"kickoff":"2027-05-30T15:00:00Z","home":"Sunderland","away":"Manchester City","homeScore":null,"awayScore":null}];
+const STORAGE_KEY = "nl4_other_19_stats_v9_direct_roster";
+
+const defaultClub = () => ({matches:0,avgPossession:0,totalShots:0,shotsOnTarget:0,corners:0,cornerGoals:0,fouls:0,offsides:0,yellowCards:0,redCards:0,points:0});
+const blankPlayer = p => ({
+  name:p.name, position:p.position, number:p.number ?? null,
+  appearances:0, starts:0, minutes:0, goals:0, assists:0, cleanSheets:0,
+  yellowCards:0, redCards:0, mom:0, shots:0, shotsOnTarget:0,
+  chancesCreated:0, tackles:0, interceptions:0, saves:0
+});
+const defaultData = () => Object.fromEntries(
+  TEAMS.map(team => [team,{
+    club:defaultClub(),
+    players:rosterForTeam(team),
+    fixtureData:{}
+  }])
+);
+
+
+function rosterForTeam(team){
+  const key=String(team||"").trim().toLowerCase();
+  return (PLAYER_DIRECTORY[key]||[]).map(blankPlayer);
+}
+
+function loadData(){
+  const base=defaultData();
+  let saved=null;
+  try{ saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null"); }catch(e){ saved=null; }
+  TEAMS.forEach(team=>{
+    const seeded=rosterForTeam(team);
+    const prior=(saved && saved[team] && Array.isArray(saved[team].players)) ? saved[team].players : [];
+    const priorByName=new Map(prior.map(x=>[String(x.name||"").trim().toLowerCase(),x]));
+    base[team].players=seeded.map(p=>({
+      ...p,
+      ...(priorByName.get(String(p.name).trim().toLowerCase())||{}),
+      name:p.name,position:p.position,number:p.number
+    }));
+    prior.forEach(old=>{
+      if(old?.name && !base[team].players.some(p=>String(p.name).trim().toLowerCase()===String(old.name).trim().toLowerCase())){
+        base[team].players.push(old);
+      }
+    });
+    if(saved && saved[team]){
+      base[team].club={...base[team].club,...(saved[team].club||{})};
+      base[team].fixtureData=(saved[team].fixtureData && typeof saved[team].fixtureData==="object") ? saved[team].fixtureData : {};
+    }
+  });
+  return base;
+}
+let db=loadData();
+
+// Backfill/migrate older Record Room saves that existed under only one side of a
+// fixture. The newest saved copy (updatedAt when available) becomes canonical and
+// is mirrored to both participating Record Room clubs.
+(function mirrorExistingFixtureRecords(){
+  ALL_FIXTURES.forEach(f=>{
+    const participants=[f.home,f.away].filter(t=>db[t]);
+    if(!participants.length) return;
+    const candidates=participants
+      .map(t=>db[t]?.fixtureData?.[f.id])
+      .filter(Boolean)
+      .sort((a,b)=>String(b.updatedAt||"").localeCompare(String(a.updatedAt||"")));
+    if(!candidates.length) return;
+    const canonical=JSON.parse(JSON.stringify(candidates[0]));
+    participants.forEach(t=>{
+      db[t].fixtureData=db[t].fixtureData||{};
+      db[t].fixtureData[f.id]=JSON.parse(JSON.stringify(canonical));
+    });
+  });
+})();
+TEAMS.forEach(team=>syncTeamSeasonFromFixtures(team));
+try{persist();}catch(_){}
+try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(db)); }catch(_){ }
+
+const $=id=>document.getElementById(id);
+const teamSelect=$("teamSelect"), inputTeam=$("inputTeam");
+TEAMS.forEach(team=>{
+  teamSelect.add(new Option(team,team));
+  inputTeam.add(new Option(team,team));
+});
+
+const statLabels=[
+  ["MATCHES","matches"],["AVG POSSESSION","avgPossession"],["TOTAL SHOTS","totalShots"],
+  ["SHOTS ON TARGET","shotsOnTarget"],["CORNERS","corners"],["CORNER GOALS","cornerGoals"],
+  ["FOULS","fouls"],["OFFSIDES","offsides"],["YELLOW CARDS","yellowCards"],
+  ["RED CARDS","redCards"],["PPG","ppg"]
+];
+
+function ppg(c){ return c.matches ? (Number(c.points)/Number(c.matches)).toFixed(2) : "0.00"; }
+
+function renderRoster(team){
+  const players=(db[team]?.players||[]);
+  const heading=$("rosterHeading"), count=$("rosterCount"), grid=$("rosterGrid");
+  if(!grid) return;
+  heading.textContent=team.toUpperCase()+" PLAYERS";
+  count.textContent=`${players.length} PLAYERS`;
+  grid.innerHTML=players.map(p=>`<div style="border:1px solid rgba(255,255,255,.07);background:#111;border-radius:12px;padding:11px">
+    <div style="font-size:8px;color:#d8ad45;font-weight:900">${p.number?`#${p.number} • `:""}${esc(p.position||"PLAYER").toUpperCase()}</div>
+    <strong style="display:block;margin-top:5px;font-size:12px">${esc(p.name)}</strong>
+  </div>`).join("") || '<div class="empty">No players loaded.</div>';
+}
+
+function render(){
+  const team=teamSelect.value;
+  inputTeam.value=team;
+
+  // Guarantee this team always has its preloaded roster in memory.
+  if(!db[team]) db[team]={club:defaultClub(),players:[],fixtureData:{}};
+  const roster=rosterForTeam(team);
+  const current=Array.isArray(db[team].players)?db[team].players:[];
+  const currentByName=new Map(current.map(p=>[String(p.name||"").trim().toLowerCase(),p]));
+  db[team].players=roster.map(p=>({
+    ...p,
+    ...(currentByName.get(String(p.name).trim().toLowerCase())||{}),
+    name:p.name,
+    position:p.position,
+    number:p.number
+  }));
+
+  const entry=db[team];
+  $("clubName").textContent=team;
+  $("playerHeading").textContent=team.toUpperCase()+" PLAYER STATS";
+
+  $("clubStatsGrid").innerHTML=statLabels.map(([label,key])=>{
+    let value=key==="ppg"?ppg(entry.club):(entry.club[key]??0);
+    let note="";
+    if(key==="matches") note="completed";
+    if(key==="avgPossession") note="per match";
+    if(key==="totalShots") note=`${Number(entry.club.matches)||0 ? (Number(entry.club.totalShots)/(Number(entry.club.matches)||1)).toFixed(1) : "0.0"} / match`;
+    if(key==="shotsOnTarget") note=`${Number(entry.club.matches)||0 ? (Number(entry.club.shotsOnTarget)/(Number(entry.club.matches)||1)).toFixed(1) : "0.0"} / match`;
+    if(key==="corners") note=`${Number(entry.club.matches)||0 ? (Number(entry.club.corners)/(Number(entry.club.matches)||1)).toFixed(1) : "0.0"} / match`;
+    if(key==="cornerGoals") note="goals scored from corners";
+    if(key==="fouls") note=`${Number(entry.club.matches)||0 ? (Number(entry.club.fouls)/(Number(entry.club.matches)||1)).toFixed(1) : "0.0"} / match`;
+    if(key==="offsides") note=`${Number(entry.club.matches)||0 ? (Number(entry.club.offsides)/(Number(entry.club.matches)||1)).toFixed(1) : "0.0"} / match`;
+    if(key==="yellowCards") note="from player stats";
+    if(key==="redCards") note="from player stats";
+    if(key==="ppg") note="points per game";
+    const formatted = key==="avgPossession" ? `${Number(value).toFixed(1)}%` : value;
+    return `<div class="stat-card"><span>${label}</span><strong>${formatted}</strong><small style="display:block;color:#666;font-size:8px;margin-top:5px">${note}</small></div>`;
+  }).join("");
+
+  const q=$("playerSearch").value.trim().toLowerCase();
+  const savedByName=new Map((Array.isArray(db[team]?.players)?db[team].players:[]).map(p=>[String(p.name||"").trim().toLowerCase(),p]));
+  const players=rosterForTeam(team).map(p=>({
+    ...p,
+    ...(savedByName.get(String(p.name).trim().toLowerCase())||{}),
+    name:p.name,position:p.position,number:p.number
+  })).filter(p=>!q||String(p.name||"").toLowerCase().includes(q));
+
+  $("playerCount").textContent=`${players.length} PLAYER${players.length===1?"":"S"}`;
+  $("playerRows").innerHTML=players.map(p=>`<tr>
+      <td class="player-name-cell">${esc(p.name)}</td>
+      <td>${p.number??"—"}</td>
+      <td>${esc(p.position)}</td>
+      <td>${n(p.appearances)}</td><td>${n(p.starts)}</td><td>${n(p.minutes)}</td>
+      <td>${n(p.goals)}</td><td>${n(p.assists)}</td><td>${n(p.cleanSheets)}</td>
+      <td>${n(p.yellowCards)}</td><td>${n(p.redCards)}</td><td>${n(p.mom)}</td>
+      <td>${n(p.shots)}</td><td>${n(p.shotsOnTarget)}</td><td>${n(p.chancesCreated)}</td>
+      <td>${n(p.tackles)}</td><td>${n(p.interceptions)}</td><td>${n(p.saves)}</td>
+    </tr>`).join("");
+
+  loadClubForm(team);
+  populatePlayerSelect(team);
+  renderFixtures(team);
+}
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function n(v){return Number(v)||0}
+function loadClubForm(team){
+  const c=db[team].club;
+  $("matches").value=c.matches??0;
+  $("avgPossession").value=c.avgPossession??0;
+  $("totalShots").value=c.totalShots??0;
+  $("shotsOnTargetClub").value=c.shotsOnTarget??0;
+  $("corners").value=c.corners??0;
+  $("cornerGoals").value=c.cornerGoals??0;
+  $("fouls").value=c.fouls??0;
+  $("offsides").value=c.offsides??0;
+  $("yellowCardsClub").value=c.yellowCards??0;
+  $("redCardsClub").value=c.redCards??0;
+  $("points").value=c.points??0;
+}
+function populatePlayerSelect(team){
+  const sel=$("playerName");
+  if(!sel) return;
+  const current=sel.value;
+  const players=rosterForTeam(team);
+  sel.innerHTML='<option value="">Select player…</option>'+players.map(p=>{
+    const num=p.number?`#${p.number} • `:"";
+    return `<option value="${esc(p.name)}" data-position="${esc(p.position)}">${num}${esc(p.name)} — ${esc(p.position)}</option>`;
+  }).join("");
+  if(players.some(p=>p.name===current)) sel.value=current;
+}
+function loadPlayerIntoForm(){
+  const team=inputTeam.value;
+  const name=$("playerName").value;
+  const p=(db[team]?.players||[]).find(x=>x.name===name);
+  if(!p) return;
+  $("manualPlayerName").value="";
+  $("playerPosition").value=p.position||"Midfielder";
+  ["appearances","starts","minutes","goals","assists","cleanSheets","yellowCards","redCards","mom","shots","shotsOnTarget","chancesCreated","tackles","interceptions","saves"].forEach(k=>$(k).value=n(p[k]));
+}
+
+function teamPlayers(team){
+  if(team==="Arsenal") return [];
+  return (db[team]?.players||[]);
+}
+function playerOptions(team, selected=""){
+  const players=teamPlayers(team);
+  return '<option value="">Select player…</option>'+players.map(p=>`<option value="${esc(p.name)}" ${p.name===selected?"selected":""}>${p.number?`#${p.number} • `:""}${esc(p.name)}</option>`).join("");
+}
+function fixtureForTeam(team){
+  return ALL_FIXTURES.filter(f=>f.home===team||f.away===team).sort((a,b)=>(a.mw||99)-(b.mw||99));
+}
+function formatKickoff(iso){
+  if(!iso) return "TBC";
+  const d=new Date(iso);
+  if(Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString([], {day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+}
+function fixtureStore(team,id){
+  db[team].fixtureData=db[team].fixtureData||{};
+  if(!db[team].fixtureData[id]){
+    db[team].fixtureData[id]={
+      homeScore:null,awayScore:null,
+      homeLineup:Array(11).fill(""),awayLineup:Array(11).fill(""),
+      homeSubs:[],awaySubs:[],
+      stats:{possession:{h:0,a:0},shots:{h:0,a:0},sot:{h:0,a:0},corners:{h:0,a:0},cornerGoals:{h:0,a:0},fouls:{h:0,a:0},offsides:{h:0,a:0},saves:{h:0,a:0}},
+      manOfTheMatch:"",
+      events:[]
+    };
+  }
+  return db[team].fixtureData[id];
+}
+function fixtureIsCompletedForTeam(team,f){
+  const saved=db[team]?.fixtureData?.[f.id]||{};
+  const hs=saved.homeScore??f.homeScore, as=saved.awayScore??f.awayScore;
+  return hs!==null&&hs!==undefined&&as!==null&&as!==undefined;
+}
+function renderFixtureCard(team,f){
+  const saved=db[team]?.fixtureData?.[f.id]||{};
+  const hs=saved.homeScore??f.homeScore, as=saved.awayScore??f.awayScore;
+  const score=(hs===null||hs===undefined||as===null||as===undefined)?"—":`${hs} - ${as}`;
+  return `<div class="fixture-card">
+    <div class="fixture-mw">MW ${f.mw??"—"}</div>
+    <div class="fixture-pair">${esc(f.home)} <span>vs</span> ${esc(f.away)}</div>
+    <div class="fixture-score">${score}</div>
+    <div class="fixture-date">${formatKickoff(f.kickoff)}</div>
+    <button class="fixture-open" type="button" onclick="openFixture(${f.id})">MATCH DETAILS →</button>
+  </div>`;
+}
+function renderFixtures(team){
+  const list=$("fixtureList");
+  const fixtures=fixtureForTeam(team).slice().sort((a,b)=>new Date(a.kickoff)-new Date(b.kickoff));
+  $("fixtureHeading").textContent=`${team.toUpperCase()} • PREMIER LEAGUE FIXTURES`;
+  $("fixtureCount").textContent=`${fixtures.length} MATCHES`;
+  const showAll=$("toggleAllFixtures")?.getAttribute("aria-expanded")==="true";
+  const now=Date.now();
+  const incomplete=fixtures.filter(f=>!fixtureIsCompletedForTeam(team,f));
+  let next=incomplete.find(f=>new Date(f.kickoff).getTime()>=now) || incomplete[0] || null;
+  const visible=showAll?fixtures:(next?[next]:[]);
+  list.innerHTML=visible.length?visible.map(f=>renderFixtureCard(team,f)).join(""):'<div class="fixture-empty">No upcoming fixture is available.</div>';
+  const status=$("fixtureViewStatus");
+  if(status) status.textContent=showAll?`ALL ${fixtures.length} FIXTURES`:(next?`NEXT MATCH • MW ${next.mw??"—"}`:"NO NEXT MATCH");
+  const allBtn=$("toggleAllFixtures");
+  if(allBtn) allBtn.textContent=showAll?"SHOW NEXT MATCH ONLY":"SHOW ALL FIXTURES";
+  $("fixtureDetail").classList.remove("open");
+  $("fixtureDetail").innerHTML="";
+}
+function lineupsHtml(side,team,arr){
+  return Array.from({length:11},(_,i)=>`<div class="lineup-row"><b>${i+1}</b><select data-lineup="${side}" data-index="${i}">${playerOptions(team,arr?.[i]||"")}</select></div>`).join("");
+}
+function subRowsHtml(side,team,rows){
+  return (rows||[]).map((r,i)=>`<div class="sub-row" data-subside="${side}">
+    <select class="sub-out">${playerOptions(team,r.out||"")}</select>
+    <input class="sub-out-min" type="number" min="0" max="120" placeholder="OUT" value="${r.outMin??""}">
+    <select class="sub-in">${playerOptions(team,r.in||"")}</select>
+    <input class="sub-in-min" type="number" min="0" max="120" placeholder="IN" value="${r.inMin??""}">
+    <button class="remove-row" type="button" onclick="this.parentElement.remove()">×</button>
+  </div>`).join("");
+}
+function eventRowsHtml(f,rows){
+  return (rows||[]).map(r=>eventRowHtml(f,r)).join("");
+}
+function eventRowHtml(f,r={}){
+  const all=[...(teamPlayers(f.home).map(p=>({...p,team:f.home}))),...(teamPlayers(f.away).map(p=>({...p,team:f.away})))];
+  const options='<option value="">Player…</option>'+all.map(p=>`<option value="${esc(p.team)}|||${esc(p.name)}" ${`${p.team}|||${p.name}`===r.player?"selected":""}>${esc(p.name)} — ${esc(p.team)}</option>`).join("");
+  const assist='<option value="">No assist / N/A</option>'+all.map(p=>`<option value="${esc(p.team)}|||${esc(p.name)}" ${`${p.team}|||${p.name}`===r.assist?"selected":""}>${esc(p.name)} — ${esc(p.team)}</option>`).join("");
+  return `<div class="event-row">
+    <select class="event-type"><option ${r.type==="goal"?"selected":""} value="goal">Goal</option><option ${r.type==="yellow"?"selected":""} value="yellow">Yellow card</option><option ${r.type==="red"?"selected":""} value="red">Red card</option></select>
+    <input class="event-min" type="number" min="0" max="120" placeholder="MIN" value="${r.minute??""}">
+    <select class="event-player">${options}</select>
+    <select class="event-assist assist-select">${assist}</select>
+    <button class="remove-row" type="button" onclick="this.parentElement.remove()">×</button>
+  </div>`;
+}
+function openFixture(id){
+  const team=teamSelect.value;
+  const f=ALL_FIXTURES.find(x=>x.id===id);
+  if(!f) return;
+  const s=fixtureStore(team,id);
+  const box=$("fixtureDetail");
+  box.dataset.fixtureId=id;
+  box.innerHTML=`<div class="match-detail-head">
+    <div><div class="eyebrow">MW ${f.mw??"—"} • ${formatKickoff(f.kickoff)}</div><h3>${esc(f.home)} vs ${esc(f.away)}</h3></div>
+    <div class="match-detail-actions"><button class="detail-save" type="button" onclick="saveFixtureDetails()">SAVE MATCH DETAILS</button><span id="fixtureSaveState" style="align-self:center;color:#49d17d;font-size:9px;font-weight:900"></span><button class="mini-btn" type="button" onclick="document.getElementById('fixtureDetail').classList.remove('open')">CLOSE</button></div>
+  </div>
+  <div class="detail-box" style="margin-top:15px">
+    <h4>Score</h4>
+    <div class="score-grid"><div class="team-label">${esc(f.home)}</div><input id="detailHomeScore" type="number" min="0" value="${s.homeScore??""}"><input id="detailAwayScore" type="number" min="0" value="${s.awayScore??""}"><div class="team-label">${esc(f.away)}</div></div>
+  </div>
+  <div class="detail-grid-2">
+    <div class="detail-box"><h4>Starting lineups</h4><div class="lineup-grid">
+      <div class="lineup-side"><h5>${esc(f.home)} XI</h5>${lineupsHtml("home",f.home,s.homeLineup)}</div>
+      <div class="lineup-side"><h5>${esc(f.away)} XI</h5>${lineupsHtml("away",f.away,s.awayLineup)}</div>
+    </div></div>
+    <div class="detail-box"><h4>Substitutions</h4>
+      <h5>${esc(f.home)} — PLAYER OUT / TIME → PLAYER IN / TIME</h5><div id="homeSubs">${subRowsHtml("home",f.home,s.homeSubs)}</div><button class="mini-btn" type="button" onclick="addSubRow('home','${esc(f.home)}')">+ ADD HOME SUB</button>
+      <h5>${esc(f.away)} — PLAYER OUT / TIME → PLAYER IN / TIME</h5><div id="awaySubs">${subRowsHtml("away",f.away,s.awaySubs)}</div><button class="mini-btn" type="button" onclick="addSubRow('away','${esc(f.away)}')">+ ADD AWAY SUB</button>
+    </div>
+  </div>
+  <div class="detail-grid-2">
+    <div class="detail-box"><h4>Match stats</h4>
+      <div class="field" style="margin-bottom:12px">
+        <label>MAN OF THE MATCH</label>
+        <select id="manOfTheMatch">${motmOptions(f,s.manOfTheMatch||"")}</select>
+      </div>
+      <div class="match-stat-row"><b>STAT</b><b>${esc(f.home)}</b><b>${esc(f.away)}</b></div>
+      ${matchStatHtml("Possession %","possession",s.stats?.possession)}
+      ${matchStatHtml("Total shots","shots",s.stats?.shots)}
+      ${matchStatHtml("Shots on target","sot",s.stats?.sot)}
+      ${matchStatHtml("Corners","corners",s.stats?.corners)}
+      ${matchStatHtml("Corner goals","cornerGoals",s.stats?.cornerGoals)}
+      ${matchStatHtml("Fouls","fouls",s.stats?.fouls)}
+      ${matchStatHtml("Offsides","offsides",s.stats?.offsides)}
+      ${matchStatHtml("Goalkeeper saves","saves",s.stats?.saves)}
+    </div>
+    <div class="detail-box"><h4>Match events</h4><p class="admin-note">Goals can include an assist. Yellow/red cards use the same event row; leave assist blank.</p><div id="eventRows">${eventRowsHtml(f,s.events)}</div><button class="mini-btn" type="button" onclick="addEventRow()">+ ADD EVENT</button></div>
+  </div>`;
+  box.classList.add("open");
+  box.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function motmOptions(f,selected=""){
+  const all=[
+    ...teamPlayers(f.home).map(p=>({...p,team:f.home})),
+    ...teamPlayers(f.away).map(p=>({...p,team:f.away}))
+  ];
+  return '<option value="">Select Man of the Match…</option>'+all.map(p=>{
+    const value=`${p.team}|||${p.name}`;
+    return `<option value="${esc(value)}" ${value===selected?"selected":""}>${p.number?`#${p.number} • `:""}${esc(p.name)} — ${esc(p.team)}</option>`;
+  }).join("");
+}
+
+function matchStatHtml(label,key,obj={}){
+  return `<div class="match-stat-row"><span>${label}</span><input data-stat="${key}" data-side="h" type="number" min="0" step="${key==="possession"?"0.1":"1"}" value="${obj?.h??0}"><input data-stat="${key}" data-side="a" type="number" min="0" step="${key==="possession"?"0.1":"1"}" value="${obj?.a??0}"></div>`;
+}
+function addSubRow(side,team){
+  const holder=$(side+"Subs");
+  holder.insertAdjacentHTML("beforeend",subRowsHtml(side,team,[{}]));
+}
+function addEventRow(){
+  const id=Number($("fixtureDetail").dataset.fixtureId);
+  const f=ALL_FIXTURES.find(x=>x.id===id);
+  if(!f) return;
+  $("eventRows").insertAdjacentHTML("beforeend",eventRowHtml(f,{}));
+}
+function collectSubs(side){
+  return [...document.querySelectorAll(`#${side}Subs .sub-row`)].map(row=>({
+    out:row.querySelector(".sub-out").value,
+    outMin:row.querySelector(".sub-out-min").value===""?null:n(row.querySelector(".sub-out-min").value),
+    in:row.querySelector(".sub-in").value,
+    inMin:row.querySelector(".sub-in-min").value===""?null:n(row.querySelector(".sub-in-min").value)
+  })).filter(r=>r.out||r.in);
+}
+function collectEvents(){
+  return [...document.querySelectorAll("#eventRows .event-row")].map(row=>({
+    type:row.querySelector(".event-type").value,
+    minute:row.querySelector(".event-min").value===""?null:n(row.querySelector(".event-min").value),
+    player:row.querySelector(".event-player").value,
+    assist:row.querySelector(".event-assist").value
+  })).filter(r=>r.player);
+}
+function playerNameKey(value){
+  return String(value||"").trim().toLowerCase();
+}
+function splitEventPlayer(value){
+  const parts=String(value||"").split("|||");
+  return {team:parts[0]||"",name:parts.slice(1).join("|||")||""};
+}
+function recalculatePlayerStatsFromFixtures(team){
+  if(!db[team]) return;
+  const players=Array.isArray(db[team].players)?db[team].players:[];
+  const byName=new Map(players.map(p=>[playerNameKey(p.name),p]));
+
+  // Fixture-derived fields are rebuilt from zero every time so editing/saving the same
+  // match cannot double-count a player's season totals. Player-specific fields that
+  // Match Details does not collect remain manual and are deliberately preserved.
+  const derivedFields=["appearances","starts","minutes","goals","assists","cleanSheets","yellowCards","redCards","mom","saves"];
+  players.forEach(p=>derivedFields.forEach(k=>p[k]=0));
+
+  const fixtureData=db[team].fixtureData||{};
+  Object.entries(fixtureData).forEach(([fixtureId,saved])=>{
+    const f=ALL_FIXTURES.find(x=>String(x.id)===String(fixtureId));
+    if(!f||!saved) return;
+    const side=f.home===team?"home":f.away===team?"away":null;
+    if(!side) return;
+
+    const lineup=Array.isArray(saved[side+"Lineup"])?saved[side+"Lineup"]:[];
+    const subs=Array.isArray(saved[side+"Subs"])?saved[side+"Subs"]:[];
+    const starters=new Set(lineup.filter(Boolean).map(playerNameKey));
+    const appeared=new Set(starters);
+    const minutesByName=new Map();
+
+    starters.forEach(k=>minutesByName.set(k,90));
+    subs.forEach(sub=>{
+      const outKey=playerNameKey(sub.out), inKey=playerNameKey(sub.in);
+      const outMin=Number.isFinite(Number(sub.outMin))?Math.max(0,Math.min(90,Number(sub.outMin))):null;
+      const inMin=Number.isFinite(Number(sub.inMin))?Math.max(0,Math.min(90,Number(sub.inMin))):outMin;
+      if(outKey){
+        appeared.add(outKey);
+        if(outMin!==null) minutesByName.set(outKey,outMin);
+      }
+      if(inKey){
+        appeared.add(inKey);
+        const minute=inMin===null?0:inMin;
+        minutesByName.set(inKey,Math.max(minutesByName.get(inKey)||0,90-minute));
+      }
+    });
+
+    appeared.forEach(k=>{
+      const p=byName.get(k); if(!p) return;
+      p.appearances+=1;
+      if(starters.has(k)) p.starts+=1;
+      p.minutes+=Math.max(0,Math.min(90,Number(minutesByName.get(k))||0));
+    });
+
+    // Attribute the team's recorded goalkeeper saves to the goalkeeper who STARTED.
+    // Match Details records saves as a team-side total, so the starting goalkeeper
+    // receives that value exactly once when season stats are rebuilt.
+    const startingGoalkeeper=lineup
+      .filter(Boolean)
+      .map(name=>byName.get(playerNameKey(name)))
+      .find(p=>p && String(p.position||"").toLowerCase()==="goalkeeper");
+    if(startingGoalkeeper){
+      const sideKey=side==="home"?"h":"a";
+      const matchSaves=Number(saved.stats?.saves?.[sideKey])||0;
+      startingGoalkeeper.saves+=Math.max(0,matchSaves);
+    }
+
+    (Array.isArray(saved.events)?saved.events:[]).forEach(ev=>{
+      const who=splitEventPlayer(ev.player);
+      if(who.team!==team) return;
+      const p=byName.get(playerNameKey(who.name));
+      if(p){
+        if(ev.type==="goal") p.goals+=1;
+        if(ev.type==="yellow") p.yellowCards+=1;
+        if(ev.type==="red") p.redCards+=1;
+      }
+      if(ev.type==="goal"&&ev.assist){
+        const helper=splitEventPlayer(ev.assist);
+        if(helper.team===team){
+          const ap=byName.get(playerNameKey(helper.name));
+          if(ap) ap.assists+=1;
+        }
+      }
+    });
+
+    if(saved.manOfTheMatch){
+      const motm=splitEventPlayer(saved.manOfTheMatch);
+      if(motm.team===team){
+        const p=byName.get(playerNameKey(motm.name));
+        if(p) p.mom+=1;
+      }
+    }
+
+    // NL4 Record Room clean-sheet rule:
+    // Only goalkeepers and defenders can receive a player clean sheet.
+    // They must play at least 60 minutes and concede no goal while they are on the pitch.
+    const opponent=f.home===team?f.away:f.home;
+    const opponentGoals=(Array.isArray(saved.events)?saved.events:[])
+      .filter(ev=>{
+        if(ev.type!=="goal") return false;
+        const scorer=splitEventPlayer(ev.player);
+        return scorer.team===opponent;
+      })
+      .map(ev=>Number(ev.minute))
+      .filter(min=>Number.isFinite(min));
+
+    const finalConceded=side==="home"?saved.awayScore:saved.homeScore;
+    const recordedOpponentGoalCount=opponentGoals.length;
+
+    appeared.forEach(k=>{
+      const p=byName.get(k); if(!p) return;
+      const position=String(p.position||"").toLowerCase();
+      if(position!=="goalkeeper"&&position!=="defender") return;
+
+      const playedMinutes=Math.max(0,Math.min(90,Number(minutesByName.get(k))||0));
+      if(playedMinutes<60) return;
+
+      let onMinute=starters.has(k)?0:90-playedMinutes;
+      let offMinute=starters.has(k)?playedMinutes:90;
+
+      // If the player appears in explicit substitution records, use those clock
+      // minutes to define the exact interval he was on the pitch.
+      subs.forEach(sub=>{
+        if(playerNameKey(sub.out)===k && Number.isFinite(Number(sub.outMin))){
+          offMinute=Math.max(0,Math.min(90,Number(sub.outMin)));
+        }
+        if(playerNameKey(sub.in)===k && Number.isFinite(Number(sub.inMin))){
+          onMinute=Math.max(0,Math.min(90,Number(sub.inMin)));
+        }
+      });
+
+      let concededWhileOnPitch=0;
+      opponentGoals.forEach(min=>{
+        if(min>=onMinute && min<=offMinute) concededWhileOnPitch+=1;
+      });
+
+      // When the final score says goals were conceded but goal-event minutes are
+      // incomplete, do not award a clean sheet because we cannot prove the player
+      // was off the pitch for those missing goals.
+      const eventDataComplete =
+        Number(finalConceded||0)===0 ||
+        recordedOpponentGoalCount>=Number(finalConceded||0);
+
+      if(eventDataComplete && concededWhileOnPitch===0) p.cleanSheets+=1;
+    });
+  });
+
+  // Keep club disciplinary totals consistent with the fixture-derived player totals.
+  if(db[team].club){
+    db[team].club.yellowCards=players.reduce((sum,p)=>sum+(Number(p.yellowCards)||0),0);
+    db[team].club.redCards=players.reduce((sum,p)=>sum+(Number(p.redCards)||0),0);
+  }
+}
+
+function recalculateClubStatsFromFixtures(team){
+  if(!db[team]) return;
+  const next=defaultClub();
+  let possessionTotal=0;
+  let possessionMatches=0;
+
+  const fixtures=fixtureForTeam(team);
+  fixtures.forEach(f=>{
+    const saved=db[team]?.fixtureData?.[f.id];
+    if(!saved) return;
+    const isHome=f.home===team;
+    const side=isHome?"h":"a";
+    const ownScore=isHome?saved.homeScore:saved.awayScore;
+    const oppScore=isHome?saved.awayScore:saved.homeScore;
+
+    // Only a fixture with both scores entered counts as a completed league match.
+    if(ownScore===null||ownScore===undefined||oppScore===null||oppScore===undefined) return;
+
+    next.matches+=1;
+    const gf=Number(ownScore)||0, ga=Number(oppScore)||0;
+    next.points+=gf>ga?3:gf===ga?1:0;
+
+    const stats=saved.stats||{};
+    const read=k=>Number(stats?.[k]?.[side])||0;
+    next.totalShots+=read("shots");
+    next.shotsOnTarget+=read("sot");
+    next.corners+=read("corners");
+    next.cornerGoals+=read("cornerGoals");
+    next.fouls+=read("fouls");
+    next.offsides+=read("offsides");
+
+    if(stats?.possession && stats.possession[side]!==null && stats.possession[side]!==undefined){
+      possessionTotal+=Number(stats.possession[side])||0;
+      possessionMatches+=1;
+    }
+  });
+
+  next.avgPossession=possessionMatches ? Number((possessionTotal/possessionMatches).toFixed(1)) : 0;
+  // Cards are player/event-derived so match edits and player totals remain consistent.
+  const players=Array.isArray(db[team].players)?db[team].players:[];
+  next.yellowCards=players.reduce((sum,p)=>sum+(Number(p.yellowCards)||0),0);
+  next.redCards=players.reduce((sum,p)=>sum+(Number(p.redCards)||0),0);
+  db[team].club=next;
+}
+
+function syncTeamSeasonFromFixtures(team){
+  recalculatePlayerStatsFromFixtures(team);
+  recalculateClubStatsFromFixtures(team);
+}
+
+function saveFixtureDetails(){
+  const team=teamSelect.value;
+  const id=Number($("fixtureDetail").dataset.fixtureId);
+  const state=$("fixtureSaveState");
+  try{
+    if(!team || !Number.isFinite(id)) throw new Error("No fixture selected.");
+    const s=fixtureStore(team,id);
+    s.homeScore=$("detailHomeScore").value===""?null:n($("detailHomeScore").value);
+    s.awayScore=$("detailAwayScore").value===""?null:n($("detailAwayScore").value);
+    s.homeLineup=[...document.querySelectorAll('[data-lineup="home"]')].map(x=>x.value);
+    s.awayLineup=[...document.querySelectorAll('[data-lineup="away"]')].map(x=>x.value);
+    s.homeSubs=collectSubs("home");
+    s.awaySubs=collectSubs("away");
+    s.stats=s.stats||{};
+    $("fixtureDetail").querySelectorAll("[data-stat]").forEach(inp=>{
+      const key=inp.dataset.stat,side=inp.dataset.side;
+      s.stats[key]=s.stats[key]||{h:0,a:0};
+      s.stats[key][side]=Number(inp.value)||0;
+    });
+    s.manOfTheMatch=$("manOfTheMatch")?.value||"";
+    s.events=collectEvents();
+    s.updatedAt=new Date().toISOString();
+
+    // One fixture must feed both participating Record Room clubs. Previously the
+    // record lived only under the team selected when Save was pressed, so the
+    // opponent's player table never saw the match. Mirror the same canonical
+    // record to every participating club that exists in Record Room.
+    const fixture=ALL_FIXTURES.find(x=>Number(x.id)===id);
+    const participantTeams=fixture?[fixture.home,fixture.away].filter(t=>db[t]):[team];
+    const canonicalRecord=JSON.parse(JSON.stringify(s));
+    participantTeams.forEach(t=>{
+      db[t].fixtureData=db[t].fixtureData||{};
+      db[t].fixtureData[id]=JSON.parse(JSON.stringify(canonicalRecord));
+    });
+
+    participantTeams.forEach(syncTeamSeasonFromFixtures);
+    persist();
+
+    // Read back every Record Room participant so a partial browser-storage write
+    // cannot look successful.
+    const check=JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
+    for(const t of participantTeams){
+      const saved=check?.[t]?.fixtureData?.[id];
+      if(!saved || saved.updatedAt!==s.updatedAt) throw new Error(`The browser did not confirm the saved match record for ${t}.`);
+    }
+
+    render();
+    openFixture(id);
+    const ok=$("fixtureSaveState");
+    if(ok){ok.style.color="#49d17d";ok.textContent="MATCH DETAILS SAVED";setTimeout(()=>{if(ok)ok.textContent=""},2200);}
+  }catch(err){
+    console.error("Record Room match save failed:",err);
+    if(state){state.style.color="#ff7185";state.textContent=`SAVE FAILED: ${err?.message||err}`;}
+    else alert(`Match details could not be saved: ${err?.message||err}`);
+  }
+}
+
+function flash(id){const el=$(id);if(!el)return;el.style.display="inline-block";setTimeout(()=>el.style.display="none",1600)}
+function persist(){
+  const payload=JSON.stringify(db);
+  localStorage.setItem(STORAGE_KEY,payload);
+  return true;
+}
+
+function setCollapsible(buttonId,contentId,open,openLabel,closedLabel){
+  const btn=$(buttonId), content=$(contentId);
+  if(!btn||!content)return;
+  btn.setAttribute("aria-expanded",open?"true":"false");
+  content.hidden=!open;
+  btn.textContent=open?openLabel:closedLabel;
+}
+$("togglePlayerStats")?.addEventListener("click",()=>{
+  const open=$("togglePlayerStats").getAttribute("aria-expanded")!=="true";
+  setCollapsible("togglePlayerStats","playerStatsContent",open,"HIDE PLAYER STATS","SHOW PLAYER STATS");
+});
+$("toggleFixtures")?.addEventListener("click",()=>{
+  const open=$("toggleFixtures").getAttribute("aria-expanded")!=="true";
+  setCollapsible("toggleFixtures","fixturesContent",open,"HIDE FIXTURES","SHOW FIXTURES");
+  if(open) renderFixtures(teamSelect.value);
+});
+$("toggleAllFixtures")?.addEventListener("click",()=>{
+  const btn=$("toggleAllFixtures");
+  const open=btn.getAttribute("aria-expanded")!=="true";
+  btn.setAttribute("aria-expanded",open?"true":"false");
+  renderFixtures(teamSelect.value);
+});
+
+teamSelect.addEventListener("change",()=>{
+  setCollapsible("togglePlayerStats","playerStatsContent",false,"HIDE PLAYER STATS","SHOW PLAYER STATS");
+  setCollapsible("toggleFixtures","fixturesContent",false,"HIDE FIXTURES","SHOW FIXTURES");
+  $("toggleAllFixtures")?.setAttribute("aria-expanded","false");
+  render();
+});
+inputTeam.addEventListener("change",()=>{teamSelect.value=inputTeam.value;render();populatePlayerSelect(inputTeam.value)});
+$("playerSearch").addEventListener("input",render);
+$("playerName").addEventListener("change",loadPlayerIntoForm);
+$("resetView").addEventListener("click",()=>{$("playerSearch").value="";teamSelect.selectedIndex=0;render()});
+
+$("saveClub").addEventListener("click",()=>{
+  const team=inputTeam.value;
+  db[team].club={
+    matches:n($("matches").value),
+    avgPossession:Number($("avgPossession").value)||0,
+    totalShots:n($("totalShots").value),
+    shotsOnTarget:n($("shotsOnTargetClub").value),
+    corners:n($("corners").value),
+    cornerGoals:n($("cornerGoals").value),
+    fouls:n($("fouls").value),
+    offsides:n($("offsides").value),
+    yellowCards:n($("yellowCardsClub").value),
+    redCards:n($("redCardsClub").value),
+    points:n($("points").value)
+  };
+  persist(); teamSelect.value=team; render(); flash("clubSaved");
+});
+
+function playerPayload(){
+  return {
+    name:($("manualPlayerName").value.trim()||$("playerName").value.trim()),position:$("playerPosition").value,
+    appearances:n($("appearances").value),starts:n($("starts").value),minutes:n($("minutes").value),
+    goals:n($("goals").value),assists:n($("assists").value),cleanSheets:n($("cleanSheets").value),
+    yellowCards:n($("yellowCards").value),redCards:n($("redCards").value),mom:n($("mom").value),
+    shots:n($("shots").value),shotsOnTarget:n($("shotsOnTarget").value),chancesCreated:n($("chancesCreated").value),
+    tackles:n($("tackles").value),interceptions:n($("interceptions").value),saves:n($("saves").value)
+  };
+}
+$("savePlayer").addEventListener("click",()=>{
+  const team=inputTeam.value,p=playerPayload();
+  if(!p.name){$("manualPlayerName").focus();return}
+  const idx=db[team].players.findIndex(x=>String(x.name).trim().toLowerCase()===p.name.toLowerCase());
+  if(idx>=0) db[team].players[idx]=p; else db[team].players.push(p);
+  db[team].players.sort((a,b)=>a.position.localeCompare(b.position)||a.name.localeCompare(b.name));
+  persist(); teamSelect.value=team; render(); flash("playerSaved");
+});
+$("clearPlayerForm").addEventListener("click",()=>{
+  $("playerName").value=""; $("manualPlayerName").value=""; $("playerPosition").selectedIndex=0;
+  ["appearances","starts","minutes","goals","assists","cleanSheets","yellowCards","redCards","mom","shots","shotsOnTarget","chancesCreated","tackles","interceptions","saves"].forEach(k=>$(k).value=0);
+});
+render();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
+<script src="supabase-client.js"></script>
+<script>
+(async function recordRoomAdminGuard(){
+  const db=window.nl4Supabase||window.supabaseClient||window.supabaseDb||null;
+  const page=document.getElementById('recordRoomPage');
+  const bar=document.getElementById('adminRecordBar');
+  const deny=(message)=>{
+    document.body.innerHTML=`<div class="record-auth-block"><div class="record-auth-card"><div style="color:#d8ad45;font-size:10px;font-weight:900;letter-spacing:1px">NL4 • ADMIN</div><h1>Record Room</h1><p>${message}</p><a href="admin.html">Go to Admin Sign In</a></div></div>`;
+  };
+  if(!db||!db.auth){ deny('Admin authentication is unavailable. Open the main Admin page and make sure Supabase is loaded.'); return; }
+  const {data,error}=await db.auth.getSession();
+  if(error||!data?.session?.user){ deny('You must be signed in as an NL4 administrator to open this page.'); return; }
+  const user=data.session.user;
+  const check=await db.from('admins').select('user_id').eq('user_id',user.id).maybeSingle();
+  if(check.error||!check.data){ deny('This authenticated account is not registered as an NL4 administrator.'); return; }
+  if(page) page.hidden=false;
+  if(bar) bar.hidden=false;
+  document.getElementById('recordRoomLogout')?.addEventListener('click',async()=>{await db.auth.signOut();location.href='admin.html';});
+})();
+</script>
+
+</body>
+</html>
