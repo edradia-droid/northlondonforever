@@ -2,9 +2,9 @@
 // Applies after completed-match importer. Uses existing Record Room state + recalculation pipeline.
 (function(){
 'use strict';
-if(window.__NL4_RR_VERIFIED_STATS_V3__)return;window.__NL4_RR_VERIFIED_STATS_V3__=true;
+if(window.__NL4_RR_VERIFIED_STATS_V4__)return;window.__NL4_RR_VERIFIED_STATS_V4__=true;
 const S=(possession,shots,sot,corners,fouls,offsides,saves)=>({possession:{h:possession[0],a:possession[1]},shots:{h:shots[0],a:shots[1]},sot:{h:sot[0],a:sot[1]},corners:{h:corners[0],a:corners[1]},cornerGoals:{h:0,a:0},fouls:{h:fouls[0],a:fouls[1]},offsides:{h:offsides[0],a:offsides[1]},saves:{h:saves[0],a:saves[1]}});
-// One row per completed 2026/27 PL match through 30 Aug 2026. Values are HOME/AWAY.
+const E=(type,minute,team,name,assist='')=>({type,minute,player:`${team}|||${name}`,assist:assist?`${team}|||${assist}`:''});
 const V=[
  {h:'Arsenal',a:'Coventry City',stats:S([65,35],[20,4],[6,1],[8,2],[10,13],[5,0],[1,2])},
  {h:'Hull City',a:'Manchester United',stats:S([28,72],[8,21],[4,5],[1,6],[10,9],[0,3],[5,2]),motm:'Hull City|||Semi Ajayi'},
@@ -12,7 +12,7 @@ const V=[
  {h:'Ipswich Town',a:'Sunderland',stats:S([38,63],[10,11],[3,4],[3,5],[12,14],[1,4],[2,1]),motm:'Ipswich Town|||Julio Enciso'},
  {h:'Nottingham Forest',a:'Leeds United',stats:S([55,45],[12,11],[2,3],[3,2],[15,14],[3,3],[2,3]),motm:'Leeds United|||Anton Stach'},
  {h:'Brentford',a:'Tottenham Hotspur',stats:S([41,59],[26,9],[8,4],[7,3],[17,14],[3,2],[4,5]),motm:'Brentford|||Mamadou Sangaré'},
- {h:'Brighton & Hove Albion',a:'Aston Villa',stats:S([69,31],[21,6],[6,0],[5,2],[12,10],[6,2],[0,3]),motm:'Brighton & Hove Albion|||Jack Hinshelwood'},
+ {h:'Brighton & Hove Albion',a:'Aston Villa',stats:S([69,31],[21,6],[6,0],[5,2],[12,10],[6,2],[0,3]),motm:'Brighton & Hove Albion|||Jack Hinshelwood',events:[E('yellow',9,'Brighton & Hove Albion','Pascal Groß'),E('yellow',9,'Aston Villa','João Gomes'),E('yellow',11,'Brighton & Hove Albion','Yasin Ayari'),E('goal',18,'Brighton & Hove Albion','Maxim De Cuyper','Georginio Rutter'),E('goal',30,'Brighton & Hove Albion','Jack Hinshelwood','Diego Gómez'),E('goal',31,'Brighton & Hove Albion','Jack Hinshelwood'),E('yellow',33,'Aston Villa','John McGinn'),E('red',40,'Aston Villa','João Gomes'),E('yellow',95,'Aston Villa','Matty Cash')]},
  {h:'Manchester City',a:'AFC Bournemouth',stats:S([66,34],[13,5],[6,4],[8,3],[11,11],[2,1],[3,4])},
  {h:'Newcastle United',a:'Liverpool',stats:S([39,61],[13,27],[4,7],[2,6],[16,15],[2,1],[5,3])},
  {h:'Fulham',a:'Chelsea',stats:S([61,39],[14,18],[6,6],[6,4],[12,7],[0,3],[3,4]),motm:'Chelsea|||Cole Palmer'},
@@ -27,13 +27,14 @@ const V=[
  {h:'Manchester United',a:'Ipswich Town',stats:S([60,40],[31,9],[11,5],[8,4],[7,12],[0,1],[3,6]),motm:'Manchester United|||Bruno Fernandes'}
 ];
 function findFixture(h,a){return (typeof ALL_FIXTURES!=='undefined'?ALL_FIXTURES:[]).find(f=>f.home===h&&f.away===a)}
+function clone(v){return JSON.parse(JSON.stringify(v))}
 function apply(){
  if(typeof db==='undefined'||typeof fixtureStore!=='function')return;
  const touched=new Set();
- V.forEach(r=>{const f=findFixture(r.h,r.a);if(!f)return;[r.h,r.a].filter(t=>db[t]).forEach(t=>{const s=fixtureStore(t,f.id);s.stats=JSON.parse(JSON.stringify(r.stats));if(r.motm)s.manOfTheMatch=r.motm;touched.add(t);});});
+ V.forEach(r=>{const f=findFixture(r.h,r.a);if(!f)return;[r.h,r.a].filter(t=>db[t]).forEach(t=>{const s=fixtureStore(t,f.id);s.stats=clone(r.stats);if(r.motm)s.manOfTheMatch=r.motm;if(r.events)s.events=clone(r.events);touched.add(t);});});
  touched.forEach(t=>{if(typeof recalculatePlayerStatsFromFixtures==='function')recalculatePlayerStatsFromFixtures(t);if(typeof recalculateClubStatsFromFixtures==='function')recalculateClubStatsFromFixtures(t)});
  if(typeof persist==='function')persist();if(typeof render==='function')render();
- const e=document.getElementById('rrCompletedStatus');if(e)e.textContent='FULL MATCH STATS APPLIED • Every completed fixture now feeds each club 2026/27 Premier League totals.';
+ const e=document.getElementById('rrCompletedStatus');if(e)e.textContent='FULL MATCH STATS + DISCIPLINE APPLIED • Completed fixtures recalculated.';
 }
 function bind(){const b=document.getElementById('rrImportCompleted');if(!b)return false;if(b.dataset.fullStatsBound)return true;b.dataset.fullStatsBound='1';b.addEventListener('click',()=>setTimeout(apply,140));return true}
 window.NL4RecordRoomApplyVerifiedStats=apply;
