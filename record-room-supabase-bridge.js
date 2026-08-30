@@ -9,6 +9,7 @@
   const rr=()=>window.NL4RecordRoomSupabase;
   const norm=v=>String(v||'').trim();
   const split=v=>{const p=String(v||'').split('|||');return {team:norm(p[0]),name:norm(p.slice(1).join('|||'))};};
+  const nullableNumber=v=>(v===null||v===undefined||v==='')?null:Number(v);
 
   function playerRows(){
     const rows=[];
@@ -72,9 +73,14 @@
 
   function matchPayload(f,s){
     const motm=split(s.manOfTheMatch);
-    const st=s.stats||{}, val=(k,side)=>Number(st?.[k]?.[side])||0;
+    const st=s.stats||{}, md=s.matchDetails||{}, val=(k,side)=>Number(st?.[k]?.[side])||0;
     return {
-      details:{man_of_the_match:motm.name||null,source:'NL4 Record Room',source_updated_at:new Date().toISOString()},
+      details:{
+        referee:norm(md.referee)||null,venue:norm(md.venue)||null,attendance:nullableNumber(md.attendance),
+        man_of_the_match:motm.name||null,halftime_home_score:nullableNumber(md.halftimeHomeScore),
+        halftime_away_score:nullableNumber(md.halftimeAwayScore),added_time:Math.max(0,Math.min(30,Number(md.addedTime)||0)),
+        source:'NL4 Record Room',source_updated_at:new Date().toISOString()
+      },
       stats:{home_possession:val('possession','h'),away_possession:val('possession','a'),home_shots:val('shots','h'),away_shots:val('shots','a'),
         home_shots_on_target:val('sot','h'),away_shots_on_target:val('sot','a'),home_corners:val('corners','h'),away_corners:val('corners','a'),
         home_corner_goals:val('cornerGoals','h'),away_corner_goals:val('cornerGoals','a'),home_fouls:val('fouls','h'),away_fouls:val('fouls','a'),
@@ -92,11 +98,11 @@
     const s=db[owner]?.fixtureData?.[localId]; if(!s) return;
     const match=await resolveMatch(f); if(!match){console.warn('[NL4 Record Room] Could not resolve Supabase match',f);return;}
     const result=await rr().saveMatch(match.id,matchPayload(f,s));
+    const state=document.getElementById('fixtureSaveState');
     if(result.available){
       await mirrorPlayers();
-      const state=document.getElementById('fixtureSaveState');
-      if(state){state.style.color='#49d17d';state.textContent='SAVED TO SUPABASE';setTimeout(()=>{if(state)state.textContent='';},2600);}
-    }
+      if(state){state.style.color='#49d17d';state.textContent='SUPABASE CONFIRMED';setTimeout(()=>{if(state)state.textContent='';},3000);}
+    }else if(state){state.style.color='#ffb347';state.textContent='LOCAL SAVED • SUPABASE NOT CONFIRMED';}
   }
 
   function importPlayers(rows){
@@ -118,7 +124,7 @@
     const ready=await rr().probe(); if(!ready.available) return;
     const loaded=await rr().loadPlayers(SEASON); if(loaded.available&&loaded.data?.length) importPlayers(loaded.data);
     document.getElementById('savePlayer')?.addEventListener('click',()=>setTimeout(mirrorPlayers,0));
-    document.addEventListener('click',e=>{if(e.target?.classList?.contains('detail-save'))setTimeout(mirrorOpenFixture,80);});
+    document.addEventListener('click',e=>{if(e.target?.classList?.contains('detail-save'))setTimeout(mirrorOpenFixture,140);});
     console.log('[NL4 Record Room] Supabase bridge active');
   }
   boot().catch(err=>console.warn('[NL4 Record Room] Bridge fallback:',err));
