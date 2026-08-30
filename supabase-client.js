@@ -63,5 +63,6 @@ if (/record-room\.html\/?$/i.test(location.pathname)) {
   loadScript('record-room-supabase.js')
     .then(()=>loadScript('record-room-supabase-bridge.js'))
     .then(()=>loadScript('record-room-completed-import.js'))
+    .then(()=>loadScript('record-room-verified-stats.js'))
     .catch(error=>console.warn('[NL4 Record Room] Optional Record Room extension unavailable; local fallback remains active.',error));
 }
