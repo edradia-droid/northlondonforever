@@ -21,32 +21,30 @@ if (/record-room\.html\/?$/i.test(location.pathname)) {
     addedTime:Math.max(0,Math.min(30,Number(document.getElementById('rrAddedTime')?.value)||0))
   });
   const capture=()=>{
-    const id=fixtureId(); if(!Number.isFinite(id)) return;
+    const id=fixtureId(); if(!Number.isFinite(id)||!document.getElementById('rrExtendedDetails')) return;
     const md=readInputs(), backup=readBackup(); backup[id]=md;
     localStorage.setItem(RR_DETAILS_KEY,JSON.stringify(backup));
-    // Also place it in the native Record Room fixture object before its Save handler runs.
     try{
       if(typeof ALL_FIXTURES!=='undefined'&&typeof db!=='undefined'){
         const f=ALL_FIXTURES.find(x=>Number(x.id)===id);
-        const team=(typeof teamSelect!=='undefined'&&teamSelect?.value)||null;
-        if(f&&team&&db[team]){
-          const s=fixtureStore(team,id); s.matchDetails={...md};
-          [f.home,f.away].filter(t=>db[t]).forEach(t=>{db[t].fixtureData=db[t].fixtureData||{}; const ts=fixtureStore(t,id); ts.matchDetails={...md};});
-          if(typeof persist==='function') persist();
+        const selected=(typeof teamSelect!=='undefined'&&teamSelect?.value)||null;
+        const participants=f?[f.home,f.away].filter(t=>db[t]):[];
+        // Native save takes the selected club's fixture record as canonical, so update it first.
+        if(selected&&db[selected]){
+          const s=fixtureStore(selected,id); s.matchDetails={...md};
         }
+        participants.forEach(t=>{const s=fixtureStore(t,id);s.matchDetails={...md}});
+        if(typeof persist==='function') persist();
       }
-    }catch(e){console.warn('[NL4 Record Room] Native match-detail capture fallback used.',e);}
+    }catch(e){console.warn('[NL4 Record Room] Match-detail native-state capture fallback used.',e);}
     window.NL4RecordRoomPendingMatchDetails={fixtureId:id,details:md};
   };
   const restore=()=>{
     const id=fixtureId(); if(!Number.isFinite(id)) return;
     let md=null;
     try{
-      if(typeof ALL_FIXTURES!=='undefined'&&typeof db!=='undefined'){
-        const f=ALL_FIXTURES.find(x=>Number(x.id)===id), team=(typeof teamSelect!=='undefined'&&teamSelect?.value)||null;
-        md=(team&&db[team]?.fixtureData?.[id]?.matchDetails)||null;
-        if(!md&&f) md=db[f.home]?.fixtureData?.[id]?.matchDetails||db[f.away]?.fixtureData?.[id]?.matchDetails||null;
-      }
+      const selected=(typeof teamSelect!=='undefined'&&teamSelect?.value)||null;
+      if(selected&&typeof db!=='undefined') md=db[selected]?.fixtureData?.[id]?.matchDetails||null;
     }catch(_){}
     md=md||readBackup()[id]||{};
     const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v??''};
@@ -61,9 +59,11 @@ if (/record-room\.html\/?$/i.test(location.pathname)) {
       <div class="field"><label>REFEREE</label><input id="rrReferee" placeholder="Referee"></div><div class="field"><label>VENUE</label><input id="rrVenue" placeholder="Stadium / venue"></div><div class="field"><label>ATTENDANCE</label><input id="rrAttendance" type="number" min="0" placeholder="Attendance"></div><div class="field"><label>HALF-TIME • HOME</label><input id="rrHalfHome" type="number" min="0" placeholder="HT home"></div><div class="field"><label>HALF-TIME • AWAY</label><input id="rrHalfAway" type="number" min="0" placeholder="HT away"></div><div class="field"><label>ADDED TIME</label><input id="rrAddedTime" type="number" min="0" max="30" value="0" placeholder="Minutes"></div>
     </div></div>`); restore();
   };
-  // Capture before the inline onclick save handler. Input/change also protects against rerenders.
-  document.addEventListener('click',e=>{if(e.target?.classList?.contains('detail-save'))capture()},true);
+  // Persist while typing, before Save can rerender the fixture. Pointer/click are extra safeguards.
+  document.addEventListener('input',e=>{if(e.target?.closest?.('#rrExtendedDetails'))capture()},true);
   document.addEventListener('change',e=>{if(e.target?.closest?.('#rrExtendedDetails'))capture()},true);
+  document.addEventListener('pointerdown',e=>{if(e.target?.closest?.('.detail-save'))capture()},true);
+  document.addEventListener('click',e=>{if(e.target?.closest?.('.detail-save'))capture()},true);
   inject(); const rrBox=document.getElementById('fixtureDetail'); if(rrBox)new MutationObserver(inject).observe(rrBox,{childList:true}); setInterval(inject,250);
 
   const loadScript=src=>new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=()=>reject(new Error(`Could not load ${src}`));document.head.appendChild(s)});
