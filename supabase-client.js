@@ -18,7 +18,7 @@ if (/record-room\.html\/?$/i.test(location.pathname)) {
     attendance:document.getElementById('rrAttendance')?.value===''?null:Number(document.getElementById('rrAttendance')?.value),
     halftimeHomeScore:document.getElementById('rrHalfHome')?.value===''?null:Number(document.getElementById('rrHalfHome')?.value),
     halftimeAwayScore:document.getElementById('rrHalfAway')?.value===''?null:Number(document.getElementById('rrHalfAway')?.value),
-    addedTime:Math.max(0,Math.min(30,Number(document.getElementById('rrAddedTime')?.value)||0)
+    addedTime:Math.max(0,Math.min(30,Number(document.getElementById('rrAddedTime')?.value)||0))
   });
   const capture=()=>{
     const id=fixtureId(); if(!Number.isFinite(id)||!document.getElementById('rrExtendedDetails')) return;
