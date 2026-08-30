@@ -20,3 +20,19 @@ window.nl4Supabase = window.supabase.createClient(
     }
   }
 );
+
+// Record Room is an authenticated admin-only page. Load its dedicated database
+// adapter/bridge only there so no public page or Arsenal model code is affected.
+if (/\brecord-room\.html$/i.test(location.pathname)) {
+  const loadScript = (src) => new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error(`Could not load ${src}`));
+    document.head.appendChild(s);
+  });
+
+  loadScript('record-room-supabase.js')
+    .then(() => loadScript('record-room-supabase-bridge.js'))
+    .catch(error => console.warn('[NL4 Record Room] Supabase bridge unavailable; local fallback remains active.', error));
+}
