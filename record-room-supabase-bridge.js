@@ -128,4 +128,12 @@
     console.log('[NL4 Record Room] Supabase bridge active');
   }
   boot().catch(err=>console.warn('[NL4 Record Room] Bridge fallback:',err));
+
+  // Load the visible completed-match update panel after the existing bridge is active.
+  if(!document.querySelector('script[data-rr-completed-import]')){
+    const s=document.createElement('script');
+    s.src='record-room-completed-import.js';
+    s.dataset.rrCompletedImport='1';
+    document.head.appendChild(s);
+  }
 })();
