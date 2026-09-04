@@ -9,6 +9,35 @@ if (!window.supabase) throw new Error("Supabase JS library was not loaded.");
 window.nl4Supabase = window.supabase.createClient(NL4_SUPABASE_URL,NL4_SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 
 if (/record-room\.html\/?$/i.test(location.pathname)) {
+  // Arsenal must be the first Record Room club, directly above Aston Villa.
+  // Do this here as well as in the Arsenal integration layer so the visible
+  // selectors never depend on the later optional-script chain.
+  const forceArsenalFirst=()=>{
+    try{
+      if(typeof TEAMS!=='undefined'){
+        const i=TEAMS.indexOf('Arsenal');
+        if(i>=0) TEAMS.splice(i,1);
+        TEAMS.unshift('Arsenal');
+      }
+    }catch(_){}
+    ['teamSelect','inputTeam'].forEach(id=>{
+      const el=document.getElementById(id); if(!el) return;
+      const selected=el.value;
+      [...el.options].filter(o=>o.value==='Arsenal').forEach(o=>o.remove());
+      const arsenal=new Option('Arsenal','Arsenal');
+      const villa=[...el.options].find(o=>o.value==='Aston Villa');
+      if(villa) el.insertBefore(arsenal,villa); else el.insertBefore(arsenal,el.options[0]||null);
+      if(selected && [...el.options].some(o=>o.value===selected)) el.value=selected;
+    });
+  };
+  forceArsenalFirst();
+  document.addEventListener('DOMContentLoaded',forceArsenalFirst,{once:true});
+  let arsenalSelectorChecks=0;
+  const arsenalSelectorTimer=setInterval(()=>{
+    forceArsenalFirst();
+    if(++arsenalSelectorChecks>=40) clearInterval(arsenalSelectorTimer);
+  },250);
+
   const RR_DETAILS_KEY='nl4_record_room_match_details_v1';
   const readBackup=()=>{try{return JSON.parse(localStorage.getItem(RR_DETAILS_KEY)||'{}')}catch(_){return {}}};
   const fixtureId=()=>Number(document.getElementById('fixtureDetail')?.dataset?.fixtureId);
@@ -72,5 +101,6 @@ if (/record-room\.html\/?$/i.test(location.pathname)) {
     .then(()=>loadScript('record-room-event-display-fix.js'))
     .then(()=>loadScript('record-room-season-sync-fix.js'))
     .then(()=>loadScript('record-room-matchday-groups.js'))
+    .then(()=>forceArsenalFirst())
     .catch(error=>console.warn('[NL4 Record Room] Optional Record Room extension unavailable; local fallback remains active.',error));
 }
