@@ -13,7 +13,9 @@ window.nl4Supabase = window.supabase.createClient(NL4_SUPABASE_URL,NL4_SUPABASE_
 const NL4_IS_RECORD_ROOM = !!document.getElementById('recordRoomPage') || /(?:^|\/)record-room(?:\.html)?\/?$/i.test(location.pathname);
 
 if (NL4_IS_RECORD_ROOM) {
-  // Arsenal must be the first Record Room club, directly above Aston Villa.
+  // Keep startup deliberately light. Record Room already contains its local core
+  // data/render/save engine; the extension/audit chain must not all run on every
+  // page load because several extensions perform whole-season reconciliation.
   const forceArsenalFirst=()=>{
     try{
       if(typeof TEAMS!=='undefined'){
@@ -40,10 +42,12 @@ if (NL4_IS_RECORD_ROOM) {
   };
   forceArsenalFirst();
   document.addEventListener('DOMContentLoaded',forceArsenalFirst,{once:true});
+  // The previous build polled 80 times (20 seconds). A few short checks are enough
+  // for the selectors to exist without keeping a hot timer alive in the admin tab.
   let arsenalSelectorChecks=0;
   const arsenalSelectorTimer=setInterval(()=>{
     forceArsenalFirst();
-    if(++arsenalSelectorChecks>=80) clearInterval(arsenalSelectorTimer);
+    if(++arsenalSelectorChecks>=8) clearInterval(arsenalSelectorTimer);
   },250);
 
   const RR_DETAILS_KEY='nl4_record_room_match_details_v1';
@@ -94,21 +98,70 @@ if (NL4_IS_RECORD_ROOM) {
   document.addEventListener('change',e=>{if(e.target?.closest?.('#rrExtendedDetails'))capture()},true);
   document.addEventListener('pointerdown',e=>{if(e.target?.closest?.('.detail-save'))capture()},true);
   document.addEventListener('click',e=>{if(e.target?.closest?.('.detail-save'))capture()},true);
-  inject(); const rrBox=document.getElementById('fixtureDetail'); if(rrBox)new MutationObserver(inject).observe(rrBox,{childList:true}); setInterval(inject,250);
+  inject();
+  const rrBox=document.getElementById('fixtureDetail');
+  // MutationObserver is sufficient; the old permanent setInterval(inject,250)
+  // woke the page four times every second forever.
+  if(rrBox)new MutationObserver(inject).observe(rrBox,{childList:true});
 
-  const loadScript=src=>new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=()=>reject(new Error(`Could not load ${src}`));document.head.appendChild(s)});
-  loadScript('record-room-supabase.js')
-    .then(()=>loadScript('record-room-supabase-bridge.js'))
-    .then(()=>loadScript('record-room-arsenal-team-v7.js'))
-    .then(()=>loadScript('record-room-completed-import.js'))
-    .then(()=>loadScript('record-room-participation-events-fix.js'))
-    .then(()=>loadScript('record-room-verified-stats.js'))
-    .then(()=>loadScript('record-room-canonical-events-v4.js'))
-    .then(()=>loadScript('record-room-assists-motm-v5.js'))
-    .then(()=>loadScript('record-room-player-calculation-v6.js'))
-    .then(()=>loadScript('record-room-event-display-fix.js'))
-    .then(()=>loadScript('record-room-season-sync-fix.js'))
-    .then(()=>loadScript('record-room-matchday-groups.js'))
-    .then(()=>forceArsenalFirst())
-    .catch(error=>console.warn('[NL4 Record Room] Optional Record Room extension unavailable; local fallback remains active.',error));
+  const loadScript=src=>new Promise((resolve,reject)=>{
+    if(document.querySelector(`script[data-nl4-rr-src="${src}"]`)) return resolve();
+    const s=document.createElement('script');
+    s.src=src;
+    s.dataset.nl4RrSrc=src;
+    s.onload=resolve;
+    s.onerror=()=>reject(new Error(`Could not load ${src}`));
+    document.head.appendChild(s);
+  });
+
+  // Only the small persistence/Arsenal integration layer is needed automatically.
+  // Historical import, audits and whole-season recalculation are loaded on demand.
+  const loadCoreExtensions=()=>
+    loadScript('record-room-supabase.js')
+      .then(()=>loadScript('record-room-supabase-bridge.js'))
+      .then(()=>loadScript('record-room-arsenal-team-v7.js'))
+      .then(()=>forceArsenalFirst())
+      .catch(error=>console.warn('[NL4 Record Room] Core extension unavailable; local fallback remains active.',error));
+
+  let maintenancePromise=null;
+  const loadMaintenanceExtensions=()=>{
+    if(maintenancePromise) return maintenancePromise;
+    maintenancePromise=Promise.resolve()
+      .then(()=>loadScript('record-room-completed-import.js'))
+      .then(()=>loadScript('record-room-participation-events-fix.js'))
+      .then(()=>loadScript('record-room-verified-stats.js'))
+      .then(()=>loadScript('record-room-canonical-events-v4.js'))
+      .then(()=>loadScript('record-room-assists-motm-v5.js'))
+      .then(()=>loadScript('record-room-player-calculation-v6.js'))
+      .then(()=>loadScript('record-room-event-display-fix.js'))
+      .then(()=>loadScript('record-room-season-sync-fix.js'))
+      .then(()=>loadScript('record-room-matchday-groups.js'))
+      .then(()=>forceArsenalFirst())
+      .catch(error=>{maintenancePromise=null;console.warn('[NL4 Record Room] Maintenance extension unavailable.',error);throw error;});
+    return maintenancePromise;
+  };
+  window.NL4LoadRecordRoomMaintenance=loadMaintenanceExtensions;
+
+  // Add one explicit maintenance control instead of running nine whole-season
+  // repair/audit scripts just because the page was opened.
+  const addMaintenanceButton=()=>{
+    const actions=document.querySelector('.admin-record-actions');
+    if(!actions||document.getElementById('rrLoadMaintenance')) return;
+    const b=document.createElement('button');
+    b.id='rrLoadMaintenance'; b.type='button'; b.textContent='Load data tools';
+    b.title='Load completed-match import, audit and season-recalculation tools only when needed.';
+    b.addEventListener('click',async()=>{
+      if(b.dataset.loaded==='1') return;
+      b.disabled=true; b.textContent='Loading data tools…';
+      try{await loadMaintenanceExtensions();b.dataset.loaded='1';b.textContent='Data tools loaded';}
+      catch(_){b.disabled=false;b.textContent='Retry data tools';}
+    });
+    actions.insertBefore(b,document.getElementById('recordRoomLogout')||null);
+  };
+  addMaintenanceButton();
+  document.addEventListener('DOMContentLoaded',addMaintenanceButton,{once:true});
+
+  // Yield until initial Record Room rendering/auth work has completed.
+  if('requestIdleCallback' in window) requestIdleCallback(loadCoreExtensions,{timeout:1800});
+  else setTimeout(loadCoreExtensions,650);
 }
