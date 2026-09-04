@@ -2,8 +2,8 @@
 // Adds Arsenal to the existing 19-team Record Room without altering forecast/model code.
 (function(){
 'use strict';
-if(window.__NL4_RR_ARSENAL_TEAM_V7__)return;
-window.__NL4_RR_ARSENAL_TEAM_V7__=true;
+if(window.__NL4_RR_ARSENAL_TEAM_V8__)return;
+window.__NL4_RR_ARSENAL_TEAM_V8__=true;
 const TEAM='Arsenal';
 const clone=v=>JSON.parse(JSON.stringify(v));
 const blankClub=()=>typeof defaultClub==='function'?defaultClub():({matches:0,avgPossession:0,totalShots:0,shotsOnTarget:0,corners:0,cornerGoals:0,fouls:0,offsides:0,yellowCards:0,redCards:0,points:0});
@@ -18,18 +18,26 @@ const BASE_ROSTER=[
 const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[’‘]/g,"'").replace(/\s+/g,' ').trim().toLowerCase();
 function ensureRoster(){
  if(typeof TEAM_ROSTERS!=='undefined')TEAM_ROSTERS[TEAM]=BASE_ROSTER.map(clone);
- if(typeof TEAMS!=='undefined'&&!TEAMS.includes(TEAM))TEAMS.unshift(TEAM);
+ if(typeof TEAMS!=='undefined'){
+  while(TEAMS.includes(TEAM))TEAMS.splice(TEAMS.indexOf(TEAM),1);
+  TEAMS.unshift(TEAM);
+ }
  if(typeof db==='undefined')return;
  const old=db[TEAM]||{club:blankClub(),players:[],fixtureData:{}};
  const oldBy=new Map((old.players||[]).map(p=>[norm(p.name),p]));
  old.players=BASE_ROSTER.map(p=>({...clone(p),...(oldBy.get(norm(p.name))||{}),name:p.name,position:p.position,number:p.number}));
  old.club=old.club||blankClub();old.fixtureData=old.fixtureData||{};db[TEAM]=old;
 }
+function forceArsenalFirst(el){
+ if(!el)return;
+ const wasSelected=el.value;
+ [...el.options].filter(o=>o.value===TEAM).forEach(o=>o.remove());
+ el.add(new Option(TEAM,TEAM),0);
+ if(wasSelected&&wasSelected!==TEAM&&[...el.options].some(o=>o.value===wasSelected))el.value=wasSelected;
+}
 function ensureOptions(){
- ['teamSelect','inputTeam'].forEach(id=>{
-  const el=document.getElementById(id);if(!el)return;
-  if(![...el.options].some(o=>o.value===TEAM))el.add(new Option(TEAM,TEAM),0);
- });
+ forceArsenalFirst(document.getElementById('teamSelect'));
+ forceArsenalFirst(document.getElementById('inputTeam'));
 }
 function fixtureScore(s){return !s?-1:((s.homeScore!==null&&s.homeScore!==undefined&&s.awayScore!==null&&s.awayScore!==undefined)?1000:0)+(s.homeLineup?.filter(Boolean).length||0)*10+(s.awayLineup?.filter(Boolean).length||0)*10+(s.homeSubs?.length||0)*3+(s.awaySubs?.length||0)*3+(s.events?.length||0)*4+Object.keys(s.stats||{}).length;}
 function mirrorArsenalFixtures(){
@@ -72,9 +80,15 @@ function apply(){
  ensureRoster();ensureOptions();exposePlayers();mirrorArsenalFixtures();addFixturePlayers();
  if(typeof TEAM_ROSTERS!=='undefined')TEAM_ROSTERS[TEAM]=db[TEAM].players.map(p=>({name:p.name,position:p.position,number:p.number??null}));
  recalc();
- const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V10 • ALL 20 PREMIER LEAGUE TEAMS';
+ ensureOptions();
+ const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V10 • ALL 20 PREMIER LEAGUE TEAMS • ARSENAL FIRST';
  const hero=document.querySelector('.hero p');if(hero)hero.textContent='Admin record workspace for all 20 Premier League clubs, including Arsenal. Every club uses the same 2026/27 club, player, fixture, lineup, event and season-stat structure while remaining isolated from NL4 forecast calculations.';
 }
 window.NL4RecordRoomAddArsenal=apply;
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(apply,150));else setTimeout(apply,150);
+function keepFirst(){ensureOptions();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(apply,80));else setTimeout(apply,80);
+setTimeout(keepFirst,250);setTimeout(keepFirst,700);setTimeout(keepFirst,1500);
+const observer=new MutationObserver(()=>keepFirst());
+const startObserver=()=>{const t=document.getElementById('teamSelect'),i=document.getElementById('inputTeam');if(t)observer.observe(t,{childList:true});if(i)observer.observe(i,{childList:true});};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startObserver);else startObserver();
 })();
