@@ -8,16 +8,24 @@ const NL4_SUPABASE_PUBLISHABLE_KEY = "sb_publishable__esNlSYCC7dc4Cbn1yFZ4w_ttag
 if (!window.supabase) throw new Error("Supabase JS library was not loaded.");
 window.nl4Supabase = window.supabase.createClient(NL4_SUPABASE_URL,NL4_SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 
-if (/record-room\.html\/?$/i.test(location.pathname)) {
+// Detect Record Room by the page DOM as well as by URL. Some deployments/openers
+// may use a clean/re-written URL that does not literally end in record-room.html.
+const NL4_IS_RECORD_ROOM = !!document.getElementById('recordRoomPage') || /(?:^|\/)record-room(?:\.html)?\/?$/i.test(location.pathname);
+
+if (NL4_IS_RECORD_ROOM) {
   // Arsenal must be the first Record Room club, directly above Aston Villa.
-  // Do this here as well as in the Arsenal integration layer so the visible
-  // selectors never depend on the later optional-script chain.
   const forceArsenalFirst=()=>{
     try{
       if(typeof TEAMS!=='undefined'){
         const i=TEAMS.indexOf('Arsenal');
         if(i>=0) TEAMS.splice(i,1);
         TEAMS.unshift('Arsenal');
+      }
+      if(typeof db!=='undefined' && !db.Arsenal){
+        db.Arsenal={
+          club:typeof defaultClub==='function'?defaultClub():{matches:0,avgPossession:0,totalShots:0,shotsOnTarget:0,corners:0,cornerGoals:0,fouls:0,offsides:0,yellowCards:0,redCards:0,points:0},
+          players:[],fixtureData:{}
+        };
       }
     }catch(_){}
     ['teamSelect','inputTeam'].forEach(id=>{
@@ -35,7 +43,7 @@ if (/record-room\.html\/?$/i.test(location.pathname)) {
   let arsenalSelectorChecks=0;
   const arsenalSelectorTimer=setInterval(()=>{
     forceArsenalFirst();
-    if(++arsenalSelectorChecks>=40) clearInterval(arsenalSelectorTimer);
+    if(++arsenalSelectorChecks>=80) clearInterval(arsenalSelectorTimer);
   },250);
 
   const RR_DETAILS_KEY='nl4_record_room_match_details_v1';
