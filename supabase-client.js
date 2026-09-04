@@ -64,10 +64,11 @@ if (/record-room\.html\/?$/i.test(location.pathname)) {
     .then(()=>loadScript('record-room-supabase-bridge.js'))
     .then(()=>loadScript('record-room-completed-import.js'))
     .then(()=>loadScript('record-room-participation-events-fix.js'))
+    .then(()=>loadScript('record-room-verified-stats.js'))
     .then(()=>loadScript('record-room-canonical-events-v4.js'))
     .then(()=>loadScript('record-room-assists-motm-v5.js'))
+    .then(()=>loadScript('record-room-player-calculation-v6.js'))
     .then(()=>loadScript('record-room-event-display-fix.js'))
-    .then(()=>loadScript('record-room-verified-stats.js'))
     .then(()=>loadScript('record-room-season-sync-fix.js'))
     .then(()=>loadScript('record-room-matchday-groups.js'))
     .catch(error=>console.warn('[NL4 Record Room] Optional Record Room extension unavailable; local fallback remains active.',error));
