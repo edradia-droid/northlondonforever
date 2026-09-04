@@ -15,8 +15,52 @@ window.nl4Supabase = window.supabase.createClient(
 const NL4_IS_RECORD_ROOM = !!document.getElementById('recordRoomPage') || /(?:^|\/)record-room(?:\.html)?\/?$/i.test(location.pathname);
 
 if (NL4_IS_RECORD_ROOM) {
-  // Record Room stays lightweight. Only the one-time Arsenal registration is loaded
-  // automatically; import/audit/Supabase season tools remain manual.
+  // Arsenal is registered directly here so it is not dependent on a second script
+  // request or an idle callback. This remains a one-time lightweight operation.
+  const arsenalPlayers=[
+    ['David Raya','Goalkeeper',1],['Kepa Arrizabalaga','Goalkeeper',13],['Illan Meslier','Goalkeeper',30],['Tommy Setford','Goalkeeper',35],
+    ['William Saliba','Defender',2],['Cristhian Mosquera','Defender',3],['Ben White','Defender',4],['Piero Hincapié','Defender',5],['Gabriel Magalhães','Defender',6],['Jurriën Timber','Defender',12],['Riccardo Calafiori','Defender',33],['Myles Lewis-Skelly','Defender',49],['Ezri Konsa','Defender',null],
+    ['Martin Ødegaard','Midfielder',8],['Eberechi Eze','Midfielder',10],['Fabio Vieira','Midfielder',21],['Ethan Nwaneri','Midfielder',22],['Mikel Merino','Midfielder',23],['Martín Zubimendi','Midfielder',36],['Bruno Guimarães','Midfielder',39],['Declan Rice','Midfielder',41],['Max Dowman','Midfielder',null],
+    ['Bukayo Saka','Forward',7],['Gabriel Jesus','Forward',9],['Christos Tzolis','Forward',null],['Kai Havertz','Forward',null],['Noni Madueke','Forward',null],['Gabriel Martinelli','Forward',null],['Viktor Gyökeres','Forward',null]
+  ];
+  const makePlayer=([name,position,number])=>({name,position,number,appearances:0,starts:0,minutes:0,goals:0,assists:0,cleanSheets:0,yellowCards:0,redCards:0,mom:0,shots:0,shotsOnTarget:0,chancesCreated:0,tackles:0,interceptions:0,saves:0});
+  const blankClub=()=>({matches:0,avgPossession:0,totalShots:0,shotsOnTarget:0,corners:0,cornerGoals:0,fouls:0,offsides:0,yellowCards:0,redCards:0,points:0});
+  const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[’‘]/g,"'").replace(/\s+/g,' ').trim().toLowerCase();
+
+  const registerArsenal=()=>{
+    try{
+      if(typeof TEAMS!=='undefined'){
+        while(TEAMS.includes('Arsenal')) TEAMS.splice(TEAMS.indexOf('Arsenal'),1);
+        TEAMS.unshift('Arsenal');
+      }
+      if(typeof TEAM_ROSTERS!=='undefined') TEAM_ROSTERS.Arsenal=arsenalPlayers.map(makePlayer);
+      if(typeof db!=='undefined'){
+        const existing=db.Arsenal||{club:blankClub(),players:[],fixtureData:{}};
+        const saved=new Map((existing.players||[]).map(p=>[norm(p.name),p]));
+        const roster=arsenalPlayers.map(seed=>{
+          const base=makePlayer(seed), old=saved.get(norm(seed[0]))||{};
+          return {...base,...old,name:base.name,position:base.position,number:base.number};
+        });
+        (existing.players||[]).forEach(p=>{if(p?.name&&!roster.some(x=>norm(x.name)===norm(p.name)))roster.push({...makePlayer([p.name,p.position||'Midfielder',p.number??null]),...p});});
+        db.Arsenal={...existing,club:{...blankClub(),...(existing.club||{})},players:roster,fixtureData:existing.fixtureData||{}};
+      }
+      ['teamSelect','inputTeam'].forEach(id=>{
+        const el=document.getElementById(id); if(!el)return;
+        const selected=el.value;
+        [...el.options].filter(o=>o.value==='Arsenal').forEach(o=>o.remove());
+        el.add(new Option('Arsenal','Arsenal'),0);
+        if(selected&&selected!=='Arsenal'&&[...el.options].some(o=>o.value===selected))el.value=selected;
+      });
+      const marker=document.getElementById('buildMarker');
+      if(marker)marker.textContent='BUILD V12 • ALL 20 PREMIER LEAGUE TEAMS • ARSENAL INCLUDED';
+      const hero=document.querySelector('.hero p');
+      if(hero)hero.textContent='Admin record workspace for all 20 Premier League clubs, including Arsenal. Every club uses the same 2026/27 club stats, player stats, fixtures, lineups, substitutions, match events, goalkeeper saves, cards and Man of the Match structure.';
+      if(typeof render==='function')render();
+    }catch(err){console.warn('[NL4 Record Room] Direct Arsenal registration failed:',err);}
+  };
+  registerArsenal();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',registerArsenal,{once:true});
+
   const loadScript = src => new Promise((resolve,reject)=>{
     if (document.querySelector(`script[data-nl4-rr-src="${src}"]`)) return resolve();
     const s=document.createElement('script');
@@ -26,12 +70,6 @@ if (NL4_IS_RECORD_ROOM) {
     s.onerror=()=>reject(new Error(`Could not load ${src}`));
     document.head.appendChild(s);
   });
-
-  const loadArsenal=()=>loadScript('record-room-arsenal-team-v7.js')
-    .catch(err=>console.warn('[NL4 Record Room] Arsenal team registration failed:',err));
-
-  if('requestIdleCallback' in window) requestIdleCallback(loadArsenal,{timeout:800});
-  else setTimeout(loadArsenal,80);
 
   let toolsPromise=null;
   window.NL4LoadRecordRoomMaintenance = function(){
