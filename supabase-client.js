@@ -65,6 +65,7 @@ if (/record-room\.html\/?$/i.test(location.pathname)) {
     .then(()=>loadScript('record-room-completed-import.js'))
     .then(()=>loadScript('record-room-participation-events-fix.js'))
     .then(()=>loadScript('record-room-canonical-events-v4.js'))
+    .then(()=>loadScript('record-room-assists-motm-v5.js'))
     .then(()=>loadScript('record-room-event-display-fix.js'))
     .then(()=>loadScript('record-room-verified-stats.js'))
     .then(()=>loadScript('record-room-season-sync-fix.js'))
