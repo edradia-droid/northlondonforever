@@ -1,94 +1,111 @@
-// NL4 Record Room — Arsenal full-team integration.
-// Adds Arsenal to the existing 19-team Record Room without altering forecast/model code.
+// NL4 Record Room — lightweight Arsenal full-team integration.
+// Adds Arsenal as the 20th Premier League Record Room club with exactly the same
+// club, player, fixture, lineup, substitution, event and match-stat structure.
 (function(){
 'use strict';
-if(window.__NL4_RR_ARSENAL_TEAM_V8__)return;
-window.__NL4_RR_ARSENAL_TEAM_V8__=true;
+if(window.__NL4_RR_ARSENAL_LIGHT_V11__) return;
+window.__NL4_RR_ARSENAL_LIGHT_V11__=true;
+
 const TEAM='Arsenal';
 const clone=v=>JSON.parse(JSON.stringify(v));
-const blankClub=()=>typeof defaultClub==='function'?defaultClub():({matches:0,avgPossession:0,totalShots:0,shotsOnTarget:0,corners:0,cornerGoals:0,fouls:0,offsides:0,yellowCards:0,redCards:0,points:0});
-const P=(name,position,number=null)=>({name,position,number,appearances:0,starts:0,minutes:0,goals:0,assists:0,cleanSheets:0,yellowCards:0,redCards:0,mom:0,shots:0,shotsOnTarget:0,chancesCreated:0,tackles:0,interceptions:0,saves:0});
+const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[’‘]/g,"'").replace(/\s+/g,' ').trim().toLowerCase();
+const blankClub=()=>({
+  matches:0,avgPossession:0,totalShots:0,shotsOnTarget:0,corners:0,cornerGoals:0,
+  fouls:0,offsides:0,yellowCards:0,redCards:0,points:0
+});
+const P=(name,position,number=null)=>({
+  name,position,number,
+  appearances:0,starts:0,minutes:0,goals:0,assists:0,cleanSheets:0,
+  yellowCards:0,redCards:0,mom:0,shots:0,shotsOnTarget:0,
+  chancesCreated:0,tackles:0,interceptions:0,saves:0
+});
+
 const BASE_ROSTER=[
  P('David Raya','Goalkeeper',1),P('Kepa Arrizabalaga','Goalkeeper',13),P('Illan Meslier','Goalkeeper',30),P('Tommy Setford','Goalkeeper',35),
- P('William Saliba','Defender',2),P('Cristhian Mosquera','Defender',3),P('Ben White','Defender',4),P('Piero Hincapié','Defender',5),P('Gabriel Magalhães','Defender',6),P('Jurriën Timber','Defender',12),P('Riccardo Calafiori','Defender',33),P('Myles Lewis-Skelly','Defender',49),
+ P('William Saliba','Defender',2),P('Cristhian Mosquera','Defender',3),P('Ben White','Defender',4),P('Piero Hincapié','Defender',5),P('Gabriel Magalhães','Defender',6),P('Jurriën Timber','Defender',12),P('Riccardo Calafiori','Defender',33),P('Myles Lewis-Skelly','Defender',49),P('Ezri Konsa','Defender',null),
  P('Martin Ødegaard','Midfielder',8),P('Eberechi Eze','Midfielder',10),P('Fabio Vieira','Midfielder',21),P('Ethan Nwaneri','Midfielder',22),P('Mikel Merino','Midfielder',23),P('Martín Zubimendi','Midfielder',36),P('Bruno Guimarães','Midfielder',39),P('Declan Rice','Midfielder',41),P('Max Dowman','Midfielder',null),
- P('Bukayo Saka','Forward',7),P('Gabriel Jesus','Forward',9),P('Christos Tzolis','Forward',null),P('Kai Havertz','Forward',null),P('Noni Madueke','Forward',null),P('Gabriel Martinelli','Forward',null),P('Viktor Gyökeres','Forward',null),
- P('Ezri Konsa','Defender',null)
+ P('Bukayo Saka','Forward',7),P('Gabriel Jesus','Forward',9),P('Christos Tzolis','Forward',null),P('Kai Havertz','Forward',null),P('Noni Madueke','Forward',null),P('Gabriel Martinelli','Forward',null),P('Viktor Gyökeres','Forward',null)
 ];
-const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[’‘]/g,"'").replace(/\s+/g,' ').trim().toLowerCase();
-function ensureRoster(){
- if(typeof TEAM_ROSTERS!=='undefined')TEAM_ROSTERS[TEAM]=BASE_ROSTER.map(clone);
- if(typeof TEAMS!=='undefined'){
-  while(TEAMS.includes(TEAM))TEAMS.splice(TEAMS.indexOf(TEAM),1);
-  TEAMS.unshift(TEAM);
- }
- if(typeof db==='undefined')return;
- const old=db[TEAM]||{club:blankClub(),players:[],fixtureData:{}};
- const oldBy=new Map((old.players||[]).map(p=>[norm(p.name),p]));
- old.players=BASE_ROSTER.map(p=>({...clone(p),...(oldBy.get(norm(p.name))||{}),name:p.name,position:p.position,number:p.number}));
- old.club=old.club||blankClub();old.fixtureData=old.fixtureData||{};db[TEAM]=old;
+
+function fullPlayer(p){
+  return {...P(p.name||'',p.position||'',p.number??null),...p};
 }
-function forceArsenalFirst(el){
- if(!el)return;
- const wasSelected=el.value;
- [...el.options].filter(o=>o.value===TEAM).forEach(o=>o.remove());
- el.add(new Option(TEAM,TEAM),0);
- if(wasSelected&&wasSelected!==TEAM&&[...el.options].some(o=>o.value===wasSelected))el.value=wasSelected;
+
+function ensureArsenal(){
+  if(typeof TEAMS!=='undefined'){
+    while(TEAMS.includes(TEAM)) TEAMS.splice(TEAMS.indexOf(TEAM),1);
+    TEAMS.unshift(TEAM);
+  }
+  if(typeof TEAM_ROSTERS!=='undefined') TEAM_ROSTERS[TEAM]=BASE_ROSTER.map(clone);
+  if(typeof db==='undefined') return false;
+
+  const old=db[TEAM]||{club:blankClub(),players:[],fixtureData:{}};
+  const oldBy=new Map((old.players||[]).map(p=>[norm(p.name),p]));
+  const players=BASE_ROSTER.map(seed=>fullPlayer({...seed,...(oldBy.get(norm(seed.name))||{}),name:seed.name,position:seed.position,number:seed.number}));
+
+  // Keep any Arsenal player already present in saved fixture data/admin records.
+  (old.players||[]).forEach(p=>{
+    if(p?.name && !players.some(x=>norm(x.name)===norm(p.name))) players.push(fullPlayer(p));
+  });
+
+  db[TEAM]={
+    ...old,
+    club:{...blankClub(),...(old.club||{})},
+    players,
+    fixtureData:(old.fixtureData&&typeof old.fixtureData==='object')?old.fixtureData:{}
+  };
+
+  // Reuse canonical fixture records already saved under the opponent, but do not
+  // run a whole-season recalculation here. Future saves use the native Record Room
+  // sync and will update Arsenal exactly like every other participating team.
+  if(typeof ALL_FIXTURES!=='undefined'){
+    ALL_FIXTURES.filter(f=>f.home===TEAM||f.away===TEAM).forEach(f=>{
+      if(db[TEAM].fixtureData[f.id]) return;
+      const opponent=f.home===TEAM?f.away:f.home;
+      const saved=db[opponent]?.fixtureData?.[f.id];
+      if(saved) db[TEAM].fixtureData[f.id]=clone(saved);
+    });
+  }
+
+  if(typeof TEAM_ROSTERS!=='undefined'){
+    TEAM_ROSTERS[TEAM]=db[TEAM].players.map(p=>({name:p.name,position:p.position,number:p.number??null}));
+  }
+  return true;
 }
-function ensureOptions(){
- forceArsenalFirst(document.getElementById('teamSelect'));
- forceArsenalFirst(document.getElementById('inputTeam'));
+
+function putArsenalFirst(select){
+  if(!select) return;
+  const selected=select.value;
+  [...select.options].filter(o=>o.value===TEAM).forEach(o=>o.remove());
+  select.add(new Option(TEAM,TEAM),0);
+  if(selected&&selected!==TEAM&&[...select.options].some(o=>o.value===selected)) select.value=selected;
 }
-function fixtureScore(s){return !s?-1:((s.homeScore!==null&&s.homeScore!==undefined&&s.awayScore!==null&&s.awayScore!==undefined)?1000:0)+(s.homeLineup?.filter(Boolean).length||0)*10+(s.awayLineup?.filter(Boolean).length||0)*10+(s.homeSubs?.length||0)*3+(s.awaySubs?.length||0)*3+(s.events?.length||0)*4+Object.keys(s.stats||{}).length;}
-function mirrorArsenalFixtures(){
- if(typeof ALL_FIXTURES==='undefined'||typeof db==='undefined')return;
- ALL_FIXTURES.filter(f=>f.home===TEAM||f.away===TEAM).forEach(f=>{
-  const opponent=f.home===TEAM?f.away:f.home;
-  const candidates=[];
-  const a=db[TEAM]?.fixtureData?.[f.id];if(a)candidates.push(a);
-  const o=db[opponent]?.fixtureData?.[f.id];if(o)candidates.push(o);
-  if(!candidates.length)return;
-  const best=candidates.sort((x,y)=>fixtureScore(y)-fixtureScore(x))[0];
-  db[TEAM].fixtureData[f.id]=clone(best);
- });
+
+function exposeArsenalPlayers(){
+  const original=typeof window.teamPlayers==='function'?window.teamPlayers:null;
+  window.teamPlayers=function(team){
+    if(team===TEAM) return (typeof db!=='undefined'&&db[TEAM]?.players)||[];
+    return original?original(team):((typeof db!=='undefined'&&db[team]?.players)||[]);
+  };
 }
-function addFixturePlayers(){
- if(typeof ALL_FIXTURES==='undefined'||typeof db==='undefined'||!db[TEAM])return;
- const known=new Map(db[TEAM].players.map(p=>[norm(p.name),p]));
- const add=(name,guess='')=>{name=String(name||'').trim();if(!name||/^Own Goal \(/i.test(name)||known.has(norm(name)))return;let position=guess||'';if(!position){if(/raya|kepa|meslier|setford/i.test(name))position='Goalkeeper';else position='Midfielder';}const p=P(name,position,null);db[TEAM].players.push(p);known.set(norm(name),p)};
- ALL_FIXTURES.filter(f=>f.home===TEAM||f.away===TEAM).forEach(f=>{
-  const s=db[TEAM]?.fixtureData?.[f.id];if(!s)return;
-  const side=f.home===TEAM?'home':'away';
-  (s[side+'Lineup']||[]).forEach(n=>add(n));
-  (s[side+'Subs']||[]).forEach(x=>{add(x.out);add(x.in)});
-  (s.events||[]).forEach(e=>{const parts=String(e.player||'').split('|||');if(parts[0]===TEAM)add(parts.slice(1).join('|||'));const ap=String(e.assist||'').split('|||');if(ap[0]===TEAM)add(ap.slice(1).join('|||'))});
-  const m=String(s.manOfTheMatch||'').split('|||');if(m[0]===TEAM)add(m.slice(1).join('|||'));
- });
-}
-function exposePlayers(){
- try{window.teamPlayers=function(team){return (typeof db!=='undefined'&&db[team]?.players)||[];};}catch(_){ }
-}
-function recalc(){
- if(typeof window.NL4RecordRoomRecalculateAll==='function')window.NL4RecordRoomRecalculateAll();
- else{
-  if(typeof recalculatePlayerStatsFromFixtures==='function')recalculatePlayerStatsFromFixtures(TEAM);
-  if(typeof recalculateClubStatsFromFixtures==='function')recalculateClubStatsFromFixtures(TEAM);
-  if(typeof persist==='function')persist();if(typeof render==='function')render();
- }
-}
+
 function apply(){
- ensureRoster();ensureOptions();exposePlayers();mirrorArsenalFixtures();addFixturePlayers();
- if(typeof TEAM_ROSTERS!=='undefined')TEAM_ROSTERS[TEAM]=db[TEAM].players.map(p=>({name:p.name,position:p.position,number:p.number??null}));
- recalc();
- ensureOptions();
- const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V10 • ALL 20 PREMIER LEAGUE TEAMS • ARSENAL FIRST';
- const hero=document.querySelector('.hero p');if(hero)hero.textContent='Admin record workspace for all 20 Premier League clubs, including Arsenal. Every club uses the same 2026/27 club, player, fixture, lineup, event and season-stat structure while remaining isolated from NL4 forecast calculations.';
+  if(!ensureArsenal()) return false;
+  putArsenalFirst(document.getElementById('teamSelect'));
+  putArsenalFirst(document.getElementById('inputTeam'));
+  exposeArsenalPlayers();
+
+  const marker=document.getElementById('buildMarker');
+  if(marker) marker.textContent='BUILD V11 • ALL 20 PREMIER LEAGUE TEAMS • ARSENAL INCLUDED';
+  const hero=document.querySelector('.hero p');
+  if(hero) hero.textContent='Admin record workspace for all 20 Premier League clubs, including Arsenal. Arsenal now uses the same 2026/27 club stats, player stats, fixtures, lineups, substitutions, match events, saves, cards and Man of the Match structure as every other club.';
+
+  // One normal render is enough to expose Arsenal. No polling and no MutationObserver.
+  if(typeof render==='function') render();
+  return true;
 }
+
 window.NL4RecordRoomAddArsenal=apply;
-function keepFirst(){ensureOptions();}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(apply,80));else setTimeout(apply,80);
-setTimeout(keepFirst,250);setTimeout(keepFirst,700);setTimeout(keepFirst,1500);
-const observer=new MutationObserver(()=>keepFirst());
-const startObserver=()=>{const t=document.getElementById('teamSelect'),i=document.getElementById('inputTeam');if(t)observer.observe(t,{childList:true});if(i)observer.observe(i,{childList:true});};
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startObserver);else startObserver();
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(apply,0),{once:true});
+else setTimeout(apply,0);
 })();
