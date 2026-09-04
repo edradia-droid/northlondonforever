@@ -129,11 +129,7 @@
   }
   boot().catch(err=>console.warn('[NL4 Record Room] Bridge fallback:',err));
 
-  // Load the visible completed-match update panel after the existing bridge is active.
-  if(!document.querySelector('script[data-rr-completed-import]')){
-    const s=document.createElement('script');
-    s.src='record-room-completed-import.js';
-    s.dataset.rrCompletedImport='1';
-    document.head.appendChild(s);
-  }
+  // Heavy completed-match import and audit scripts are intentionally NOT loaded
+  // here. supabase-client.js exposes them through the Record Room "Load data tools"
+  // button so normal page opening stays responsive.
 })();
