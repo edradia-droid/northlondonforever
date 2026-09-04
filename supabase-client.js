@@ -15,9 +15,8 @@ window.nl4Supabase = window.supabase.createClient(
 const NL4_IS_RECORD_ROOM = !!document.getElementById('recordRoomPage') || /(?:^|\/)record-room(?:\.html)?\/?$/i.test(location.pathname);
 
 if (NL4_IS_RECORD_ROOM) {
-  // Performance safety: Record Room opens with its native local engine only.
-  // No extension, importer, bridge, observer, polling loop, Arsenal season recalc,
-  // or full-database mirror is allowed to start automatically.
+  // Record Room stays lightweight. Only the one-time Arsenal registration is loaded
+  // automatically; import/audit/Supabase season tools remain manual.
   const loadScript = src => new Promise((resolve,reject)=>{
     if (document.querySelector(`script[data-nl4-rr-src="${src}"]`)) return resolve();
     const s=document.createElement('script');
@@ -28,13 +27,18 @@ if (NL4_IS_RECORD_ROOM) {
     document.head.appendChild(s);
   });
 
+  const loadArsenal=()=>loadScript('record-room-arsenal-team-v7.js')
+    .catch(err=>console.warn('[NL4 Record Room] Arsenal team registration failed:',err));
+
+  if('requestIdleCallback' in window) requestIdleCallback(loadArsenal,{timeout:800});
+  else setTimeout(loadArsenal,80);
+
   let toolsPromise=null;
   window.NL4LoadRecordRoomMaintenance = function(){
     if (toolsPromise) return toolsPromise;
     toolsPromise=Promise.resolve()
       .then(()=>loadScript('record-room-supabase.js'))
       .then(()=>loadScript('record-room-supabase-bridge.js'))
-      .then(()=>loadScript('record-room-arsenal-team-v7.js'))
       .then(()=>loadScript('record-room-completed-import.js'))
       .then(()=>loadScript('record-room-participation-events-fix.js'))
       .then(()=>loadScript('record-room-verified-stats.js'))
@@ -55,7 +59,7 @@ if (NL4_IS_RECORD_ROOM) {
     b.id='rrLoadMaintenance';
     b.type='button';
     b.textContent='Load full data tools';
-    b.title='Loads heavy Record Room import, audit, Arsenal and season-sync tools only when you request them.';
+    b.title='Loads heavy Record Room import, audit and season-sync tools only when you request them.';
     b.addEventListener('click',async()=>{
       if(b.dataset.loaded==='1') return;
       b.disabled=true;
