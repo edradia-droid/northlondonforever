@@ -62,6 +62,7 @@ if (/record-room\.html\/?$/i.test(location.pathname)) {
   const loadScript=src=>new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=()=>reject(new Error(`Could not load ${src}`));document.head.appendChild(s)});
   loadScript('record-room-supabase.js')
     .then(()=>loadScript('record-room-supabase-bridge.js'))
+    .then(()=>loadScript('record-room-arsenal-team-v7.js'))
     .then(()=>loadScript('record-room-completed-import.js'))
     .then(()=>loadScript('record-room-participation-events-fix.js'))
     .then(()=>loadScript('record-room-verified-stats.js'))
