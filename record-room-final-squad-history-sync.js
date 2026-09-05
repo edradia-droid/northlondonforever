@@ -106,7 +106,7 @@ function syncAll(){
   TEAMS.forEach(team=>{try{if(typeof recalculatePlayerStatsFromFixtures==='function')recalculatePlayerStatsFromFixtures(team);if(typeof recalculateClubStatsFromFixtures==='function')recalculateClubStatsFromFixtures(team)}catch(e){console.warn('[NL4] squad-history recalc',team,e)}});
   try{if(typeof persist==='function')persist()}catch(_){ }
   window.__NL4_FINAL_SQUAD_SYNC_READY__=true;
-  const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V29 • CURRENT SQUADS ONLY + PRESERVED MATCH HISTORY';
+  const marker=document.getElementById('buildMarker');if(marker&&!/BUILD V3[2-9]|BUILD V[4-9][0-9]/.test(marker.textContent||''))marker.textContent='BUILD V33 • CURRENT SQUADS + PRESERVED MATCH HISTORY';
   const note=document.querySelector('.admin-note');if(note)note.dataset.finalSquads='2026-09-03';
   try{if(typeof render==='function')render()}catch(e){console.warn('[NL4] final squad render',e)}
   return true;
