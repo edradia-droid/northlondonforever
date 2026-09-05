@@ -60,23 +60,32 @@ jobs:
                   if len(ft&ct)>=2:return True
                   best=max(best,SequenceMatcher(None,full,cn).ratio())
               return best>=0.72
+          def unique_shared_token(name,current):
+              nt=set(tokens(name));hits=[]
+              for c in current:
+                  shared=nt & set(tokens(c))
+                  if len(shared)==1:
+                      token=next(iter(shared))
+                      if len(token)>=5:hits.append((token,c))
+              if not hits:return None
+              for token,c in hits:
+                  owners=sum(1 for x in current if token in set(tokens(x)))
+                  if owners==1:return token
+              return None
           def relaxed_current_match(name,current,loan_list):
               if strong_match(name,loan_list):return False
               if strong_match(name,current):return True
-              nt=set(tokens(name))
-              if not nt:return False
-              for c in current:
-                  ct=set(tokens(c))
-                  if len(nt&ct)==1:
-                      shared=next(iter(nt&ct))
-                      if len(shared)>=5:return True
-              return False
+              return unique_shared_token(name,current) is not None
           def registered_match(player,team):
               full=((player.get('first_name') or '')+' '+(player.get('second_name') or '')).strip();web=player.get('web_name') or ''
-              # If the player's full identity is explicitly listed as a loan, do not
-              # allow a shorter web-name/surname fallback to re-add him as current.
               if strong_match(full,loans[team]):return False
               return relaxed_current_match(full,registered[team],loans[team]) or (web and relaxed_current_match(web,registered[team],loans[team]))
+          def same_current_identity(a,b,current):
+              if strong_match(a,[b]):return True
+              at=set(tokens(a));bt=set(tokens(b));shared=at&bt
+              if len(shared)!=1:return False
+              token=next(iter(shared))
+              return len(token)>=5 and sum(1 for x in current if token in set(tokens(x)))==1
           squads={name:[] for name in teams.values()};excluded=[]
           for e in data['elements']:
               team=teams.get(e.get('team'))
@@ -92,7 +101,7 @@ jobs:
               for p in players:
                   name=(p.get('name') or '').strip()
                   if not name or not relaxed_current_match(name,registered[team],loans[team]):continue
-                  if any(strong_match(name,[q['name']]) for q in squads[team]):continue
+                  if any(same_current_identity(name,q['name'],registered[team]) for q in squads[team]):continue
                   squads[team].append({'name':name,'webName':name,'position':p.get('position') or 'Midfielder','number':p.get('number'),'fplId':None})
                   added_non_fpl.append((team,name))
           ui_order=['Arsenal','Aston Villa','AFC Bournemouth','Brentford','Brighton & Hove Albion','Chelsea','Coventry City','Crystal Palace','Everton','Fulham','Hull City','Ipswich Town','Leeds United','Liverpool','Manchester City','Manchester United','Newcastle United','Nottingham Forest','Tottenham Hotspur','Sunderland']
@@ -105,6 +114,11 @@ jobs:
           def has(substr):return any(norm(substr) in x for x in anames)
           if not has('Noni Madueke'):raise SystemExit('Arsenal current squad lost Noni Madueke during formal-name matching')
           if has('Ethan Nwaneri'):raise SystemExit('Loaned Ethan Nwaneri incorrectly restored as current')
+          if has('Gabriel Jesus'):raise SystemExit('Unregistered Gabriel Jesus incorrectly restored as current')
+          # No exact normalized duplicate current names per club.
+          for team,players in payload.items():
+              ns=[norm(p['name']) for p in players]
+              if len(ns)!=len(set(ns)):raise SystemExit('Duplicate current squad name in '+team)
           meta={'season':'2026/27','generatedAt':'2026-09-05','registrationPublished':'2026-09-03','transferWindowClosed':'2026-09-01T23:00:00+01:00','source':'PremierLeague.com submitted squad lists + official Fantasy Premier League positions + registered Record Room non-FPL players','counts':{k:len(v) for k,v in payload.items()}}
           js='// NL4 2026/27 post-window Premier League current squads.\n// Official submitted registration filtered current pool; historical players are stored separately.\nwindow.NL4_FINAL_PL_SQUADS='+json.dumps(payload,ensure_ascii=False,separators=(',',':'))+';\nwindow.NL4_FINAL_PL_SQUADS_META='+json.dumps(meta,ensure_ascii=False,separators=(',',':'))+';\n'
           Path('premier-league-final-squads-2026-27.js').write_text(js,encoding='utf-8')
