@@ -1,13 +1,13 @@
 (() => {
 'use strict';
-if (window.__NL4_RR_PLAYER_MATCH_STATS_V2__) return;
-window.__NL4_RR_PLAYER_MATCH_STATS_V2__ = true;
+if (window.__NL4_RR_PLAYER_MATCH_STATS_V3__) return;
+window.__NL4_RR_PLAYER_MATCH_STATS_V3__ = true;
 
 const FIELDS=[['shots','SHOTS'],['shotsOnTarget','SOT'],['chancesCreated','CHANCES'],['tackles','TACKLES'],['interceptions','INTERCEPTIONS']];
 const num=v=>Math.max(0,Number(v)||0);
 const compound=(team,name)=>`${team}|||${name}`;
 const nameKey=v=>String(v||'').trim().toLowerCase();
-const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[m]));
 
 function currentFixture(){
  const box=document.getElementById('fixtureDetail');
@@ -29,6 +29,10 @@ function recordFor(f){
  const selected=document.getElementById('teamSelect')?.value;
  return db?.[selected]?.fixtureData?.[f.id]||db?.[f.home]?.fixtureData?.[f.id]||db?.[f.away]?.fixtureData?.[f.id]||null;
 }
+function isCompleted(f){
+ const rec=recordFor(f);
+ return !!rec && rec.homeScore!==null && rec.homeScore!==undefined && rec.homeScore!=='' && rec.awayScore!==null && rec.awayScore!==undefined && rec.awayScore!=='';
+}
 function draftFromPanel(){
  const out={};
  document.querySelectorAll('#rrPlayerMatchStatsRows [data-player-team][data-player-name]').forEach(row=>{
@@ -41,19 +45,24 @@ function draftFromPanel(){
 function inject(){
  const box=document.getElementById('fixtureDetail'),f=currentFixture();
  if(!box||!f||!box.classList.contains('open'))return;
+ const existing=document.getElementById('rrPlayerMatchStatsBox');
+ if(!isCompleted(f)){
+   if(existing)existing.remove();
+   return;
+ }
  const previous=draftFromPanel(),stored=recordFor(f)?.playerMatchStats||{},merged={...stored,...previous};
  const people=[...selectedNames('home').map(name=>({team:f.home,name})),...selectedNames('away').map(name=>({team:f.away,name}))];
- let panel=document.getElementById('rrPlayerMatchStatsBox');
+ let panel=existing;
  if(!panel){
    panel=document.createElement('div');panel.id='rrPlayerMatchStatsBox';panel.className='detail-box';panel.style.marginTop='14px';
    const grids=box.querySelectorAll('.detail-grid-2');
    const anchor=grids.length?grids[grids.length-1]:null;
    if(anchor)anchor.insertAdjacentElement('afterend',panel);else box.appendChild(panel);
  }
- panel.innerHTML=`<h4 style="color:#d8ad45">Player Match Stats</h4><p class="admin-note">Only players selected in the starting XI or substitutions appear here. Enter each player's match totals; season totals are recalculated automatically.</p><div class="table-wrap"><table class="stats-table" style="min-width:760px"><thead><tr><th>PLAYER</th><th>TEAM</th>${FIELDS.map(([,label])=>`<th>${label}</th>`).join('')}</tr></thead><tbody id="rrPlayerMatchStatsRows">${people.map(p=>{const r=merged[compound(p.team,p.name)]||{};return `<tr data-player-team="${esc(p.team)}" data-player-name="${esc(p.name)}"><td>${esc(p.name)}</td><td>${esc(p.team)}</td>${FIELDS.map(([field])=>`<td><input data-player-stat="${field}" type="number" min="0" step="1" value="${num(r[field])}" style="width:72px;padding:7px"></td>`).join('')}</tr>`}).join('')}</tbody></table></div>${people.length?'':'<div class="fixture-empty">Choose the starting lineups or substitutions above and the players will appear here.</div>'}`;
+ panel.innerHTML=`<h4 style="color:#d8ad45">Player Match Stats</h4><p class="admin-note">Completed-match individual totals only. Enter each player's match figures; season totals are recalculated automatically.</p><div class="table-wrap"><table class="stats-table" style="min-width:760px"><thead><tr><th>PLAYER</th><th>TEAM</th>${FIELDS.map(([,label])=>`<th>${label}</th>`).join('')}</tr></thead><tbody id="rrPlayerMatchStatsRows">${people.map(p=>{const r=merged[compound(p.team,p.name)]||{};return `<tr data-player-team="${esc(p.team)}" data-player-name="${esc(p.name)}"><td>${esc(p.name)}</td><td>${esc(p.team)}</td>${FIELDS.map(([field])=>`<td><input data-player-stat="${field}" type="number" min="0" step="1" value="${num(r[field])}" style="width:72px;padding:7px"></td>`).join('')}</tr>`}).join('')}</tbody></table></div>${people.length?'':'<div class="fixture-empty">Choose the starting lineups or substitutions above and the players will appear here.</div>'}`;
 }
 function captureToFixture(){
- const f=currentFixture();if(!f||typeof db==='undefined')return;
+ const f=currentFixture();if(!f||!isCompleted(f)||typeof db==='undefined')return;
  const stats=draftFromPanel();
  [f.home,f.away].forEach(team=>{const rec=db?.[team]?.fixtureData?.[f.id];if(rec)rec.playerMatchStats=JSON.parse(JSON.stringify(stats));});
 }
@@ -72,7 +81,7 @@ function aggregateTeam(team){
  });
 }
 function persistAdvanced(f,pending){
- if(!f||typeof db==='undefined')return;
+ if(!f||!isCompleted(f)||typeof db==='undefined')return;
  [f.home,f.away].forEach(team=>{const rec=db?.[team]?.fixtureData?.[f.id];if(rec)rec.playerMatchStats=JSON.parse(JSON.stringify(pending));});
  [f.home,f.away].forEach(aggregateTeam);
  try{if(typeof persist==='function')persist()}catch(e){console.warn('[NL4] Player match stats persist failed',e)}
@@ -80,7 +89,6 @@ function persistAdvanced(f,pending){
  if(f.home==='Arsenal'||f.away==='Arsenal')setTimeout(()=>window.NL4RecordRoomArsenalPublicSync?.queue?.(80),100);
 }
 
-// Save interception does not depend on replacing the native global function.
 document.addEventListener('click',e=>{
  const b=e.target.closest('button');if(!b)return;
  if(!(b.classList.contains('detail-save')||/SAVE MATCH DETAILS/i.test(b.textContent||'')))return;
@@ -89,11 +97,9 @@ document.addEventListener('click',e=>{
 },true);
 
 document.addEventListener('change',e=>{
- if(e.target.matches('[data-lineup],.sub-out,.sub-in'))setTimeout(inject,0);
+ if(e.target.matches('[data-lineup],.sub-out,.sub-in,.score-grid input'))setTimeout(inject,0);
 });
 
-// DOM watcher is the authoritative visibility hook. Native Record Room can replace
-// fixtureDetail.innerHTML whenever a fixture opens/saves; this restores the panel.
 const startObserver=()=>{
  const box=document.getElementById('fixtureDetail');if(!box)return;
  const observer=new MutationObserver(()=>{
@@ -104,5 +110,5 @@ const startObserver=()=>{
 };
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startObserver,{once:true});else startObserver();
 
-window.NL4RecordRoomPlayerMatchStats={inject,aggregateTeam,captureToFixture};
+window.NL4RecordRoomPlayerMatchStats={inject,aggregateTeam,captureToFixture,isCompleted};
 })();
