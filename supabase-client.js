@@ -108,7 +108,7 @@ if (NL4_IS_RECORD_ROOM) {
   const loadScript=src=>new Promise((resolve,reject)=>{if(document.querySelector(`script[data-nl4-rr-src="${src}"]`))return resolve();const s=document.createElement('script');s.src=src;s.dataset.nl4RrSrc=src;s.onload=resolve;s.onerror=()=>reject(new Error(`Could not load ${src}`));document.head.appendChild(s);});
 
   Promise.resolve()
-    .then(()=>loadScript('premier-league-final-squads-2026-27.js?v=20260905-final5'))
+    .then(()=>loadScript('premier-league-final-squads-2026-27.js?v=20260905-final6'))
     .then(()=>loadScript('record-room-final-squad-history-sync.js?v=20260905-v1'))
     .then(()=>loadScript('record-room-match-meta.js?v=20260905-v5'))
     .then(()=>loadScript('record-room-player-match-stats.js?v=20260905-v5'))
@@ -134,8 +134,8 @@ if (NL4_IS_RECORD_ROOM) {
 
 if(document.getElementById('arsenalPremierLeagueStats') || document.getElementById('arsenalPlayerStats')){
   const data=document.createElement('script');
-  data.src='premier-league-final-squads-2026-27.js?v=20260905-final5';
-  data.onload=()=>{const s=document.createElement('script');s.src='premier-league-record-room-sync.js?v=20260905-v5';document.head.appendChild(s);};
-  data.onerror=()=>{const s=document.createElement('script');s.src='premier-league-record-room-sync.js?v=20260905-v5';document.head.appendChild(s);};
+  data.src='premier-league-final-squads-2026-27.js?v=20260905-final6';
+  data.onload=()=>{const s=document.createElement('script');s.src='premier-league-record-room-sync.js?v=20260905-v6';document.head.appendChild(s);};
+  data.onerror=()=>{const s=document.createElement('script');s.src='premier-league-record-room-sync.js?v=20260905-v6';document.head.appendChild(s);};
   document.head.appendChild(data);
 }
