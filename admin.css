@@ -8,3 +8,21 @@
 .profile-publish-check{display:flex!important;grid-template-columns:auto 1fr;align-items:center;gap:8px;margin:0!important}
 .profile-publish-check input{width:auto}
 @media(max-width:680px){.current-profile-toolbar>*{width:100%}.current-profile-actions{align-items:stretch;flex-direction:column}.profile-admin-card{padding:15px}}
+
+/* 2026-09-05 mobile parity pass */
+@media(max-width:720px){
+  html,body{max-width:100%;overflow-x:hidden}
+  .topbar{align-items:flex-start;gap:10px}.top-actions{flex-wrap:wrap;justify-content:flex-end}.top-actions>*{min-height:40px}
+  .mark{width:44px;height:44px;border-radius:11px}.brand strong{font-size:.94rem}
+  .side-nav{top:65px;-webkit-overflow-scrolling:touch;scrollbar-width:none}.side-nav::-webkit-scrollbar{display:none}
+  .workspace{padding:14px 10px 28px}.panel-heading{align-items:stretch;flex-direction:column;margin-bottom:16px}.panel-heading .primary-btn,.panel-heading .ghost-btn{width:100%;min-height:44px}
+  .content-card{border-radius:15px}.card-actions{display:grid;grid-template-columns:1fr 1fr}.card-actions button{min-height:42px}
+  dialog{width:calc(100% - 12px);max-height:96vh;border-radius:16px}.dialog-head{gap:10px}.dialog-head h2{font-size:1.55rem}.dialog-actions{position:sticky;bottom:0;background:#111;padding-bottom:4px;display:grid;grid-template-columns:1fr 1fr}.dialog-actions button{min-height:44px}
+  #editorForm{padding:16px 12px}input,textarea,select{font-size:16px}
+  .current-profile-toolbar{align-items:stretch}.current-profile-toolbar label{min-width:0}.profile-admin-card{overflow:hidden}
+  table{max-width:100%}.table-wrap,[class*="table-wrap"],[class*="table-container"]{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+}
+@media(max-width:480px){
+  .topbar{flex-direction:column}.top-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}.top-actions>*{width:100%}
+  .content-grid{gap:10px}.card-actions{grid-template-columns:1fr}.dialog-actions{grid-template-columns:1fr}
+}
