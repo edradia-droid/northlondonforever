@@ -18,7 +18,7 @@ if (NL4_IS_RECORD_ROOM) {
   const ARSENAL='Arsenal';
   const arsenalSeeds=[
     ['David Raya','Goalkeeper',1],['Kepa Arrizabalaga','Goalkeeper',13],['Illan Meslier','Goalkeeper',30],['Tommy Setford','Goalkeeper',35],
-    ['William Saliba','Defender',2],['Cristhian Mosquera','Defender',3],['Ben White','Defender',4],['Piero Hincapié','Defender',5],['Gabriel Magalhães','Defender',6],['Jurriën Timber','Defender',12],['Riccardo Calafiori','Defender',33],['Myles Lewis-Skelly','Defender',49],['Ezri Konsa','Defender',null],
+    ['William Saliba','Defender',2],['Cristhian Mosquera','Defender',3],['Ben White','Defender',4],['Piero Hincapié','Defender',5],['Gabriel Magalhães','Defender',6],['Jurriën Timber','Defender',12],['Riccardo Calafiori','Defender',33],['Myles Lewis-Skelly', 'Defender',49],['Ezri Konsa','Defender',null],
     ['Martin Ødegaard','Midfielder',8],['Eberechi Eze','Midfielder',10],['Fabio Vieira','Midfielder',21],['Ethan Nwaneri','Midfielder',22],['Mikel Merino','Midfielder',23],['Martín Zubimendi','Midfielder',36],['Bruno Guimarães','Midfielder',39],['Declan Rice','Midfielder',41],['Max Dowman','Midfielder',null],
     ['Bukayo Saka','Forward',7],['Gabriel Jesus','Forward',9],['Christos Tzolis','Forward',null],['Kai Havertz','Forward',null],['Noni Madueke','Forward',null],['Gabriel Martinelli','Forward',null],['Viktor Gyökeres','Forward',null]
   ];
@@ -48,8 +48,8 @@ if (NL4_IS_RECORD_ROOM) {
       const teamSelect=document.getElementById('teamSelect'),inputTeam=document.getElementById('inputTeam');if(teamSelect)teamSelect.value=ARSENAL;if(inputTeam)inputTeam.value=ARSENAL;
       if(typeof recalculatePlayerStatsFromFixtures==='function')recalculatePlayerStatsFromFixtures(ARSENAL);
       if(typeof recalculateClubStatsFromFixtures==='function')recalculateClubStatsFromFixtures(ARSENAL);
-      const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V23 • FULL GOALKEEPER SAVE AUDIT';
-      const hero=document.querySelector('.hero p');if(hero)hero.textContent='Admin record workspace for all 20 Premier League clubs, including Arsenal. Goalkeeper saves are audited across every completed fixture, with identity aliases, historical roster healing and season totals rebuilt automatically.';
+      const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V24 • NATIVE-OVERRIDE GK SAVES';
+      const hero=document.querySelector('.hero p');if(hero)hero.textContent='Admin record workspace for all 20 Premier League clubs, including Arsenal. Goalkeeper season saves are rebuilt from every completed fixture after native player recalculation and forced into the rendered player table.';
       const manualTitle=document.querySelector('.admin h3');if(manualTitle&&/Other 19 Teams/i.test(manualTitle.textContent||''))manualTitle.textContent='All 20 Teams Stat Input';
       if(typeof render==='function')render();
     }catch(err){console.warn('[NL4 Record Room] Arsenal registration failed:',err);}
@@ -62,8 +62,8 @@ if (NL4_IS_RECORD_ROOM) {
     .then(()=>loadScript('record-room-match-meta.js?v=20260905-v3'))
     .then(()=>loadScript('record-room-player-match-stats.js?v=20260905-v5'))
     .then(()=>loadScript('record-room-matchday-2026-09-04.js?v=20260905-v1'))
-    .then(()=>loadScript('record-room-goalkeeper-saves-v10.js?v=20260905-v1'))
-    .then(()=>{window.NL4RecordRoomGoalkeeperSaves?.install?.();})
+    .then(()=>loadScript('record-room-goalkeeper-saves-v10.js?v=20260905-v2'))
+    .then(()=>{window.NL4RecordRoomGoalkeeperSaves?.install?.();window.NL4RecordRoomGoalkeeperSaves?.recalcAll?.();})
     .then(()=>loadScript('record-room-arsenal-public-sync.js?v=20260905-v4'))
     .catch(err=>console.warn('[NL4 Record Room] Lightweight startup module failed:',err));
 
