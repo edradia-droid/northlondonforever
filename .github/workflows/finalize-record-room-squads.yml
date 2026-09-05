@@ -17,7 +17,10 @@ jobs:
           from pathlib import Path
           p=Path('supabase-client.js')
           s=p.read_text(encoding='utf-8')
-          s=s.replace('20260905-final3','20260905-final4').replace('premier-league-record-room-sync.js?v=20260905-v3','premier-league-record-room-sync.js?v=20260905-v4')
+          for old in ('20260905-final3','20260905-final4'):
+              s=s.replace(old,'20260905-final5')
+          for old in ('premier-league-record-room-sync.js?v=20260905-v3','premier-league-record-room-sync.js?v=20260905-v4'):
+              s=s.replace(old,'premier-league-record-room-sync.js?v=20260905-v5')
           p.write_text(s,encoding='utf-8')
           PY
       - name: Verify JavaScript syntax
@@ -33,10 +36,11 @@ jobs:
           grep -q 'NL4_FINAL_PL_SQUADS' premier-league-record-room-sync.js
           grep -q 'current:true' record-room-final-squad-history-sync.js
           grep -q 'historical:true' record-room-final-squad-history-sync.js
+          grep -q '20260905-final5' supabase-client.js
       - name: Commit final integration
         run: |
           git config user.name 'NL4 Automation'
           git config user.email 'actions@users.noreply.github.com'
           git add supabase-client.js
-          git commit -m 'Finalize current squads and historical Record Room players' || exit 0
+          git commit -m 'Load verified final post-window squads on all devices' || exit 0
           git push
