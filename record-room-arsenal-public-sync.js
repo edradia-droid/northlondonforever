@@ -13,11 +13,11 @@ async function push(){
  const current=arsenalData();if(!current)return {skipped:true,reason:'no-arsenal-data'};
  const copied=ensureCanonicalArsenalFixtures();
  try{if(typeof recalculatePlayerStatsFromFixtures==='function')recalculatePlayerStatsFromFixtures(ARSENAL)}catch(e){console.warn('[NL4] Arsenal player recalc failed',e)}
+ try{if(window.NL4RecordRoomPlayerMatchStats?.aggregateTeam)window.NL4RecordRoomPlayerMatchStats.aggregateTeam(ARSENAL)}catch(e){console.warn('[NL4] Arsenal advanced player stat recalc failed',e)}
  try{if(typeof recalculateClubStatsFromFixtures==='function')recalculateClubStatsFromFixtures(ARSENAL)}catch(e){console.warn('[NL4] Arsenal club recalc failed',e)}
  const completed=completedCount(),stamp=new Date().toISOString(),c=current.club||{};
  const team={season:SEASON,matches:n(c.matches),avg_possession:n(c.avgPossession),total_shots:n(c.totalShots),shots_on_target:n(c.shotsOnTarget),corners:n(c.corners),corner_goals:n(c.cornerGoals),fouls:n(c.fouls),offsides:n(c.offsides),yellow_cards:n(c.yellowCards),red_cards:n(c.redCards),points:n(c.points),updated_at:stamp};
  if(team.matches!==completed)console.warn('[NL4] Arsenal aggregate mismatch',{clubMatches:team.matches,completedFixtures:completed,copied});
- // Team and player writes are deliberately independent. A player-table policy/error must never leave the public team card half stale.
  const teamWrite=await client.from('record_room_arsenal_team_stats').upsert(team,{onConflict:'season'}).select().maybeSingle();
  if(teamWrite.error)console.error('[NL4] Arsenal TEAM sync failed:',teamWrite.error);else console.info('[NL4] Arsenal TEAM sync saved',teamWrite.data||team);
  const players=(current.players||[]).filter(p=>p?.name).map(p=>playerPayload(p,stamp));
@@ -34,4 +34,23 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
 window.addEventListener('nl4:record-room-saved',()=>queue(80));
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>queue(800),{once:true});else queue(800);
 window.NL4RecordRoomArsenalPublicSync={push,queue,ensureCanonicalArsenalFixtures,completedCount};
+
+// This file is a proven Record Room execution path (it already performs the live
+// Arsenal Supabase sync). Bootstrap the advanced per-player match-stat UI from here
+// as well so the feature cannot silently depend on another loader path.
+(function bootstrapPlayerMatchStats(){
+  if(window.NL4RecordRoomPlayerMatchStats)return;
+  const existing=[...document.scripts].find(s=>String(s.src||'').includes('record-room-player-match-stats.js'));
+  if(existing){
+    existing.addEventListener('load',()=>setTimeout(()=>window.NL4RecordRoomPlayerMatchStats?.inject?.(),0),{once:true});
+    return;
+  }
+  const s=document.createElement('script');
+  s.src='record-room-player-match-stats.js?v=20260905-v4';
+  s.async=false;
+  s.dataset.nl4PlayerMatchStats='1';
+  s.onload=()=>{console.info('[NL4] Player match stats feature loaded');setTimeout(()=>window.NL4RecordRoomPlayerMatchStats?.inject?.(),0);};
+  s.onerror=()=>{console.error('[NL4] Player match stats script failed to load');const box=document.getElementById('fixtureDetail');if(box&&box.classList.contains('open')&&!document.getElementById('rrPlayerMatchStatsLoadError')){const d=document.createElement('div');d.id='rrPlayerMatchStatsLoadError';d.className='detail-box';d.style.marginTop='14px';d.innerHTML='<h4>Player match stats</h4><p class="admin-note" style="color:#ff7185">PLAYER MATCH STATS MODULE FAILED TO LOAD. Refresh this page once.</p>';box.appendChild(d);}};
+  document.head.appendChild(s);
+})();
 })();
