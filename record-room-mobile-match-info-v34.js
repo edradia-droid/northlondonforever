@@ -31,14 +31,14 @@ function waitForRecordRoom(max=40){
 async function syncCompletedResults(){
   const ready=await waitForRecordRoom();
   const client=window.nl4Supabase;
-  if(!ready||!client) return;
+  if(!ready||!client) return false;
   const q=await client.from('premier_league_matches')
     .select('matchday,home_team,away_team,status,home_score,away_score,kickoff_at')
     .eq('season','2026/27')
     .eq('status','fulltime')
     .not('home_score','is',null)
     .not('away_score','is',null);
-  if(q.error){console.warn('[NL4 Record Room] Shared result sync failed:',q.error);return;}
+  if(q.error){console.warn('[NL4 Record Room] Shared result sync failed:',q.error);return false;}
   let changed=0;
   (q.data||[]).forEach(row=>{
     const f=ALL_FIXTURES.find(x=>x.home===row.home_team&&x.away===row.away_team&&Number(x.mw)===Number(row.matchday));
@@ -60,6 +60,11 @@ async function syncCompletedResults(){
   try{if(typeof persist==='function')persist();}catch(_){ }
   try{if(typeof render==='function')render();}catch(_){ }
   console.log(`[NL4 Record Room] Shared completed results synced: ${q.data?.length||0} matches, ${changed} fixture records updated.`);
+  return true;
+}
+
+function authoritativeSyncBurst(){
+  [0,250,700,1500,3000,6000].forEach(ms=>setTimeout(()=>syncCompletedResults(),ms));
 }
 
 function startSharedSync(){
@@ -67,7 +72,7 @@ function startSharedSync(){
   window.__NL4_RR_SHARED_SYNC_LOADING__=true;
   loadOnce('record-room-supabase.js?v=20260906-shared1')
     .then(()=>loadOnce('record-room-supabase-bridge.js?v=20260906-shared1'))
-    .then(()=>syncCompletedResults())
+    .then(()=>authoritativeSyncBurst())
     .catch(err=>{window.__NL4_RR_SHARED_SYNC_LOADING__=false;console.warn('[NL4 Record Room] Shared Supabase sync failed to load:',err);});
 }
 
@@ -103,16 +108,19 @@ document.addEventListener('touchend',e=>{
 
 const start=()=>{
   startSharedSync();
+  authoritativeSyncBurst();
   const box=document.getElementById('fixtureDetail');
   if(box){
     new MutationObserver(schedule).observe(box,{childList:true,subtree:true,attributes:true,attributeFilter:['class','data-fixture-id']});
   }
-  window.addEventListener('pageshow',()=>{schedule();syncCompletedResults();});
-  window.addEventListener('focus',syncCompletedResults);
+  window.addEventListener('pageshow',()=>{schedule();authoritativeSyncBurst();});
+  window.addEventListener('focus',authoritativeSyncBurst);
   window.addEventListener('orientationchange',schedule);
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden){schedule();syncCompletedResults();}});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){schedule();authoritativeSyncBurst();}});
   schedule();
 };
+
+window.NL4RecordRoomSharedResultSync={syncCompletedResults,authoritativeSyncBurst};
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
