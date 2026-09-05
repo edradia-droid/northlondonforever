@@ -51,16 +51,17 @@ jobs:
               s=unicodedata.normalize('NFKD',s or '').encode('ascii','ignore').decode().lower()
               return re.sub(r'[^a-z0-9]+',' ',s).strip()
           def tokens(s):return [t for t in norm(s).split() if len(t)>1]
-          def registered_match(player,cands):
-              full=norm((player.get('first_name','')+' '+player.get('second_name','')).strip());web=norm(player.get('web_name',''));ft=set(tokens(full));wt=set(tokens(web));best=0
+          def name_match(name,cands):
+              full=norm(name);ft=set(tokens(full));best=0
               for c in cands:
                   cn=norm(c);ct=set(tokens(c))
-                  if full==cn or (web and web==cn):return True
-                  # Require at least two shared identity tokens; this prevents a loaned player
-                  # matching a different registered player who happens to share one surname.
-                  if len((ft|wt)&ct)>=2:return True
-                  score=SequenceMatcher(None,full,cn).ratio();best=max(best,score)
+                  if full==cn:return True
+                  if len(ft&ct)>=2:return True
+                  best=max(best,SequenceMatcher(None,full,cn).ratio())
               return best>=0.72
+          def registered_match(player,cands):
+              full=((player.get('first_name') or '')+' '+(player.get('second_name') or '')).strip();web=player.get('web_name') or ''
+              return name_match(full,cands) or (len(tokens(web))>=2 and name_match(web,cands))
           squads={name:[] for name in teams.values()};excluded=[]
           for e in data['elements']:
               team=teams.get(e.get('team'))
@@ -68,21 +69,39 @@ jobs:
               if not registered_match(e,registered[team]):excluded.append((team,e.get('web_name')));continue
               first=(e.get('first_name') or '').strip();second=(e.get('second_name') or '').strip();name=(' '.join(x for x in (first,second) if x)).strip() or (e.get('web_name') or '').strip()
               squads[team].append({'name':name,'webName':(e.get('web_name') or name).strip(),'position':pos.get(e.get('element_type'),'Midfielder'),'number':e.get('squad_number'),'fplId':e.get('id')})
+
+          # Preserve practical players already known to Record Room when they are on
+          # the official submitted senior/U21 registration but absent from Fantasy.
+          rr=Path('record-room.html').read_text(encoding='utf-8')
+          m=re.search(r'const TEAM_ROSTERS = (\{.*?\});\s*const PLAYER_DIRECTORY',rr,re.S)
+          existing=json.loads(m.group(1)) if m else {}
+          added_non_fpl=[]
+          for team,players in existing.items():
+              if team not in squads or team not in registered:continue
+              for p in players:
+                  name=(p.get('name') or '').strip()
+                  if not name or not name_match(name,registered[team]):continue
+                  if any(name_match(name,[q['name']]) for q in squads[team]):continue
+                  squads[team].append({'name':name,'webName':name,'position':p.get('position') or 'Midfielder','number':p.get('number'),'fplId':None})
+                  added_non_fpl.append((team,name))
+
           ui_order=['Arsenal','Aston Villa','AFC Bournemouth','Brentford','Brighton & Hove Albion','Chelsea','Coventry City','Crystal Palace','Everton','Fulham','Hull City','Ipswich Town','Leeds United','Liverpool','Manchester City','Manchester United','Newcastle United','Nottingham Forest','Tottenham Hotspur','Sunderland']
           missing=[t for t in ui_order if t not in squads]
-          if missing:raise SystemExit('Missing FPL teams: '+', '.join(missing))
+          if missing:raise SystemExit('Missing teams: '+', '.join(missing))
           for team in squads:squads[team].sort(key=lambda p:({'Goalkeeper':0,'Defender':1,'Midfielder':2,'Forward':3}.get(p['position'],9),p['name'].lower()))
           payload={t:squads[t] for t in ui_order}
-          if any(len(v)<15 for v in payload.values()):raise SystemExit('Registration matching produced an implausibly small squad: '+str({k:len(v) for k,v in payload.items()}))
-          meta={'season':'2026/27','generatedAt':'2026-09-05','registrationPublished':'2026-09-03','transferWindowClosed':'2026-09-01T23:00:00+01:00','source':'Official Fantasy Premier League player pool filtered by PremierLeague.com submitted squad lists','counts':{k:len(v) for k,v in payload.items()}}
-          js='// NL4 2026/27 post-window Premier League current squads.\n// Current FPL first-team pool filtered against official submitted Premier League registrations.\nwindow.NL4_FINAL_PL_SQUADS='+json.dumps(payload,ensure_ascii=False,separators=(',',':'))+';\nwindow.NL4_FINAL_PL_SQUADS_META='+json.dumps(meta,ensure_ascii=False,separators=(',',':'))+';\n'
+          if any(len(v)<15 for v in payload.values()):raise SystemExit('Implausibly small squad: '+str({k:len(v) for k,v in payload.items()}))
+          meta={'season':'2026/27','generatedAt':'2026-09-05','registrationPublished':'2026-09-03','transferWindowClosed':'2026-09-01T23:00:00+01:00','source':'PremierLeague.com submitted squad lists + official Fantasy Premier League positions + registered Record Room non-FPL players','counts':{k:len(v) for k,v in payload.items()}}
+          js='// NL4 2026/27 post-window Premier League current squads.\n// Official submitted registration filtered current pool; historical players are stored separately.\nwindow.NL4_FINAL_PL_SQUADS='+json.dumps(payload,ensure_ascii=False,separators=(',',':'))+';\nwindow.NL4_FINAL_PL_SQUADS_META='+json.dumps(meta,ensure_ascii=False,separators=(',',':'))+';\n'
           Path('premier-league-final-squads-2026-27.js').write_text(js,encoding='utf-8')
-          print('Generated',sum(len(v) for v in payload.values()),'current players across 20 clubs');print(json.dumps(meta['counts'],indent=2));print('Excluded stale/unregistered FPL entries:',len(excluded))
+          print('Generated',sum(len(v) for v in payload.values()),'current players across 20 clubs');print(json.dumps(meta['counts'],indent=2));print('Excluded stale/unregistered FPL entries:',len(excluded));print('Registered non-FPL players retained:',len(added_non_fpl));print(added_non_fpl)
           PY
+      - name: Verify generated JS
+        run: node --check premier-league-final-squads-2026-27.js
       - name: Commit squad data
         run: |
           git config user.name 'NL4 Automation'
           git config user.email 'actions@users.noreply.github.com'
           git add premier-league-final-squads-2026-27.js
-          git commit -m 'Update all 20 post-window Premier League squads' || exit 0
+          git commit -m 'Finalize all 20 post-window Premier League squads' || exit 0
           git push
