@@ -16,11 +16,58 @@ function loadOnce(src){
   });
 }
 
+function waitForRecordRoom(max=40){
+  return new Promise(resolve=>{
+    let tries=0;
+    const tick=()=>{
+      if(typeof ALL_FIXTURES!=='undefined'&&typeof db!=='undefined') return resolve(true);
+      if(++tries>=max) return resolve(false);
+      setTimeout(tick,100);
+    };
+    tick();
+  });
+}
+
+async function syncCompletedResults(){
+  const ready=await waitForRecordRoom();
+  const client=window.nl4Supabase;
+  if(!ready||!client) return;
+  const q=await client.from('premier_league_matches')
+    .select('matchday,home_team,away_team,status,home_score,away_score,kickoff_at')
+    .eq('season','2026/27')
+    .eq('status','fulltime')
+    .not('home_score','is',null)
+    .not('away_score','is',null);
+  if(q.error){console.warn('[NL4 Record Room] Shared result sync failed:',q.error);return;}
+  let changed=0;
+  (q.data||[]).forEach(row=>{
+    const f=ALL_FIXTURES.find(x=>x.home===row.home_team&&x.away===row.away_team&&Number(x.mw)===Number(row.matchday));
+    if(!f) return;
+    const hs=Number(row.home_score),as=Number(row.away_score);
+    if(!Number.isFinite(hs)||!Number.isFinite(as)) return;
+    f.homeScore=hs;f.awayScore=as;
+    [f.home,f.away].forEach(team=>{
+      if(!db?.[team]) return;
+      let rec=db[team].fixtureData?.[f.id];
+      if(!rec&&typeof fixtureStore==='function') rec=fixtureStore(team,f.id);
+      if(!rec){db[team].fixtureData=db[team].fixtureData||{};rec=db[team].fixtureData[f.id]={homeScore:null,awayScore:null};}
+      if(rec.homeScore!==hs||rec.awayScore!==as) changed++;
+      rec.homeScore=hs;rec.awayScore=as;
+    });
+  });
+  const teams=typeof TEAMS!=='undefined'?TEAMS:[];
+  teams.forEach(team=>{try{if(typeof recalculateClubStatsFromFixtures==='function')recalculateClubStatsFromFixtures(team);}catch(_){}});
+  try{if(typeof persist==='function')persist();}catch(_){ }
+  try{if(typeof render==='function')render();}catch(_){ }
+  console.log(`[NL4 Record Room] Shared completed results synced: ${q.data?.length||0} matches, ${changed} fixture records updated.`);
+}
+
 function startSharedSync(){
   if(window.__NL4_RR_SHARED_SYNC_LOADING__) return;
   window.__NL4_RR_SHARED_SYNC_LOADING__=true;
   loadOnce('record-room-supabase.js?v=20260906-shared1')
     .then(()=>loadOnce('record-room-supabase-bridge.js?v=20260906-shared1'))
+    .then(()=>syncCompletedResults())
     .catch(err=>{window.__NL4_RR_SHARED_SYNC_LOADING__=false;console.warn('[NL4 Record Room] Shared Supabase sync failed to load:',err);});
 }
 
@@ -60,9 +107,10 @@ const start=()=>{
   if(box){
     new MutationObserver(schedule).observe(box,{childList:true,subtree:true,attributes:true,attributeFilter:['class','data-fixture-id']});
   }
-  window.addEventListener('pageshow',schedule);
+  window.addEventListener('pageshow',()=>{schedule();syncCompletedResults();});
+  window.addEventListener('focus',syncCompletedResults);
   window.addEventListener('orientationchange',schedule);
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule();});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){schedule();syncCompletedResults();}});
   schedule();
 };
 
