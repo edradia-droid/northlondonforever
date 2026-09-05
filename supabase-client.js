@@ -71,10 +71,8 @@ if (NL4_IS_RECORD_ROOM) {
       const inputTeam=document.getElementById('inputTeam');
       ensureArsenalOption(teamSelect);ensureArsenalOption(inputTeam);
       if(forceSelection){if(teamSelect)teamSelect.value=ARSENAL;if(inputTeam)inputTeam.value=ARSENAL;}
-      // Once the final post-window squad synchronizer has installed the 20 current
-      // squads, never let the old Arsenal bootstrap seed overwrite those final lists.
       if(window.__NL4_FINAL_SQUAD_SYNC_READY__){
-        const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V28 • FINAL SQUADS + HISTORICAL MATCH PLAYERS';
+        const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V29 • CURRENT SQUADS ONLY + PRESERVED MATCH HISTORY';
         return true;
       }
       if(typeof TEAM_ROSTERS!=='undefined') TEAM_ROSTERS[ARSENAL]=arsenalDirectory();
@@ -109,7 +107,7 @@ if (NL4_IS_RECORD_ROOM) {
 
   Promise.resolve()
     .then(()=>loadScript('premier-league-final-squads-2026-27.js?v=20260905-final6'))
-    .then(()=>loadScript('record-room-final-squad-history-sync.js?v=20260905-v1'))
+    .then(()=>loadScript('record-room-final-squad-history-sync.js?v=20260905-v2'))
     .then(()=>loadScript('record-room-match-meta.js?v=20260905-v5'))
     .then(()=>loadScript('record-room-player-match-stats.js?v=20260905-v5'))
     .then(()=>loadScript('record-room-matchday-2026-09-04.js?v=20260905-v1'))
