@@ -18,7 +18,7 @@ if (NL4_IS_RECORD_ROOM) {
   const ARSENAL='Arsenal';
   const arsenalSeeds=[
     ['David Raya','Goalkeeper',1],['Kepa Arrizabalaga','Goalkeeper',13],['Illan Meslier','Goalkeeper',30],['Tommy Setford','Goalkeeper',35],
-    ['William Saliba','Defender',2],['Cristhian Mosquera','Defender',3],['Ben White','Defender',4],['Piero Hincapié','Defender',5],['Gabriel Magalhães','Defender',6],['Jurriën Timber','Defender',12],['Riccardo Calafiori','Defender',33],['Myles Lewis-Skelly','Defender',49],['Ezri Konsa','Defender',null],
+    ['William Saliba','Defender',2],['Cristhian Mosquera','Defender',3],['Ben White','Defender',4],['Piero Hincapié','Defender',5],['Gabriel Magalhães','Defender',6],['Jurriën Timber','Defender',12],['Riccardo Calafiori','Defender',33],['Myles Lewis-Skelly', 'Defender',49],['Ezri Konsa','Defender',null],
     ['Martin Ødegaard','Midfielder',8],['Eberechi Eze','Midfielder',10],['Fabio Vieira','Midfielder',21],['Ethan Nwaneri','Midfielder',22],['Mikel Merino','Midfielder',23],['Martín Zubimendi','Midfielder',36],['Bruno Guimarães','Midfielder',39],['Declan Rice','Midfielder',41],['Max Dowman','Midfielder',null],
     ['Bukayo Saka','Forward',7],['Gabriel Jesus','Forward',9],['Christos Tzolis','Forward',null],['Kai Havertz','Forward',null],['Noni Madueke','Forward',null],['Gabriel Martinelli','Forward',null],['Viktor Gyökeres','Forward',null]
   ];
@@ -48,8 +48,8 @@ if (NL4_IS_RECORD_ROOM) {
       const teamSelect=document.getElementById('teamSelect'),inputTeam=document.getElementById('inputTeam');if(teamSelect)teamSelect.value=ARSENAL;if(inputTeam)inputTeam.value=ARSENAL;
       if(typeof recalculatePlayerStatsFromFixtures==='function')recalculatePlayerStatsFromFixtures(ARSENAL);
       if(typeof recalculateClubStatsFromFixtures==='function')recalculateClubStatsFromFixtures(ARSENAL);
-      const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V19 • MW3 IPSWICH 0-2 LIVERPOOL';
-      const hero=document.querySelector('.hero p');if(hero)hero.textContent='Admin record workspace for all 20 Premier League clubs, including Arsenal. Existing completed-match information is restored into editable inputs, completed-match player stats are recorded per fixture, and verified matchday updates recalculate the affected season totals.';
+      const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V20 • GOALKEEPER SAVES FIX';
+      const hero=document.querySelector('.hero p');if(hero)hero.textContent='Admin record workspace for all 20 Premier League clubs, including Arsenal. Completed-match data, goalkeeper saves, player totals and verified matchday updates recalculate through the Record Room.';
       const manualTitle=document.querySelector('.admin h3');if(manualTitle&&/Other 19 Teams/i.test(manualTitle.textContent||''))manualTitle.textContent='All 20 Teams Stat Input';
       if(typeof render==='function')render();
     }catch(err){console.warn('[NL4 Record Room] Arsenal registration failed:',err);}
@@ -57,14 +57,14 @@ if (NL4_IS_RECORD_ROOM) {
   registerArsenal();
 
   const loadScript=src=>new Promise((resolve,reject)=>{if(document.querySelector(`script[data-nl4-rr-src="${src}"]`))return resolve();const s=document.createElement('script');s.src=src;s.dataset.nl4RrSrc=src;s.onload=resolve;s.onerror=()=>reject(new Error(`Could not load ${src}`));document.head.appendChild(s);});
-  // Lightweight match metadata, completed-match player inputs, verified matchday update and public-stat bridge are automatic.
   loadScript('record-room-match-meta.js?v=20260905-v3').catch(err=>console.warn('[NL4 Record Room] Match information failed:',err));
   loadScript('record-room-player-match-stats.js?v=20260905-v5').catch(err=>console.warn('[NL4 Record Room] Player match stats failed:',err));
   loadScript('record-room-matchday-2026-09-04.js?v=20260905-v1').catch(err=>console.warn('[NL4 Record Room] Latest matchday update failed:',err));
+  loadScript('record-room-goalkeeper-saves-v7.js?v=20260905-v1').catch(err=>console.warn('[NL4 Record Room] Goalkeeper saves engine failed:',err));
   loadScript('record-room-arsenal-public-sync.js?v=20260905-v4').catch(err=>console.warn('[NL4 Record Room] Public stats bridge failed:',err));
 
   let toolsPromise=null;
-  window.NL4LoadRecordRoomMaintenance=function(){if(toolsPromise)return toolsPromise;toolsPromise=Promise.resolve().then(()=>loadScript('record-room-supabase.js')).then(()=>loadScript('record-room-supabase-bridge.js')).then(()=>loadScript('record-room-completed-import.js')).then(()=>loadScript('record-room-participation-events-fix.js')).then(()=>loadScript('record-room-verified-stats.js')).then(()=>loadScript('record-room-canonical-events-v4.js')).then(()=>loadScript('record-room-assists-motm-v5.js')).then(()=>loadScript('record-room-player-calculation-v6.js')).then(()=>loadScript('record-room-event-display-fix.js')).then(()=>loadScript('record-room-season-sync-fix.js')).then(()=>loadScript('record-room-matchday-groups.js')).catch(err=>{toolsPromise=null;throw err;});return toolsPromise;};
+  window.NL4LoadRecordRoomMaintenance=function(){if(toolsPromise)return toolsPromise;toolsPromise=Promise.resolve().then(()=>loadScript('record-room-supabase.js')).then(()=>loadScript('record-room-supabase-bridge.js')).then(()=>loadScript('record-room-completed-import.js')).then(()=>loadScript('record-room-participation-events-fix.js')).then(()=>loadScript('record-room-verified-stats.js')).then(()=>loadScript('record-room-canonical-events-v4.js')).then(()=>loadScript('record-room-assists-motm-v5.js')).then(()=>loadScript('record-room-player-calculation-v6.js')).then(()=>loadScript('record-room-goalkeeper-saves-v7.js?v=20260905-v1')).then(()=>loadScript('record-room-event-display-fix.js')).then(()=>loadScript('record-room-season-sync-fix.js')).then(()=>loadScript('record-room-matchday-groups.js')).catch(err=>{toolsPromise=null;throw err;});return toolsPromise;};
   const addButton=()=>{const actions=document.querySelector('.admin-record-actions');if(!actions||document.getElementById('rrLoadMaintenance'))return;const b=document.createElement('button');b.id='rrLoadMaintenance';b.type='button';b.textContent='Load full data tools';b.title='Loads heavy Record Room import, audit and season-sync tools only when you request them.';b.addEventListener('click',async()=>{if(b.dataset.loaded==='1')return;b.disabled=true;b.textContent='Loading data tools…';try{await window.NL4LoadRecordRoomMaintenance();b.dataset.loaded='1';b.textContent='Data tools loaded';}catch(error){console.warn('[NL4 Record Room] Manual data-tool load failed:',error);b.disabled=false;b.textContent='Retry data tools';}});actions.insertBefore(b,document.getElementById('recordRoomLogout')||null);};
   addButton();
 }
