@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>NL4 Admin • Record Room</title>
 <style>
 :root{--bg:#070707;--panel:#111;--panel2:#171717;--line:rgba(255,255,255,.09);--text:#f6f6f6;--muted:#8b8b8b;--gold:#d8ad45;--red:#d6001c;--green:#49d17d}
@@ -65,7 +68,7 @@ select,input{width:100%;background:#0f0f0f;border:1px solid var(--line);color:#f
   <div class="admin-record-actions">
     <a href="admin.html">Admin Home</a>
     <a href="admin-model.html">Model Admin</a>
-    <a class="active" href="record-room.html">Record Room</a>
+    <a class="active" href="record-room.html?v=20260905-v32">Record Room</a>
     <button id="rrUpdateMatches" type="button" title="Load the full Record Room data tools and refresh saved match records">UPDATE MATCHES / LOAD DATA</button>
     <button id="recordRoomLogout" type="button">Sign out</button>
   </div>
@@ -78,7 +81,7 @@ select,input{width:100%;background:#0f0f0f;border:1px solid var(--line);color:#f
     <h1>RECORD <span>ROOM.</span></h1>
     <p>Admin record workspace for all 20 Premier League clubs, including Arsenal, with full squad, fixtures, lineups, substitutions, events, match stats and season calculations.</p>
   </div>
-  <div><div class="badge">ADMIN RECORDS • MODEL-SAFE ISOLATION</div><div id="buildMarker" style="margin-top:8px;color:#49d17d;font-size:9px;font-weight:900;text-align:right">BUILD V31 • ALL 20 CURRENT SQUADS • HISTORY PRESERVED</div></div>
+  <div><div class="badge">ADMIN RECORDS • MODEL-SAFE ISOLATION</div><div id="buildMarker" style="margin-top:8px;color:#49d17d;font-size:9px;font-weight:900;text-align:right">BUILD V32 • MOBILE + PC CURRENT SQUADS • HISTORY PRESERVED</div></div>
 </section>
 
 <div class="toolbar">
@@ -916,9 +919,9 @@ render();
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
-<script src="supabase-client.js?v=20260905-v30"></script>
-<script src="premier-league-final-squads-2026-27.js?v=20260905-final7"></script>
-<script src="nl4-current-squad-enforcer.js?v=20260905-v31a"></script>
+<script src="supabase-client.js?v=20260905-v32"></script>
+<script src="premier-league-final-squads-2026-27.js?v=20260905-final8"></script>
+<script src="nl4-current-squad-enforcer.js?v=20260905-v32"></script>
 
 <script>
 (async function recordRoomAdminGuard(){
