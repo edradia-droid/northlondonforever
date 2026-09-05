@@ -48,8 +48,8 @@ if (NL4_IS_RECORD_ROOM) {
       const teamSelect=document.getElementById('teamSelect'),inputTeam=document.getElementById('inputTeam');if(teamSelect)teamSelect.value=ARSENAL;if(inputTeam)inputTeam.value=ARSENAL;
       if(typeof recalculatePlayerStatsFromFixtures==='function')recalculatePlayerStatsFromFixtures(ARSENAL);
       if(typeof recalculateClubStatsFromFixtures==='function')recalculateClubStatsFromFixtures(ARSENAL);
-      const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V16 • MATCH INFO + COMPLETED PLAYER STATS';
-      const hero=document.querySelector('.hero p');if(hero)hero.textContent='Admin record workspace for all 20 Premier League clubs, including Arsenal. Match information, completed-match player stats and Arsenal season totals synchronize through the Record Room.';
+      const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V17 • RESTORED COMPLETED MATCH INFO';
+      const hero=document.querySelector('.hero p');if(hero)hero.textContent='Admin record workspace for all 20 Premier League clubs, including Arsenal. Existing completed-match information is restored into editable inputs, completed-match player stats are recorded per fixture, and Arsenal season totals synchronize through the Record Room.';
       const manualTitle=document.querySelector('.admin h3');if(manualTitle&&/Other 19 Teams/i.test(manualTitle.textContent||''))manualTitle.textContent='All 20 Teams Stat Input';
       if(typeof render==='function')render();
     }catch(err){console.warn('[NL4 Record Room] Arsenal registration failed:',err);}
@@ -58,7 +58,7 @@ if (NL4_IS_RECORD_ROOM) {
 
   const loadScript=src=>new Promise((resolve,reject)=>{if(document.querySelector(`script[data-nl4-rr-src="${src}"]`))return resolve();const s=document.createElement('script');s.src=src;s.dataset.nl4RrSrc=src;s.onload=resolve;s.onerror=()=>reject(new Error(`Could not load ${src}`));document.head.appendChild(s);});
   // Lightweight match metadata, completed-match player inputs and public-stat bridge are automatic.
-  loadScript('record-room-match-meta.js?v=20260905-v1').catch(err=>console.warn('[NL4 Record Room] Match information failed:',err));
+  loadScript('record-room-match-meta.js?v=20260905-v2').catch(err=>console.warn('[NL4 Record Room] Match information failed:',err));
   loadScript('record-room-player-match-stats.js?v=20260905-v5').catch(err=>console.warn('[NL4 Record Room] Player match stats failed:',err));
   loadScript('record-room-arsenal-public-sync.js?v=20260905-v4').catch(err=>console.warn('[NL4 Record Room] Public stats bridge failed:',err));
 
