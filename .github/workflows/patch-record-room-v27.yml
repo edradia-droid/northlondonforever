@@ -1,0 +1,54 @@
+name: Patch Record Room V27
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/patch-record-room-v27.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make Arsenal native in Record Room
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('record-room.html')
+          s = p.read_text(encoding='utf-8')
+
+          arsenal = '[{"name":"David Raya","position":"Goalkeeper","number":1},{"name":"Kepa Arrizabalaga","position":"Goalkeeper","number":13},{"name":"Illan Meslier","position":"Goalkeeper","number":30},{"name":"Tommy Setford","position":"Goalkeeper","number":35},{"name":"William Saliba","position":"Defender","number":2},{"name":"Cristhian Mosquera","position":"Defender","number":3},{"name":"Ben White","position":"Defender","number":4},{"name":"Piero Hincapié","position":"Defender","number":5},{"name":"Gabriel Magalhães","position":"Defender","number":6},{"name":"Jurriën Timber","position":"Defender","number":12},{"name":"Riccardo Calafiori","position":"Defender","number":33},{"name":"Myles Lewis-Skelly","position":"Defender","number":49},{"name":"Ezri Konsa","position":"Defender","number":null},{"name":"Martin Ødegaard","position":"Midfielder","number":8},{"name":"Eberechi Eze","position":"Midfielder","number":10},{"name":"Fabio Vieira","position":"Midfielder","number":21},{"name":"Ethan Nwaneri","position":"Midfielder","number":22},{"name":"Mikel Merino","position":"Midfielder","number":23},{"name":"Martín Zubimendi","position":"Midfielder","number":36},{"name":"Bruno Guimarães","position":"Midfielder","number":39},{"name":"Declan Rice","position":"Midfielder","number":41},{"name":"Max Dowman","position":"Midfielder","number":null},{"name":"Bukayo Saka","position":"Forward","number":7},{"name":"Gabriel Jesus","position":"Forward","number":9},{"name":"Christos Tzolis","position":"Forward","number":null},{"name":"Kai Havertz","position":"Forward","number":null},{"name":"Noni Madueke","position":"Forward","number":null},{"name":"Gabriel Martinelli","position":"Forward","number":null},{"name":"Viktor Gyökeres","position":"Forward","number":null}]'
+
+          old_teams = 'const TEAMS = ["Aston Villa", "AFC Bournemouth", "Brentford", "Brighton & Hove Albion", "Chelsea", "Coventry City", "Crystal Palace", "Everton", "Fulham", "Hull City", "Ipswich Town", "Leeds United", "Liverpool", "Manchester City", "Manchester United", "Newcastle United", "Nottingham Forest", "Tottenham Hotspur", "Sunderland"];'
+          new_teams = 'const TEAMS = ["Arsenal", "Aston Villa", "AFC Bournemouth", "Brentford", "Brighton & Hove Albion", "Chelsea", "Coventry City", "Crystal Palace", "Everton", "Fulham", "Hull City", "Ipswich Town", "Leeds United", "Liverpool", "Manchester City", "Manchester United", "Newcastle United", "Nottingham Forest", "Tottenham Hotspur", "Sunderland"];'
+          if old_teams in s:
+              s = s.replace(old_teams, new_teams, 1)
+
+          if 'const TEAM_ROSTERS = {"Arsenal":' not in s:
+              s = s.replace('const TEAM_ROSTERS = {', 'const TEAM_ROSTERS = {"Arsenal":'+arsenal+',', 1)
+
+          s = s.replace('function teamPlayers(team){\n  if(team==="Arsenal") return [];\n  return (db[team]?.players||[]);\n}', 'function teamPlayers(team){\n  return (db[team]?.players||[]);\n}', 1)
+          s = s.replace('Admin record workspace for the other 19 Premier League clubs. It preserves the Arsenal-style 2026/27 club, player and fixture stat structure while remaining isolated from NL4 forecast calculations.', 'Admin record workspace for all 20 Premier League clubs, including Arsenal, with full squad, fixtures, lineups, substitutions, events, match stats and season calculations.')
+          s = s.replace('BUILD V9 • PLAYER TABLE DIRECT ROSTER', 'BUILD V27 • NATIVE 20-TEAM RECORD ROOM')
+          s = s.replace('<h3>Other 19 Teams Stat Input</h3>', '<h3>All 20 Teams Stat Input</h3>')
+          s = s.replace('Select a current 2026/27 Premier League player from the preloaded club roster', 'Select a current 2026/27 Premier League player from any of the 20 preloaded club rosters')
+          s = s.replace('<script src="supabase-client.js"></script>', '<script src="supabase-client.js?v=20260905-v27"></script>')
+
+          p.write_text(s, encoding='utf-8')
+      - name: Verify V27 patch
+        run: |
+          grep -q 'BUILD V27 • NATIVE 20-TEAM RECORD ROOM' record-room.html
+          grep -q 'const TEAMS = \["Arsenal"' record-room.html
+          grep -q 'const TEAM_ROSTERS = {"Arsenal"' record-room.html
+          ! grep -q 'if(team==="Arsenal") return \[\];' record-room.html
+      - name: Commit Record Room V27
+        run: |
+          git config user.name "NL4 Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add record-room.html
+          git commit -m "Make Arsenal native in Record Room V27" || exit 0
+          git push
