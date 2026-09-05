@@ -42,7 +42,7 @@ jobs:
                   if not active:continue
                   if x.startswith('What is a') or x.startswith('What constitutes'):break
                   if '(Loan)' in x:
-                      loan_names.append(x.replace('(Loan)','').rstrip('*').strip());continue
+                      loan_names.append(x.replace('(Loan)','').strip().rstrip('*').strip());continue
                   if len(x)>2 and not x.startswith(('See:','Each ','For more','Home Grown')):names.append(x.rstrip('*').strip())
               registered[club]=names;loans[club]=loan_names
           team_name_map={'Bournemouth':'AFC Bournemouth',"Nott'm Forest":'Nottingham Forest','Man City':'Manchester City','Man Utd':'Manchester United','Spurs':'Tottenham Hotspur','Brighton':'Brighton & Hove Albion','Newcastle':'Newcastle United','Leeds':'Leeds United'}
@@ -61,7 +61,6 @@ jobs:
                   best=max(best,SequenceMatcher(None,full,cn).ratio())
               return best>=0.72
           def relaxed_current_match(name,current,loan_list):
-              # Explicit official loan identities always win over fuzzy/current matches.
               if strong_match(name,loan_list):return False
               if strong_match(name,current):return True
               nt=set(tokens(name))
@@ -74,6 +73,9 @@ jobs:
               return False
           def registered_match(player,team):
               full=((player.get('first_name') or '')+' '+(player.get('second_name') or '')).strip();web=player.get('web_name') or ''
+              # If the player's full identity is explicitly listed as a loan, do not
+              # allow a shorter web-name/surname fallback to re-add him as current.
+              if strong_match(full,loans[team]):return False
               return relaxed_current_match(full,registered[team],loans[team]) or (web and relaxed_current_match(web,registered[team],loans[team]))
           squads={name:[] for name in teams.values()};excluded=[]
           for e in data['elements']:
@@ -82,7 +84,6 @@ jobs:
               if not registered_match(e,team):excluded.append((team,e.get('web_name')));continue
               first=(e.get('first_name') or '').strip();second=(e.get('second_name') or '').strip();name=(' '.join(x for x in (first,second) if x)).strip() or (e.get('web_name') or '').strip()
               squads[team].append({'name':name,'webName':(e.get('web_name') or name).strip(),'position':pos.get(e.get('element_type'),'Midfielder'),'number':e.get('squad_number'),'fplId':e.get('id')})
-
           rr=Path('record-room.html').read_text(encoding='utf-8')
           m=re.search(r'const TEAM_ROSTERS = (\{.*?\});\s*const PLAYER_DIRECTORY',rr,re.S)
           existing=json.loads(m.group(1)) if m else {};added_non_fpl=[]
@@ -94,7 +95,6 @@ jobs:
                   if any(strong_match(name,[q['name']]) for q in squads[team]):continue
                   squads[team].append({'name':name,'webName':name,'position':p.get('position') or 'Midfielder','number':p.get('number'),'fplId':None})
                   added_non_fpl.append((team,name))
-
           ui_order=['Arsenal','Aston Villa','AFC Bournemouth','Brentford','Brighton & Hove Albion','Chelsea','Coventry City','Crystal Palace','Everton','Fulham','Hull City','Ipswich Town','Leeds United','Liverpool','Manchester City','Manchester United','Newcastle United','Nottingham Forest','Tottenham Hotspur','Sunderland']
           missing=[t for t in ui_order if t not in squads]
           if missing:raise SystemExit('Missing teams: '+', '.join(missing))
