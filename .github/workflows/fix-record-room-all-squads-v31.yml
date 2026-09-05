@@ -10,42 +10,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Fix global lexical bindings and force all 20 current squads
+      - name: Finish all-team Record Room binding fix
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p=Path('nl4-current-squad-enforcer.js')
           s=p.read_text()
-          old="""function enforceRecordRoom(){\n  if(!window.db||!Array.isArray(window.TEAMS))return false;\n  for(const team of window.TEAMS){\n    const feed=FINAL[team];if(!Array.isArray(feed)||!feed.length||!window.db[team])continue;\n    const existing=Array.isArray(window.db[team].players)?window.db[team].players:[];"""
-          new="""function enforceRecordRoom(){\n  const rrDb=(typeof db!=='undefined'&&db)||window.db;\n  const rrTeams=(typeof TEAMS!=='undefined'&&TEAMS)||window.TEAMS;\n  const rrRosters=(typeof TEAM_ROSTERS!=='undefined'&&TEAM_ROSTERS)||window.TEAM_ROSTERS;\n  const rrDirectory=(typeof PLAYER_DIRECTORY!=='undefined'&&PLAYER_DIRECTORY)||window.PLAYER_DIRECTORY;\n  if(!rrDb||!Array.isArray(rrTeams))return false;\n  for(const team of rrTeams){\n    const feed=FINAL[team];if(!Array.isArray(feed)||!feed.length||!rrDb[team])continue;\n    const existing=Array.isArray(rrDb[team].players)?rrDb[team].players:[];"""
-          if old not in s:
-              raise SystemExit('enforceRecordRoom binding block not found')
-          s=s.replace(old,new)
-          s=s.replace("const fd=window.db?.[team]?.fixtureData||{};","const rrDb=(typeof db!=='undefined'&&db)||window.db;\n  const fd=rrDb?.[team]?.fixtureData||{};")
-          s=s.replace("window.db[team].historicalPlayers=archive;\n    window.db[team].players=current;\n    if(typeof window.TEAM_ROSTERS!=='undefined')window.TEAM_ROSTERS[team]=current.map(p=>({name:p.name,position:p.position,number:p.number}));\n    if(typeof window.PLAYER_DIRECTORY!=='undefined')window.PLAYER_DIRECTORY[norm(team)]=current.map(p=>({name:p.name,position:p.position,number:p.number}));","rrDb[team].historicalPlayers=archive;\n    rrDb[team].players=current;\n    if(rrRosters)rrRosters[team]=current.map(p=>({name:p.name,position:p.position,number:p.number}));\n    if(rrDirectory)rrDirectory[norm(team)]=current.map(p=>({name:p.name,position:p.position,number:p.number}));")
-          s=s.replace("window.teamPlayers=team=>(window.db?.[team]?.players||[]);\n    window.rosterForTeam=team=>(window.db?.[team]?.players||[]).map(p=>({...p}));","window.teamPlayers=team=>(rrDb?.[team]?.players||[]);\n    window.rosterForTeam=team=>(rrDb?.[team]?.players||[]).map(p=>({...p}));")
-          s=s.replace("const players=window.db?.[team]?.players||[];let found=false;","const players=rrDb?.[team]?.players||[];let found=false;")
-          s=s.replace("const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V30 • CURRENT SQUADS ENFORCED • HISTORY PRESERVED';","const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V31 • ALL 20 CURRENT SQUADS • HISTORY PRESERVED';")
+          s=s.replace("const archive=[...(Array.isArray(window.db[team].historicalPlayers)?window.db[team].historicalPlayers:[])];","const archive=[...(Array.isArray(rrDb[team].historicalPlayers)?rrDb[team].historicalPlayers:[])];")
           p.write_text(s)
 
           r=Path('record-room.html')
           x=r.read_text()
-          x=x.replace('nl4-current-squad-enforcer.js?v=20260905-v2','nl4-current-squad-enforcer.js?v=20260905-v31')
-          x=x.replace('record-room-final-squad-history-sync.js?v=20260905-v2','record-room-final-squad-history-sync.js?v=20260905-v31')
-          x=x.replace('BUILD V30 • CURRENT SQUADS ENFORCED • HISTORY PRESERVED','BUILD V31 • ALL 20 CURRENT SQUADS • HISTORY PRESERVED')
+          x=x.replace('nl4-current-squad-enforcer.js?v=20260905-v31','nl4-current-squad-enforcer.js?v=20260905-v31a')
+          x=x.replace('record-room-final-squad-history-sync.js?v=20260905-v31','record-room-final-squad-history-sync.js?v=20260905-v31a')
           r.write_text(x)
           PY
-      - name: Verify fix
+      - name: Verify all 20 squad enforcement
         run: |
           node --check nl4-current-squad-enforcer.js
-          grep -q "typeof db!=='undefined'" nl4-current-squad-enforcer.js
-          grep -q "typeof TEAMS!=='undefined'" nl4-current-squad-enforcer.js
-          grep -q "20260905-v31" record-room.html
-          grep -q "BUILD V31" record-room.html
+          grep -q "const rrDb=(typeof db!=='undefined'&&db)||window.db" nl4-current-squad-enforcer.js
+          grep -q "const rrTeams=(typeof TEAMS!=='undefined'&&TEAMS)||window.TEAMS" nl4-current-squad-enforcer.js
+          grep -q "Array.isArray(rrDb\[team\].historicalPlayers)" nl4-current-squad-enforcer.js
+          ! grep -q "window.db\[team\]" nl4-current-squad-enforcer.js
+          grep -q "nl4-current-squad-enforcer.js?v=20260905-v31a" record-room.html
       - name: Commit
         run: |
           git config user.name 'NL4 Automation'
           git config user.email 'actions@users.noreply.github.com'
           git add nl4-current-squad-enforcer.js record-room.html
-          git commit -m 'Update all 20 Record Room squads from final registrations' || exit 0
+          git commit -m 'Make all 20 current squads render in Record Room' || exit 0
           git push
