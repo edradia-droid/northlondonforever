@@ -127,6 +127,7 @@ function installMobileAndPerformanceFixes(){
  const style=document.createElement('style');style.id='rrMobileParityCss';style.textContent=`
  .fixture-detail{content-visibility:auto;contain-intrinsic-size:900px}
  .stats-table{content-visibility:auto;contain-intrinsic-size:1000px}
+ #rrMatchInfoBox{display:block!important;visibility:visible!important;opacity:1!important;overflow:visible!important;content-visibility:visible!important}
  @media(max-width:900px){
   .admin-record-bar{position:sticky;align-items:stretch;flex-direction:column;padding:9px 12px}
   .admin-record-brand{justify-content:space-between}.admin-record-brand span{font-size:10px}
@@ -136,9 +137,13 @@ function installMobileAndPerformanceFixes(){
   .hero{border-radius:18px!important}.toolbar{position:relative;z-index:2}
   .fixture-card{grid-template-columns:52px minmax(0,1fr) 70px!important;padding:10px!important}
   .fixture-open{grid-column:1/-1;width:100%;min-height:40px}.fixture-card .fixture-date{grid-column:2/4!important}
-  .fixture-detail{padding:10px!important}.match-detail-head{flex-direction:column}.match-detail-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}
+  .fixture-detail{padding:10px!important;content-visibility:visible!important;overflow:visible!important}.match-detail-head{flex-direction:column}.match-detail-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}
   .match-detail-actions .detail-save{grid-column:1/-1;width:100%;min-height:44px}.match-detail-actions .mini-btn{width:100%}
   .detail-box{padding:11px!important}.detail-grid-2,.lineup-grid{grid-template-columns:1fr!important}
+  #rrMatchInfoBox{width:100%!important;max-width:none!important;position:relative!important;z-index:2!important}
+  #rrMatchInfoBox .admin-grid{display:grid!important;grid-template-columns:1fr 1fr!important;width:100%!important}
+  #rrMatchInfoBox .field{display:block!important;min-width:0!important}
+  #rrMatchInfoBox input{display:block!important;width:100%!important;min-width:0!important}
   .score-grid{grid-template-columns:1fr 64px 64px 1fr!important}.score-grid input{min-width:0}
   .lineup-row{grid-template-columns:25px minmax(0,1fr)!important}.lineup-row select{min-width:0}
   .sub-row{grid-template-columns:minmax(0,1fr) 58px!important;padding:8px;border:1px solid rgba(255,255,255,.06);border-radius:10px;margin-bottom:8px!important}
@@ -150,6 +155,7 @@ function installMobileAndPerformanceFixes(){
  }
  @media(max-width:560px){
   .admin-record-actions{grid-template-columns:1fr 1fr}.admin-grid{grid-template-columns:1fr!important}
+  #rrMatchInfoBox .admin-grid{grid-template-columns:1fr!important}
   .stat-grid{grid-template-columns:1fr 1fr!important}.detail-box{border-radius:12px!important}
   .score-grid{grid-template-columns:1fr 54px 54px 1fr!important}.team-label{font-size:9px!important}
   select,input{font-size:16px!important}.lineup-row select,.sub-row select,.sub-row input,.event-row select,.event-row input,.match-stat-row input,.score-grid input{font-size:16px!important}
@@ -166,8 +172,20 @@ function installMobileAndPerformanceFixes(){
  document.getElementById('togglePlayerStats')?.addEventListener('click',()=>setTimeout(()=>{if(!playerContent?.hidden&&playerRows&&!playerRows.children.length){try{if(typeof render==='function')render()}catch(_){}}},0),true);
 }
 
+function mobileEnsureMatchInfo(){
+ const box=document.getElementById('fixtureDetail');
+ if(!box||!box.classList.contains('open')||!fixture())return;
+ inject();
+ restoreSavedSelections();
+}
+
 document.addEventListener('click',e=>{
- const b=e.target.closest('button');if(!b)return;
+ const b=e.target.closest('button');
+ if(!b)return;
+ if(b.classList.contains('fixture-open')){
+   [0,60,180,420].forEach(ms=>setTimeout(mobileEnsureMatchInfo,ms));
+   return;
+ }
  if(!(b.classList.contains('detail-save')||/SAVE MATCH DETAILS/i.test(b.textContent||'')))return;
  restoreSavedSelections();
  const f=fixture(),info=read();
@@ -179,6 +197,9 @@ const start=()=>{
  let queued=false;
  new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;if(box.classList.contains('open')&&fixture()){inject();restoreSavedSelections();}})}).observe(box,{childList:true,subtree:true,attributes:true,attributeFilter:['class','data-fixture-id']});
  if(box.classList.contains('open')){inject();restoreSavedSelections();}
+ window.addEventListener('pageshow',()=>setTimeout(mobileEnsureMatchInfo,0));
+ window.addEventListener('orientationchange',()=>setTimeout(mobileEnsureMatchInfo,120));
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(mobileEnsureMatchInfo,0)});
 };
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 window.NL4RecordRoomMatchInfo={inject,save,read,dataFor,restoreSavedSelections};
