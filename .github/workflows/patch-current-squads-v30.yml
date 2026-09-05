@@ -1,0 +1,61 @@
+name: Patch Current Squads V30
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/patch-current-squads-v30.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch Record Room and Premier League pages directly
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          rr=Path('record-room.html')
+          s=rr.read_text(encoding='utf-8')
+          old='''    <a class="active" href="record-room.html">Record Room</a>\n    <button id="recordRoomLogout" type="button">Sign out</button>'''
+          new='''    <a class="active" href="record-room.html">Record Room</a>\n    <button id="rrUpdateMatches" type="button" title="Load the full Record Room data tools and refresh saved match records">UPDATE MATCHES / LOAD DATA</button>\n    <button id="recordRoomLogout" type="button">Sign out</button>'''
+          if 'id="rrUpdateMatches"' not in s:
+              if old not in s: raise SystemExit('Record Room header insertion point not found')
+              s=s.replace(old,new,1)
+          s=s.replace('BUILD V27 • NATIVE 20-TEAM RECORD ROOM','BUILD V30 • CURRENT SQUADS ENFORCED • HISTORY PRESERVED')
+          s=s.replace('supabase-client.js?v=20260905-v27','supabase-client.js?v=20260905-v30')
+          direct='''\n<script src="premier-league-final-squads-2026-27.js?v=20260905-final7"></script>\n<script src="nl4-current-squad-enforcer.js?v=20260905-v2"></script>\n'''
+          anchor='<script src="supabase-client.js?v=20260905-v30"></script>'
+          if 'nl4-current-squad-enforcer.js?v=20260905-v2' not in s:
+              if anchor not in s: raise SystemExit('Record Room Supabase client anchor missing')
+              s=s.replace(anchor,anchor+direct,1)
+          bind="""\n  const updateBtn=document.getElementById('rrUpdateMatches');\n  if(updateBtn){\n    updateBtn.addEventListener('click',async()=>{\n      if(updateBtn.dataset.busy==='1')return;\n      updateBtn.dataset.busy='1';updateBtn.disabled=true;\n      const original='UPDATE MATCHES / LOAD DATA';updateBtn.textContent='UPDATING MATCH DATA…';\n      try{\n        if(typeof window.NL4LoadRecordRoomMaintenance==='function')await window.NL4LoadRecordRoomMaintenance();\n        window.NL4FinalSquadHistorySync?.syncAll?.();\n        window.NL4CurrentSquadEnforcer?.enforceRecordRoom?.();\n        try{if(typeof render==='function')render();}catch(_){}\n        updateBtn.textContent='MATCH DATA TOOLS LOADED ✓';\n        setTimeout(()=>{updateBtn.textContent=original;updateBtn.disabled=false;updateBtn.dataset.busy='0';},1800);\n      }catch(err){\n        console.error('[NL4 Record Room] Update matches failed:',err);\n        updateBtn.textContent='UPDATE FAILED — RETRY';updateBtn.disabled=false;updateBtn.dataset.busy='0';\n      }\n    });\n  }\n"""
+          auth_anchor="  document.getElementById('recordRoomLogout')?.addEventListener('click',async()=>{await db.auth.signOut();location.href='admin.html';});"
+          if 'MATCH DATA TOOLS LOADED' not in s:
+              if auth_anchor not in s: raise SystemExit('Record Room auth binding anchor missing')
+              s=s.replace(auth_anchor,bind+auth_anchor,1)
+          rr.write_text(s,encoding='utf-8')
+
+          pl=Path('premier-league.html')
+          p=pl.read_text(encoding='utf-8')
+          direct_pl='''\n<script src="premier-league-final-squads-2026-27.js?v=20260905-final7"></script>\n<script src="nl4-current-squad-enforcer.js?v=20260905-v2"></script>\n'''
+          if 'nl4-current-squad-enforcer.js?v=20260905-v2' not in p:
+              if '</body>' not in p: raise SystemExit('Premier League body close missing')
+              p=p.replace('</body>',direct_pl+'\n</body>',1)
+          pl.write_text(p,encoding='utf-8')
+          PY
+      - name: Verify page patch
+        run: |
+          grep -q 'rrUpdateMatches' record-room.html
+          grep -q 'BUILD V30' record-room.html
+          grep -q 'nl4-current-squad-enforcer.js?v=20260905-v2' record-room.html
+          grep -q 'nl4-current-squad-enforcer.js?v=20260905-v2' premier-league.html
+          node --check nl4-current-squad-enforcer.js
+      - name: Commit direct page fixes
+        run: |
+          git config user.name 'NL4 Automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add record-room.html premier-league.html
+          git commit -m 'Enforce current squads directly and restore Record Room update button' || exit 0
+          git push
