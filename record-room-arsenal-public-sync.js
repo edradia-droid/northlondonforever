@@ -35,22 +35,12 @@ window.addEventListener('nl4:record-room-saved',()=>queue(80));
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>queue(800),{once:true});else queue(800);
 window.NL4RecordRoomArsenalPublicSync={push,queue,ensureCanonicalArsenalFixtures,completedCount};
 
-// This file is a proven Record Room execution path (it already performs the live
-// Arsenal Supabase sync). Bootstrap the advanced per-player match-stat UI from here
-// as well so the feature cannot silently depend on another loader path.
-(function bootstrapPlayerMatchStats(){
-  if(window.NL4RecordRoomPlayerMatchStats)return;
-  const existing=[...document.scripts].find(s=>String(s.src||'').includes('record-room-player-match-stats.js'));
-  if(existing){
-    existing.addEventListener('load',()=>setTimeout(()=>window.NL4RecordRoomPlayerMatchStats?.inject?.(),0),{once:true});
-    return;
-  }
-  const s=document.createElement('script');
-  s.src='record-room-player-match-stats.js?v=20260905-v4';
-  s.async=false;
-  s.dataset.nl4PlayerMatchStats='1';
-  s.onload=()=>{console.info('[NL4] Player match stats feature loaded');setTimeout(()=>window.NL4RecordRoomPlayerMatchStats?.inject?.(),0);};
-  s.onerror=()=>{console.error('[NL4] Player match stats script failed to load');const box=document.getElementById('fixtureDetail');if(box&&box.classList.contains('open')&&!document.getElementById('rrPlayerMatchStatsLoadError')){const d=document.createElement('div');d.id='rrPlayerMatchStatsLoadError';d.className='detail-box';d.style.marginTop='14px';d.innerHTML='<h4>Player match stats</h4><p class="admin-note" style="color:#ff7185">PLAYER MATCH STATS MODULE FAILED TO LOAD. Refresh this page once.</p>';box.appendChild(d);}};
-  document.head.appendChild(s);
-})();
+function bootstrap(src,key,onload){
+ if(window[key]){onload?.();return;}
+ const existing=[...document.scripts].find(s=>String(s.src||'').includes(src.split('?')[0]));
+ if(existing){existing.addEventListener('load',()=>onload?.(),{once:true});return;}
+ const s=document.createElement('script');s.src=src;s.async=false;s.onload=()=>onload?.();s.onerror=()=>console.error('[NL4] Failed to load',src);document.head.appendChild(s);
+}
+bootstrap('record-room-player-match-stats.js?v=20260905-v5','NL4RecordRoomPlayerMatchStats',()=>setTimeout(()=>window.NL4RecordRoomPlayerMatchStats?.inject?.(),0));
+bootstrap('record-room-match-meta.js?v=20260905-v1','NL4RecordRoomMatchInfo',()=>setTimeout(()=>window.NL4RecordRoomMatchInfo?.inject?.(),0));
 })();
