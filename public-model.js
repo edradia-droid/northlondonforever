@@ -1,6 +1,19 @@
 (function(){
 'use strict';
 
+function placeLeagueTableAbovePublicModel(){
+  const leagueTable=document.getElementById('leagueTable');
+  const publicModelRoot=document.getElementById('nl4PublicForecastRoot');
+  if(!leagueTable||!publicModelRoot||leagueTable.nextElementSibling===publicModelRoot)return;
+  publicModelRoot.parentNode.insertBefore(leagueTable,publicModelRoot);
+}
+
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',placeLeagueTableAbovePublicModel,{once:true});
+}else{
+  placeLeagueTableAbovePublicModel();
+}
+
 const SEASON='2026/27';
 const db=window.nl4Supabase;
 if(!db||typeof db.from!=='function'){
