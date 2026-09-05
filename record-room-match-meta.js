@@ -2,7 +2,7 @@
 'use strict';
 if(window.__NL4_RR_MATCH_META_V2__)return;
 window.__NL4_RR_MATCH_META_V2__=true;
-const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[m]));
 const clone=v=>JSON.parse(JSON.stringify(v));
 function fixture(){
  const box=document.getElementById('fixtureDetail');
@@ -50,6 +50,7 @@ function inject(){
  <div class="field"><label>1ST HALF SCORE — ${esc(f.away)}</label><input id="rrHtAway" type="number" min="0" step="1" value="${esc(m.halftimeAwayScore)}" placeholder="HT"></div>
  <div class="field"><label>2ND HALF ADDED TIME</label><input id="rrAddedTime" type="number" min="0" step="1" value="${esc(m.addedTime)}" placeholder="Minutes"></div>
  </div><div class="field" style="margin-top:10px"><label>MATCH NOTES</label><input id="rrMatchNotes" value="${esc(m.notes)}" placeholder="Other match information / notes"></div>`;
+ restoreSavedSelections();
 }
 function read(){
  const att=document.getElementById('rrAttendance')?.value??'',hth=document.getElementById('rrHtHome')?.value??'',hta=document.getElementById('rrHtAway')?.value??'',added=document.getElementById('rrAddedTime')?.value??'';
@@ -68,8 +69,6 @@ function read(){
 function applyToRecord(rec,info){
  if(!rec)return;
  rec.matchInfo={...(rec.matchInfo||{}),...clone(info)};
- // Keep the historic completed-import format alive so old data tools and validation
- // continue to see referee, venue, attendance, half-time score and added time.
  rec.matchDetails={...(rec.matchDetails||{}),referee:info.referee,venue:info.venue,attendance:info.attendance,halftimeHomeScore:info.halftimeHomeScore,halftimeAwayScore:info.halftimeAwayScore,addedTime:info.addedTime,kickoff:info.kickoff,weather:info.weather,notes:info.notes};
 }
 function saveInfo(f,info){
@@ -78,18 +77,109 @@ function saveInfo(f,info){
  try{if(typeof persist==='function')persist()}catch(e){console.warn('[NL4] Match information persist failed',e)}
 }
 function save(){const f=fixture();if(!f)return;saveInfo(f,read());}
+
+function ensureSelectValue(select,value,label){
+ if(!select||value===undefined||value===null||String(value)==='')return;
+ const wanted=String(value);
+ let option=[...select.options].find(o=>o.value===wanted);
+ if(!option){
+   option=new Option(label||`Saved • ${wanted}`,wanted,true,true);
+   option.dataset.savedFallback='1';
+   select.insertBefore(option,select.firstChild);
+ }
+ select.value=wanted;
+}
+function displaySavedPlayer(value){
+ const parts=String(value||'').split('|||');
+ return parts.length>1?`Saved • ${parts.slice(1).join('|||')} — ${parts[0]}`:`Saved • ${value}`;
+}
+function restoreSavedSelections(){
+ const f=fixture(),box=document.getElementById('fixtureDetail'),rec=recFor(f);
+ if(!f||!box||!rec)return;
+ const home=Array.isArray(rec.homeLineup)?rec.homeLineup:[];
+ const away=Array.isArray(rec.awayLineup)?rec.awayLineup:[];
+ box.querySelectorAll('[data-lineup="home"]').forEach((sel,i)=>ensureSelectValue(sel,home[i],`Saved • ${home[i]||''}`));
+ box.querySelectorAll('[data-lineup="away"]').forEach((sel,i)=>ensureSelectValue(sel,away[i],`Saved • ${away[i]||''}`));
+ const restoreSubs=(side,rows)=>{
+   box.querySelectorAll(`#${side}Subs .sub-row`).forEach((row,i)=>{
+     const saved=rows?.[i]||{};
+     ensureSelectValue(row.querySelector('.sub-out'),saved.out,`Saved • ${saved.out||''}`);
+     ensureSelectValue(row.querySelector('.sub-in'),saved.in,`Saved • ${saved.in||''}`);
+     const outMin=row.querySelector('.sub-out-min'),inMin=row.querySelector('.sub-in-min');
+     if(outMin&&outMin.value===''&&saved.outMin!==undefined&&saved.outMin!==null)outMin.value=saved.outMin;
+     if(inMin&&inMin.value===''&&saved.inMin!==undefined&&saved.inMin!==null)inMin.value=saved.inMin;
+   });
+ };
+ restoreSubs('home',Array.isArray(rec.homeSubs)?rec.homeSubs:[]);
+ restoreSubs('away',Array.isArray(rec.awaySubs)?rec.awaySubs:[]);
+ box.querySelectorAll('#eventRows .event-row').forEach((row,i)=>{
+   const saved=(Array.isArray(rec.events)?rec.events:[])?.[i]||{};
+   ensureSelectValue(row.querySelector('.event-player'),saved.player,displaySavedPlayer(saved.player));
+   ensureSelectValue(row.querySelector('.event-assist'),saved.assist,displaySavedPlayer(saved.assist));
+   const min=row.querySelector('.event-min');if(min&&min.value===''&&saved.minute!==undefined&&saved.minute!==null)min.value=saved.minute;
+   const type=row.querySelector('.event-type');if(type&&saved.type)type.value=saved.type;
+ });
+ ensureSelectValue(document.getElementById('manOfTheMatch'),rec.manOfTheMatch,displaySavedPlayer(rec.manOfTheMatch));
+}
+
+function installMobileAndPerformanceFixes(){
+ if(document.getElementById('rrMobileParityCss'))return;
+ const style=document.createElement('style');style.id='rrMobileParityCss';style.textContent=`
+ .fixture-detail{content-visibility:auto;contain-intrinsic-size:900px}
+ .stats-table{content-visibility:auto;contain-intrinsic-size:1000px}
+ @media(max-width:900px){
+  .admin-record-bar{position:sticky;align-items:stretch;flex-direction:column;padding:9px 12px}
+  .admin-record-brand{justify-content:space-between}.admin-record-brand span{font-size:10px}
+  .admin-record-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}
+  .admin-record-actions a,.admin-record-actions button{width:100%;text-align:center;padding:10px 7px}
+  .page{width:96vw!important;padding-top:12px!important}
+  .hero{border-radius:18px!important}.toolbar{position:relative;z-index:2}
+  .fixture-card{grid-template-columns:52px minmax(0,1fr) 70px!important;padding:10px!important}
+  .fixture-open{grid-column:1/-1;width:100%;min-height:40px}.fixture-card .fixture-date{grid-column:2/4!important}
+  .fixture-detail{padding:10px!important}.match-detail-head{flex-direction:column}.match-detail-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}
+  .match-detail-actions .detail-save{grid-column:1/-1;width:100%;min-height:44px}.match-detail-actions .mini-btn{width:100%}
+  .detail-box{padding:11px!important}.detail-grid-2,.lineup-grid{grid-template-columns:1fr!important}
+  .score-grid{grid-template-columns:1fr 64px 64px 1fr!important}.score-grid input{min-width:0}
+  .lineup-row{grid-template-columns:25px minmax(0,1fr)!important}.lineup-row select{min-width:0}
+  .sub-row{grid-template-columns:minmax(0,1fr) 58px!important;padding:8px;border:1px solid rgba(255,255,255,.06);border-radius:10px;margin-bottom:8px!important}
+  .sub-row .sub-in{grid-column:1}.sub-row .sub-in-min{grid-column:2}.sub-row .remove-row{grid-column:1/-1;width:100%}
+  .event-row{grid-template-columns:minmax(0,1fr) 70px!important;padding:8px;border:1px solid rgba(255,255,255,.06);border-radius:10px;margin-bottom:8px!important}
+  .event-row .event-player,.event-row .event-assist{grid-column:1/-1!important}.event-row .remove-row{grid-column:1/-1!important;width:100%}
+  .match-stat-row{grid-template-columns:92px minmax(0,1fr) minmax(0,1fr)!important}
+  .match-stat-row input{min-width:0}.admin-grid{grid-template-columns:1fr 1fr!important}
+ }
+ @media(max-width:560px){
+  .admin-record-actions{grid-template-columns:1fr 1fr}.admin-grid{grid-template-columns:1fr!important}
+  .stat-grid{grid-template-columns:1fr 1fr!important}.detail-box{border-radius:12px!important}
+  .score-grid{grid-template-columns:1fr 54px 54px 1fr!important}.team-label{font-size:9px!important}
+  select,input{font-size:16px!important}.lineup-row select,.sub-row select,.sub-row input,.event-row select,.event-row input,.match-stat-row input,.score-grid input{font-size:16px!important}
+ }
+ `;document.head.appendChild(style);
+ const search=document.getElementById('playerSearch');
+ if(search&&!search.dataset.rrFastSearch){
+   search.dataset.rrFastSearch='1';let timer=0;
+   search.addEventListener('input',e=>{e.stopImmediatePropagation();clearTimeout(timer);timer=setTimeout(()=>{try{if(typeof render==='function')render()}catch(err){console.warn('[NL4] fast search render failed',err)}},140);},true);
+ }
+ const playerContent=document.getElementById('playerStatsContent');
+ const playerRows=document.getElementById('playerRows');
+ if(playerContent?.hidden&&playerRows)playerRows.innerHTML='';
+ document.getElementById('togglePlayerStats')?.addEventListener('click',()=>setTimeout(()=>{if(!playerContent?.hidden&&playerRows&&!playerRows.children.length){try{if(typeof render==='function')render()}catch(_){}}},0),true);
+}
+
 document.addEventListener('click',e=>{
  const b=e.target.closest('button');if(!b)return;
  if(!(b.classList.contains('detail-save')||/SAVE MATCH DETAILS/i.test(b.textContent||'')))return;
+ restoreSavedSelections();
  const f=fixture(),info=read();
- // Native save replaces/mirrors the fixture first; restore metadata immediately after it.
- setTimeout(()=>{saveInfo(f,info);setTimeout(inject,0);},140);
+ setTimeout(()=>{saveInfo(f,info);setTimeout(()=>{inject();restoreSavedSelections();},0);},140);
 },true);
 const start=()=>{
+ installMobileAndPerformanceFixes();
  const box=document.getElementById('fixtureDetail');if(!box)return;
- new MutationObserver(()=>{if(box.classList.contains('open')&&fixture())setTimeout(inject,0)}).observe(box,{childList:true,subtree:true,attributes:true,attributeFilter:['class','data-fixture-id']});
- if(box.classList.contains('open'))inject();
+ let queued=false;
+ new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;if(box.classList.contains('open')&&fixture()){inject();restoreSavedSelections();}})}).observe(box,{childList:true,subtree:true,attributes:true,attributeFilter:['class','data-fixture-id']});
+ if(box.classList.contains('open')){inject();restoreSavedSelections();}
 };
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-window.NL4RecordRoomMatchInfo={inject,save,read,dataFor};
+window.NL4RecordRoomMatchInfo={inject,save,read,dataFor,restoreSavedSelections};
 })();
