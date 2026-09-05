@@ -19,46 +19,31 @@ jobs:
           from difflib import SequenceMatcher
           from pathlib import Path
           from bs4 import BeautifulSoup
-
           FPL='https://fantasy.premierleague.com/api/bootstrap-static/'
           PL='https://www.premierleague.com/en/news/4706139/see-all-the-202627-premier-league-squad-lists'
           headers={'User-Agent':'Mozilla/5.0 NL4 squad updater'}
           def get(url):
               req=urllib.request.Request(url,headers=headers)
               with urllib.request.urlopen(req,timeout=40) as r:return r.read()
-          data=json.loads(get(FPL))
-          html=get(PL).decode('utf-8','ignore')
+          data=json.loads(get(FPL));html=get(PL).decode('utf-8','ignore')
           text=BeautifulSoup(html,'html.parser').get_text('\n')
           lines=[re.sub(r'\s+',' ',x).strip() for x in text.splitlines() if re.sub(r'\s+',' ',x).strip()]
-
           order=['AFC Bournemouth','Arsenal','Aston Villa','Brentford','Brighton & Hove Albion','Chelsea','Coventry City','Crystal Palace','Everton','Fulham','Hull City','Ipswich Town','Leeds United','Liverpool','Manchester City','Manchester United','Newcastle United','Nottingham Forest','Sunderland','Tottenham Hotspur']
-          aliases={'Brighton & Hove Albion':['Brighton & Hove Albion'],'Nottingham Forest':['Nottingham Forest'],'Tottenham Hotspur':['Tottenham Hotspur']}
-          # Capture registered senior + U21 names, excluding entries explicitly marked Loan.
           registered={}
-          for idx,club in enumerate(order):
+          for club in order:
               starts=[i for i,x in enumerate(lines) if x==club]
               if not starts: raise SystemExit('Official squad section not found: '+club)
-              start=starts[-1]
-              next_starts=[]
+              start=starts[-1];next_starts=[]
               for other in order:
-                  if other==club:continue
-                  next_starts += [i for i,x in enumerate(lines) if i>start and x==other]
-              end=min(next_starts) if next_starts else len(lines)
-              block=lines[start+1:end]
-              names=[]
-              active=False
+                  if other!=club:next_starts += [i for i,x in enumerate(lines) if i>start and x==other]
+              end=min(next_starts) if next_starts else len(lines);block=lines[start+1:end];names=[];active=False
               for x in block:
-                  if x.startswith('25 Squad players') or x.startswith('U21 players'):
-                      active=True; continue
-                  if not active: continue
-                  if x.startswith('What is a') or x.startswith('What constitutes'): break
-                  if '(Loan)' in x: continue
-                  if x in ('25 Squad players (*Home grown)','U21 players (Contract and Scholars; *Home grown)'):continue
-                  # Names in the publication are plain text entries, often ending in *.
-                  if len(x)>2 and not x.startswith(('See:','Each ','For more','Home Grown')):
-                      names.append(x.rstrip('*').strip())
+                  if x.startswith('25 Squad players') or x.startswith('U21 players'):active=True;continue
+                  if not active:continue
+                  if x.startswith('What is a') or x.startswith('What constitutes'):break
+                  if '(Loan)' in x:continue
+                  if len(x)>2 and not x.startswith(('See:','Each ','For more','Home Grown')):names.append(x.rstrip('*').strip())
               registered[club]=names
-
           team_name_map={'Bournemouth':'AFC Bournemouth',"Nott'm Forest":'Nottingham Forest','Man City':'Manchester City','Man Utd':'Manchester United','Spurs':'Tottenham Hotspur','Brighton':'Brighton & Hove Albion','Newcastle':'Newcastle United','Leeds':'Leeds United'}
           pos={1:'Goalkeeper',2:'Defender',3:'Midfielder',4:'Forward'}
           teams={t['id']:team_name_map.get(t['name'],t['name']) for t in data['teams']}
@@ -67,44 +52,32 @@ jobs:
               return re.sub(r'[^a-z0-9]+',' ',s).strip()
           def tokens(s):return [t for t in norm(s).split() if len(t)>1]
           def registered_match(player,cands):
-              full=norm((player.get('first_name','')+' '+player.get('second_name','')).strip())
-              web=norm(player.get('web_name',''))
-              ft=set(tokens(full)); wt=set(tokens(web))
-              best=0
+              full=norm((player.get('first_name','')+' '+player.get('second_name','')).strip());web=norm(player.get('web_name',''));ft=set(tokens(full));wt=set(tokens(web));best=0
               for c in cands:
-                  cn=norm(c); ct=set(tokens(c))
-                  if full==cn or (web and web==cn): return True
-                  # Formal registration format is usually surname first; require a strong token identity.
-                  overlap=len((ft|wt)&ct)
-                  if overlap>=2:return True
-                  if wt and wt.issubset(ct):return True
-                  score=SequenceMatcher(None,full,cn).ratio()
-                  if score>best:best=score
+                  cn=norm(c);ct=set(tokens(c))
+                  if full==cn or (web and web==cn):return True
+                  # Require at least two shared identity tokens; this prevents a loaned player
+                  # matching a different registered player who happens to share one surname.
+                  if len((ft|wt)&ct)>=2:return True
+                  score=SequenceMatcher(None,full,cn).ratio();best=max(best,score)
               return best>=0.72
-
-          squads={name:[] for name in teams.values()}
-          excluded=[]
+          squads={name:[] for name in teams.values()};excluded=[]
           for e in data['elements']:
               team=teams.get(e.get('team'))
-              if not team or team not in registered: continue
-              if not registered_match(e,registered[team]):
-                  excluded.append((team,e.get('web_name'),e.get('first_name'),e.get('second_name')));continue
-              first=(e.get('first_name') or '').strip();second=(e.get('second_name') or '').strip()
-              name=(' '.join(x for x in (first,second) if x)).strip() or (e.get('web_name') or '').strip()
+              if not team or team not in registered:continue
+              if not registered_match(e,registered[team]):excluded.append((team,e.get('web_name')));continue
+              first=(e.get('first_name') or '').strip();second=(e.get('second_name') or '').strip();name=(' '.join(x for x in (first,second) if x)).strip() or (e.get('web_name') or '').strip()
               squads[team].append({'name':name,'webName':(e.get('web_name') or name).strip(),'position':pos.get(e.get('element_type'),'Midfielder'),'number':e.get('squad_number'),'fplId':e.get('id')})
           ui_order=['Arsenal','Aston Villa','AFC Bournemouth','Brentford','Brighton & Hove Albion','Chelsea','Coventry City','Crystal Palace','Everton','Fulham','Hull City','Ipswich Town','Leeds United','Liverpool','Manchester City','Manchester United','Newcastle United','Nottingham Forest','Tottenham Hotspur','Sunderland']
           missing=[t for t in ui_order if t not in squads]
-          if missing: raise SystemExit('Missing FPL teams: '+', '.join(missing))
+          if missing:raise SystemExit('Missing FPL teams: '+', '.join(missing))
           for team in squads:squads[team].sort(key=lambda p:({'Goalkeeper':0,'Defender':1,'Midfielder':2,'Forward':3}.get(p['position'],9),p['name'].lower()))
           payload={t:squads[t] for t in ui_order}
-          if any(len(v)<15 for v in payload.values()):
-              raise SystemExit('Registration matching produced an implausibly small squad: '+str({k:len(v) for k,v in payload.items()}))
+          if any(len(v)<15 for v in payload.values()):raise SystemExit('Registration matching produced an implausibly small squad: '+str({k:len(v) for k,v in payload.items()}))
           meta={'season':'2026/27','generatedAt':'2026-09-05','registrationPublished':'2026-09-03','transferWindowClosed':'2026-09-01T23:00:00+01:00','source':'Official Fantasy Premier League player pool filtered by PremierLeague.com submitted squad lists','counts':{k:len(v) for k,v in payload.items()}}
           js='// NL4 2026/27 post-window Premier League current squads.\n// Current FPL first-team pool filtered against official submitted Premier League registrations.\nwindow.NL4_FINAL_PL_SQUADS='+json.dumps(payload,ensure_ascii=False,separators=(',',':'))+';\nwindow.NL4_FINAL_PL_SQUADS_META='+json.dumps(meta,ensure_ascii=False,separators=(',',':'))+';\n'
           Path('premier-league-final-squads-2026-27.js').write_text(js,encoding='utf-8')
-          print('Generated',sum(len(v) for v in payload.values()),'current players across 20 clubs')
-          print(json.dumps(meta['counts'],indent=2))
-          print('FPL entries excluded because not on submitted current registration:',len(excluded))
+          print('Generated',sum(len(v) for v in payload.values()),'current players across 20 clubs');print(json.dumps(meta['counts'],indent=2));print('Excluded stale/unregistered FPL entries:',len(excluded))
           PY
       - name: Commit squad data
         run: |
