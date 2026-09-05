@@ -48,8 +48,8 @@ if (NL4_IS_RECORD_ROOM) {
       const teamSelect=document.getElementById('teamSelect'),inputTeam=document.getElementById('inputTeam');if(teamSelect)teamSelect.value=ARSENAL;if(inputTeam)inputTeam.value=ARSENAL;
       if(typeof recalculatePlayerStatsFromFixtures==='function')recalculatePlayerStatsFromFixtures(ARSENAL);
       if(typeof recalculateClubStatsFromFixtures==='function')recalculateClubStatsFromFixtures(ARSENAL);
-      const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V14 • ARSENAL PUBLIC STATS SYNC';
-      const hero=document.querySelector('.hero p');if(hero)hero.textContent='Admin record workspace for all 20 Premier League clubs, including Arsenal. Arsenal Record Room stats now synchronize to the public 2026/27 Premier League squad and team-stat sections.';
+      const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V15 • PLAYER MATCH STATS + ARSENAL PUBLIC SYNC';
+      const hero=document.querySelector('.hero p');if(hero)hero.textContent='Admin record workspace for all 20 Premier League clubs, including Arsenal. Match details, player match stats and Arsenal season totals synchronize to the public 2026/27 Premier League sections.';
       const manualTitle=document.querySelector('.admin h3');if(manualTitle&&/Other 19 Teams/i.test(manualTitle.textContent||''))manualTitle.textContent='All 20 Teams Stat Input';
       if(typeof render==='function')render();
     }catch(err){console.warn('[NL4 Record Room] Arsenal registration failed:',err);}
@@ -57,8 +57,9 @@ if (NL4_IS_RECORD_ROOM) {
   registerArsenal();
 
   const loadScript=src=>new Promise((resolve,reject)=>{if(document.querySelector(`script[data-nl4-rr-src="${src}"]`))return resolve();const s=document.createElement('script');s.src=src;s.dataset.nl4RrSrc=src;s.onload=resolve;s.onerror=()=>reject(new Error(`Could not load ${src}`));document.head.appendChild(s);});
-  // Lightweight public-stat bridge is automatic. Heavy Record Room maintenance remains manual.
-  loadScript('record-room-arsenal-public-sync.js').catch(err=>console.warn('[NL4 Record Room] Public stats bridge failed:',err));
+  // Lightweight player-match inputs and public-stat bridge are automatic. Heavy maintenance remains manual.
+  loadScript('record-room-player-match-stats.js?v=20260905-v1').catch(err=>console.warn('[NL4 Record Room] Player match stats failed:',err));
+  loadScript('record-room-arsenal-public-sync.js?v=20260905-v3').catch(err=>console.warn('[NL4 Record Room] Public stats bridge failed:',err));
 
   let toolsPromise=null;
   window.NL4LoadRecordRoomMaintenance=function(){if(toolsPromise)return toolsPromise;toolsPromise=Promise.resolve().then(()=>loadScript('record-room-supabase.js')).then(()=>loadScript('record-room-supabase-bridge.js')).then(()=>loadScript('record-room-completed-import.js')).then(()=>loadScript('record-room-participation-events-fix.js')).then(()=>loadScript('record-room-verified-stats.js')).then(()=>loadScript('record-room-canonical-events-v4.js')).then(()=>loadScript('record-room-assists-motm-v5.js')).then(()=>loadScript('record-room-player-calculation-v6.js')).then(()=>loadScript('record-room-event-display-fix.js')).then(()=>loadScript('record-room-season-sync-fix.js')).then(()=>loadScript('record-room-matchday-groups.js')).catch(err=>{toolsPromise=null;throw err;});return toolsPromise;};
@@ -68,5 +69,5 @@ if (NL4_IS_RECORD_ROOM) {
 
 // On the public Premier League page, load the lightweight Record Room consumer only.
 if(document.getElementById('arsenalPremierLeagueStats') || document.getElementById('arsenalPlayerStats')){
-  const s=document.createElement('script');s.src='premier-league-record-room-sync.js?v=20260905-v1';s.defer=true;document.head.appendChild(s);
+  const s=document.createElement('script');s.src='premier-league-record-room-sync.js?v=20260905-v2';s.defer=true;document.head.appendChild(s);
 }
