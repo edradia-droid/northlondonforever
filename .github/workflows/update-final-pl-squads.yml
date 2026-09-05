@@ -28,6 +28,7 @@ jobs:
             'Spurs':'Tottenham Hotspur',
             'Brighton':'Brighton & Hove Albion',
             'Newcastle':'Newcastle United',
+            'Leeds':'Leeds United',
           }
           pos={1:'Goalkeeper',2:'Defender',3:'Midfielder',4:'Forward'}
           teams={t['id']:team_name_map.get(t['name'],t['name']) for t in data['teams']}
