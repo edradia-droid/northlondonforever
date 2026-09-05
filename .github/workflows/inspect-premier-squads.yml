@@ -1,0 +1,34 @@
+name: Inspect Premier Squad UI
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/inspect-premier-squads.yml'
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Capture squad-related source
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('premier-league.html')
+          lines=p.read_text(encoding='utf-8').splitlines()
+          out=[]
+          keys=('squad','rival','other team','team player','opponent')
+          for i,line in enumerate(lines):
+              if any(k in line.lower() for k in keys):
+                  a=max(0,i-4); b=min(len(lines),i+12)
+                  out.append(f'\n--- lines {a+1}-{b} ---\n'+'\n'.join(f'{j+1}: {lines[j]}' for j in range(a,b)))
+          Path('premier-squad-inspect.txt').write_text('\n'.join(out),encoding='utf-8')
+          PY
+      - name: Commit diagnostic
+        run: |
+          git config user.name 'NL4 Automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add premier-squad-inspect.txt
+          git commit -m 'Inspect Premier League squad UI' || exit 0
+          git push
