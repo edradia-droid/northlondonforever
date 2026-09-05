@@ -24,7 +24,8 @@ function currentRoster(team){
   const feed=FINAL[team]||[];
   const seeded=(typeof TEAM_ROSTERS!=='undefined'&&TEAM_ROSTERS[team])||[];
   const saved=(typeof db!=='undefined'&&db?.[team]?.players)||[];
-  const candidates=[...seeded,...saved];
+  const archived=(typeof db!=='undefined'&&db?.[team]?.historicalPlayers)||[];
+  const candidates=[...seeded,...saved,...archived];
   const used=new Set();
   return feed.map(e=>{
     const old=bestExisting(e,candidates.filter(p=>!used.has(p)));
@@ -47,37 +48,42 @@ function historicalNames(team){
 function mergeTeam(team){
   if(typeof db==='undefined'||!db?.[team])return;
   const current=currentRoster(team);
-  const prior=Array.isArray(db[team].players)?db[team].players:[];
+  const priorCurrent=Array.isArray(db[team].players)?db[team].players:[];
+  const priorArchive=Array.isArray(db[team].historicalPlayers)?db[team].historicalPlayers:[];
+  const prior=[...priorCurrent,...priorArchive];
   const historical=historicalNames(team);
-  const merged=[];
+  const currentPlayers=[];
+  const archive=[];
   const claimed=new Set();
   current.forEach(c=>{
     const old=bestExisting({name:c.name,webName:c.webName},prior.filter(p=>!claimed.has(p)));
     if(old)claimed.add(old);
-    merged.push({...blank(c.name,c.position,c.number),...(old||{}),name:c.name,position:c.position,number:c.number,current:true,historical:false,webName:c.webName,fplId:c.fplId});
+    currentPlayers.push({...blank(c.name,c.position,c.number),...(old||{}),name:c.name,position:c.position,number:c.number,current:true,historical:false,webName:c.webName,fplId:c.fplId});
   });
   prior.forEach(p=>{
     if(claimed.has(p)||!p?.name)return;
-    merged.push({...blank(p.name,p.position||'Midfielder',p.number??null),...p,current:false,historical:true});
+    archive.push({...blank(p.name,p.position||'Midfielder',p.number??null),...p,current:false,historical:true});
   });
   historical.forEach(name=>{
-    if(!merged.some(p=>norm(p.name)===norm(name)))merged.push({...blank(name),current:false,historical:true});
+    const isCurrent=currentPlayers.some(p=>norm(p.name)===norm(name));
+    if(!isCurrent&&!archive.some(p=>norm(p.name)===norm(name)))archive.push({...blank(name),current:false,historical:true});
   });
-  db[team].players=merged;
+  // Critical separation: only CURRENT registered players live in db.players.
+  // Departed/loaned players remain in historicalPlayers and saved fixtureData,
+  // so old match substitutions/events never become blank but current squad lists stay clean.
+  db[team].players=currentPlayers;
+  db[team].historicalPlayers=archive;
   if(typeof TEAM_ROSTERS!=='undefined')TEAM_ROSTERS[team]=current.map(({name,position,number})=>({name,position,number}));
   if(typeof PLAYER_DIRECTORY!=='undefined')PLAYER_DIRECTORY[norm(team)]=TEAM_ROSTERS[team].map(p=>({...p}));
 }
 function installCurrentRosterFunctions(){
   rosterForTeam=function(team){return ((typeof TEAM_ROSTERS!=='undefined'&&TEAM_ROSTERS[team])||[]).map(p=>typeof blankPlayer==='function'?blankPlayer(p):blank(p.name,p.position,p.number));};
-  teamPlayers=function(team){
-    const currentNames=new Set(((typeof TEAM_ROSTERS!=='undefined'&&TEAM_ROSTERS[team])||[]).map(p=>norm(p.name)));
-    return (db?.[team]?.players||[]).filter(p=>currentNames.has(norm(p.name)));
-  };
+  teamPlayers=function(team){return (db?.[team]?.players||[]).filter(p=>p?.current!==false);};
   window.rosterForTeam=rosterForTeam;window.teamPlayers=teamPlayers;
 }
 function selectedOption(team,selected=''){
   const players=teamPlayers(team);let found=false;
-  let options='<option value="">Select player…</option>'+players.map(p=>{const hit=p.name===selected;found=found||hit;return `<option value="${htmlEsc(p.name)}" ${hit?'selected':''}>${p.number?`#${p.number} • `:''}${htmlEsc(p.name)}</option>`}).join('');
+  let options='<option value="">Select player…</option>'+players.map(p=>{const hit=norm(p.name)===norm(selected);found=found||hit;return `<option value="${htmlEsc(p.name)}" ${hit?'selected':''}>${p.number?`#${p.number} • `:''}${htmlEsc(p.name)}</option>`}).join('');
   if(selected&&!found)options+=`<option value="${htmlEsc(selected)}" selected>Saved • ${htmlEsc(selected)}</option>`;
   return options;
 }
@@ -85,12 +91,12 @@ function installHistoricalDropdowns(){
   playerOptions=function(team,selected=''){return selectedOption(team,selected)};window.playerOptions=playerOptions;
   eventRowHtml=function(f,r={}){
     const all=[...teamPlayers(f.home).map(p=>({...p,team:f.home})),...teamPlayers(f.away).map(p=>({...p,team:f.away}))];
-    const make=(selected,none)=>{let found=false;let s=`<option value="">${none}</option>`+all.map(p=>{const value=`${p.team}|||${p.name}`;const hit=value===selected;found=found||hit;return `<option value="${htmlEsc(value)}" ${hit?'selected':''}>${htmlEsc(p.name)} — ${htmlEsc(p.team)}</option>`}).join('');if(selected&&!found){const q=eventPerson(selected);s+=`<option value="${htmlEsc(selected)}" selected>Saved • ${htmlEsc(q.name||selected)}${q.team?' — '+htmlEsc(q.team):''}</option>`}return s;};
+    const make=(selected,none)=>{let found=false;let s=`<option value="">${none}</option>`+all.map(p=>{const value=`${p.team}|||${p.name}`;const hit=norm(value)===norm(selected);found=found||hit;return `<option value="${htmlEsc(value)}" ${hit?'selected':''}>${htmlEsc(p.name)} — ${htmlEsc(p.team)}</option>`}).join('');if(selected&&!found){const q=eventPerson(selected);s+=`<option value="${htmlEsc(selected)}" selected>Saved • ${htmlEsc(q.name||selected)}${q.team?' — '+htmlEsc(q.team):''}</option>`}return s;};
     return `<div class="event-row"><select class="event-type"><option ${r.type==='goal'?'selected':''} value="goal">Goal</option><option ${r.type==='yellow'?'selected':''} value="yellow">Yellow card</option><option ${r.type==='red'?'selected':''} value="red">Red card</option></select><input class="event-min" type="number" min="0" max="120" placeholder="MIN" value="${r.minute??''}"><select class="event-player">${make(r.player,'Player…')}</select><select class="event-assist assist-select">${make(r.assist,'No assist / N/A')}</select><button class="remove-row" type="button" onclick="this.parentElement.remove()">×</button></div>`;
   };window.eventRowHtml=eventRowHtml;
   motmOptions=function(f,selected=''){
     const all=[...teamPlayers(f.home).map(p=>({...p,team:f.home})),...teamPlayers(f.away).map(p=>({...p,team:f.away}))];let found=false;
-    let s='<option value="">Select Man of the Match…</option>'+all.map(p=>{const value=`${p.team}|||${p.name}`;const hit=value===selected;found=found||hit;return `<option value="${htmlEsc(value)}" ${hit?'selected':''}>${p.number?`#${p.number} • `:''}${htmlEsc(p.name)} — ${htmlEsc(p.team)}</option>`}).join('');
+    let s='<option value="">Select Man of the Match…</option>'+all.map(p=>{const value=`${p.team}|||${p.name}`;const hit=norm(value)===norm(selected);found=found||hit;return `<option value="${htmlEsc(value)}" ${hit?'selected':''}>${p.number?`#${p.number} • `:''}${htmlEsc(p.name)} — ${htmlEsc(p.team)}</option>`}).join('');
     if(selected&&!found){const q=eventPerson(selected);s+=`<option value="${htmlEsc(selected)}" selected>Saved • ${htmlEsc(q.name||selected)}${q.team?' — '+htmlEsc(q.team):''}</option>`}return s;
   };window.motmOptions=motmOptions;
 }
@@ -100,7 +106,7 @@ function syncAll(){
   TEAMS.forEach(team=>{try{if(typeof recalculatePlayerStatsFromFixtures==='function')recalculatePlayerStatsFromFixtures(team);if(typeof recalculateClubStatsFromFixtures==='function')recalculateClubStatsFromFixtures(team)}catch(e){console.warn('[NL4] squad-history recalc',team,e)}});
   try{if(typeof persist==='function')persist()}catch(_){ }
   window.__NL4_FINAL_SQUAD_SYNC_READY__=true;
-  const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V28 • FINAL SQUADS + HISTORICAL MATCH PLAYERS';
+  const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V29 • CURRENT SQUADS ONLY + PRESERVED MATCH HISTORY';
   const note=document.querySelector('.admin-note');if(note)note.dataset.finalSquads='2026-09-03';
   try{if(typeof render==='function')render()}catch(e){console.warn('[NL4] final squad render',e)}
   return true;
