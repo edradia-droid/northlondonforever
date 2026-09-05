@@ -61,10 +61,9 @@ jobs:
                   best=max(best,SequenceMatcher(None,full,cn).ratio())
               return best>=0.72
           def relaxed_current_match(name,current,loan_list):
-              if strong_match(name,current):return True
-              # Never use a one-token surname match if the same identity strongly
-              # matches an official player explicitly marked on loan.
+              # Explicit official loan identities always win over fuzzy/current matches.
               if strong_match(name,loan_list):return False
+              if strong_match(name,current):return True
               nt=set(tokens(name))
               if not nt:return False
               for c in current:
@@ -102,7 +101,6 @@ jobs:
           for team in squads:squads[team].sort(key=lambda p:({'Goalkeeper':0,'Defender':1,'Midfielder':2,'Forward':3}.get(p['position'],9),p['name'].lower()))
           payload={t:squads[t] for t in ui_order}
           if any(len(v)<15 for v in payload.values()):raise SystemExit('Implausibly small squad: '+str({k:len(v) for k,v in payload.items()}))
-          # Regression guards for known Arsenal edge cases from the official list.
           anames={norm(p['name']) for p in payload['Arsenal']}
           def has(substr):return any(norm(substr) in x for x in anames)
           if not has('Noni Madueke'):raise SystemExit('Arsenal current squad lost Noni Madueke during formal-name matching')
