@@ -36,49 +36,28 @@ if (NL4_IS_RECORD_ROOM) {
     if(!el)return false;
     const existing=[...el.options].filter(o=>o.value===ARSENAL);
     if(existing.length>1)existing.slice(1).forEach(o=>o.remove());
-    if(!existing.length){
-      el.add(new Option(ARSENAL,ARSENAL),0);
-    }else if(el.options[0]!==existing[0]){
-      el.removeChild(existing[0]);
-      el.add(existing[0],0);
-    }
+    if(!existing.length){el.add(new Option(ARSENAL,ARSENAL),0);}
+    else if(el.options[0]!==existing[0]){el.removeChild(existing[0]);el.add(existing[0],0);}
     return true;
   }
 
   function patchNativeRecordRoomBindings(){
     if(nativeBindingsPatched)return;
     try{
-      // The native Record Room was originally built for the other 19 clubs and
-      // explicitly returned [] for Arsenal in teamPlayers(). Rebind those native
-      // globals so every existing lineup/sub/event/MOTM path treats Arsenal exactly
-      // like the other clubs.
       if(typeof TEAM_ROSTERS!=='undefined') TEAM_ROSTERS[ARSENAL]=arsenalDirectory();
       if(typeof PLAYER_DIRECTORY!=='undefined') PLAYER_DIRECTORY[ARSENAL.toLowerCase()]=arsenalDirectory();
-
       if(typeof rosterForTeam==='function'){
         const nativeRosterForTeam=rosterForTeam;
-        rosterForTeam=function(team){
-          if(team===ARSENAL){
-            const current=(typeof db!=='undefined'&&db?.[ARSENAL]?.players)||[];
-            return (current.length?current:arsenalBase()).map(p=>({...p}));
-          }
-          return nativeRosterForTeam(team);
-        };
+        rosterForTeam=function(team){if(team===ARSENAL){const current=(typeof db!=='undefined'&&db?.[ARSENAL]?.players)||[];return (current.length?current:arsenalBase()).map(p=>({...p}));}return nativeRosterForTeam(team);};
         window.rosterForTeam=rosterForTeam;
       }
-
       if(typeof teamPlayers==='function'){
         const nativeTeamPlayers=teamPlayers;
-        teamPlayers=function(team){
-          if(team===ARSENAL) return (typeof db!=='undefined'&&db?.[ARSENAL]?.players)||arsenalBase();
-          return nativeTeamPlayers(team);
-        };
+        teamPlayers=function(team){if(team===ARSENAL)return (typeof db!=='undefined'&&db?.[ARSENAL]?.players)||arsenalBase();return nativeTeamPlayers(team);};
         window.teamPlayers=teamPlayers;
       }
       nativeBindingsPatched=true;
-    }catch(err){
-      console.warn('[NL4 Record Room] Native Arsenal binding patch failed:',err);
-    }
+    }catch(err){console.warn('[NL4 Record Room] Native Arsenal binding patch failed:',err);}
   }
 
   function registerArsenal(forceSelection=false){
@@ -88,38 +67,29 @@ if (NL4_IS_RECORD_ROOM) {
       if(typeof TEAMS==='undefined' || typeof db==='undefined') return false;
       while(TEAMS.includes(ARSENAL)) TEAMS.splice(TEAMS.indexOf(ARSENAL),1);
       TEAMS.unshift(ARSENAL);
+      const teamSelect=document.getElementById('teamSelect');
+      const inputTeam=document.getElementById('inputTeam');
+      ensureArsenalOption(teamSelect);ensureArsenalOption(inputTeam);
+      if(forceSelection){if(teamSelect)teamSelect.value=ARSENAL;if(inputTeam)inputTeam.value=ARSENAL;}
+      // Once the final post-window squad synchronizer has installed the 20 current
+      // squads, never let the old Arsenal bootstrap seed overwrite those final lists.
+      if(window.__NL4_FINAL_SQUAD_SYNC_READY__){
+        const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V28 • FINAL SQUADS + HISTORICAL MATCH PLAYERS';
+        return true;
+      }
       if(typeof TEAM_ROSTERS!=='undefined') TEAM_ROSTERS[ARSENAL]=arsenalDirectory();
       if(typeof PLAYER_DIRECTORY!=='undefined') PLAYER_DIRECTORY[ARSENAL.toLowerCase()]=arsenalDirectory();
-
       const existing=db[ARSENAL]||{club:blankClub(),players:[],fixtureData:{}};
       const savedByName=new Map((existing.players||[]).map(p=>[norm(p.name),p]));
       const merged=arsenalBase().map(p=>({...p,...(savedByName.get(norm(p.name))||{}),name:p.name,position:p.position,number:p.number}));
-      (existing.players||[]).forEach(p=>{if(p?.name&&!merged.some(x=>norm(x.name)===norm(p.name))) merged.push({...playerFromSeed([p.name,p.position||'Midfielder',p.number??null]),...p});});
+      (existing.players||[]).forEach(p=>{if(p?.name&&!merged.some(x=>norm(x.name)===norm(p.name)))merged.push({...playerFromSeed([p.name,p.position||'Midfielder',p.number??null]),...p});});
       db[ARSENAL]={...existing,club:{...blankClub(),...(existing.club||{})},players:merged,fixtureData:existing.fixtureData||{}};
-
       patchNativeRecordRoomBindings();
-
-      if(typeof ALL_FIXTURES!=='undefined') ALL_FIXTURES.filter(f=>f.home===ARSENAL||f.away===ARSENAL).forEach(f=>{
-        if(db[ARSENAL].fixtureData?.[f.id])return;
-        const opponent=f.home===ARSENAL?f.away:f.home;
-        const copy=db[opponent]?.fixtureData?.[f.id];
-        if(copy){
-          db[ARSENAL].fixtureData=db[ARSENAL].fixtureData||{};
-          db[ARSENAL].fixtureData[f.id]=clone(copy);
-        }
-      });
-
-      const teamSelect=document.getElementById('teamSelect');
-      const inputTeam=document.getElementById('inputTeam');
-      ensureArsenalOption(teamSelect);
-      ensureArsenalOption(inputTeam);
-      if(forceSelection){if(teamSelect)teamSelect.value=ARSENAL;if(inputTeam)inputTeam.value=ARSENAL;}
-
+      if(typeof ALL_FIXTURES!=='undefined')ALL_FIXTURES.filter(f=>f.home===ARSENAL||f.away===ARSENAL).forEach(f=>{if(db[ARSENAL].fixtureData?.[f.id])return;const opponent=f.home===ARSENAL?f.away:f.home;const copy=db[opponent]?.fixtureData?.[f.id];if(copy){db[ARSENAL].fixtureData=db[ARSENAL].fixtureData||{};db[ARSENAL].fixtureData[f.id]=clone(copy);}});
       if(typeof recalculatePlayerStatsFromFixtures==='function')recalculatePlayerStatsFromFixtures(ARSENAL);
       if(typeof recalculateClubStatsFromFixtures==='function')recalculateClubStatsFromFixtures(ARSENAL);
       try{if(typeof persist==='function')persist();}catch(_){ }
-
-      const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V26 • ARSENAL NATIVE 20-TEAM RECORD ROOM';
+      const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V27 • NATIVE 20-TEAM RECORD ROOM';
       const hero=document.querySelector('.hero p');if(hero)hero.textContent='Admin record workspace for all 20 Premier League clubs, including Arsenal, with full squad, fixtures, lineups, substitutions, events, match stats and season calculations.';
       const manualTitle=document.querySelector('.admin h3');if(manualTitle&&/Other 19 Teams/i.test(manualTitle.textContent||''))manualTitle.textContent='All 20 Teams Stat Input';
       return true;
@@ -132,27 +102,19 @@ if (NL4_IS_RECORD_ROOM) {
   window.addEventListener('pageshow',()=>registerArsenal(false));
   window.addEventListener('focus',()=>registerArsenal(false));
 
-  const watchSelectors=()=>{
-    ['teamSelect','inputTeam'].forEach(id=>{
-      const el=document.getElementById(id);
-      if(!el||el.dataset.arsenalWatch==='1')return;
-      el.dataset.arsenalWatch='1';
-      new MutationObserver(()=>{
-        if(![...el.options].some(o=>o.value===ARSENAL)) registerArsenal(false);
-      }).observe(el,{childList:true});
-    });
-  };
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{registerArsenal(false);watchSelectors();},{once:true});
-  else watchSelectors();
+  const watchSelectors=()=>{['teamSelect','inputTeam'].forEach(id=>{const el=document.getElementById(id);if(!el||el.dataset.arsenalWatch==='1')return;el.dataset.arsenalWatch='1';new MutationObserver(()=>{if(![...el.options].some(o=>o.value===ARSENAL))registerArsenal(false);}).observe(el,{childList:true});});};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{registerArsenal(false);watchSelectors();},{once:true});else watchSelectors();
 
   const loadScript=src=>new Promise((resolve,reject)=>{if(document.querySelector(`script[data-nl4-rr-src="${src}"]`))return resolve();const s=document.createElement('script');s.src=src;s.dataset.nl4RrSrc=src;s.onload=resolve;s.onerror=()=>reject(new Error(`Could not load ${src}`));document.head.appendChild(s);});
 
   Promise.resolve()
-    .then(()=>loadScript('record-room-match-meta.js?v=20260905-v4'))
+    .then(()=>loadScript('premier-league-final-squads-2026-27.js?v=20260905-final3'))
+    .then(()=>loadScript('record-room-final-squad-history-sync.js?v=20260905-v1'))
+    .then(()=>loadScript('record-room-match-meta.js?v=20260905-v5'))
     .then(()=>loadScript('record-room-player-match-stats.js?v=20260905-v5'))
     .then(()=>loadScript('record-room-matchday-2026-09-04.js?v=20260905-v1'))
     .then(()=>loadScript('record-room-goalkeeper-saves-v10.js?v=20260905-v2'))
-    .then(()=>{window.NL4RecordRoomGoalkeeperSaves?.install?.();window.NL4RecordRoomGoalkeeperSaves?.recalcAll?.();registerArsenal(false);})
+    .then(()=>{window.NL4RecordRoomGoalkeeperSaves?.install?.();window.NL4RecordRoomGoalkeeperSaves?.recalcAll?.();window.NL4FinalSquadHistorySync?.syncAll?.();registerArsenal(false);})
     .then(()=>loadScript('record-room-arsenal-public-sync.js?v=20260905-v4'))
     .then(()=>registerArsenal(false))
     .catch(err=>console.warn('[NL4 Record Room] Lightweight startup module failed:',err));
@@ -161,18 +123,8 @@ if (NL4_IS_RECORD_ROOM) {
   window.NL4LoadRecordRoomMaintenance=function(){
     if(toolsPromise)return toolsPromise;
     toolsPromise=Promise.resolve()
-      .then(()=>loadScript('record-room-supabase.js'))
-      .then(()=>loadScript('record-room-supabase-bridge.js'))
-      .then(()=>loadScript('record-room-completed-import.js'))
-      .then(()=>loadScript('record-room-participation-events-fix.js'))
-      .then(()=>loadScript('record-room-verified-stats.js'))
-      .then(()=>loadScript('record-room-canonical-events-v4.js'))
-      .then(()=>loadScript('record-room-assists-motm-v5.js'))
-      .then(()=>loadScript('record-room-player-calculation-v6.js'))
-      .then(()=>loadScript('record-room-event-display-fix.js'))
-      .then(()=>loadScript('record-room-season-sync-fix.js'))
-      .then(()=>loadScript('record-room-matchday-groups.js'))
-      .then(()=>{window.NL4RecordRoomGoalkeeperSaves?.install?.();window.NL4RecordRoomGoalkeeperSaves?.recalcAll?.();registerArsenal(false);})
+      .then(()=>loadScript('record-room-supabase.js')).then(()=>loadScript('record-room-supabase-bridge.js')).then(()=>loadScript('record-room-completed-import.js')).then(()=>loadScript('record-room-participation-events-fix.js')).then(()=>loadScript('record-room-verified-stats.js')).then(()=>loadScript('record-room-canonical-events-v4.js')).then(()=>loadScript('record-room-assists-motm-v5.js')).then(()=>loadScript('record-room-player-calculation-v6.js')).then(()=>loadScript('record-room-event-display-fix.js')).then(()=>loadScript('record-room-season-sync-fix.js')).then(()=>loadScript('record-room-matchday-groups.js'))
+      .then(()=>{window.NL4RecordRoomGoalkeeperSaves?.install?.();window.NL4RecordRoomGoalkeeperSaves?.recalcAll?.();window.NL4FinalSquadHistorySync?.syncAll?.();registerArsenal(false);})
       .catch(err=>{toolsPromise=null;throw err;});
     return toolsPromise;
   };
@@ -181,5 +133,9 @@ if (NL4_IS_RECORD_ROOM) {
 }
 
 if(document.getElementById('arsenalPremierLeagueStats') || document.getElementById('arsenalPlayerStats')){
-  const s=document.createElement('script');s.src='premier-league-record-room-sync.js?v=20260905-v2';s.defer=true;document.head.appendChild(s);
+  const data=document.createElement('script');
+  data.src='premier-league-final-squads-2026-27.js?v=20260905-final3';
+  data.onload=()=>{const s=document.createElement('script');s.src='premier-league-record-room-sync.js?v=20260905-v3';document.head.appendChild(s);};
+  data.onerror=()=>{const s=document.createElement('script');s.src='premier-league-record-room-sync.js?v=20260905-v3';document.head.appendChild(s);};
+  document.head.appendChild(data);
 }
