@@ -1,0 +1,79 @@
+name: Fix Record Room Single Authority V34
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-record-room-single-authority-v34.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make V34 the only Record Room build authority
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          # 1) Current-squad enforcer owns the visible build marker.
+          e=Path('nl4-current-squad-enforcer.js')
+          s=e.read_text()
+          s=s.replace("const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V31 • ALL 20 CURRENT SQUADS • HISTORY PRESERVED';",
+                      "const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V34 • SINGLE AUTHORITY • MOBILE + PC CURRENT SQUADS • HISTORY PRESERVED';")
+          e.write_text(s)
+
+          # 2) Historical sync preserves data only; it must never own/change the version marker.
+          h=Path('record-room-final-squad-history-sync.js')
+          x=h.read_text()
+          old="const marker=document.getElementById('buildMarker');if(marker&&!/BUILD V3[2-9]|BUILD V[4-9][0-9]/.test(marker.textContent||''))marker.textContent='BUILD V33 • CURRENT SQUADS + PRESERVED MATCH HISTORY';"
+          x=x.replace(old,"/* Build marker intentionally owned by nl4-current-squad-enforcer.js only. */")
+          h.write_text(x)
+
+          # 3) Supabase client must never switch V27/V29 markers and must not load stale duplicate squad assets.
+          p=Path('supabase-client.js')
+          q=p.read_text()
+          q=q.replace("const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V29 • CURRENT SQUADS ONLY + PRESERVED MATCH HISTORY';\n        return true;",
+                      "return true;")
+          q=q.replace("const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V27 • NATIVE 20-TEAM RECORD ROOM';\n      const hero=",
+                      "const hero=")
+          q=q.replace("const loadScript=src=>new Promise((resolve,reject)=>{if(document.querySelector(`script[data-nl4-rr-src=\"${src}\"]`))return resolve();const s=document.createElement('script');s.src=src;s.dataset.nl4RrSrc=src;s.onload=resolve;s.onerror=()=>reject(new Error(`Could not load ${src}`));document.head.appendChild(s);});",
+                      "const loadScript=src=>new Promise((resolve,reject)=>{const base=src.split('?')[0];const existing=[...document.scripts].find(el=>{try{return (el.getAttribute('src')||'').split('?')[0]===base}catch(_){return false}});if(existing)return resolve();const s=document.createElement('script');s.src=src;s.dataset.nl4RrSrc=src;s.onload=resolve;s.onerror=()=>reject(new Error(`Could not load ${src}`));document.head.appendChild(s);});")
+          q=q.replace("premier-league-final-squads-2026-27.js?v=20260905-final6","premier-league-final-squads-2026-27.js?v=20260905-final8")
+          q=q.replace("record-room-final-squad-history-sync.js?v=20260905-v2","record-room-final-squad-history-sync.js?v=20260905-v34")
+          p.write_text(q)
+
+          # 4) Record Room and admin links/cache keys all move together.
+          r=Path('record-room.html')
+          z=r.read_text()
+          z=z.replace('BUILD V33 • MOBILE + PC CURRENT SQUADS • HISTORY PRESERVED','BUILD V34 • SINGLE AUTHORITY • MOBILE + PC CURRENT SQUADS • HISTORY PRESERVED')
+          z=z.replace('nl4-current-squad-enforcer.js?v=20260905-v33','nl4-current-squad-enforcer.js?v=20260905-v34')
+          z=z.replace('record-room-final-squad-history-sync.js?v=20260905-v33','record-room-final-squad-history-sync.js?v=20260905-v34')
+          z=z.replace('supabase-client.js?v=20260905-v32','supabase-client.js?v=20260905-v34')
+          z=z.replace('record-room.html?v=20260905-v33','record-room.html?v=20260905-v34')
+          r.write_text(z)
+
+          a=Path('admin.html')
+          if a.exists():
+              y=a.read_text().replace('record-room.html?v=20260905-v33','record-room.html?v=20260905-v34')
+              a.write_text(y)
+          PY
+      - name: Verify no competing version writers remain
+        run: |
+          node --check nl4-current-squad-enforcer.js
+          node --check record-room-final-squad-history-sync.js
+          node --check supabase-client.js
+          grep -q 'BUILD V34 • SINGLE AUTHORITY' nl4-current-squad-enforcer.js
+          grep -q 'BUILD V34 • SINGLE AUTHORITY' record-room.html
+          ! grep -q "marker.textContent='BUILD V29" supabase-client.js
+          ! grep -q "marker.textContent='BUILD V27" supabase-client.js
+          ! grep -q "marker.textContent='BUILD V33" record-room-final-squad-history-sync.js
+          ! grep -q "marker.textContent='BUILD V31" nl4-current-squad-enforcer.js
+          grep -q 'record-room-final-squad-history-sync.js?v=20260905-v34' supabase-client.js
+          grep -q "const base=src.split('?')\[0\]" supabase-client.js
+      - name: Commit
+        run: |
+          git config user.name 'NL4 Automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add nl4-current-squad-enforcer.js record-room-final-squad-history-sync.js supabase-client.js record-room.html admin.html
+          git commit -m 'Stop Record Room version switching with single V34 authority' || exit 0
+          git push
