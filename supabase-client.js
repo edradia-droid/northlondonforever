@@ -107,7 +107,7 @@ if (NL4_IS_RECORD_ROOM) {
     .then(()=>loadScript('premier-league-final-squads-2026-27.js?v=20260905-final8'))
     .then(()=>loadScript('record-room-final-squad-history-sync.js?v=20260905-v34'))
     .then(()=>loadScript('record-room-match-meta.js?v=20260905-v34-mobile-info2'))
-    .then(()=>loadScript('record-room-mobile-match-info-v34.js?v=20260905-v34-mobile-helper1'))
+    .then(()=>loadScript('record-room-mobile-match-info-v34.js?v=20260906-cross-browser-sync2'))
     .then(()=>loadScript('record-room-player-match-stats.js?v=20260905-v5'))
     .then(()=>loadScript('record-room-matchday-2026-09-04.js?v=20260905-v1'))
     .then(()=>loadScript('record-room-goalkeeper-saves-v10.js?v=20260905-v2'))
