@@ -25,22 +25,60 @@ if (NL4_IS_RECORD_ROOM) {
   const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[’‘]/g,"'").replace(/\s+/g,' ').trim().toLowerCase();
   const playerFromSeed=([name,position,number])=>({name,position,number,appearances:0,starts:0,minutes:0,goals:0,assists:0,cleanSheets:0,yellowCards:0,redCards:0,mom:0,shots:0,shotsOnTarget:0,chancesCreated:0,tackles:0,interceptions:0,saves:0});
   const arsenalBase=()=>arsenalSeeds.map(playerFromSeed);
+  const arsenalDirectory=()=>arsenalSeeds.map(([name,position,number])=>({name,position,number}));
   const blankClub=()=>({matches:0,avgPossession:0,totalShots:0,shotsOnTarget:0,corners:0,cornerGoals:0,fouls:0,offsides:0,yellowCards:0,redCards:0,points:0});
   const clone=v=>JSON.parse(JSON.stringify(v));
 
   let rrRegistering=false;
+  let nativeBindingsPatched=false;
+
   function ensureArsenalOption(el){
     if(!el)return false;
     const existing=[...el.options].filter(o=>o.value===ARSENAL);
     if(existing.length>1)existing.slice(1).forEach(o=>o.remove());
     if(!existing.length){
-      const opt=new Option(ARSENAL,ARSENAL);
-      el.add(opt,0);
+      el.add(new Option(ARSENAL,ARSENAL),0);
     }else if(el.options[0]!==existing[0]){
       el.removeChild(existing[0]);
       el.add(existing[0],0);
     }
     return true;
+  }
+
+  function patchNativeRecordRoomBindings(){
+    if(nativeBindingsPatched)return;
+    try{
+      // The native Record Room was originally built for the other 19 clubs and
+      // explicitly returned [] for Arsenal in teamPlayers(). Rebind those native
+      // globals so every existing lineup/sub/event/MOTM path treats Arsenal exactly
+      // like the other clubs.
+      if(typeof TEAM_ROSTERS!=='undefined') TEAM_ROSTERS[ARSENAL]=arsenalDirectory();
+      if(typeof PLAYER_DIRECTORY!=='undefined') PLAYER_DIRECTORY[ARSENAL.toLowerCase()]=arsenalDirectory();
+
+      if(typeof rosterForTeam==='function'){
+        const nativeRosterForTeam=rosterForTeam;
+        rosterForTeam=function(team){
+          if(team===ARSENAL){
+            const current=(typeof db!=='undefined'&&db?.[ARSENAL]?.players)||[];
+            return (current.length?current:arsenalBase()).map(p=>({...p}));
+          }
+          return nativeRosterForTeam(team);
+        };
+        window.rosterForTeam=rosterForTeam;
+      }
+
+      if(typeof teamPlayers==='function'){
+        const nativeTeamPlayers=teamPlayers;
+        teamPlayers=function(team){
+          if(team===ARSENAL) return (typeof db!=='undefined'&&db?.[ARSENAL]?.players)||arsenalBase();
+          return nativeTeamPlayers(team);
+        };
+        window.teamPlayers=teamPlayers;
+      }
+      nativeBindingsPatched=true;
+    }catch(err){
+      console.warn('[NL4 Record Room] Native Arsenal binding patch failed:',err);
+    }
   }
 
   function registerArsenal(forceSelection=false){
@@ -50,22 +88,26 @@ if (NL4_IS_RECORD_ROOM) {
       if(typeof TEAMS==='undefined' || typeof db==='undefined') return false;
       while(TEAMS.includes(ARSENAL)) TEAMS.splice(TEAMS.indexOf(ARSENAL),1);
       TEAMS.unshift(ARSENAL);
-      if(typeof TEAM_ROSTERS!=='undefined') TEAM_ROSTERS[ARSENAL]=arsenalBase().map(p=>({name:p.name,position:p.position,number:p.number}));
+      if(typeof TEAM_ROSTERS!=='undefined') TEAM_ROSTERS[ARSENAL]=arsenalDirectory();
+      if(typeof PLAYER_DIRECTORY!=='undefined') PLAYER_DIRECTORY[ARSENAL.toLowerCase()]=arsenalDirectory();
+
       const existing=db[ARSENAL]||{club:blankClub(),players:[],fixtureData:{}};
       const savedByName=new Map((existing.players||[]).map(p=>[norm(p.name),p]));
       const merged=arsenalBase().map(p=>({...p,...(savedByName.get(norm(p.name))||{}),name:p.name,position:p.position,number:p.number}));
       (existing.players||[]).forEach(p=>{if(p?.name&&!merged.some(x=>norm(x.name)===norm(p.name))) merged.push({...playerFromSeed([p.name,p.position||'Midfielder',p.number??null]),...p});});
       db[ARSENAL]={...existing,club:{...blankClub(),...(existing.club||{})},players:merged,fixtureData:existing.fixtureData||{}};
 
-      if(!window.__NL4_RR_ARSENAL_ROSTER_OVERRIDE__){
-        const originalRosterForTeam=typeof rosterForTeam==='function'?rosterForTeam:null;
-        const originalTeamPlayers=typeof teamPlayers==='function'?teamPlayers:null;
-        window.__NL4_RR_ARSENAL_ROSTER_OVERRIDE__=true;
-        window.rosterForTeam=function(team){if(team===ARSENAL){const current=(db[ARSENAL]?.players||[]);return current.length?current.map(p=>({...p})):arsenalBase();}return originalRosterForTeam?originalRosterForTeam(team):[];};
-        window.teamPlayers=function(team){if(team===ARSENAL)return db[ARSENAL]?.players||[];return originalTeamPlayers?originalTeamPlayers(team):(db[team]?.players||[]);};
-      }
+      patchNativeRecordRoomBindings();
 
-      if(typeof ALL_FIXTURES!=='undefined') ALL_FIXTURES.filter(f=>f.home===ARSENAL||f.away===ARSENAL).forEach(f=>{if(db[ARSENAL].fixtureData?.[f.id])return;const opponent=f.home===ARSENAL?f.away:f.home;const copy=db[opponent]?.fixtureData?.[f.id];if(copy){db[ARSENAL].fixtureData=db[ARSENAL].fixtureData||{};db[ARSENAL].fixtureData[f.id]=clone(copy);}});
+      if(typeof ALL_FIXTURES!=='undefined') ALL_FIXTURES.filter(f=>f.home===ARSENAL||f.away===ARSENAL).forEach(f=>{
+        if(db[ARSENAL].fixtureData?.[f.id])return;
+        const opponent=f.home===ARSENAL?f.away:f.home;
+        const copy=db[opponent]?.fixtureData?.[f.id];
+        if(copy){
+          db[ARSENAL].fixtureData=db[ARSENAL].fixtureData||{};
+          db[ARSENAL].fixtureData[f.id]=clone(copy);
+        }
+      });
 
       const teamSelect=document.getElementById('teamSelect');
       const inputTeam=document.getElementById('inputTeam');
@@ -75,19 +117,17 @@ if (NL4_IS_RECORD_ROOM) {
 
       if(typeof recalculatePlayerStatsFromFixtures==='function')recalculatePlayerStatsFromFixtures(ARSENAL);
       if(typeof recalculateClubStatsFromFixtures==='function')recalculateClubStatsFromFixtures(ARSENAL);
-      const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V25 • ARSENAL MOBILE TEAM FIX';
-      const hero=document.querySelector('.hero p');if(hero)hero.textContent='Admin record workspace for all 20 Premier League clubs, including Arsenal. Goalkeeper season saves are rebuilt from every completed fixture after native player recalculation and forced into the rendered player table.';
+      try{if(typeof persist==='function')persist();}catch(_){ }
+
+      const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V26 • ARSENAL NATIVE 20-TEAM RECORD ROOM';
+      const hero=document.querySelector('.hero p');if(hero)hero.textContent='Admin record workspace for all 20 Premier League clubs, including Arsenal, with full squad, fixtures, lineups, substitutions, events, match stats and season calculations.';
       const manualTitle=document.querySelector('.admin h3');if(manualTitle&&/Other 19 Teams/i.test(manualTitle.textContent||''))manualTitle.textContent='All 20 Teams Stat Input';
       return true;
     }catch(err){console.warn('[NL4 Record Room] Arsenal registration failed:',err);return false;}
     finally{rrRegistering=false;}
   }
 
-  // Run after the native Record Room script has created its 19-team selectors.
   registerArsenal(true);
-
-  // Mobile browsers can finish/rebuild long select lists after the first script pass.
-  // Re-check several times without forcing the selected team, so Arsenal cannot disappear.
   [0,80,250,700,1500,3000].forEach(delay=>setTimeout(()=>registerArsenal(false),delay));
   window.addEventListener('pageshow',()=>registerArsenal(false));
   window.addEventListener('focus',()=>registerArsenal(false));
