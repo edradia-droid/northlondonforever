@@ -1,0 +1,53 @@
+name: Fix Record Room V29 Regression V33
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-record-room-v29-regression-v33.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stop historical sync from downgrading Record Room marker
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          h=Path('record-room-final-squad-history-sync.js')
+          s=h.read_text()
+          old="const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V29 • CURRENT SQUADS ONLY + PRESERVED MATCH HISTORY';"
+          new="const marker=document.getElementById('buildMarker');if(marker&&!/BUILD V3[2-9]|BUILD V[4-9][0-9]/.test(marker.textContent||''))marker.textContent='BUILD V33 • CURRENT SQUADS + PRESERVED MATCH HISTORY';"
+          if old not in s:
+              raise SystemExit('V29 marker line not found')
+          s=s.replace(old,new)
+          h.write_text(s)
+
+          r=Path('record-room.html')
+          x=r.read_text()
+          x=x.replace('record-room-final-squad-history-sync.js?v=20260905-v31','record-room-final-squad-history-sync.js?v=20260905-v33')
+          x=x.replace('nl4-current-squad-enforcer.js?v=20260905-v32','nl4-current-squad-enforcer.js?v=20260905-v33')
+          x=x.replace('BUILD V32 • MOBILE + PC CURRENT SQUADS • HISTORY PRESERVED','BUILD V33 • MOBILE + PC CURRENT SQUADS • HISTORY PRESERVED')
+          x=x.replace('record-room.html?v=20260905-v32','record-room.html?v=20260905-v33')
+          r.write_text(x)
+
+          a=Path('admin.html')
+          if a.exists():
+              y=a.read_text().replace('record-room.html?v=20260905-v32','record-room.html?v=20260905-v33')
+              a.write_text(y)
+          PY
+      - name: Verify regression removed
+        run: |
+          ! grep -q "BUILD V29 • CURRENT SQUADS ONLY + PRESERVED MATCH HISTORY" record-room-final-squad-history-sync.js
+          grep -q 'BUILD V33' record-room.html
+          grep -q '20260905-v33' record-room.html
+          node --check record-room-final-squad-history-sync.js
+          node --check nl4-current-squad-enforcer.js
+      - name: Commit
+        run: |
+          git config user.name 'NL4 Automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add record-room-final-squad-history-sync.js record-room.html admin.html
+          git commit -m 'Stop Record Room historical sync reverting to V29' || exit 0
+          git push
