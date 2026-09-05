@@ -56,7 +56,7 @@ function enforceRecordRoom(){
       current.push({...zeros(name,f.position||'Midfielder',f.number??null),...(old||{}),name,position:f.position||old?.position||'Midfielder',number:old?.number??f.number??null,current:true,historical:false,finalName:f.name,webName:f.webName,fplId:f.fplId});
     }
     const currentNorm=new Set(current.map(p=>norm(p.name)));
-    const archive=[...(Array.isArray(window.db[team].historicalPlayers)?window.db[team].historicalPlayers:[])];
+    const archive=[...(Array.isArray(rrDb[team].historicalPlayers)?rrDb[team].historicalPlayers:[])];
     existing.forEach(p=>{if(p?.name&&!used.has(p)&&!currentNorm.has(norm(p.name))&&!archive.some(h=>norm(h.name)===norm(p.name)))archive.push({...p,current:false,historical:true})});
     fixtureHistoricalNames(team).forEach(name=>{if(!currentNorm.has(norm(name))&&!archive.some(h=>norm(h.name)===norm(name)))archive.push({...zeros(name),current:false,historical:true})});
     rrDb[team].historicalPlayers=archive;
