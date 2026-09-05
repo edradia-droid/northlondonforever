@@ -167,20 +167,29 @@
     const b=document.createElement('button');
     b.id='rrPushSupabase';b.type='button';b.textContent='PUSH LOCAL TO SUPABASE';
     b.title='Uploads the current browser Record Room data to the shared Supabase tables.';
+    b.style.borderColor='rgba(73,209,125,.55)';
+    b.style.color='#49d17d';
     b.addEventListener('click',async()=>{
       if(b.disabled)return;
       b.disabled=true;b.textContent='PUSHING TO SUPABASE…';
       try{
         const result=await pushAllCurrent();
-        b.textContent=result.available?`SUPABASE SAVED • ${result.saved} MATCHES`:`PUSH PARTIAL • ${result.saved||0} SAVED / ${result.failed||0} FAILED`;
+        if(result.available){b.textContent=`SUPABASE SAVED • ${result.saved} MATCHES`;}
+        else if(result.error){b.textContent='SUPABASE NOT READY • RETRY';console.warn('[NL4 Record Room] Push unavailable:',result.error);}
+        else{b.textContent=`PUSH PARTIAL • ${result.saved||0} SAVED / ${result.failed||0} FAILED`;}
       }catch(error){console.warn('[NL4 Record Room] Full push failed:',error);b.textContent='PUSH FAILED • RETRY';}
       finally{setTimeout(()=>{b.disabled=false;b.textContent='PUSH LOCAL TO SUPABASE';},5000);}
     });
     actions.insertBefore(b,document.getElementById('recordRoomLogout')||null);
   }
 
+  addPushButton();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addPushButton,{once:true});
+
   async function boot(){
+    addPushButton();
     for(let i=0;i<40&&!rr();i++) await wait(100);
+    addPushButton();
     if(!rr()) return;
     const ready=await rr().probe(); if(!ready.available) return;
     if(!hasMeaningfulLocalData()){
@@ -190,7 +199,6 @@
     }
     document.getElementById('savePlayer')?.addEventListener('click',()=>setTimeout(mirrorPlayers,0));
     document.addEventListener('click',e=>{if(e.target?.closest?.('.detail-save'))setTimeout(mirrorOpenFixture,140);});
-    addPushButton();
     window.NL4RecordRoomPushAll=pushAllCurrent;
     console.log('[NL4 Record Room] Supabase bridge active');
   }
