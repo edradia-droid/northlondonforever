@@ -58,7 +58,7 @@ if (NL4_IS_RECORD_ROOM) {
 
   const loadScript=src=>new Promise((resolve,reject)=>{if(document.querySelector(`script[data-nl4-rr-src="${src}"]`))return resolve();const s=document.createElement('script');s.src=src;s.dataset.nl4RrSrc=src;s.onload=resolve;s.onerror=()=>reject(new Error(`Could not load ${src}`));document.head.appendChild(s);});
   // Lightweight player-match inputs and public-stat bridge are automatic. Heavy maintenance remains manual.
-  loadScript('record-room-player-match-stats.js?v=20260905-v1').catch(err=>console.warn('[NL4 Record Room] Player match stats failed:',err));
+  loadScript('record-room-player-match-stats.js?v=20260905-v2').catch(err=>console.warn('[NL4 Record Room] Player match stats failed:',err));
   loadScript('record-room-arsenal-public-sync.js?v=20260905-v3').catch(err=>console.warn('[NL4 Record Room] Public stats bridge failed:',err));
 
   let toolsPromise=null;
