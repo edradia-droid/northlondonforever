@@ -48,8 +48,8 @@ if (NL4_IS_RECORD_ROOM) {
       const teamSelect=document.getElementById('teamSelect'),inputTeam=document.getElementById('inputTeam');if(teamSelect)teamSelect.value=ARSENAL;if(inputTeam)inputTeam.value=ARSENAL;
       if(typeof recalculatePlayerStatsFromFixtures==='function')recalculatePlayerStatsFromFixtures(ARSENAL);
       if(typeof recalculateClubStatsFromFixtures==='function')recalculateClubStatsFromFixtures(ARSENAL);
-      const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V21 • AUTHORITATIVE GK SAVES';
-      const hero=document.querySelector('.hero p');if(hero)hero.textContent='Admin record workspace for all 20 Premier League clubs, including Arsenal. Goalkeeper saves are now recalculated from completed-match shots-on-target and score data after every import/save, with season totals rebuilt from those match-derived values.';
+      const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V22 • SEASON GK SAVES + NAME ALIASES';
+      const hero=document.querySelector('.hero p');if(hero)hero.textContent='Admin record workspace for all 20 Premier League clubs, including Arsenal. Goalkeeper season saves now sum every completed match using alias-safe goalkeeper matching, corrected verified match data and final post-import recalculation.';
       const manualTitle=document.querySelector('.admin h3');if(manualTitle&&/Other 19 Teams/i.test(manualTitle.textContent||''))manualTitle.textContent='All 20 Teams Stat Input';
       if(typeof render==='function')render();
     }catch(err){console.warn('[NL4 Record Room] Arsenal registration failed:',err);}
@@ -58,12 +58,11 @@ if (NL4_IS_RECORD_ROOM) {
 
   const loadScript=src=>new Promise((resolve,reject)=>{if(document.querySelector(`script[data-nl4-rr-src="${src}"]`))return resolve();const s=document.createElement('script');s.src=src;s.dataset.nl4RrSrc=src;s.onload=resolve;s.onerror=()=>reject(new Error(`Could not load ${src}`));document.head.appendChild(s);});
 
-  // Strict startup order: match data first, goalkeeper totals last, public sync after that.
   Promise.resolve()
     .then(()=>loadScript('record-room-match-meta.js?v=20260905-v3'))
     .then(()=>loadScript('record-room-player-match-stats.js?v=20260905-v5'))
     .then(()=>loadScript('record-room-matchday-2026-09-04.js?v=20260905-v1'))
-    .then(()=>loadScript('record-room-goalkeeper-saves-v8.js?v=20260905-v1'))
+    .then(()=>loadScript('record-room-goalkeeper-saves-v9.js?v=20260905-v1'))
     .then(()=>{window.NL4RecordRoomGoalkeeperSaves?.install?.();})
     .then(()=>loadScript('record-room-arsenal-public-sync.js?v=20260905-v4'))
     .catch(err=>console.warn('[NL4 Record Room] Lightweight startup module failed:',err));
