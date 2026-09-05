@@ -27,9 +27,10 @@
   }
 
   async function mirrorPlayers(){
-    const api=rr(); if(!api) return;
+    const api=rr(); if(!api) return {available:false};
     const result=await api.savePlayers(playerRows());
     if(!result.available) console.warn('[NL4 Record Room] Player mirror stayed on local fallback.');
+    return result;
   }
 
   async function resolveMatch(f){
@@ -89,20 +90,62 @@
     };
   }
 
+  function savedFixtureFor(f){
+    return db?.[f.home]?.fixtureData?.[f.id] || db?.[f.away]?.fixtureData?.[f.id] || null;
+  }
+
+  async function mirrorFixture(f,s){
+    const match=await resolveMatch(f);
+    if(!match){console.warn('[NL4 Record Room] Could not resolve Supabase match',f);return {available:false};}
+    return rr().saveMatch(match.id,matchPayload(f,s));
+  }
+
   async function mirrorOpenFixture(){
     if(typeof ALL_FIXTURES==='undefined'||typeof db==='undefined') return;
     const box=document.getElementById('fixtureDetail');
     const localId=Number(box?.dataset?.fixtureId); if(!Number.isFinite(localId)) return;
     const f=ALL_FIXTURES.find(x=>Number(x.id)===localId); if(!f) return;
-    const owner=db[f.home]?f.home:(db[f.away]?f.away:null); if(!owner) return;
-    const s=db[owner]?.fixtureData?.[localId]; if(!s) return;
-    const match=await resolveMatch(f); if(!match){console.warn('[NL4 Record Room] Could not resolve Supabase match',f);return;}
-    const result=await rr().saveMatch(match.id,matchPayload(f,s));
+    const s=savedFixtureFor(f); if(!s) return;
+    const result=await mirrorFixture(f,s);
     const state=document.getElementById('fixtureSaveState');
     if(result.available){
       await mirrorPlayers();
       if(state){state.style.color='#49d17d';state.textContent='SUPABASE CONFIRMED';setTimeout(()=>{if(state)state.textContent='';},3000);}
     }else if(state){state.style.color='#ffb347';state.textContent='LOCAL SAVED • SUPABASE NOT CONFIRMED';}
+  }
+
+  function hasMeaningfulLocalData(){
+    if(typeof TEAMS==='undefined'||typeof db==='undefined') return false;
+    return TEAMS.some(team=>{
+      const players=db[team]?.players||[];
+      if(players.some(p=>['appearances','starts','minutes','goals','assists','yellowCards','redCards','mom','shots','shotsOnTarget','chancesCreated','tackles','interceptions','saves'].some(k=>(Number(p[k])||0)>0))) return true;
+      return Object.values(db[team]?.fixtureData||{}).some(s=>s&&(
+        s.homeScore!=null||s.awayScore!=null||(s.homeLineup||[]).some(Boolean)||(s.awayLineup||[]).some(Boolean)||
+        (s.homeSubs||[]).length||(s.awaySubs||[]).length||(s.events||[]).length||norm(s.manOfTheMatch)||
+        Object.values(s.matchDetails||{}).some(v=>v!==null&&v!==undefined&&v!=='')
+      ));
+    });
+  }
+
+  async function pushAllCurrent(){
+    if(typeof ALL_FIXTURES==='undefined'||typeof db==='undefined') return {available:false,error:new Error('Record Room data unavailable')};
+    const api=rr(); if(!api) return {available:false,error:new Error('Supabase bridge unavailable')};
+    const ready=await api.probe(); if(!ready.available) return ready;
+    const playerResult=await mirrorPlayers();
+    if(!playerResult.available) return playerResult;
+    let saved=0,failed=0;
+    for(const f of ALL_FIXTURES){
+      const s=savedFixtureFor(f);
+      if(!s) continue;
+      const meaningful=s.homeScore!=null||s.awayScore!=null||(s.homeLineup||[]).some(Boolean)||(s.awayLineup||[]).some(Boolean)||
+        (s.homeSubs||[]).length||(s.awaySubs||[]).length||(s.events||[]).length||norm(s.manOfTheMatch)||
+        Object.values(s.matchDetails||{}).some(v=>v!==null&&v!==undefined&&v!=='');
+      if(!meaningful) continue;
+      const result=await mirrorFixture(f,s);
+      if(result.available)saved++;else failed++;
+    }
+    console.log(`[NL4 Record Room] Full local push finished: ${saved} matches saved, ${failed} failed.`);
+    return {available:failed===0,saved,failed};
   }
 
   function importPlayers(rows){
@@ -118,13 +161,37 @@
     try{if(typeof persist==='function')persist();if(typeof render==='function')render();}catch(e){console.warn(e);}
   }
 
+  function addPushButton(){
+    const actions=document.querySelector('.admin-record-actions');
+    if(!actions||document.getElementById('rrPushSupabase')) return;
+    const b=document.createElement('button');
+    b.id='rrPushSupabase';b.type='button';b.textContent='PUSH LOCAL TO SUPABASE';
+    b.title='Uploads the current browser Record Room data to the shared Supabase tables.';
+    b.addEventListener('click',async()=>{
+      if(b.disabled)return;
+      b.disabled=true;b.textContent='PUSHING TO SUPABASE…';
+      try{
+        const result=await pushAllCurrent();
+        b.textContent=result.available?`SUPABASE SAVED • ${result.saved} MATCHES`:`PUSH PARTIAL • ${result.saved||0} SAVED / ${result.failed||0} FAILED`;
+      }catch(error){console.warn('[NL4 Record Room] Full push failed:',error);b.textContent='PUSH FAILED • RETRY';}
+      finally{setTimeout(()=>{b.disabled=false;b.textContent='PUSH LOCAL TO SUPABASE';},5000);}
+    });
+    actions.insertBefore(b,document.getElementById('recordRoomLogout')||null);
+  }
+
   async function boot(){
     for(let i=0;i<40&&!rr();i++) await wait(100);
     if(!rr()) return;
     const ready=await rr().probe(); if(!ready.available) return;
-    const loaded=await rr().loadPlayers(SEASON); if(loaded.available&&loaded.data?.length) importPlayers(loaded.data);
+    if(!hasMeaningfulLocalData()){
+      const loaded=await rr().loadPlayers(SEASON); if(loaded.available&&loaded.data?.length) importPlayers(loaded.data);
+    }else{
+      console.log('[NL4 Record Room] Kept newer local player state; skipped stale shared player import.');
+    }
     document.getElementById('savePlayer')?.addEventListener('click',()=>setTimeout(mirrorPlayers,0));
-    document.addEventListener('click',e=>{if(e.target?.classList?.contains('detail-save'))setTimeout(mirrorOpenFixture,140);});
+    document.addEventListener('click',e=>{if(e.target?.closest?.('.detail-save'))setTimeout(mirrorOpenFixture,140);});
+    addPushButton();
+    window.NL4RecordRoomPushAll=pushAllCurrent;
     console.log('[NL4 Record Room] Supabase bridge active');
   }
   boot().catch(err=>console.warn('[NL4 Record Room] Bridge fallback:',err));
