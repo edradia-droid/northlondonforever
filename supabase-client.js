@@ -72,7 +72,6 @@ if (NL4_IS_RECORD_ROOM) {
       ensureArsenalOption(teamSelect);ensureArsenalOption(inputTeam);
       if(forceSelection){if(teamSelect)teamSelect.value=ARSENAL;if(inputTeam)inputTeam.value=ARSENAL;}
       if(window.__NL4_FINAL_SQUAD_SYNC_READY__){
-        const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V29 • CURRENT SQUADS ONLY + PRESERVED MATCH HISTORY';
         return true;
       }
       if(typeof TEAM_ROSTERS!=='undefined') TEAM_ROSTERS[ARSENAL]=arsenalDirectory();
@@ -87,7 +86,6 @@ if (NL4_IS_RECORD_ROOM) {
       if(typeof recalculatePlayerStatsFromFixtures==='function')recalculatePlayerStatsFromFixtures(ARSENAL);
       if(typeof recalculateClubStatsFromFixtures==='function')recalculateClubStatsFromFixtures(ARSENAL);
       try{if(typeof persist==='function')persist();}catch(_){ }
-      const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V27 • NATIVE 20-TEAM RECORD ROOM';
       const hero=document.querySelector('.hero p');if(hero)hero.textContent='Admin record workspace for all 20 Premier League clubs, including Arsenal, with full squad, fixtures, lineups, substitutions, events, match stats and season calculations.';
       const manualTitle=document.querySelector('.admin h3');if(manualTitle&&/Other 19 Teams/i.test(manualTitle.textContent||''))manualTitle.textContent='All 20 Teams Stat Input';
       return true;
@@ -103,11 +101,11 @@ if (NL4_IS_RECORD_ROOM) {
   const watchSelectors=()=>{['teamSelect','inputTeam'].forEach(id=>{const el=document.getElementById(id);if(!el||el.dataset.arsenalWatch==='1')return;el.dataset.arsenalWatch='1';new MutationObserver(()=>{if(![...el.options].some(o=>o.value===ARSENAL))registerArsenal(false);}).observe(el,{childList:true});});};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{registerArsenal(false);watchSelectors();},{once:true});else watchSelectors();
 
-  const loadScript=src=>new Promise((resolve,reject)=>{if(document.querySelector(`script[data-nl4-rr-src="${src}"]`))return resolve();const s=document.createElement('script');s.src=src;s.dataset.nl4RrSrc=src;s.onload=resolve;s.onerror=()=>reject(new Error(`Could not load ${src}`));document.head.appendChild(s);});
+  const loadScript=src=>new Promise((resolve,reject)=>{const base=src.split('?')[0];const existing=[...document.scripts].find(el=>{try{return (el.getAttribute('src')||'').split('?')[0]===base}catch(_){return false}});if(existing)return resolve();const s=document.createElement('script');s.src=src;s.dataset.nl4RrSrc=src;s.onload=resolve;s.onerror=()=>reject(new Error(`Could not load ${src}`));document.head.appendChild(s);});
 
   Promise.resolve()
-    .then(()=>loadScript('premier-league-final-squads-2026-27.js?v=20260905-final6'))
-    .then(()=>loadScript('record-room-final-squad-history-sync.js?v=20260905-v2'))
+    .then(()=>loadScript('premier-league-final-squads-2026-27.js?v=20260905-final8'))
+    .then(()=>loadScript('record-room-final-squad-history-sync.js?v=20260905-v34'))
     .then(()=>loadScript('record-room-match-meta.js?v=20260905-v5'))
     .then(()=>loadScript('record-room-player-match-stats.js?v=20260905-v5'))
     .then(()=>loadScript('record-room-matchday-2026-09-04.js?v=20260905-v1'))
@@ -132,7 +130,7 @@ if (NL4_IS_RECORD_ROOM) {
 
 if(document.getElementById('arsenalPremierLeagueStats') || document.getElementById('arsenalPlayerStats')){
   const data=document.createElement('script');
-  data.src='premier-league-final-squads-2026-27.js?v=20260905-final6';
+  data.src='premier-league-final-squads-2026-27.js?v=20260905-final8';
   data.onload=()=>{const s=document.createElement('script');s.src='premier-league-record-room-sync.js?v=20260905-v6';document.head.appendChild(s);};
   data.onerror=()=>{const s=document.createElement('script');s.src='premier-league-record-room-sync.js?v=20260905-v6';document.head.appendChild(s);};
   document.head.appendChild(data);

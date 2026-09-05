@@ -77,7 +77,7 @@ function enforceRecordRoom(){
   };
   try{window.playerOptions=(team,selected='')=>selectedOption(team,selected);playerOptions=window.playerOptions;}catch(_){ }
   try{if(typeof window.persist==='function')window.persist();else if(typeof persist==='function')persist();}catch(_){ }
-  const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V31 • ALL 20 CURRENT SQUADS • HISTORY PRESERVED';
+  const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V34 • SINGLE AUTHORITY • MOBILE + PC CURRENT SQUADS • HISTORY PRESERVED';
   return true;
 }
 function renderEplArsenal(){
