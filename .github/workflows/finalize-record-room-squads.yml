@@ -1,0 +1,42 @@
+name: Finalize Record Room Squads
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/finalize-record-room-squads.yml'
+permissions:
+  contents: write
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache bust final squad sources
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('supabase-client.js')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('20260905-final3','20260905-final4').replace('premier-league-record-room-sync.js?v=20260905-v3','premier-league-record-room-sync.js?v=20260905-v4')
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Verify JavaScript syntax
+        run: |
+          node --check supabase-client.js
+          node --check record-room-final-squad-history-sync.js
+          node --check premier-league-record-room-sync.js
+          node --check premier-league-final-squads-2026-27.js
+      - name: Verify required behavior markers
+        run: |
+          grep -q 'Saved •' record-room-final-squad-history-sync.js
+          grep -q 'BUILD V28' record-room-final-squad-history-sync.js
+          grep -q 'NL4_FINAL_PL_SQUADS' premier-league-record-room-sync.js
+          grep -q 'current:true' record-room-final-squad-history-sync.js
+          grep -q 'historical:true' record-room-final-squad-history-sync.js
+      - name: Commit final integration
+        run: |
+          git config user.name 'NL4 Automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add supabase-client.js
+          git commit -m 'Finalize current squads and historical Record Room players' || exit 0
+          git push
