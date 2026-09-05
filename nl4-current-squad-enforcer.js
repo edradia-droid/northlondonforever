@@ -29,7 +29,8 @@ function displayName(feedPlayer,old){
 }
 function fixtureHistoricalNames(team){
   const out=new Set();
-  const fd=window.db?.[team]?.fixtureData||{};
+  const rrDb=(typeof db!=='undefined'&&db)||window.db;
+  const fd=rrDb?.[team]?.fixtureData||{};
   const evPerson=v=>{const parts=String(v||'').split('|||');return {team:parts.shift()||'',name:parts.join('|||')}};
   Object.values(fd).forEach(s=>{
     ['homeLineup','awayLineup'].forEach(k=>(Array.isArray(s?.[k])?s[k]:[]).forEach(n=>n&&out.add(n)));
@@ -40,10 +41,14 @@ function fixtureHistoricalNames(team){
   return out;
 }
 function enforceRecordRoom(){
-  if(!window.db||!Array.isArray(window.TEAMS))return false;
-  for(const team of window.TEAMS){
-    const feed=FINAL[team];if(!Array.isArray(feed)||!feed.length||!window.db[team])continue;
-    const existing=Array.isArray(window.db[team].players)?window.db[team].players:[];
+  const rrDb=(typeof db!=='undefined'&&db)||window.db;
+  const rrTeams=(typeof TEAMS!=='undefined'&&TEAMS)||window.TEAMS;
+  const rrRosters=(typeof TEAM_ROSTERS!=='undefined'&&TEAM_ROSTERS)||window.TEAM_ROSTERS;
+  const rrDirectory=(typeof PLAYER_DIRECTORY!=='undefined'&&PLAYER_DIRECTORY)||window.PLAYER_DIRECTORY;
+  if(!rrDb||!Array.isArray(rrTeams))return false;
+  for(const team of rrTeams){
+    const feed=FINAL[team];if(!Array.isArray(feed)||!feed.length||!rrDb[team])continue;
+    const existing=Array.isArray(rrDb[team].players)?rrDb[team].players:[];
     const used=new Set();const current=[];
     for(const f of feed){
       const old=matchCurrent(f,existing,used);if(old)used.add(old);
@@ -54,25 +59,25 @@ function enforceRecordRoom(){
     const archive=[...(Array.isArray(window.db[team].historicalPlayers)?window.db[team].historicalPlayers:[])];
     existing.forEach(p=>{if(p?.name&&!used.has(p)&&!currentNorm.has(norm(p.name))&&!archive.some(h=>norm(h.name)===norm(p.name)))archive.push({...p,current:false,historical:true})});
     fixtureHistoricalNames(team).forEach(name=>{if(!currentNorm.has(norm(name))&&!archive.some(h=>norm(h.name)===norm(name)))archive.push({...zeros(name),current:false,historical:true})});
-    window.db[team].historicalPlayers=archive;
-    window.db[team].players=current;
-    if(typeof window.TEAM_ROSTERS!=='undefined')window.TEAM_ROSTERS[team]=current.map(p=>({name:p.name,position:p.position,number:p.number}));
-    if(typeof window.PLAYER_DIRECTORY!=='undefined')window.PLAYER_DIRECTORY[norm(team)]=current.map(p=>({name:p.name,position:p.position,number:p.number}));
+    rrDb[team].historicalPlayers=archive;
+    rrDb[team].players=current;
+    if(rrRosters)rrRosters[team]=current.map(p=>({name:p.name,position:p.position,number:p.number}));
+    if(rrDirectory)rrDirectory[norm(team)]=current.map(p=>({name:p.name,position:p.position,number:p.number}));
   }
   try{
-    window.teamPlayers=team=>(window.db?.[team]?.players||[]);
-    window.rosterForTeam=team=>(window.db?.[team]?.players||[]).map(p=>({...p}));
+    window.teamPlayers=team=>(rrDb?.[team]?.players||[]);
+    window.rosterForTeam=team=>(rrDb?.[team]?.players||[]).map(p=>({...p}));
     teamPlayers=window.teamPlayers;rosterForTeam=window.rosterForTeam;
   }catch(_){ }
   const selectedOption=(team,selected='')=>{
-    const players=window.db?.[team]?.players||[];let found=false;
+    const players=rrDb?.[team]?.players||[];let found=false;
     let html='<option value="">Select player…</option>'+players.map(p=>{const hit=p.name===selected;found=found||hit;return `<option value="${esc(p.name)}" ${hit?'selected':''}>${p.number?`#${p.number} • `:''}${esc(p.name)}</option>`}).join('');
     if(selected&&!found)html+=`<option value="${esc(selected)}" selected>Saved • ${esc(selected)}</option>`;
     return html;
   };
   try{window.playerOptions=(team,selected='')=>selectedOption(team,selected);playerOptions=window.playerOptions;}catch(_){ }
   try{if(typeof window.persist==='function')window.persist();else if(typeof persist==='function')persist();}catch(_){ }
-  const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V30 • CURRENT SQUADS ENFORCED • HISTORY PRESERVED';
+  const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V31 • ALL 20 CURRENT SQUADS • HISTORY PRESERVED';
   return true;
 }
 function renderEplArsenal(){
