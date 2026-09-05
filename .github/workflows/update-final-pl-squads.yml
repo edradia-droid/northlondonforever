@@ -1,0 +1,66 @@
+name: Update Final PL Squads 2026-27
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/update-final-pl-squads.yml'
+permissions:
+  contents: write
+jobs:
+  squads:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build post-window squad data from live FPL player pool
+        run: |
+          python - <<'PY'
+          import json, urllib.request
+          from pathlib import Path
+          url='https://fantasy.premierleague.com/api/bootstrap-static/'
+          req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 NL4 squad updater'})
+          with urllib.request.urlopen(req,timeout=30) as r:
+              data=json.load(r)
+          team_name_map={
+            'Bournemouth':'AFC Bournemouth',
+            "Nott'm Forest":'Nottingham Forest',
+            'Man City':'Manchester City',
+            'Man Utd':'Manchester United',
+            'Spurs':'Tottenham Hotspur',
+            'Brighton':'Brighton & Hove Albion',
+            'Newcastle':'Newcastle United',
+          }
+          pos={1:'Goalkeeper',2:'Defender',3:'Midfielder',4:'Forward'}
+          teams={t['id']:team_name_map.get(t['name'],t['name']) for t in data['teams']}
+          squads={name:[] for name in teams.values()}
+          for e in data['elements']:
+              team=teams.get(e.get('team'))
+              if not team: continue
+              first=(e.get('first_name') or '').strip()
+              second=(e.get('second_name') or '').strip()
+              name=(' '.join(x for x in (first,second) if x)).strip() or (e.get('web_name') or '').strip()
+              if not name: continue
+              squads[team].append({
+                'name':name,
+                'webName':(e.get('web_name') or name).strip(),
+                'position':pos.get(e.get('element_type'),'Midfielder'),
+                'number':e.get('squad_number'),
+                'fplId':e.get('id')
+              })
+          order=['Arsenal','Aston Villa','AFC Bournemouth','Brentford','Brighton & Hove Albion','Chelsea','Coventry City','Crystal Palace','Everton','Fulham','Hull City','Ipswich Town','Leeds United','Liverpool','Manchester City','Manchester United','Newcastle United','Nottingham Forest','Tottenham Hotspur','Sunderland']
+          missing=[t for t in order if t not in squads]
+          if missing: raise SystemExit('Missing FPL teams: '+', '.join(missing))
+          for team in squads:
+              squads[team].sort(key=lambda p:({'Goalkeeper':0,'Defender':1,'Midfielder':2,'Forward':3}.get(p['position'],9),p['name'].lower()))
+          payload={t:squads[t] for t in order}
+          js='''// NL4 2026/27 post-window Premier League first-team player pool.\n// Generated from the live official Fantasy Premier League bootstrap after the summer window.\n// Registration cross-check: PremierLeague.com squad lists published 2026-09-03.\nwindow.NL4_FINAL_PL_SQUADS = '''+json.dumps(payload,ensure_ascii=False,separators=(',',':'))+''';\nwindow.NL4_FINAL_PL_SQUADS_META={season:"2026/27",generatedAt:"2026-09-05",registrationPublished:"2026-09-03",transferWindowClosed:"2026-09-01T23:00:00+01:00",source:"Official FPL player pool + PremierLeague.com submitted squad lists"};\n'''
+          Path('premier-league-final-squads-2026-27.js').write_text(js,encoding='utf-8')
+          print('Generated',sum(len(v) for v in payload.values()),'players across',len(payload),'clubs')
+          for team in order: print(team,len(payload[team]))
+          PY
+      - name: Commit squad data
+        run: |
+          git config user.name 'NL4 Automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add premier-league-final-squads-2026-27.js
+          git commit -m 'Update all 20 post-window Premier League squads' || exit 0
+          git push
