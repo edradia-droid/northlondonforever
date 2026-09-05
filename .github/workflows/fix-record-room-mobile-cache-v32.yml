@@ -1,0 +1,49 @@
+name: Fix Record Room Mobile Cache V32
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-record-room-mobile-cache-v32.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Force mobile browsers onto current Record Room
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          r=Path('record-room.html')
+          s=r.read_text()
+          if '<meta http-equiv="Cache-Control"' not in s:
+              s=s.replace('<meta name="viewport" content="width=device-width,initial-scale=1.0">', '<meta name="viewport" content="width=device-width,initial-scale=1.0">\n<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">\n<meta http-equiv="Pragma" content="no-cache">\n<meta http-equiv="Expires" content="0">')
+          s=s.replace('supabase-client.js?v=20260905-v30','supabase-client.js?v=20260905-v32')
+          s=s.replace('premier-league-final-squads-2026-27.js?v=20260905-final7','premier-league-final-squads-2026-27.js?v=20260905-final8')
+          s=s.replace('nl4-current-squad-enforcer.js?v=20260905-v31a','nl4-current-squad-enforcer.js?v=20260905-v32')
+          s=s.replace('BUILD V31 • ALL 20 CURRENT SQUADS • HISTORY PRESERVED','BUILD V32 • MOBILE + PC CURRENT SQUADS • HISTORY PRESERVED')
+          s=s.replace('href="record-room.html"','href="record-room.html?v=20260905-v32"')
+          r.write_text(s)
+
+          a=Path('admin.html')
+          if a.exists():
+              x=a.read_text()
+              x=x.replace('href="record-room.html"','href="record-room.html?v=20260905-v32"')
+              x=x.replace("href='record-room.html'","href='record-room.html?v=20260905-v32'")
+              x=x.replace('location.href="record-room.html"','location.href="record-room.html?v=20260905-v32"')
+              x=x.replace("location.href='record-room.html'","location.href='record-room.html?v=20260905-v32'")
+              a.write_text(x)
+          PY
+      - name: Verify mobile cache fix
+        run: |
+          grep -q 'Cache-Control' record-room.html
+          grep -q '20260905-v32' record-room.html
+          grep -q 'BUILD V32' record-room.html
+          node --check nl4-current-squad-enforcer.js
+      - name: Commit
+        run: |
+          git config user.name 'NL4 Automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add record-room.html admin.html
+          git commit -m 'Force mobile Record Room onto current all-team squads' || exit 0
+          git push
