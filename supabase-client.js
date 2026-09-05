@@ -48,8 +48,8 @@ if (NL4_IS_RECORD_ROOM) {
       const teamSelect=document.getElementById('teamSelect'),inputTeam=document.getElementById('inputTeam');if(teamSelect)teamSelect.value=ARSENAL;if(inputTeam)inputTeam.value=ARSENAL;
       if(typeof recalculatePlayerStatsFromFixtures==='function')recalculatePlayerStatsFromFixtures(ARSENAL);
       if(typeof recalculateClubStatsFromFixtures==='function')recalculateClubStatsFromFixtures(ARSENAL);
-      const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V18 • MATCH INFO CACHE FIX';
-      const hero=document.querySelector('.hero p');if(hero)hero.textContent='Admin record workspace for all 20 Premier League clubs, including Arsenal. Existing completed-match information is restored into editable inputs, completed-match player stats are recorded per fixture, and Arsenal season totals synchronize through the Record Room.';
+      const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V19 • MW3 IPSWICH 0-2 LIVERPOOL';
+      const hero=document.querySelector('.hero p');if(hero)hero.textContent='Admin record workspace for all 20 Premier League clubs, including Arsenal. Existing completed-match information is restored into editable inputs, completed-match player stats are recorded per fixture, and verified matchday updates recalculate the affected season totals.';
       const manualTitle=document.querySelector('.admin h3');if(manualTitle&&/Other 19 Teams/i.test(manualTitle.textContent||''))manualTitle.textContent='All 20 Teams Stat Input';
       if(typeof render==='function')render();
     }catch(err){console.warn('[NL4 Record Room] Arsenal registration failed:',err);}
@@ -57,9 +57,10 @@ if (NL4_IS_RECORD_ROOM) {
   registerArsenal();
 
   const loadScript=src=>new Promise((resolve,reject)=>{if(document.querySelector(`script[data-nl4-rr-src="${src}"]`))return resolve();const s=document.createElement('script');s.src=src;s.dataset.nl4RrSrc=src;s.onload=resolve;s.onerror=()=>reject(new Error(`Could not load ${src}`));document.head.appendChild(s);});
-  // Lightweight match metadata, completed-match player inputs and public-stat bridge are automatic.
+  // Lightweight match metadata, completed-match player inputs, verified matchday update and public-stat bridge are automatic.
   loadScript('record-room-match-meta.js?v=20260905-v3').catch(err=>console.warn('[NL4 Record Room] Match information failed:',err));
   loadScript('record-room-player-match-stats.js?v=20260905-v5').catch(err=>console.warn('[NL4 Record Room] Player match stats failed:',err));
+  loadScript('record-room-matchday-2026-09-04.js?v=20260905-v1').catch(err=>console.warn('[NL4 Record Room] Latest matchday update failed:',err));
   loadScript('record-room-arsenal-public-sync.js?v=20260905-v4').catch(err=>console.warn('[NL4 Record Room] Public stats bridge failed:',err));
 
   let toolsPromise=null;
