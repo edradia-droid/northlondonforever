@@ -158,7 +158,59 @@
         cleanSheets:r.clean_sheets||0,yellowCards:r.yellow_cards||0,redCards:r.red_cards||0,mom:r.man_of_the_match||0,shots:r.shots||0,
         shotsOnTarget:r.shots_on_target||0,chancesCreated:r.chances_created||0,tackles:r.tackles||0,interceptions:r.interceptions||0,saves:r.saves||0});
     });
+  }
+
+  function ensureFixtureRecord(team,f){
+    if(!db?.[team]) return null;
+    db[team].fixtureData=db[team].fixtureData||{};
+    if(!db[team].fixtureData[f.id]&&typeof fixtureStore==='function') return fixtureStore(team,f.id);
+    if(!db[team].fixtureData[f.id]) db[team].fixtureData[f.id]={homeScore:null,awayScore:null,homeLineup:Array(11).fill(''),awayLineup:Array(11).fill(''),homeSubs:[],awaySubs:[],events:[],stats:{}};
+    return db[team].fixtureData[f.id];
+  }
+
+  function applySharedMatch(f,match,row){
+    const d=row.details||{},st=row.stats||{},lineups=row.lineups||[],subs=row.substitutions||[],events=row.events||[];
+    const homeStarters=lineups.filter(x=>x.team_name===f.home&&x.is_starter).sort((a,b)=>(Number(a.pitch_slot)||99)-(Number(b.pitch_slot)||99)).map(x=>x.player_name);
+    const awayStarters=lineups.filter(x=>x.team_name===f.away&&x.is_starter).sort((a,b)=>(Number(a.pitch_slot)||99)-(Number(b.pitch_slot)||99)).map(x=>x.player_name);
+    const mapSubs=team=>subs.filter(x=>x.team_name===team).map(x=>({out:x.player_out,in:x.player_in,outMin:Number(x.minute)||0,inMin:Number(x.minute)||0}));
+    const mappedEvents=events.map(x=>({type:x.event_type==='yellow_card'?'yellow':x.event_type==='red_card'?'red':'goal',player:`${x.team_name}|||${x.player_name}`,assist:x.related_player_name?`${x.team_name}|||${x.related_player_name}`:'',minute:Number(x.minute)||0}));
+    [f.home,f.away].forEach(team=>{
+      const s=ensureFixtureRecord(team,f); if(!s)return;
+      s.homeScore=match.home_score;s.awayScore=match.away_score;
+      s.homeLineup=[...homeStarters,...Array(Math.max(0,11-homeStarters.length)).fill('')].slice(0,11);
+      s.awayLineup=[...awayStarters,...Array(Math.max(0,11-awayStarters.length)).fill('')].slice(0,11);
+      s.homeSubs=mapSubs(f.home);s.awaySubs=mapSubs(f.away);s.events=mappedEvents;
+      s.manOfTheMatch=d.man_of_the_match?`${d.man_of_the_match===null?'':((lineups.find(x=>x.player_name===d.man_of_the_match)||{}).team_name||'')}|||${d.man_of_the_match}`:'';
+      s.matchDetails=Object.assign({},s.matchDetails||{},{referee:d.referee||'',venue:d.venue||'',attendance:d.attendance??'',halftimeHomeScore:d.halftime_home_score??'',halftimeAwayScore:d.halftime_away_score??'',addedTime:d.added_time??0});
+      s.stats=Object.assign({},s.stats||{},{
+        possession:{h:Number(st.home_possession)||0,a:Number(st.away_possession)||0},shots:{h:Number(st.home_shots)||0,a:Number(st.away_shots)||0},
+        sot:{h:Number(st.home_shots_on_target)||0,a:Number(st.away_shots_on_target)||0},corners:{h:Number(st.home_corners)||0,a:Number(st.away_corners)||0},
+        cornerGoals:{h:Number(st.home_corner_goals)||0,a:Number(st.away_corner_goals)||0},fouls:{h:Number(st.home_fouls)||0,a:Number(st.away_fouls)||0},
+        offsides:{h:Number(st.home_offsides)||0,a:Number(st.away_offsides)||0},saves:{h:Number(st.home_saves)||0,a:Number(st.away_saves)||0}
+      });
+    });
+    f.homeScore=match.home_score;f.awayScore=match.away_score;
+  }
+
+  async function hydrateFromSupabase(){
+    const client=window.nl4Supabase,api=rr();
+    if(!client||!api||typeof ALL_FIXTURES==='undefined'||typeof db==='undefined') return {available:false};
+    const matches=await client.from('premier_league_matches').select('id,matchday,home_team,away_team,home_score,away_score,status').eq('season',SEASON).eq('status','fulltime').not('home_score','is',null).not('away_score','is',null);
+    if(matches.error)return {available:false,error:matches.error};
+    let imported=0;
+    for(const match of matches.data||[]){
+      const f=ALL_FIXTURES.find(x=>x.home===match.home_team&&x.away===match.away_team&&Number(x.mw)===Number(match.matchday));
+      if(!f)continue;
+      const loaded=await api.loadMatch(match.id);
+      if(!loaded.available)continue;
+      applySharedMatch(f,match,loaded.data||{});imported++;
+    }
+    const players=await api.loadPlayers(SEASON);
+    if(players.available&&players.data?.length)importPlayers(players.data);
+    try{if(typeof TEAMS!=='undefined'&&typeof recalculateClubStatsFromFixtures==='function')TEAMS.forEach(team=>recalculateClubStatsFromFixtures(team));}catch(e){console.warn(e);}
     try{if(typeof persist==='function')persist();if(typeof render==='function')render();}catch(e){console.warn(e);}
+    console.log(`[NL4 Record Room] Hydrated ${imported} completed matches from shared Supabase.`);
+    return {available:true,imported};
   }
 
   function addPushButton(){
@@ -167,17 +219,11 @@
     const b=document.createElement('button');
     b.id='rrPushSupabase';b.type='button';b.textContent='PUSH LOCAL TO SUPABASE';
     b.title='Uploads the current browser Record Room data to the shared Supabase tables.';
-    b.style.borderColor='rgba(73,209,125,.55)';
-    b.style.color='#49d17d';
+    b.style.borderColor='rgba(73,209,125,.55)';b.style.color='#49d17d';
     b.addEventListener('click',async()=>{
-      if(b.disabled)return;
-      b.disabled=true;b.textContent='PUSHING TO SUPABASE…';
-      try{
-        const result=await pushAllCurrent();
-        if(result.available){b.textContent=`SUPABASE SAVED • ${result.saved} MATCHES`;}
-        else if(result.error){b.textContent='SUPABASE NOT READY • RETRY';console.warn('[NL4 Record Room] Push unavailable:',result.error);}
-        else{b.textContent=`PUSH PARTIAL • ${result.saved||0} SAVED / ${result.failed||0} FAILED`;}
-      }catch(error){console.warn('[NL4 Record Room] Full push failed:',error);b.textContent='PUSH FAILED • RETRY';}
+      if(b.disabled)return;b.disabled=true;b.textContent='PUSHING TO SUPABASE…';
+      try{const result=await pushAllCurrent();if(result.available)b.textContent=`SUPABASE SAVED • ${result.saved} MATCHES`;else if(result.error){b.textContent='SUPABASE NOT READY • RETRY';console.warn('[NL4 Record Room] Push unavailable:',result.error);}else b.textContent=`PUSH PARTIAL • ${result.saved||0} SAVED / ${result.failed||0} FAILED`;}
+      catch(error){console.warn('[NL4 Record Room] Full push failed:',error);b.textContent='PUSH FAILED • RETRY';}
       finally{setTimeout(()=>{b.disabled=false;b.textContent='PUSH LOCAL TO SUPABASE';},5000);}
     });
     actions.insertBefore(b,document.getElementById('recordRoomLogout')||null);
@@ -192,19 +238,12 @@
     addPushButton();
     if(!rr()) return;
     const ready=await rr().probe(); if(!ready.available) return;
-    if(!hasMeaningfulLocalData()){
-      const loaded=await rr().loadPlayers(SEASON); if(loaded.available&&loaded.data?.length) importPlayers(loaded.data);
-    }else{
-      console.log('[NL4 Record Room] Kept newer local player state; skipped stale shared player import.');
-    }
+    if(!hasMeaningfulLocalData()) await hydrateFromSupabase();
+    else console.log('[NL4 Record Room] Kept populated local state; shared hydration skipped.');
     document.getElementById('savePlayer')?.addEventListener('click',()=>setTimeout(mirrorPlayers,0));
     document.addEventListener('click',e=>{if(e.target?.closest?.('.detail-save'))setTimeout(mirrorOpenFixture,140);});
-    window.NL4RecordRoomPushAll=pushAllCurrent;
+    window.NL4RecordRoomPushAll=pushAllCurrent;window.NL4RecordRoomHydrate=hydrateFromSupabase;
     console.log('[NL4 Record Room] Supabase bridge active');
   }
   boot().catch(err=>console.warn('[NL4 Record Room] Bridge fallback:',err));
-
-  // Heavy completed-match import and audit scripts are intentionally NOT loaded
-  // here. supabase-client.js exposes them through the Record Room "Load data tools"
-  // button so normal page opening stays responsive.
 })();
