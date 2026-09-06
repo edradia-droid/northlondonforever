@@ -10,34 +10,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Force mobile browsers onto current Record Room shared sync
+      - name: Force Admin onto current Record Room mobile build
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          p=Path('supabase-client.js')
-          s=p.read_text()
-          old="    .then(()=>loadScript('record-room-arsenal-public-sync.js?v=20260905-v4'))\n    .then(()=>registerArsenal(false))\n    .catch(err=>console.warn('[NL4 Record Room] Lightweight startup module failed:',err));"
-          new="    .then(()=>loadScript('record-room-arsenal-public-sync.js?v=20260905-v4'))\n    .then(()=>registerArsenal(false))\n    .then(()=>{\n      const finalHydrate=()=>{try{window.NL4RecordRoomBulkHydrate?.(true);}catch(err){console.warn('[NL4 Record Room] Final shared hydration failed:',err);}};\n      [0,500,1500,3500,7000].forEach(ms=>setTimeout(finalHydrate,ms));\n    })\n    .catch(err=>console.warn('[NL4 Record Room] Lightweight startup module failed:',err));"
-          if 'Final shared hydration failed' not in s:
-              if old not in s: raise SystemExit('Expected startup tail not found')
-              s=s.replace(old,new,1)
-          p.write_text(s)
-
-          r=Path('record-room.html')
-          x=r.read_text()
-          for oldv in ['supabase-client.js?v=20260905-v34','supabase-client.js?v=20260906-mobile-shared1']:
-              x=x.replace(oldv,'supabase-client.js?v=20260906-mobile-final-v35')
-          r.write_text(x)
+          a=Path('admin.html')
+          x=a.read_text()
+          x=x.replace('record-room.html?v=20260906-mobile-shared1','record-room.html?v=20260906-mobile-final-v35')
+          x=x.replace('record-room.html?v=20260905-v34','record-room.html?v=20260906-mobile-final-v35')
+          x=x.replace('record-room.html?v=20260905-v32','record-room.html?v=20260906-mobile-final-v35')
+          a.write_text(x)
           PY
-      - name: Verify mobile final authority
+      - name: Verify Admin Record Room link
         run: |
-          node --check supabase-client.js
-          grep -q 'Final shared hydration failed' supabase-client.js
-          grep -q 'supabase-client.js?v=20260906-mobile-final-v35' record-room.html
+          grep -q 'record-room.html?v=20260906-mobile-final-v35' admin.html
       - name: Commit
         run: |
           git config user.name 'NL4 Automation'
           git config user.email 'actions@users.noreply.github.com'
-          git add supabase-client.js record-room.html
-          git commit -m 'Make shared Record Room data final authority on mobile' || exit 0
+          git add admin.html
+          git commit -m 'Send Admin to final mobile Record Room build' || exit 0
           git push
