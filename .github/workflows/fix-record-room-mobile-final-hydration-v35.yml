@@ -48,3 +48,4 @@ jobs:
           git add supabase-client.js record-room.html
           git commit -m 'Make shared Record Room hydration final on mobile' || exit 0
           git push
+# trigger: 20260906-mobile-final-v35
