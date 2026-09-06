@@ -70,9 +70,10 @@ function authoritativeSyncBurst(){
 function startSharedSync(){
   if(window.__NL4_RR_SHARED_SYNC_LOADING__) return;
   window.__NL4_RR_SHARED_SYNC_LOADING__=true;
-  loadOnce('record-room-supabase.js?v=20260906-shared3')
-    .then(()=>loadOnce('record-room-supabase-bridge.js?v=20260906-shared3'))
-    .then(()=>loadOnce('record-room-fresh-browser-hydrate.js?v=20260906-hydrate1'))
+  loadOnce('record-room-supabase.js?v=20260906-shared4')
+    .then(()=>loadOnce('record-room-supabase-bridge.js?v=20260906-shared4'))
+    .then(()=>loadOnce('record-room-fresh-browser-hydrate.js?v=20260906-hydrate2'))
+    .then(()=>loadOnce('record-room-shared-hydrate-v2.js?v=20260906-bulk1'))
     .then(()=>authoritativeSyncBurst())
     .catch(err=>{window.__NL4_RR_SHARED_SYNC_LOADING__=false;console.warn('[NL4 Record Room] Shared Supabase sync failed to load:',err);});
 }
