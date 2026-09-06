@@ -1,0 +1,50 @@
+name: Fix Record Room Mobile Final Hydration V35
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-record-room-mobile-final-hydration-v35.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make shared Supabase hydration the final Record Room authority
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('supabase-client.js')
+          s=p.read_text()
+          old="""    .then(()=>loadScript('record-room-arsenal-public-sync.js?v=20260905-v4'))
+    .then(()=>registerArsenal(false))
+    .catch(err=>console.warn('[NL4 Record Room] Lightweight startup module failed:',err));"""
+          new="""    .then(()=>loadScript('record-room-arsenal-public-sync.js?v=20260905-v4'))
+    .then(()=>registerArsenal(false))
+    .then(()=>{
+      const finalHydrate=()=>{try{window.NL4RecordRoomBulkHydrate?.(true);}catch(err){console.warn('[NL4 Record Room] Final shared hydration failed:',err);}};
+      [0,500,1500,3500,7000].forEach(ms=>setTimeout(finalHydrate,ms));
+    })
+    .catch(err=>console.warn('[NL4 Record Room] Lightweight startup module failed:',err));"""
+          if old not in s:
+              raise SystemExit('Expected startup tail not found; refusing unsafe patch')
+          s=s.replace(old,new,1)
+          p.write_text(s)
+
+          r=Path('record-room.html')
+          x=r.read_text()
+          x=x.replace('supabase-client.js?v=20260906-mobile-shared1','supabase-client.js?v=20260906-mobile-final-v35')
+          r.write_text(x)
+          PY
+      - name: Verify final hydration ordering
+        run: |
+          node --check supabase-client.js
+          grep -q 'Final shared hydration failed' supabase-client.js
+          grep -q 'supabase-client.js?v=20260906-mobile-final-v35' record-room.html
+      - name: Commit
+        run: |
+          git config user.name 'NL4 Automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add supabase-client.js record-room.html
+          git commit -m 'Make shared Record Room hydration final on mobile' || exit 0
+          git push
