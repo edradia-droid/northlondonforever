@@ -14,38 +14,30 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          r=Path('record-room.html')
-          s=r.read_text()
-          if '<meta http-equiv="Cache-Control"' not in s:
-              s=s.replace('<meta name="viewport" content="width=device-width,initial-scale=1.0">', '<meta name="viewport" content="width=device-width,initial-scale=1.0">\n<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">\n<meta http-equiv="Pragma" content="no-cache">\n<meta http-equiv="Expires" content="0">')
-          s=s.replace('supabase-client.js?v=20260905-v34','supabase-client.js?v=20260906-mobile-shared1')
-          s=s.replace('supabase-client.js?v=20260905-v32','supabase-client.js?v=20260906-mobile-shared1')
-          s=s.replace('supabase-client.js?v=20260905-v30','supabase-client.js?v=20260906-mobile-shared1')
-          s=s.replace('href="record-room.html?v=20260905-v34"','href="record-room.html?v=20260906-mobile-shared1"')
-          s=s.replace('href="record-room.html?v=20260905-v32"','href="record-room.html?v=20260906-mobile-shared1"')
-          s=s.replace('href="record-room.html"','href="record-room.html?v=20260906-mobile-shared1"')
-          r.write_text(s)
+          p=Path('supabase-client.js')
+          s=p.read_text()
+          old="    .then(()=>loadScript('record-room-arsenal-public-sync.js?v=20260905-v4'))\n    .then(()=>registerArsenal(false))\n    .catch(err=>console.warn('[NL4 Record Room] Lightweight startup module failed:',err));"
+          new="    .then(()=>loadScript('record-room-arsenal-public-sync.js?v=20260905-v4'))\n    .then(()=>registerArsenal(false))\n    .then(()=>{\n      const finalHydrate=()=>{try{window.NL4RecordRoomBulkHydrate?.(true);}catch(err){console.warn('[NL4 Record Room] Final shared hydration failed:',err);}};\n      [0,500,1500,3500,7000].forEach(ms=>setTimeout(finalHydrate,ms));\n    })\n    .catch(err=>console.warn('[NL4 Record Room] Lightweight startup module failed:',err));"
+          if 'Final shared hydration failed' not in s:
+              if old not in s: raise SystemExit('Expected startup tail not found')
+              s=s.replace(old,new,1)
+          p.write_text(s)
 
-          a=Path('admin.html')
-          if a.exists():
-              x=a.read_text()
-              x=x.replace('href="record-room.html?v=20260905-v34"','href="record-room.html?v=20260906-mobile-shared1"')
-              x=x.replace('href="record-room.html?v=20260905-v32"','href="record-room.html?v=20260906-mobile-shared1"')
-              x=x.replace('href="record-room.html"','href="record-room.html?v=20260906-mobile-shared1"')
-              x=x.replace("href='record-room.html'","href='record-room.html?v=20260906-mobile-shared1'")
-              x=x.replace('location.href="record-room.html"','location.href="record-room.html?v=20260906-mobile-shared1"')
-              x=x.replace("location.href='record-room.html'","location.href='record-room.html?v=20260906-mobile-shared1'")
-              a.write_text(x)
+          r=Path('record-room.html')
+          x=r.read_text()
+          for oldv in ['supabase-client.js?v=20260905-v34','supabase-client.js?v=20260906-mobile-shared1']:
+              x=x.replace(oldv,'supabase-client.js?v=20260906-mobile-final-v35')
+          r.write_text(x)
           PY
-      - name: Verify mobile cache fix
+      - name: Verify mobile final authority
         run: |
-          grep -q 'Cache-Control' record-room.html
-          grep -q 'supabase-client.js?v=20260906-mobile-shared1' record-room.html
           node --check supabase-client.js
+          grep -q 'Final shared hydration failed' supabase-client.js
+          grep -q 'supabase-client.js?v=20260906-mobile-final-v35' record-room.html
       - name: Commit
         run: |
           git config user.name 'NL4 Automation'
           git config user.email 'actions@users.noreply.github.com'
-          git add record-room.html admin.html
-          git commit -m 'Force mobile Record Room onto current shared sync' || exit 0
+          git add supabase-client.js record-room.html
+          git commit -m 'Make shared Record Room data final authority on mobile' || exit 0
           git push
