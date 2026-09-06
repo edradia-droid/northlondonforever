@@ -1,0 +1,10 @@
+[33mf7a19c0[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Stop Record Room version switching with single V34 authority
+[33md082df5[m Add Record Room single authority V34 workflow
+[33mf71707f[m Stop Record Room historical sync reverting to V29
+[33m41fbc16[m Add V33 Record Room regression fix workflow
+[33m5bcb0d6[m Force mobile Record Room onto current all-team squads
+[33m1094d7a[m Add Record Room mobile cache fix workflow
+[33m14cb1b2[m Make all 20 current squads render in Record Room
+[33m908f09e[m Finish Record Room V31 all-team squad binding fix
+[33m16a0804[m Update all 20 Record Room squads from final registrations
+[33md6b6c44[m Add Record Room all-squad binding fix workflow
