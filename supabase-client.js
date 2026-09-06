@@ -114,6 +114,10 @@ if (NL4_IS_RECORD_ROOM) {
     .then(()=>{window.NL4RecordRoomGoalkeeperSaves?.install?.();window.NL4RecordRoomGoalkeeperSaves?.recalcAll?.();window.NL4FinalSquadHistorySync?.syncAll?.();registerArsenal(false);})
     .then(()=>loadScript('record-room-arsenal-public-sync.js?v=20260905-v4'))
     .then(()=>registerArsenal(false))
+    .then(()=>{
+      const finalHydrate=()=>{try{window.NL4RecordRoomBulkHydrate?.(true);}catch(err){console.warn('[NL4 Record Room] Final shared hydration failed:',err);}};
+      [0,500,1500,3500,7000].forEach(ms=>setTimeout(finalHydrate,ms));
+    })
     .catch(err=>console.warn('[NL4 Record Room] Lightweight startup module failed:',err));
 
   let toolsPromise=null;
