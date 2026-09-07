@@ -1,0 +1,22 @@
+name: Fix Record Room Minutes V37
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-record-room-minutes-v37.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch minute engine
+        run: |
+          python3 -c "from pathlib import Path; p=Path('record-room.html'); s=p.read_text(); old='''    const starters=new Set(lineup.filter(Boolean).map(playerNameKey));\n    const appeared=new Set(starters);\n    const minutesByName=new Map();\n\n    starters.forEach(k=>minutesByName.set(k,90));\n    subs.forEach(sub=>{\n      const outKey=playerNameKey(sub.out), inKey=playerNameKey(sub.in);\n      const outMin=Number.isFinite(Number(sub.outMin))?Math.max(0,Math.min(90,Number(sub.outMin))):null;\n      const inMin=Number.isFinite(Number(sub.inMin))?Math.max(0,Math.min(90,Number(sub.inMin))):outMin;'''; new='''    const starters=new Set(lineup.filter(Boolean).map(playerNameKey));\n    const appeared=new Set(starters);\n    const minutesByName=new Map();\n    const recordedMinutes=[...(saved.homeSubs||[]),...(saved.awaySubs||[]),...(saved.events||[])].flatMap(x=>[x?.outMin,x?.inMin,x?.minute]).map(Number).filter(Number.isFinite);\n    const configuredEnd=Number(saved.matchMeta?.endMinute);\n    const matchEndMinute=Math.max(90,Math.min(120,Number.isFinite(configuredEnd)&&configuredEnd>=90?configuredEnd:(recordedMinutes.length?Math.max(...recordedMinutes):90)));\n\n    starters.forEach(k=>minutesByName.set(k,matchEndMinute));\n    subs.forEach(sub=>{\n      const outKey=playerNameKey(sub.out), inKey=playerNameKey(sub.in);\n      const outMin=Number.isFinite(Number(sub.outMin))?Math.max(0,Math.min(matchEndMinute,Number(sub.outMin))):null;\n      const inMin=Number.isFinite(Number(sub.inMin))?Math.max(0,Math.min(matchEndMinute,Number(sub.inMin))):outMin;'''; assert old in s, 'minute engine target not found'; s=s.replace(old,new,1); s=s.replace('minutesByName.set(inKey,Math.max(minutesByName.get(inKey)||0,90-minute));','minutesByName.set(inKey,Math.max(minutesByName.get(inKey)||0,matchEndMinute-minute));',1); s=s.replace('p.minutes+=Math.max(0,Math.min(90,Number(minutesByName.get(k))||0));','p.minutes+=Math.max(0,Math.min(matchEndMinute,Number(minutesByName.get(k))||0));',1); s=s.replace('const playedMinutes=Math.max(0,Math.min(90,Number(minutesByName.get(k))||0));','const playedMinutes=Math.max(0,Math.min(matchEndMinute,Number(minutesByName.get(k))||0));',1); s=s.replace('let onMinute=starters.has(k)?0:90-playedMinutes;','let onMinute=starters.has(k)?0:matchEndMinute-playedMinutes;',1); s=s.replace('let offMinute=starters.has(k)?playedMinutes:90;','let offMinute=starters.has(k)?playedMinutes:matchEndMinute;',1); s=s.replace('Math.max(0,Math.min(90,Number(sub.outMin)))','Math.max(0,Math.min(matchEndMinute,Number(sub.outMin)))',1); s=s.replace('Math.max(0,Math.min(90,Number(sub.inMin)))','Math.max(0,Math.min(matchEndMinute,Number(sub.inMin)))',1); p.write_text(s)"
+      - name: Commit
+        run: |
+          git config user.name 'NL4 Automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add record-room.html
+          git commit -m 'Fix Record Room appearances and minutes beyond 90' || exit 0
+          git push
