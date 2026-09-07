@@ -14,6 +14,38 @@ window.nl4Supabase = window.supabase.createClient(
 
 const NL4_IS_RECORD_ROOM = !!document.getElementById('recordRoomPage') || /(?:^|\/)record-room(?:\.html)?\/?$/i.test(location.pathname);
 
+// Guard the authoritative 2026/27 Arsenal squad against accidental omission of
+// Martin Ødegaard. The final-squad file is loaded after this bootstrap on Record
+// Room, so intercepting its assignment here ensures the current-squad enforcer
+// receives Ødegaard instead of archiving/removing him. This only adds him when
+// absent and never resets or overwrites any player statistics.
+if (NL4_IS_RECORD_ROOM && !window.__NL4_ODEGAARD_FINAL_SQUAD_GUARD__) {
+  window.__NL4_ODEGAARD_FINAL_SQUAD_GUARD__ = true;
+  let finalSquadsValue = window.NL4_FINAL_PL_SQUADS;
+  const ensureOdegaard = value => {
+    const arsenal = value?.Arsenal;
+    if (!Array.isArray(arsenal)) return value;
+    const normalise = name => String(name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[Øø]/g,'o').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+    if (arsenal.some(p => normalise(p?.name).includes('odegaard') || normalise(p?.webName).includes('odegaard'))) return value;
+    const odegaard = {name:'Martin Ødegaard',webName:'Ødegaard',position:'Midfielder',number:8,fplId:null};
+    const ezeIndex = arsenal.findIndex(p => normalise(p?.name).includes('eberechi eze') || normalise(p?.webName)==='eze');
+    if (ezeIndex >= 0) arsenal.splice(ezeIndex + 1, 0, odegaard);
+    else arsenal.push(odegaard);
+    return value;
+  };
+  try {
+    Object.defineProperty(window,'NL4_FINAL_PL_SQUADS',{
+      configurable:true,
+      enumerable:true,
+      get(){ return finalSquadsValue; },
+      set(value){ finalSquadsValue = ensureOdegaard(value); }
+    });
+    if (finalSquadsValue) finalSquadsValue = ensureOdegaard(finalSquadsValue);
+  } catch (err) {
+    console.warn('[NL4 Record Room] Ødegaard squad guard could not be installed:',err);
+  }
+}
+
 if (NL4_IS_RECORD_ROOM) {
   const ARSENAL='Arsenal';
   const arsenalSeeds=[
