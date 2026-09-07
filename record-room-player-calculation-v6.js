@@ -2,11 +2,11 @@
 // Rebuilds only fields that can be derived from completed match records.
 (function(){
 'use strict';
-const VERSION='20260904-player-calc-v6';
+const VERSION='20260908-player-calc-v6-odegaard';
 const KEY='nl4_rr_player_calc_version';
 
 function norm(v){
- return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[’‘`]/g,"'").replace(/[‐‑‒–—]/g,'-').replace(/\s+/g,' ').trim().toLowerCase();
+ return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[Øø]/g,'o').replace(/[’‘`]/g,"'").replace(/[‐‑‒–—]/g,'-').replace(/\s+/g,' ').trim().toLowerCase();
 }
 function splitEvent(v){const p=String(v||'').split('|||');return {team:p[0]||'',name:p.slice(1).join('|||')||''};}
 function num(v){const x=Number(v);return Number.isFinite(x)?x:null;}
