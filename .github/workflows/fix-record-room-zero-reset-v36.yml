@@ -19,7 +19,6 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-
           path = Path('record-room.html')
           text = path.read_text(encoding='utf-8')
           old = """})();
@@ -30,8 +29,7 @@ try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(db)); }catch(_){ }
 const $=id=>document.getElementById(id);"""
           new = """})();
 // V36 STARTUP SAFETY: preserve the saved Record Room authority during initial load.
-// Fixture/player/club totals are recalculated after real match saves and after shared
-// hydration, never from an incomplete startup fixture set.
+// Recalculate only after actual match saves or completed shared hydration.
 
 const $=id=>document.getElementById(id);"""
           if old not in text:
@@ -61,3 +59,5 @@ const $=id=>document.getElementById(id);"""
           git add record-room.html admin.html
           git commit -m 'Stop Record Room startup zero reset'
           git push
+
+# trigger: 20260907-v36b
