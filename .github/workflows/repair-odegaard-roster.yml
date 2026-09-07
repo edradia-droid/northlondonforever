@@ -1,0 +1,51 @@
+name: Repair Odegaard roster
+
+on:
+  push:
+    paths:
+      - '.github/workflows/repair-odegaard-roster.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore Odegaard to authoritative Arsenal squad and bust caches
+        shell: python
+        run: |
+          from pathlib import Path
+
+          squad = Path('premier-league-final-squads-2026-27.js')
+          text = squad.read_text(encoding='utf-8')
+          if '"name":"Martin Ødegaard"' not in text and '"name":"Martin Odegaard"' not in text:
+              needle='{"name":"Eberechi Eze","webName":"Eze","position":"Midfielder","number":null,"fplId":14},'
+              insert=needle+'{"name":"Martin Ødegaard","webName":"Ødegaard","position":"Midfielder","number":8,"fplId":null},'
+              if needle not in text:
+                  raise SystemExit('Could not locate Arsenal Eze entry in final squad file')
+              text=text.replace(needle,insert,1)
+              squad.write_text(text,encoding='utf-8')
+
+          rr=Path('record-room.html')
+          html=rr.read_text(encoding='utf-8')
+          html=html.replace('premier-league-final-squads-2026-27.js?v=20260905-final8','premier-league-final-squads-2026-27.js?v=20260907-odegaard1')
+          html=html.replace('supabase-client.js?v=20260906-mobile-final-v35','supabase-client.js?v=20260907-odegaard1')
+          rr.write_text(html,encoding='utf-8')
+
+          sc=Path('supabase-client.js')
+          s=sc.read_text(encoding='utf-8')
+          s=s.replace('premier-league-final-squads-2026-27.js?v=20260905-final8','premier-league-final-squads-2026-27.js?v=20260907-odegaard1')
+          sc.write_text(s,encoding='utf-8')
+      - name: Commit repair
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add premier-league-final-squads-2026-27.js record-room.html supabase-client.js
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+          else
+            git commit -m "Restore Odegaard to current Arsenal squad"
+            git push
+          fi
