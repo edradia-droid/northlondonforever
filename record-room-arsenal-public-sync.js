@@ -15,23 +15,27 @@ function playerPayload(p,stamp){return {season:SEASON,player_name:p.name,positio
 function applyStoredRow(local,stored){
  local.appearances=n(stored.appearances);local.starts=n(stored.starts);local.minutes=n(stored.minutes);local.goals=n(stored.goals);local.assists=n(stored.assists);local.cleanSheets=n(stored.clean_sheets);local.yellowCards=n(stored.yellow_cards);local.redCards=n(stored.red_cards);local.mom=n(stored.man_of_the_match);local.shots=n(stored.shots);local.shotsOnTarget=n(stored.shots_on_target);local.chancesCreated=n(stored.chances_created);local.tackles=n(stored.tackles);local.interceptions=n(stored.interceptions);local.saves=n(stored.saves);
 }
-async function hydrateFromSupabase(){
+async function hydrateFromSupabase({renderNow=true}={}){
  const client=window.nl4Supabase,current=arsenalData();
  if(!client||!current)return {skipped:true};
  const result=await client.from('premier_league_player_stats').select('*').eq('season',SEASON);
  if(result.error){console.warn('[NL4] Arsenal Record Room hydration failed:',result.error);return {error:result.error};}
+ const rows=result.data||[];
  const storedByKey=new Map();
- (result.data||[]).forEach(row=>{const key=norm(row.player_name);const prev=storedByKey.get(key);if(!prev||statSignal(row)>statSignal(prev))storedByKey.set(key,row);});
+ rows.forEach(row=>{const key=norm(row.player_name);const prev=storedByKey.get(key);if(!prev||statSignal(row)>statSignal(prev))storedByKey.set(key,row);});
  (current.players||[]).forEach(local=>{
-   const key=isOdegaard(local.name)?'martin odegaard':norm(local.name);
+   const key=norm(local.name);
    let stored=storedByKey.get(key);
-   if(!stored&&isOdegaard(local.name))stored=(result.data||[]).filter(r=>isOdegaard(r.player_name)).sort((a,b)=>statSignal(b)-statSignal(a))[0];
-   if(stored&&statSignal(stored)>=statSignal(playerPayload(local,'')))applyStoredRow(local,stored);
+   if(!stored&&isOdegaard(local.name))stored=rows.filter(r=>isOdegaard(r.player_name)).sort((a,b)=>statSignal(b)-statSignal(a))[0];
+   if(stored&&statSignal(stored)>=statSignal(playerPayload(local,''))){
+     if(isOdegaard(local.name))local.name='Martin Ødegaard';
+     applyStoredRow(local,stored);
+   }
  });
  try{if(typeof persist==='function')persist()}catch(_){}
- try{if(typeof render==='function')render()}catch(e){console.warn('[NL4] Arsenal Record Room render after hydration failed:',e)}
- window.dispatchEvent(new CustomEvent('nl4:record-room-arsenal-hydrated',{detail:{rows:(result.data||[]).length}}));
- return {rows:(result.data||[]).length};
+ if(renderNow){try{if(typeof render==='function')render()}catch(e){console.warn('[NL4] Arsenal Record Room render after hydration failed:',e)}}
+ window.dispatchEvent(new CustomEvent('nl4:record-room-arsenal-hydrated',{detail:{rows:rows.length}}));
+ return {rows:rows.length};
 }
 async function protectOdegaardFromZeroOverwrite(client,players,completed,stamp){
  if(!completed)return players;
@@ -49,11 +53,14 @@ async function protectOdegaardFromZeroOverwrite(client,players,completed,stamp){
 async function push(){
  const client=window.nl4Supabase;if(!client)return {skipped:true,reason:'no-client'};
  const current=arsenalData();if(!current)return {skipped:true,reason:'no-arsenal-data'};
- await hydrateFromSupabase();
  const copied=ensureCanonicalArsenalFixtures();
  try{if(typeof recalculatePlayerStatsFromFixtures==='function')recalculatePlayerStatsFromFixtures(ARSENAL)}catch(e){console.warn('[NL4] Arsenal player recalc failed',e)}
  try{if(window.NL4RecordRoomPlayerMatchStats?.aggregateTeam)window.NL4RecordRoomPlayerMatchStats.aggregateTeam(ARSENAL)}catch(e){console.warn('[NL4] Arsenal advanced player stat recalc failed',e)}
  try{if(typeof recalculateClubStatsFromFixtures==='function')recalculateClubStatsFromFixtures(ARSENAL)}catch(e){console.warn('[NL4] Arsenal club recalc failed',e)}
+ // Important: hydration must happen AFTER fixture recalculation. Recalculation can
+ // legitimately rebuild many players, but it must not leave a resolved season row
+ // at zero when Supabase already contains the verified season totals.
+ await hydrateFromSupabase({renderNow:false});
  const completed=completedCount(),stamp=new Date().toISOString(),c=current.club||{};
  const team={season:SEASON,matches:n(c.matches),avg_possession:n(c.avgPossession),total_shots:n(c.totalShots),shots_on_target:n(c.shotsOnTarget),corners:n(c.corners),corner_goals:n(c.cornerGoals),fouls:n(c.fouls),offsides:n(c.offsides),yellow_cards:n(c.yellowCards),red_cards:n(c.redCards),points:n(c.points),updated_at:stamp};
  const teamWrite=await client.from('record_room_arsenal_team_stats').upsert(team,{onConflict:'season'}).select().maybeSingle();
