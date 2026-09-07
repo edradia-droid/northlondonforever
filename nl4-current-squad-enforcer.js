@@ -1,7 +1,7 @@
 (() => {
 'use strict';
 const FINAL=window.NL4_FINAL_PL_SQUADS||{};
-const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[’‘]/g,"'").toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[Øø]/g,'o').replace(/[’‘]/g,"'").toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[m]));
 const zeros=(name,position='Midfielder',number=null)=>({name,position,number,appearances:0,starts:0,minutes:0,goals:0,assists:0,cleanSheets:0,yellowCards:0,redCards:0,mom:0,shots:0,shotsOnTarget:0,chancesCreated:0,tackles:0,interceptions:0,saves:0});
 const tokens=v=>new Set(norm(v).split(' ').filter(Boolean));
@@ -161,13 +161,14 @@ function rebuildHydratedRecordRoom(){
     try{
       if(typeof recalculateClubStatsFromFixtures==='function')recalculateClubStatsFromFixtures(team);
       const rich=completed.some(s=>(s.homeLineup||[]).some(Boolean)||(s.awayLineup||[]).some(Boolean)||(s.events||[]).length||(s.homeSubs||[]).length||(s.awaySubs||[]).length||s.manOfTheMatch||Number(s.stats?.saves?.h)||Number(s.stats?.saves?.a));
-      if(rich&&typeof recalculatePlayerStatsFromFixtures==='function')recalculatePlayerStatsFromFixtures(team);
+      if(team!=='Arsenal'&&rich&&typeof recalculatePlayerStatsFromFixtures==='function')recalculatePlayerStatsFromFixtures(team);
       rebuilt++;
     }catch(err){console.warn('[NL4 Record Room] Hydrated rebuild skipped for',team,err);}
   }
   if(rebuilt){
     try{if(typeof persist==='function')persist();}catch(_){ }
     try{if(typeof render==='function')render();}catch(_){ }
+    try{window.NL4RecordRoomArsenalPublicSync?.hydrateFromSupabase?.();}catch(_){ }
     const marker=document.getElementById('buildMarker');
     if(marker)marker.textContent='BUILD V34 • STABLE AUTHORITY • HYDRATED TOTALS RECOVERED • MOBILE + PC • HISTORY PRESERVED';
   }
