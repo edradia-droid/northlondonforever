@@ -54,7 +54,7 @@ if (NL4_IS_RECORD_ROOM) {
     ['Martin Ødegaard','Midfielder',8],['Eberechi Eze','Midfielder',10],['Fabio Vieira','Midfielder',21],['Ethan Nwaneri','Midfielder',22],['Mikel Merino','Midfielder',23],['Martín Zubimendi','Midfielder',36],['Bruno Guimarães','Midfielder',39],['Declan Rice','Midfielder',41],['Max Dowman','Midfielder',null],
     ['Bukayo Saka','Forward',7],['Gabriel Jesus','Forward',9],['Christos Tzolis','Forward',null],['Kai Havertz','Forward',null],['Noni Madueke','Forward',null],['Gabriel Martinelli','Forward',null],['Viktor Gyökeres','Forward',null]
   ];
-  const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[’‘]/g,"'").replace(/\s+/g,' ').trim().toLowerCase();
+  const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[Øø]/g,'o').replace(/[’‘]/g,"'").replace(/\s+/g,' ').trim().toLowerCase();
   const playerFromSeed=([name,position,number])=>({name,position,number,appearances:0,starts:0,minutes:0,goals:0,assists:0,cleanSheets:0,yellowCards:0,redCards:0,mom:0,shots:0,shotsOnTarget:0,chancesCreated:0,tackles:0,interceptions:0,saves:0});
   const arsenalBase=()=>arsenalSeeds.map(playerFromSeed);
   const arsenalDirectory=()=>arsenalSeeds.map(([name,position,number])=>({name,position,number}));
@@ -144,10 +144,10 @@ if (NL4_IS_RECORD_ROOM) {
     .then(()=>loadScript('record-room-matchday-2026-09-04.js?v=20260905-v1'))
     .then(()=>loadScript('record-room-goalkeeper-saves-v10.js?v=20260905-v2'))
     .then(()=>{window.NL4RecordRoomGoalkeeperSaves?.install?.();window.NL4RecordRoomGoalkeeperSaves?.recalcAll?.();window.NL4FinalSquadHistorySync?.syncAll?.();registerArsenal(false);})
-    .then(()=>loadScript('record-room-arsenal-public-sync.js?v=20260905-v4'))
+    .then(()=>loadScript(`record-room-arsenal-public-sync.js?v=20260908-hydrate-order2-${Date.now()}`))
     .then(()=>registerArsenal(false))
     .then(()=>{
-      const finalHydrate=()=>{try{window.NL4RecordRoomBulkHydrate?.(true);}catch(err){console.warn('[NL4 Record Room] Final shared hydration failed:',err);}};
+      const finalHydrate=()=>{try{window.NL4RecordRoomArsenalPublicSync?.hydrateFromSupabase?.();window.NL4RecordRoomBulkHydrate?.(true);}catch(err){console.warn('[NL4 Record Room] Final shared hydration failed:',err);}};
       [0,500,1500,3500,7000].forEach(ms=>setTimeout(finalHydrate,ms));
     })
     .catch(err=>console.warn('[NL4 Record Room] Lightweight startup module failed:',err));
@@ -156,19 +156,19 @@ if (NL4_IS_RECORD_ROOM) {
   window.NL4LoadRecordRoomMaintenance=function(){
     if(toolsPromise)return toolsPromise;
     toolsPromise=Promise.resolve()
-      .then(()=>loadScript('record-room-supabase.js')).then(()=>loadScript('record-room-supabase-bridge.js')).then(()=>loadScript('record-room-completed-import.js')).then(()=>loadScript('record-room-participation-events-fix.js')).then(()=>loadScript('record-room-verified-stats.js')).then(()=>loadScript('record-room-canonical-events-v4.js')).then(()=>loadScript('record-room-assists-motm-v5.js')).then(()=>loadScript('record-room-player-calculation-v6.js')).then(()=>loadScript('record-room-event-display-fix.js')).then(()=>loadScript('record-room-season-sync-fix.js')).then(()=>loadScript('record-room-matchday-groups.js'))
-      .then(()=>{window.NL4RecordRoomGoalkeeperSaves?.install?.();window.NL4RecordRoomGoalkeeperSaves?.recalcAll?.();window.NL4FinalSquadHistorySync?.syncAll?.();registerArsenal(false);})
+      .then(()=>loadScript('record-room-supabase.js')).then(()=>loadScript('record-room-supabase-bridge.js')).then(()=>loadScript('record-room-completed-import.js')).then(()=>loadScript('record-room-participation-events-fix.js')).then(()=>loadScript('record-room-verified-stats.js')).then(()=>loadScript('record-room-canonical-events-v4.js')).then(()=>loadScript('record-room-assists-motm-v5.js')).then(()=>loadScript('record-room-player-calculation-v6.js?v=20260908-odegaard-normalize2')).then(()=>loadScript('record-room-event-display-fix.js')).then(()=>loadScript('record-room-season-sync-fix.js')).then(()=>loadScript('record-room-matchday-groups.js'))
+      .then(()=>{window.NL4RecordRoomGoalkeeperSaves?.install?.();window.NL4RecordRoomGoalkeeperSaves?.recalcAll?.();window.NL4FinalSquadHistorySync?.syncAll?.();registerArsenal(false);window.NL4RecordRoomArsenalPublicSync?.hydrateFromSupabase?.();})
       .catch(err=>{toolsPromise=null;throw err;});
     return toolsPromise;
   };
-  const addButton=()=>{const actions=document.querySelector('.admin-record-actions');if(!actions||document.getElementById('rrLoadMaintenance'))return;const b=document.createElement('button');b.id='rrLoadMaintenance';b.type='button';b.textContent='Load full data tools';b.title='Loads heavy Record Room import, audit and season-sync tools only when you request them.';b.addEventListener('click',async()=>{if(b.dataset.loaded==='1')return;b.disabled=true;b.textContent='Loading data tools…';try{await window.NL4LoadRecordRoomMaintenance();b.dataset.loaded='1';b.textContent='Data tools loaded';registerArsenal(false);}catch(error){console.warn('[NL4 Record Room] Manual data-tool load failed:',error);b.disabled=false;b.textContent='Retry data tools';}});actions.insertBefore(b,document.getElementById('recordRoomLogout')||null);};
+  const addButton=()=>{const actions=document.querySelector('.admin-record-actions');if(!actions||document.getElementById('rrLoadMaintenance'))return;const b=document.createElement('button');b.id='rrLoadMaintenance';b.type='button';b.textContent='Load full data tools';b.title='Loads heavy Record Room import, audit and season-sync tools only when you request them.';b.addEventListener('click',async()=>{if(b.dataset.loaded==='1')return;b.disabled=true;b.textContent='Loading data tools…';try{await window.NL4LoadRecordRoomMaintenance();b.dataset.loaded='1';b.textContent='Data tools loaded';registerArsenal(false);window.NL4RecordRoomArsenalPublicSync?.hydrateFromSupabase?.();}catch(error){console.warn('[NL4 Record Room] Manual data-tool load failed:',error);b.disabled=false;b.textContent='Retry data tools';}});actions.insertBefore(b,document.getElementById('recordRoomLogout')||null);};
   addButton();
 }
 
 if(document.getElementById('arsenalPremierLeagueStats') || document.getElementById('arsenalPlayerStats')){
   const data=document.createElement('script');
   data.src='premier-league-final-squads-2026-27.js?v=20260907-odegaard1';
-  data.onload=()=>{const s=document.createElement('script');s.src='premier-league-record-room-sync.js?v=20260905-v6';document.head.appendChild(s);};
-  data.onerror=()=>{const s=document.createElement('script');s.src='premier-league-record-room-sync.js?v=20260905-v6';document.head.appendChild(s);};
+  data.onload=()=>{const s=document.createElement('script');s.src=`premier-league-record-room-sync.js?v=20260908-display2-${Date.now()}`;document.head.appendChild(s);};
+  data.onerror=()=>{const s=document.createElement('script');s.src=`premier-league-record-room-sync.js?v=20260908-display2-${Date.now()}`;document.head.appendChild(s);};
   document.head.appendChild(data);
 }
