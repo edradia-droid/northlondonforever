@@ -2,7 +2,7 @@
 'use strict';
 const FINAL=window.NL4_FINAL_PL_SQUADS||{};
 const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[’‘]/g,"'").toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
-const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[m]));
 const zeros=(name,position='Midfielder',number=null)=>({name,position,number,appearances:0,starts:0,minutes:0,goals:0,assists:0,cleanSheets:0,yellowCards:0,redCards:0,mom:0,shots:0,shotsOnTarget:0,chancesCreated:0,tackles:0,interceptions:0,saves:0});
 const tokens=v=>new Set(norm(v).split(' ').filter(Boolean));
 function score(a,b){
@@ -149,6 +149,31 @@ function installRecordRoomMatchMeta(){
   return true;
 }
 
+function rebuildHydratedRecordRoom(){
+  const rrDb=(typeof db!=='undefined'&&db)||window.db;
+  const rrTeams=(typeof TEAMS!=='undefined'&&TEAMS)||window.TEAMS;
+  if(!rrDb||!Array.isArray(rrTeams))return false;
+  let rebuilt=0;
+  for(const team of rrTeams){
+    const records=Object.values(rrDb?.[team]?.fixtureData||{}).filter(Boolean);
+    const completed=records.filter(s=>s.homeScore!==null&&s.homeScore!==undefined&&s.awayScore!==null&&s.awayScore!==undefined);
+    if(!completed.length)continue;
+    try{
+      if(typeof recalculateClubStatsFromFixtures==='function')recalculateClubStatsFromFixtures(team);
+      const rich=completed.some(s=>(s.homeLineup||[]).some(Boolean)||(s.awayLineup||[]).some(Boolean)||(s.events||[]).length||(s.homeSubs||[]).length||(s.awaySubs||[]).length||s.manOfTheMatch||Number(s.stats?.saves?.h)||Number(s.stats?.saves?.a));
+      if(rich&&typeof recalculatePlayerStatsFromFixtures==='function')recalculatePlayerStatsFromFixtures(team);
+      rebuilt++;
+    }catch(err){console.warn('[NL4 Record Room] Hydrated rebuild skipped for',team,err);}
+  }
+  if(rebuilt){
+    try{if(typeof persist==='function')persist();}catch(_){ }
+    try{if(typeof render==='function')render();}catch(_){ }
+    const marker=document.getElementById('buildMarker');
+    if(marker)marker.textContent='BUILD V34 • STABLE AUTHORITY • HYDRATED TOTALS RECOVERED • MOBILE + PC • HISTORY PRESERVED';
+  }
+  return rebuilt>0;
+}
+
 function renderEplArsenal(){
   const body=document.getElementById('arsenalPlayerStatsBody');const feed=FINAL.Arsenal;
   if(!body||!Array.isArray(feed)||!feed.length)return false;
@@ -169,16 +194,18 @@ function renderEplArsenal(){
 }
 function install(){
   if(document.getElementById('recordRoomPage')){
-    enforceRecordRoom();installRecordRoomMatchMeta();
-    setTimeout(()=>{enforceRecordRoom();installRecordRoomMatchMeta();try{if(typeof render==='function')render()}catch(_){}},50);
-    setTimeout(()=>{enforceRecordRoom();installRecordRoomMatchMeta();try{if(typeof render==='function')render()}catch(_){}},500);
-    window.addEventListener('focus',()=>{enforceRecordRoom();installRecordRoomMatchMeta();try{if(typeof render==='function')render()}catch(_){}});
+    enforceRecordRoom();installRecordRoomMatchMeta();rebuildHydratedRecordRoom();
+    [100,700,1800,4000,8000].forEach(ms=>setTimeout(()=>{
+      enforceRecordRoom();installRecordRoomMatchMeta();rebuildHydratedRecordRoom();
+      try{if(typeof render==='function')render()}catch(_){}
+    },ms));
+    window.addEventListener('focus',()=>{enforceRecordRoom();installRecordRoomMatchMeta();rebuildHydratedRecordRoom();try{if(typeof render==='function')render()}catch(_){}});
   }
   if(document.getElementById('arsenalPlayerStats')){
     renderEplArsenal();setTimeout(renderEplArsenal,100);setTimeout(renderEplArsenal,800);
     window.addEventListener('focus',renderEplArsenal);
   }
 }
-window.NL4CurrentSquadEnforcer={enforceRecordRoom,renderEplArsenal,install,installRecordRoomMatchMeta};
+window.NL4CurrentSquadEnforcer={enforceRecordRoom,renderEplArsenal,install,installRecordRoomMatchMeta,rebuildHydratedRecordRoom};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
