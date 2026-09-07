@@ -1,0 +1,63 @@
+name: Fix Record Room Zero Reset V36
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-record-room-zero-reset-v36.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-record-room:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Remove destructive startup recalculation
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('record-room.html')
+          text = path.read_text(encoding='utf-8')
+          old = """})();
+TEAMS.forEach(team=>syncTeamSeasonFromFixtures(team));
+try{persist();}catch(_){}
+try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(db)); }catch(_){ }
+
+const $=id=>document.getElementById(id);"""
+          new = """})();
+// V36 STARTUP SAFETY: preserve the saved Record Room authority during initial load.
+// Fixture/player/club totals are recalculated after real match saves and after shared
+// hydration, never from an incomplete startup fixture set.
+
+const $=id=>document.getElementById(id);"""
+          if old not in text:
+              raise SystemExit('Safety stop: exact V34 startup reset block not found')
+          text = text.replace(old, new, 1)
+          text = text.replace('supabase-client.js?v=20260906-mobile-final-v35', 'supabase-client.js?v=20260907-zero-reset-v36', 1)
+          path.write_text(text, encoding='utf-8')
+
+          admin = Path('admin.html')
+          admin_text = admin.read_text(encoding='utf-8')
+          admin_text = admin_text.replace('record-room.html?v=20260906-mobile-final-v35', 'record-room.html?v=20260907-zero-reset-v36')
+          admin.write_text(admin_text, encoding='utf-8')
+          PY
+
+      - name: Verify patch
+        shell: bash
+        run: |
+          grep -q 'V36 STARTUP SAFETY' record-room.html
+          ! grep -q 'TEAMS.forEach(team=>syncTeamSeasonFromFixtures(team));' record-room.html
+          grep -q 'supabase-client.js?v=20260907-zero-reset-v36' record-room.html
+
+      - name: Commit V36 stabilization
+        shell: bash
+        run: |
+          git config user.name 'NL4 Automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add record-room.html admin.html
+          git commit -m 'Stop Record Room startup zero reset'
+          git push
