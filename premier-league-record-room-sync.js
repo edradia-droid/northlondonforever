@@ -18,12 +18,18 @@ function renderTeam(r){
 }
 function findBody(){return document.getElementById('arsenalPlayerStatsBody')||document.querySelector('#arsenalPlayerStats tbody')||document.querySelector('[data-arsenal-player-stats] tbody')}
 
+function snapshotRowValues(tr){
+  const out={};
+  STAT_KEYS.forEach(k=>{const cell=tr?.querySelector(`[data-stat="${k}"]`);if(cell)out[k]=cell.textContent?.trim()||'0';});
+  return out;
+}
 function staticSquadSnapshot(){
   const body=findBody();if(!body)return[];
   return [...body.querySelectorAll('tr')].map(tr=>({
     name:tr.dataset.player||tr.querySelector('td strong')?.textContent?.trim()||'',
     position:tr.dataset.position||tr.querySelector('td small')?.textContent?.trim()||'Midfielder',
     number:tr.querySelector('.pl-player-number')?.textContent?.trim()||'',
+    stats:snapshotRowValues(tr),
     row:tr
   })).filter(p=>p.name);
 }
@@ -42,13 +48,20 @@ function matchInitial(finalPlayer,available){
 }
 function rowHtml(p){
   const aliases=[p.name,p.finalName,p.webName].filter(Boolean).map(norm).filter(Boolean).join('|');
-  const cells=STAT_KEYS.map(k=>`<td${k==='goals'||k==='assists'?' class="pl-stat-hot"':''} data-stat="${k}">0</td>`).join('');
+  const cells=STAT_KEYS.map(k=>`<td${k==='goals'||k==='assists'?' class="pl-stat-hot"':''} data-stat="${k}">${esc(p.stats?.[k]??0)}</td>`).join('');
   return `<tr data-player="${esc(p.name)}" data-position="${esc(p.position)}" data-aliases="${esc(aliases)}"><td class="player-cell"><div class="pl-player-name"><span class="pl-player-number">${esc(p.number||'—')}</span><span><strong>${esc(p.name)}</strong><small>${esc(p.position)}</small></span></div></td>${cells}</tr>`;
 }
 function renderCurrentArsenalSquad(){
   const body=findBody(),feed=window.NL4_FINAL_PL_SQUADS?.Arsenal;
   if(!body||!Array.isArray(feed)||!feed.length)return false;
-  const available=[...INITIAL_SQUAD];const current=[];
+  const liveExisting=[...body.querySelectorAll('tr')].map(tr=>({
+    name:tr.dataset.player||tr.querySelector('td strong')?.textContent?.trim()||'',
+    position:tr.dataset.position||tr.querySelector('td small')?.textContent?.trim()||'Midfielder',
+    number:tr.querySelector('.pl-player-number')?.textContent?.trim()||'',
+    stats:snapshotRowValues(tr),
+    row:tr
+  })).filter(p=>p.name);
+  const available=liveExisting.length?liveExisting:[...INITIAL_SQUAD];const current=[];
   feed.forEach(f=>{
     const old=matchInitial(f,available);
     if(old)available.splice(available.indexOf(old),1);
@@ -57,7 +70,8 @@ function renderCurrentArsenalSquad(){
       finalName:f.name,
       webName:f.webName,
       position:old?.position||f.position||'Midfielder',
-      number:(old?.number&&old.number!=='—')?old.number:(f.number??'—')
+      number:(old?.number&&old.number!=='—')?old.number:(f.number??'—'),
+      stats:old?.stats||{}
     });
   });
   body.innerHTML=current.map(rowHtml).join('');
@@ -83,7 +97,7 @@ function renderPlayers(rows){
   rows.forEach(p=>{
     const tr=rowForStat(body,p.player_name);if(!tr)return;
     const vals=[p.appearances,p.starts,p.minutes,p.goals,p.assists,p.clean_sheets,p.yellow_cards,p.red_cards,p.man_of_the_match,p.shots,p.shots_on_target,p.chances_created,p.tackles,p.interceptions,p.saves];
-    const cells=tr.querySelectorAll('td');vals.forEach((v,i)=>{if(cells[i+1])cells[i+1].textContent=n(v)});
+    const cells=tr.querySelectorAll('td');vals.forEach((v,i)=>{if(cells[i+1] && v!==null && v!==undefined)cells[i+1].textContent=n(v)});
   });
   const s=document.getElementById('arsenalPlayerStatsStatus');if(s)s.textContent='LIVE • CURRENT SQUAD SYNCHRONIZED FROM ARSENAL RECORD ROOM';
 }
