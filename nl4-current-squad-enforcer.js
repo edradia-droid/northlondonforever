@@ -77,9 +77,78 @@ function enforceRecordRoom(){
   };
   try{window.playerOptions=(team,selected='')=>selectedOption(team,selected);playerOptions=window.playerOptions;}catch(_){ }
   try{if(typeof window.persist==='function')window.persist();else if(typeof persist==='function')persist();}catch(_){ }
-  const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V34 • SINGLE AUTHORITY • MOBILE + PC CURRENT SQUADS • HISTORY PRESERVED';
+  const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V34 • STABLE AUTHORITY • MOBILE + PC • MATCH METADATA RESTORED • HISTORY PRESERVED';
   return true;
 }
+
+function toLocalDateTimeValue(value){
+  if(!value)return '';
+  const d=new Date(value);if(Number.isNaN(d.getTime()))return '';
+  const local=new Date(d.getTime()-d.getTimezoneOffset()*60000);
+  return local.toISOString().slice(0,16);
+}
+function installRecordRoomMatchMeta(){
+  if(!document.getElementById('recordRoomPage')||window.__nl4RecordRoomMetaInstalled)return false;
+  const originalOpen=window.openFixture;
+  const originalSave=window.saveFixtureDetails;
+  if(typeof originalOpen!=='function'||typeof originalSave!=='function')return false;
+  window.__nl4RecordRoomMetaInstalled=true;
+
+  if(!document.getElementById('nl4-record-room-meta-style')){
+    const style=document.createElement('style');style.id='nl4-record-room-meta-style';style.textContent=`
+      .rr-match-meta{margin-top:15px;border:1px solid rgba(216,173,69,.20);border-radius:16px;background:#10100d;padding:14px}
+      .rr-match-meta h4{margin:0 0 10px;font-size:13px}.rr-match-meta-grid{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:9px}
+      .rr-match-meta .field{min-width:0}.rr-match-meta input,.rr-match-meta select{width:100%;min-width:0}
+      @media(max-width:1000px){.rr-match-meta-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+      @media(max-width:620px){.rr-match-meta{padding:12px}.rr-match-meta-grid{grid-template-columns:1fr}.rr-match-meta input,.rr-match-meta select{font-size:16px}}
+    `;document.head.appendChild(style);
+  }
+
+  window.openFixture=function(id){
+    originalOpen.call(this,id);
+    try{
+      const team=(window.teamSelect||document.getElementById('teamSelect'))?.value;
+      const fixtures=(typeof ALL_FIXTURES!=='undefined'&&ALL_FIXTURES)||window.ALL_FIXTURES||[];
+      const f=fixtures.find(x=>Number(x.id)===Number(id));
+      const store=(typeof fixtureStore==='function'?fixtureStore:window.fixtureStore);
+      if(!team||!f||typeof store!=='function')return;
+      const s=store(team,id);s.matchMeta=s.matchMeta||{};
+      const box=document.getElementById('fixtureDetail');
+      const scoreBox=box?.querySelector('.detail-box');if(!box||!scoreBox)return;
+      const kickoff=s.matchMeta.kickoff||f.kickoff||'';
+      const html=`<div class="rr-match-meta" id="rrMatchMeta"><h4>Match information</h4><div class="rr-match-meta-grid">
+        <div class="field"><label>KICKOFF</label><input id="detailKickoff" type="datetime-local" value="${esc(toLocalDateTimeValue(kickoff))}"></div>
+        <div class="field"><label>VENUE / STADIUM</label><input id="detailVenue" type="text" placeholder="Stadium" value="${esc(s.matchMeta.venue||'')}"></div>
+        <div class="field"><label>REFEREE</label><input id="detailReferee" type="text" placeholder="Referee" value="${esc(s.matchMeta.referee||'')}"></div>
+        <div class="field"><label>ATTENDANCE</label><input id="detailAttendance" type="number" min="0" placeholder="Attendance" value="${s.matchMeta.attendance??''}"></div>
+        <div class="field"><label>MATCH STATUS</label><select id="detailMatchStatus"><option value="scheduled" ${s.matchMeta.status==='scheduled'?'selected':''}>Scheduled</option><option value="live" ${s.matchMeta.status==='live'?'selected':''}>Live</option><option value="full-time" ${s.matchMeta.status==='full-time'?'selected':''}>Full time</option><option value="postponed" ${s.matchMeta.status==='postponed'?'selected':''}>Postponed</option></select></div>
+      </div></div>`;
+      scoreBox.insertAdjacentHTML('beforebegin',html);
+    }catch(err){console.error('[NL4 Record Room] Match metadata render failed:',err);}
+  };
+
+  window.saveFixtureDetails=function(){
+    try{
+      const team=document.getElementById('teamSelect')?.value;
+      const id=Number(document.getElementById('fixtureDetail')?.dataset.fixtureId);
+      const store=(typeof fixtureStore==='function'?fixtureStore:window.fixtureStore);
+      if(team&&Number.isFinite(id)&&typeof store==='function'){
+        const s=store(team,id);s.matchMeta=s.matchMeta||{};
+        const kickoff=document.getElementById('detailKickoff')?.value||'';
+        s.matchMeta.kickoff=kickoff?new Date(kickoff).toISOString():'';
+        s.matchMeta.venue=document.getElementById('detailVenue')?.value.trim()||'';
+        s.matchMeta.referee=document.getElementById('detailReferee')?.value.trim()||'';
+        const attendance=document.getElementById('detailAttendance')?.value;
+        s.matchMeta.attendance=attendance===''?null:Math.max(0,Number(attendance)||0);
+        s.matchMeta.status=document.getElementById('detailMatchStatus')?.value||'scheduled';
+      }
+    }catch(err){console.error('[NL4 Record Room] Match metadata capture failed:',err);}
+    return originalSave.apply(this,arguments);
+  };
+  try{openFixture=window.openFixture;saveFixtureDetails=window.saveFixtureDetails;}catch(_){ }
+  return true;
+}
+
 function renderEplArsenal(){
   const body=document.getElementById('arsenalPlayerStatsBody');const feed=FINAL.Arsenal;
   if(!body||!Array.isArray(feed)||!feed.length)return false;
@@ -100,16 +169,16 @@ function renderEplArsenal(){
 }
 function install(){
   if(document.getElementById('recordRoomPage')){
-    enforceRecordRoom();
-    setTimeout(()=>{enforceRecordRoom();try{if(typeof render==='function')render()}catch(_){}},50);
-    setTimeout(()=>{enforceRecordRoom();try{if(typeof render==='function')render()}catch(_){}},500);
-    window.addEventListener('focus',()=>{enforceRecordRoom();try{if(typeof render==='function')render()}catch(_){}});
+    enforceRecordRoom();installRecordRoomMatchMeta();
+    setTimeout(()=>{enforceRecordRoom();installRecordRoomMatchMeta();try{if(typeof render==='function')render()}catch(_){}},50);
+    setTimeout(()=>{enforceRecordRoom();installRecordRoomMatchMeta();try{if(typeof render==='function')render()}catch(_){}},500);
+    window.addEventListener('focus',()=>{enforceRecordRoom();installRecordRoomMatchMeta();try{if(typeof render==='function')render()}catch(_){}});
   }
   if(document.getElementById('arsenalPlayerStats')){
     renderEplArsenal();setTimeout(renderEplArsenal,100);setTimeout(renderEplArsenal,800);
     window.addEventListener('focus',renderEplArsenal);
   }
 }
-window.NL4CurrentSquadEnforcer={enforceRecordRoom,renderEplArsenal,install};
+window.NL4CurrentSquadEnforcer={enforceRecordRoom,renderEplArsenal,install,installRecordRoomMatchMeta};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
