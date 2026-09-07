@@ -3,11 +3,31 @@
 const SEASON='2026/27', ARSENAL='Arsenal';
 const n=v=>Number.isFinite(Number(v))?Number(v):0;
 const clone=v=>JSON.parse(JSON.stringify(v));
+const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[Øø]/g,'o').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+const isOdegaard=v=>norm(v).includes('odegaard');
+const CORE_STAT_FIELDS=['appearances','starts','minutes','goals','assists','clean_sheets','yellow_cards','red_cards','man_of_the_match'];
+const statSignal=row=>CORE_STAT_FIELDS.reduce((sum,key)=>sum+n(row?.[key]),0);
 function arsenalData(){try{return typeof db!=='undefined'&&db?.[ARSENAL]?db[ARSENAL]:null}catch(_){return null}}
 function arsenalFixtures(){try{return typeof ALL_FIXTURES!=='undefined'?ALL_FIXTURES.filter(f=>f.home===ARSENAL||f.away===ARSENAL):[]}catch(_){return []}}
 function ensureCanonicalArsenalFixtures(){const a=arsenalData();if(!a)return 0;a.fixtureData=a.fixtureData||{};let copied=0;arsenalFixtures().forEach(f=>{const candidates=[];const own=a.fixtureData?.[f.id];if(own)candidates.push(own);const opponent=f.home===ARSENAL?f.away:f.home;const opp=typeof db!=='undefined'?db?.[opponent]?.fixtureData?.[f.id]:null;if(opp)candidates.push(opp);if(!candidates.length)return;candidates.sort((x,y)=>String(y?.updatedAt||'').localeCompare(String(x?.updatedAt||'')));const latest=candidates[0];if(!own||String(latest?.updatedAt||'')>String(own?.updatedAt||'')){a.fixtureData[f.id]=clone(latest);copied++;}});return copied;}
 function completedCount(){const a=arsenalData();if(!a)return 0;return arsenalFixtures().filter(f=>{const s=a.fixtureData?.[f.id];return s&&s.homeScore!==null&&s.homeScore!==undefined&&s.awayScore!==null&&s.awayScore!==undefined;}).length;}
 function playerPayload(p,stamp){return {season:SEASON,player_name:p.name,position:p.position||null,appearances:n(p.appearances),starts:n(p.starts),minutes:n(p.minutes),goals:n(p.goals),assists:n(p.assists),clean_sheets:n(p.cleanSheets),yellow_cards:n(p.yellowCards),red_cards:n(p.redCards),man_of_the_match:n(p.mom),shots:n(p.shots),shots_on_target:n(p.shotsOnTarget),chances_created:n(p.chancesCreated),tackles:n(p.tackles),interceptions:n(p.interceptions),saves:n(p.saves),updated_at:stamp};}
+async function protectOdegaardFromZeroOverwrite(client,players,completed,stamp){
+ if(!completed)return players;
+ const candidate=players.find(p=>isOdegaard(p.player_name));
+ if(!candidate||statSignal(candidate)>0)return players;
+ const existing=await client.from('premier_league_player_stats').select('*').eq('season',SEASON);
+ if(existing.error){console.warn('[NL4] Could not verify Ødegaard before player sync:',existing.error);return players;}
+ const stored=(existing.data||[]).filter(p=>isOdegaard(p.player_name)).sort((a,b)=>statSignal(b)-statSignal(a))[0];
+ if(!stored||statSignal(stored)<=0)return players;
+ CORE_STAT_FIELDS.forEach(key=>{candidate[key]=n(stored[key]);});
+ ['shots','shots_on_target','chances_created','tackles','interceptions','saves'].forEach(key=>{candidate[key]=n(stored[key]);});
+ candidate.player_name='Martin Ødegaard';
+ candidate.position=candidate.position||stored.position||'Midfielder';
+ candidate.updated_at=stamp;
+ console.warn('[NL4] Prevented zero overwrite of Martin Ødegaard stats; preserved stored season totals.');
+ return players;
+}
 async function push(){
  const client=window.nl4Supabase;if(!client)return {skipped:true,reason:'no-client'};
  const current=arsenalData();if(!current)return {skipped:true,reason:'no-arsenal-data'};
@@ -20,7 +40,8 @@ async function push(){
  if(team.matches!==completed)console.warn('[NL4] Arsenal aggregate mismatch',{clubMatches:team.matches,completedFixtures:completed,copied});
  const teamWrite=await client.from('record_room_arsenal_team_stats').upsert(team,{onConflict:'season'}).select().maybeSingle();
  if(teamWrite.error)console.error('[NL4] Arsenal TEAM sync failed:',teamWrite.error);else console.info('[NL4] Arsenal TEAM sync saved',teamWrite.data||team);
- const players=(current.players||[]).filter(p=>p?.name).map(p=>playerPayload(p,stamp));
+ let players=(current.players||[]).filter(p=>p?.name).map(p=>playerPayload(p,stamp));
+ players=await protectOdegaardFromZeroOverwrite(client,players,completed,stamp);
  let playerError=null;
  if(players.length){const result=await client.from('premier_league_player_stats').upsert(players,{onConflict:'season,player_name'}).select('player_name,updated_at');playerError=result.error;if(playerError)console.error('[NL4] Arsenal PLAYER sync failed:',playerError);else console.info('[NL4] Arsenal PLAYER sync saved',result.data?.length||players.length);}
  try{if(typeof persist==='function')persist()}catch(_){}
