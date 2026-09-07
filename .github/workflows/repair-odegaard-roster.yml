@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Restore Odegaard to authoritative Arsenal squad and bust caches
+      - name: Restore Odegaard to Arsenal squad and refresh Premier League cache path
         shell: python
         run: |
           from pathlib import Path
@@ -31,8 +31,14 @@ jobs:
           rr=Path('record-room.html')
           html=rr.read_text(encoding='utf-8')
           html=html.replace('premier-league-final-squads-2026-27.js?v=20260905-final8','premier-league-final-squads-2026-27.js?v=20260907-odegaard1')
-          html=html.replace('supabase-client.js?v=20260906-mobile-final-v35','supabase-client.js?v=20260907-odegaard1')
+          html=html.replace('supabase-client.js?v=20260906-mobile-final-v35','supabase-client.js?v=20260907-odegaard2')
           rr.write_text(html,encoding='utf-8')
+
+          pl=Path('premier-league.html')
+          p=pl.read_text(encoding='utf-8')
+          p=p.replace('<script src="supabase-client.js"></script>','<script src="supabase-client.js?v=20260907-odegaard2"></script>')
+          p=p.replace('supabase-client.js?v=20260907-odegaard1','supabase-client.js?v=20260907-odegaard2')
+          pl.write_text(p,encoding='utf-8')
 
           sc=Path('supabase-client.js')
           s=sc.read_text(encoding='utf-8')
@@ -42,12 +48,12 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add premier-league-final-squads-2026-27.js record-room.html supabase-client.js
+          git add premier-league-final-squads-2026-27.js record-room.html premier-league.html supabase-client.js
           if git diff --cached --quiet; then
             echo "No changes needed"
           else
-            git commit -m "Restore Odegaard to current Arsenal squad"
+            git commit -m "Fix Odegaard on Premier League page"
             git push
           fi
 
-# trigger: 2026-09-07
+# trigger: premier-league-odegaard-2026-09-07
