@@ -603,12 +603,15 @@ function recalculatePlayerStatsFromFixtures(team){
     const starters=new Set(lineup.filter(Boolean).map(playerNameKey));
     const appeared=new Set(starters);
     const minutesByName=new Map();
+    const recordedMinutes=[...(saved.homeSubs||[]),...(saved.awaySubs||[]),...(saved.events||[])].flatMap(x=>[x?.outMin,x?.inMin,x?.minute]).map(Number).filter(Number.isFinite);
+    const configuredEnd=Number(saved.matchMeta?.endMinute);
+    const matchEndMinute=Math.max(90,Math.min(120,Number.isFinite(configuredEnd)&&configuredEnd>=90?configuredEnd:(recordedMinutes.length?Math.max(...recordedMinutes):90)));
 
-    starters.forEach(k=>minutesByName.set(k,90));
+    starters.forEach(k=>minutesByName.set(k,matchEndMinute));
     subs.forEach(sub=>{
       const outKey=playerNameKey(sub.out), inKey=playerNameKey(sub.in);
-      const outMin=Number.isFinite(Number(sub.outMin))?Math.max(0,Math.min(90,Number(sub.outMin))):null;
-      const inMin=Number.isFinite(Number(sub.inMin))?Math.max(0,Math.min(90,Number(sub.inMin))):outMin;
+      const outMin=Number.isFinite(Number(sub.outMin))?Math.max(0,Math.min(matchEndMinute,Number(sub.outMin))):null;
+      const inMin=Number.isFinite(Number(sub.inMin))?Math.max(0,Math.min(matchEndMinute,Number(sub.inMin))):outMin;
       if(outKey){
         appeared.add(outKey);
         if(outMin!==null) minutesByName.set(outKey,outMin);
@@ -616,7 +619,7 @@ function recalculatePlayerStatsFromFixtures(team){
       if(inKey){
         appeared.add(inKey);
         const minute=inMin===null?0:inMin;
-        minutesByName.set(inKey,Math.max(minutesByName.get(inKey)||0,90-minute));
+        minutesByName.set(inKey,Math.max(minutesByName.get(inKey)||0,matchEndMinute-minute));
       }
     });
 
@@ -624,7 +627,7 @@ function recalculatePlayerStatsFromFixtures(team){
       const p=byName.get(k); if(!p) return;
       p.appearances+=1;
       if(starters.has(k)) p.starts+=1;
-      p.minutes+=Math.max(0,Math.min(90,Number(minutesByName.get(k))||0));
+      p.minutes+=Math.max(0,Math.min(matchEndMinute,Number(minutesByName.get(k))||0));
     });
 
     // Attribute the team's recorded goalkeeper saves to the goalkeeper who STARTED.
@@ -687,20 +690,20 @@ function recalculatePlayerStatsFromFixtures(team){
       const position=String(p.position||"").toLowerCase();
       if(position!=="goalkeeper"&&position!=="defender") return;
 
-      const playedMinutes=Math.max(0,Math.min(90,Number(minutesByName.get(k))||0));
+      const playedMinutes=Math.max(0,Math.min(matchEndMinute,Number(minutesByName.get(k))||0));
       if(playedMinutes<60) return;
 
-      let onMinute=starters.has(k)?0:90-playedMinutes;
-      let offMinute=starters.has(k)?playedMinutes:90;
+      let onMinute=starters.has(k)?0:matchEndMinute-playedMinutes;
+      let offMinute=starters.has(k)?playedMinutes:matchEndMinute;
 
       // If the player appears in explicit substitution records, use those clock
       // minutes to define the exact interval he was on the pitch.
       subs.forEach(sub=>{
         if(playerNameKey(sub.out)===k && Number.isFinite(Number(sub.outMin))){
-          offMinute=Math.max(0,Math.min(90,Number(sub.outMin)));
+          offMinute=Math.max(0,Math.min(matchEndMinute,Number(sub.outMin)));
         }
         if(playerNameKey(sub.in)===k && Number.isFinite(Number(sub.inMin))){
-          onMinute=Math.max(0,Math.min(90,Number(sub.inMin)));
+          onMinute=Math.max(0,Math.min(matchEndMinute,Number(sub.inMin)));
         }
       });
 
