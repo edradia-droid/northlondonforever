@@ -1,0 +1,32 @@
+{
+  "season": "2026/27",
+  "matchweek": 3,
+  "verified_at": "2026-09-07",
+  "authority": "NL4 Record Room",
+  "matches": [
+    "Ipswich Town 0-2 Liverpool",
+    "Newcastle United 2-2 AFC Bournemouth",
+    "Brentford 1-1 Sunderland",
+    "Brighton & Hove Albion 1-1 Leeds United",
+    "Fulham 2-3 Crystal Palace",
+    "Manchester City 1-0 Coventry City",
+    "Nottingham Forest 0-0 Tottenham Hotspur",
+    "Hull City 0-0 Aston Villa",
+    "Everton 2-2 Manchester United",
+    "Arsenal 2-1 Chelsea"
+  ],
+  "verification": {
+    "scores": "verified for all 10",
+    "kickoffs": "verified for all 10",
+    "team_match_stats": "verified and written for all 10; corner-goal values were not guessed",
+    "venue_referee": "verified for all 10",
+    "attendance": "written only where a reliable source published it; Fulham-Crystal Palace and Brighton-Leeds left unset",
+    "arsenal_chelsea": "full XI, used substitutions, goals, assists, cards, match duration, goalkeeper saves and Arsenal season synchronization written",
+    "unverified_fields": "No weather/MOTM/player advanced stat was invented when a sufficiently reliable published value was unavailable. Remaining non-Arsenal MW3 lineup/event enrichment requires source-complete verification before insertion."
+  },
+  "sources": [
+    "FBref match reports/schedule, accessed 2026-09-07",
+    "StatMuse FC match pages, accessed 2026-09-07",
+    "365Scores/PlaymakerStats cross-check for Arsenal-Chelsea"
+  ]
+}
