@@ -1,0 +1,59 @@
+name: Fix Record Room Mobile Authority V38
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-record-room-mobile-authority-v38.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stabilize authority hydration and marker ownership
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          e=Path('nl4-current-squad-enforcer.js')
+          s=e.read_text()
+          s=s.replace("  try{if(typeof window.persist==='function')window.persist();else if(typeof persist==='function')persist();}catch(_){ }\n  const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V34 • STABLE AUTHORITY • MOBILE + PC • MATCH METADATA RESTORED • HISTORY PRESERVED';",
+                      "  /* Supabase authority owns persistence and the live build marker. */")
+          s=s.replace("    try{if(typeof persist==='function')persist();}catch(_){ }\n    try{if(typeof render==='function')render();}catch(_){ }",
+                      "    /* Do not persist during hydration rebuild; Supabase authority owns durable state. */\n    try{if(typeof render==='function')render();}catch(_){ }")
+          s=s.replace("    const marker=document.getElementById('buildMarker');\n    if(marker)marker.textContent='BUILD V34 • STABLE AUTHORITY • HYDRATED TOTALS RECOVERED • MOBILE + PC • HISTORY PRESERVED';",
+                      "    /* Live build/hydration marker is owned by Supabase authority. */")
+          e.write_text(s)
+
+          a=Path('record-room-supabase-authority.js')
+          q=a.read_text()
+          q=q.replace("let memoryShadow=null;", "let memoryShadow=null;\nlet hydrateFlight=null;")
+          q=q.replace("async function hydrate(){\n  const c=client();if(!c||typeof ALL_FIXTURES==='undefined'||typeof db==='undefined')return {ok:false};",
+                      "async function hydrateCore(){\n  const c=client();if(!c||typeof ALL_FIXTURES==='undefined'||typeof db==='undefined')return {ok:false};")
+          q=q.replace("const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V34 • SUPABASE SINGLE AUTHORITY • LOCAL STORAGE DISABLED • HISTORY PRESERVED';\n  console.info(`[NL4 Record Room] Supabase authority hydrated ${imported} completed matches.`);\n  return {ok:true,imported};\n}\nasync function saveOpenFixture()",
+                      "const marker=document.getElementById('buildMarker');if(marker)marker.textContent=`BUILD V38 • SUPABASE LIVE • ${imported} MATCHES HYDRATED • MOBILE + PC • HISTORY PRESERVED`;\n  document.documentElement.dataset.rrSupabaseHydrated=String(imported);\n  console.info(`[NL4 Record Room] Supabase authority hydrated ${imported} completed matches.`);\n  return {ok:true,imported};\n}\nfunction hydrate(){\n  if(hydrateFlight)return hydrateFlight;\n  const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V38 • SUPABASE CONNECTING…';\n  hydrateFlight=hydrateCore().catch(error=>{\n    const m=document.getElementById('buildMarker');if(m)m.textContent='BUILD V38 • SUPABASE HYDRATION ERROR';\n    throw error;\n  }).finally(()=>{hydrateFlight=null;});\n  return hydrateFlight;\n}\nasync function saveOpenFixture()")
+          a.write_text(q)
+
+          r=Path('record-room.html')
+          z=r.read_text()
+          z=z.replace('BUILD V37 • SUPABASE LIVE • MOBILE CACHE BUSTED • HISTORY PRESERVED','BUILD V38 • SUPABASE CONNECTING…')
+          z=z.replace('supabase-client.js?v=20260908-supabase-live-v37','supabase-client.js?v=20260908-supabase-live-v38')
+          z=z.replace('nl4-current-squad-enforcer.js?v=20260905-v34','nl4-current-squad-enforcer.js?v=20260908-v38')
+          z=z.replace('record-room.html?v=20260908-supabase-live-v37','record-room.html?v=20260908-supabase-live-v38')
+          r.write_text(z)
+          PY
+      - name: Verify
+        run: |
+          node --check nl4-current-squad-enforcer.js
+          node --check record-room-supabase-authority.js
+          grep -q 'hydrateFlight' record-room-supabase-authority.js
+          grep -q 'BUILD V38' record-room-supabase-authority.js
+          grep -q 'supabase-live-v38' record-room.html
+          ! grep -q "marker.textContent='BUILD V34 • STABLE AUTHORITY" nl4-current-squad-enforcer.js
+      - name: Commit
+        run: |
+          git config user.name 'NL4 Automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add nl4-current-squad-enforcer.js record-room-supabase-authority.js record-room.html
+          git commit -m 'Stabilize Record Room mobile Supabase authority V38' || exit 0
+          git push
