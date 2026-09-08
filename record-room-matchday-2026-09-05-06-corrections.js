@@ -12,7 +12,8 @@ function loadScriptOnce(file,key,version){
 }
 function loadOwnGoalInput(){loadScriptOnce('record-room-own-goal-input.js','NL4RecordRoomOwnGoalInput','20260908-own-goal3');}
 function loadSupabaseAuthority(){loadScriptOnce('record-room-supabase-authority.js','NL4RecordRoomSupabaseAuthority','20260908-supabase-authority1');}
-loadOwnGoalInput();loadSupabaseAuthority();
+function loadMobileSupabaseRetry(){loadScriptOnce('record-room-mobile-supabase-retry.js','__NL4_RR_MOBILE_SUPABASE_RETRY__','20260908-mobile-supabase1');}
+loadOwnGoalInput();loadSupabaseAuthority();loadMobileSupabaseRetry();
 function resolve(team,name){const ps=(typeof db!=='undefined'&&db?.[team]?.players)||[];return ps.find(p=>norm(p.name)===norm(name))?.name||name;}
 function apply(){
  if(typeof db==='undefined'||!db?.[HOME]||!db?.[AWAY])return false;
@@ -31,7 +32,7 @@ function apply(){
  try{if(typeof persist==='function')persist();if(typeof render==='function')render();}catch(_){}
  console.info('[NL4 Record Room] Corrected Manchester City warm-up XI change');return true;
 }
-function run(){loadOwnGoalInput();loadSupabaseAuthority();if(!apply())setTimeout(apply,1200);}
+function run(){loadOwnGoalInput();loadSupabaseAuthority();loadMobileSupabaseRetry();if(!apply())setTimeout(apply,1200);}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
 window.NL4RecordRoomMW3CityCorrection={apply,version:VERSION};
 })();
