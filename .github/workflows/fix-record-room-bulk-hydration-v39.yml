@@ -118,3 +118,4 @@ function hydrate(){'''
           git add record-room-supabase-authority.js
           git commit -m 'Bulk hydrate Record Room from Supabase on mobile V39' || exit 0
           git push
+# trigger: 20260908-v39-run2
