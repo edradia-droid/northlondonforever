@@ -5,16 +5,14 @@ const VERSION='20260908-mw3-city-warmup-v1';
 const ID=26,HOME='Manchester City',AWAY='Coventry City';
 const clone=v=>JSON.parse(JSON.stringify(v));
 const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[Øø]/g,'o').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
-function loadOwnGoalInput(){
- if(window.__NL4_RECORD_ROOM_OWN_GOAL_INPUT__)return;
- if([...document.scripts].some(s=>String(s.src||'').includes('record-room-own-goal-input.js')))return;
- const s=document.createElement('script');
- s.src=`record-room-own-goal-input.js?v=20260908-own-goal2-${Date.now()}`;
- s.async=false;
- s.onerror=()=>console.error('[NL4 Record Room] Own Goal input helper failed to load');
- document.head.appendChild(s);
+function loadScriptOnce(file,key,version){
+ if(key&&window[key])return;
+ if([...document.scripts].some(s=>String(s.src||'').includes(file)))return;
+ const s=document.createElement('script');s.src=`${file}?v=${version}-${Date.now()}`;s.async=false;s.onerror=()=>console.error('[NL4 Record Room] Failed to load',file);document.head.appendChild(s);
 }
-loadOwnGoalInput();
+function loadOwnGoalInput(){loadScriptOnce('record-room-own-goal-input.js','NL4RecordRoomOwnGoalInput','20260908-own-goal3');}
+function loadSupabaseAuthority(){loadScriptOnce('record-room-supabase-authority.js','NL4RecordRoomSupabaseAuthority','20260908-supabase-authority1');}
+loadOwnGoalInput();loadSupabaseAuthority();
 function resolve(team,name){const ps=(typeof db!=='undefined'&&db?.[team]?.players)||[];return ps.find(p=>norm(p.name)===norm(name))?.name||name;}
 function apply(){
  if(typeof db==='undefined'||!db?.[HOME]||!db?.[AWAY])return false;
@@ -33,7 +31,7 @@ function apply(){
  try{if(typeof persist==='function')persist();if(typeof render==='function')render();}catch(_){}
  console.info('[NL4 Record Room] Corrected Manchester City warm-up XI change');return true;
 }
-function run(){loadOwnGoalInput();if(!apply())setTimeout(apply,1200);}
+function run(){loadOwnGoalInput();loadSupabaseAuthority();if(!apply())setTimeout(apply,1200);}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
 window.NL4RecordRoomMW3CityCorrection={apply,version:VERSION};
 })();
