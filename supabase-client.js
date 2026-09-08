@@ -138,6 +138,8 @@ if (NL4_IS_RECORD_ROOM) {
   Promise.resolve()
     .then(()=>loadScript('premier-league-final-squads-2026-27.js?v=20260907-odegaard1'))
     .then(()=>loadScript('record-room-final-squad-history-sync.js?v=20260905-v34'))
+    .then(()=>loadScript(`record-room-supabase-authority.js?v=20260908-authority-direct2-${Date.now()}`))
+    .then(()=>loadScript(`record-room-mobile-supabase-retry.js?v=20260908-mobile-direct2-${Date.now()}`))
     .then(()=>loadScript('record-room-match-meta.js?v=20260905-v34-mobile-info2'))
     .then(()=>loadScript('record-room-mobile-match-info-v34.js?v=20260906-shared-hydrate-v2'))
     .then(()=>loadScript('record-room-player-match-stats.js?v=20260905-v5'))
@@ -148,7 +150,7 @@ if (NL4_IS_RECORD_ROOM) {
     .then(()=>loadScript(`record-room-arsenal-public-sync.js?v=20260908-hydrate-order2-${Date.now()}`))
     .then(()=>registerArsenal(false))
     .then(()=>{
-      const finalHydrate=()=>{try{window.NL4RecordRoomArsenalPublicSync?.hydrateFromSupabase?.();window.NL4RecordRoomBulkHydrate?.(true);}catch(err){console.warn('[NL4 Record Room] Final shared hydration failed:',err);}};
+      const finalHydrate=()=>{try{window.NL4RecordRoomSupabaseAuthority?.hydrate?.();window.NL4RecordRoomArsenalPublicSync?.hydrateFromSupabase?.();window.NL4RecordRoomBulkHydrate?.(true);}catch(err){console.warn('[NL4 Record Room] Final shared hydration failed:',err);}};
       [0,500,1500,3500,7000].forEach(ms=>setTimeout(finalHydrate,ms));
     })
     .catch(err=>console.warn('[NL4 Record Room] Lightweight startup module failed:',err));
@@ -158,11 +160,11 @@ if (NL4_IS_RECORD_ROOM) {
     if(toolsPromise)return toolsPromise;
     toolsPromise=Promise.resolve()
       .then(()=>loadScript('record-room-supabase.js')).then(()=>loadScript('record-room-supabase-bridge.js')).then(()=>loadScript('record-room-completed-import.js')).then(()=>loadScript('record-room-participation-events-fix.js')).then(()=>loadScript('record-room-verified-stats.js')).then(()=>loadScript('record-room-canonical-events-v4.js')).then(()=>loadScript('record-room-assists-motm-v5.js')).then(()=>loadScript('record-room-player-calculation-v6.js?v=20260908-odegaard-normalize2')).then(()=>loadScript('record-room-event-display-fix.js')).then(()=>loadScript('record-room-season-sync-fix.js')).then(()=>loadScript('record-room-matchday-groups.js'))
-      .then(()=>{window.NL4RecordRoomGoalkeeperSaves?.install?.();window.NL4RecordRoomGoalkeeperSaves?.recalcAll?.();window.NL4FinalSquadHistorySync?.syncAll?.();registerArsenal(false);window.NL4RecordRoomArsenalPublicSync?.hydrateFromSupabase?.();})
+      .then(()=>{window.NL4RecordRoomGoalkeeperSaves?.install?.();window.NL4RecordRoomGoalkeeperSaves?.recalcAll?.();window.NL4FinalSquadHistorySync?.syncAll?.();registerArsenal(false);window.NL4RecordRoomSupabaseAuthority?.hydrate?.();window.NL4RecordRoomArsenalPublicSync?.hydrateFromSupabase?.();})
       .catch(err=>{toolsPromise=null;throw err;});
     return toolsPromise;
   };
-  const addButton=()=>{const actions=document.querySelector('.admin-record-actions');if(!actions||document.getElementById('rrLoadMaintenance'))return;const b=document.createElement('button');b.id='rrLoadMaintenance';b.type='button';b.textContent='Load full data tools';b.title='Loads heavy Record Room import, audit and season-sync tools only when you request them.';b.addEventListener('click',async()=>{if(b.dataset.loaded==='1')return;b.disabled=true;b.textContent='Loading data tools…';try{await window.NL4LoadRecordRoomMaintenance();b.dataset.loaded='1';b.textContent='Data tools loaded';registerArsenal(false);window.NL4RecordRoomArsenalPublicSync?.hydrateFromSupabase?.();}catch(error){console.warn('[NL4 Record Room] Manual data-tool load failed:',error);b.disabled=false;b.textContent='Retry data tools';}});actions.insertBefore(b,document.getElementById('recordRoomLogout')||null);};
+  const addButton=()=>{const actions=document.querySelector('.admin-record-actions');if(!actions||document.getElementById('rrLoadMaintenance'))return;const b=document.createElement('button');b.id='rrLoadMaintenance';b.type='button';b.textContent='Load full data tools';b.title='Loads heavy Record Room import, audit and season-sync tools only when you request them.';b.addEventListener('click',async()=>{if(b.dataset.loaded==='1')return;b.disabled=true;b.textContent='Loading data tools…';try{await window.NL4LoadRecordRoomMaintenance();b.dataset.loaded='1';b.textContent='Data tools loaded';registerArsenal(false);window.NL4RecordRoomSupabaseAuthority?.hydrate?.();window.NL4RecordRoomArsenalPublicSync?.hydrateFromSupabase?.();}catch(error){console.warn('[NL4 Record Room] Manual data-tool load failed:',error);b.disabled=false;b.textContent='Retry data tools';}});actions.insertBefore(b,document.getElementById('recordRoomLogout')||null);};
   addButton();
 }
 
