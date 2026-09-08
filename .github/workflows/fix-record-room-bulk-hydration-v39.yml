@@ -1,4 +1,4 @@
-name: Fix Record Room Hydration V42
+name: Direct Record Room V42 Hydration
 on:
   push:
     paths:
@@ -10,58 +10,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Make V39 hydration independent of optional startup modules
+      - name: Patch Record Room direct hydration scripts
+        shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          p=Path('supabase-client.js')
+          p=Path('record-room.html')
           s=p.read_text()
-          old="""  Promise.resolve()
-    .then(()=>loadScript('premier-league-final-squads-2026-27.js?v=20260907-odegaard1'))
-    .then(()=>loadScript('record-room-final-squad-history-sync.js?v=20260905-v34'))
-    .then(()=>loadScript(`record-room-supabase-authority.js?v=20260908-authority-direct2-${Date.now()}`))
-    .then(()=>loadScript(`record-room-mobile-supabase-retry.js?v=20260908-mobile-direct2-${Date.now()}`))
-"""
-          new="""  // V42: Supabase authority + V39 bulk hydration are critical startup and must not
-  // be blocked by optional squad/history/UI helper scripts.
-  const hydrationStartup=Promise.resolve()
-    .then(()=>loadScript(`record-room-supabase-authority.js?v=20260908-v42-authority-${Date.now()}`))
-    .then(()=>loadScript(`record-room-mobile-supabase-retry.js?v=20260908-v42-bulk-${Date.now()}`))
-    .then(()=>window.NL4RecordRoomBulkMobileHydrateV39?.hydrate?.())
-    .catch(err=>{
-      const marker=document.getElementById('buildMarker');
-      if(marker)marker.textContent=`BUILD V42 • HYDRATION STARTUP ERROR • ${String(err?.message||err).slice(0,80)}`;
-      console.error('[NL4 Record Room] Critical V42 hydration startup failed:',err);
-    });
-
-  Promise.resolve()
-    .then(()=>loadScript('premier-league-final-squads-2026-27.js?v=20260907-odegaard1'))
-    .then(()=>loadScript('record-room-final-squad-history-sync.js?v=20260905-v34'))
-    .then(()=>hydrationStartup)
-"""
+          old='''<script src="supabase-client.js?v=20260908-v41-page-proof"></script>\n<script src="premier-league-final-squads-2026-27.js?v=20260907-odegaard1"></script>'''
+          new='''<script src="supabase-client.js?v=20260909-v42-direct-hydration"></script>\n<script src="record-room-supabase-authority.js?v=20260909-v42-direct-authority"></script>\n<script src="record-room-mobile-supabase-retry.js?v=20260909-v42-direct-bulk"></script>\n<script src="premier-league-final-squads-2026-27.js?v=20260907-odegaard1"></script>'''
           if old not in s:
-              raise SystemExit('Expected old startup chain not found')
+              raise SystemExit('Expected Record Room script block not found')
           s=s.replace(old,new,1)
+          s=s.replace('BUILD V41 • PAGE LOADED • WAITING FOR BULK SUPABASE…','BUILD V42 • PAGE LOADED • DIRECT BULK SUPABASE STARTUP…',1)
           p.write_text(s)
-
-          h=Path('record-room.html')
-          x=h.read_text()
-          import re
-          x=x.replace('BUILD V41 • PAGE LOADED • WAITING FOR BULK SUPABASE…','BUILD V42 • PAGE LOADED • STARTING BULK SUPABASE…')
-          x=re.sub(r'supabase-client\.js\?v=[^"\x27]+','supabase-client.js?v=20260908-v42-independent-hydration',x,count=1)
-          h.write_text(x)
           PY
-      - name: Verify V42 startup
+      - name: Verify direct V42 startup
+        shell: bash
         run: |
-          grep -q 'const hydrationStartup=Promise.resolve()' supabase-client.js
-          grep -q 'BUILD V42 • HYDRATION STARTUP ERROR' supabase-client.js
-          grep -q 'BUILD V42 • PAGE LOADED' record-room.html
-          grep -q 'supabase-client.js?v=20260908-v42-independent-hydration' record-room.html
-          node --check supabase-client.js
-      - name: Commit V42 independent hydration
+          grep -q 'record-room-supabase-authority.js?v=20260909-v42-direct-authority' record-room.html
+          grep -q 'record-room-mobile-supabase-retry.js?v=20260909-v42-direct-bulk' record-room.html
+          grep -q 'BUILD V42 • PAGE LOADED • DIRECT BULK SUPABASE STARTUP' record-room.html
+      - name: Commit direct V42 startup
+        shell: bash
         run: |
           git config user.name 'NL4 Automation'
           git config user.email 'actions@users.noreply.github.com'
-          git add supabase-client.js record-room.html
-          git commit -m 'Start Record Room V39 hydration independently of optional modules' || exit 0
+          git add record-room.html
+          git commit -m 'Load Record Room V39 hydration directly from page' || exit 0
           git push
