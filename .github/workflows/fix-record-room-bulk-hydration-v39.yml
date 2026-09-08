@@ -10,65 +10,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Remove legacy V38 hydration path
+      - name: Patch V41 page marker and startup URL
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
-
-          # 1) Make the HTML itself visibly V41 so stale-page vs runtime is obvious.
-          p=Path('record-room.html')
-          s=p.read_text()
-          s=s.replace('BUILD V38 • SUPABASE CONNECTING…','BUILD V41 • PAGE LOADED • WAITING FOR BULK SUPABASE…')
-          s=re.sub(r'supabase-client\.js\?v=[^"\']+', 'supabase-client.js?v=20260908-v41-no-v38', s, count=1)
+          p = Path('record-room.html')
+          s = p.read_text()
+          s = s.replace('BUILD V38 • SUPABASE CONNECTING…', 'BUILD V41 • PAGE LOADED • WAITING FOR BULK SUPABASE…')
+          s = re.sub(r'supabase-client\.js\?v=[^"\x27]+', 'supabase-client.js?v=20260908-v41-page-proof', s, count=1)
           p.write_text(s)
-
-          # 2) The old authority hydrate must never launch the sequential V38 loader again.
-          a=Path('record-room-supabase-authority.js')
-          s=a.read_text()
-          start=s.index('function hydrate(){')
-          end=s.index('\nasync function saveOpenFixture', start)
-          replacement=r'''function hydrate(){
-  const marker=document.getElementById('buildMarker');
-  if(window.NL4RecordRoomBulkMobileHydrateV39?.hydrate){
-    if(marker)marker.textContent='BUILD V41 • DELEGATING TO V39 BULK SUPABASE…';
-    return window.NL4RecordRoomBulkMobileHydrateV39.hydrate();
-  }
-  if(marker)marker.textContent='BUILD V41 • WAITING FOR V39 BULK HYDRATOR…';
-  return new Promise((resolve,reject)=>{
-    let tries=0;
-    const wait=()=>{
-      const fn=window.NL4RecordRoomBulkMobileHydrateV39?.hydrate;
-      if(fn){Promise.resolve(fn()).then(resolve,reject);return;}
-      tries++;
-      if(tries>=80){
-        const e=new Error('V39 bulk hydrator did not become ready');
-        if(marker)marker.textContent='BUILD V41 • V39 BULK HYDRATOR NOT READY';
-        reject(e);return;
-      }
-      setTimeout(wait,250);
-    };
-    wait();
-  });
-}'''
-          s=s[:start]+replacement+s[end:]
-          # Remove any remaining user-visible V38 markers from this authority file.
-          s=s.replace('BUILD V38 • SUPABASE LIVE','BUILD V41 • LEGACY CORE DISABLED')
-          s=s.replace('BUILD V38 • SUPABASE CONNECTING…','BUILD V41 • WAITING FOR V39 BULK HYDRATOR…')
-          s=s.replace('BUILD V38 • SUPABASE HYDRATION ERROR','BUILD V41 • LEGACY HYDRATION DISABLED')
-          a.write_text(s)
           PY
-      - name: Verify V41 no-V38 runtime
+      - name: Verify V41 page
         run: |
           grep -q 'BUILD V41 • PAGE LOADED' record-room.html
-          grep -q 'supabase-client.js?v=20260908-v41-no-v38' record-room.html
-          grep -q 'DELEGATING TO V39 BULK SUPABASE' record-room-supabase-authority.js
-          ! grep -q 'BUILD V38' record-room-supabase-authority.js
-          node --check record-room-supabase-authority.js
-      - name: Commit V41 hydration authority fix
+          grep -q 'supabase-client.js?v=20260908-v41-page-proof' record-room.html
+      - name: Commit V41 page proof
         run: |
           git config user.name 'NL4 Automation'
           git config user.email 'actions@users.noreply.github.com'
-          git add record-room.html record-room-supabase-authority.js
-          git commit -m 'Disable legacy V38 hydration and delegate to V39 bulk loader' || exit 0
+          git add record-room.html
+          git commit -m 'Show V41 Record Room page and force fresh startup asset' || exit 0
           git push
