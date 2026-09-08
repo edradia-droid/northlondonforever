@@ -3,81 +3,8 @@
 if (window.__NL4_RR_MOBILE_MATCH_INFO_V34__) return;
 window.__NL4_RR_MOBILE_MATCH_INFO_V34__ = true;
 
-function loadOnce(src){
-  const base=src.split('?')[0];
-  const existing=[...document.scripts].find(s=>(s.getAttribute('src')||'').split('?')[0]===base);
-  if(existing) return Promise.resolve();
-  return new Promise((resolve,reject)=>{
-    const s=document.createElement('script');
-    s.src=src;
-    s.onload=resolve;
-    s.onerror=()=>reject(new Error(`Could not load ${src}`));
-    document.head.appendChild(s);
-  });
-}
-
-function waitForRecordRoom(max=40){
-  return new Promise(resolve=>{
-    let tries=0;
-    const tick=()=>{
-      if(typeof ALL_FIXTURES!=='undefined'&&typeof db!=='undefined') return resolve(true);
-      if(++tries>=max) return resolve(false);
-      setTimeout(tick,100);
-    };
-    tick();
-  });
-}
-
-async function syncCompletedResults(){
-  const ready=await waitForRecordRoom();
-  const client=window.nl4Supabase;
-  if(!ready||!client) return false;
-  const q=await client.from('premier_league_matches')
-    .select('matchday,home_team,away_team,status,home_score,away_score,kickoff_at')
-    .eq('season','2026/27')
-    .eq('status','fulltime')
-    .not('home_score','is',null)
-    .not('away_score','is',null);
-  if(q.error){console.warn('[NL4 Record Room] Shared result sync failed:',q.error);return false;}
-  let changed=0;
-  (q.data||[]).forEach(row=>{
-    const f=ALL_FIXTURES.find(x=>x.home===row.home_team&&x.away===row.away_team&&Number(x.mw)===Number(row.matchday));
-    if(!f) return;
-    const hs=Number(row.home_score),as=Number(row.away_score);
-    if(!Number.isFinite(hs)||!Number.isFinite(as)) return;
-    f.homeScore=hs;f.awayScore=as;
-    [f.home,f.away].forEach(team=>{
-      if(!db?.[team]) return;
-      let rec=db[team].fixtureData?.[f.id];
-      if(!rec&&typeof fixtureStore==='function') rec=fixtureStore(team,f.id);
-      if(!rec){db[team].fixtureData=db[team].fixtureData||{};rec=db[team].fixtureData[f.id]={homeScore:null,awayScore:null};}
-      if(rec.homeScore!==hs||rec.awayScore!==as) changed++;
-      rec.homeScore=hs;rec.awayScore=as;
-    });
-  });
-  const teams=typeof TEAMS!=='undefined'?TEAMS:[];
-  teams.forEach(team=>{try{if(typeof recalculateClubStatsFromFixtures==='function')recalculateClubStatsFromFixtures(team);}catch(_){}});
-  try{if(typeof persist==='function')persist();}catch(_){ }
-  try{if(typeof render==='function')render();}catch(_){ }
-  console.log(`[NL4 Record Room] Shared completed results synced: ${q.data?.length||0} matches, ${changed} fixture records updated.`);
-  return true;
-}
-
-function authoritativeSyncBurst(){
-  [0,250,700,1500,3000,6000].forEach(ms=>setTimeout(()=>syncCompletedResults(),ms));
-}
-
-function startSharedSync(){
-  if(window.__NL4_RR_SHARED_SYNC_LOADING__) return;
-  window.__NL4_RR_SHARED_SYNC_LOADING__=true;
-  loadOnce('record-room-supabase.js?v=20260906-shared5')
-    .then(()=>loadOnce('record-room-supabase-bridge.js?v=20260906-shared5'))
-    .then(()=>loadOnce('record-room-fresh-browser-hydrate.js?v=20260906-hydrate3'))
-    .then(()=>loadOnce('record-room-shared-hydrate-v2.js?v=20260906-bulk2'))
-    .then(()=>authoritativeSyncBurst())
-    .catch(err=>{window.__NL4_RR_SHARED_SYNC_LOADING__=false;console.warn('[NL4 Record Room] Shared Supabase sync failed to load:',err);});
-}
-
+// V39 is the sole automatic Record Room Supabase hydrator.
+// This helper now handles mobile visibility/selection restoration only.
 function forceVisible(){
   const box=document.getElementById('fixtureDetail');
   if(!box || !box.classList.contains('open')) return;
@@ -109,20 +36,21 @@ document.addEventListener('touchend',e=>{
 },true);
 
 const start=()=>{
-  startSharedSync();
-  authoritativeSyncBurst();
   const box=document.getElementById('fixtureDetail');
   if(box){
     new MutationObserver(schedule).observe(box,{childList:true,subtree:true,attributes:true,attributeFilter:['class','data-fixture-id']});
   }
-  window.addEventListener('pageshow',()=>{schedule();authoritativeSyncBurst();});
-  window.addEventListener('focus',authoritativeSyncBurst);
+  window.addEventListener('pageshow',schedule);
+  window.addEventListener('focus',schedule);
   window.addEventListener('orientationchange',schedule);
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden){schedule();authoritativeSyncBurst();}});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden) schedule();});
   schedule();
 };
 
-window.NL4RecordRoomSharedResultSync={syncCompletedResults,authoritativeSyncBurst};
+window.NL4RecordRoomSharedResultSync={
+  syncCompletedResults:()=>window.NL4RecordRoomBulkMobileHydrateV39?.hydrate?.(),
+  authoritativeSyncBurst:()=>window.NL4RecordRoomBulkMobileHydrateV39?.hydrate?.()
+};
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
