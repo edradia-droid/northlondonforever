@@ -1,0 +1,120 @@
+name: Fix Record Room Bulk Hydration V39
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-record-room-bulk-hydration-v39.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace Record Room sequential hydration with bulk hydration
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p=Path('record-room-supabase-authority.js')
+          s=p.read_text()
+          pattern=r"async function hydrateCore\(\)\{.*?\n\}\nfunction hydrate\(\)\{"
+          replacement=r'''async function withTimeout(promise,ms,label){
+  let timer;
+  try{
+    return await Promise.race([
+      Promise.resolve(promise),
+      new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(`${label||'Supabase request'} timed out after ${ms}ms`)),ms);})
+    ]);
+  }finally{clearTimeout(timer);}
+}
+function rowsByMatch(rows){
+  const out=new Map();
+  (rows||[]).forEach(r=>{const k=String(r.match_id);if(!out.has(k))out.set(k,[]);out.get(k).push(r);});
+  return out;
+}
+async function hydrateCore(){
+  const c=client();
+  if(!c)throw new Error('Supabase client unavailable');
+  if(typeof ALL_FIXTURES==='undefined'||typeof db==='undefined')throw new Error('Record Room runtime not ready');
+
+  const matches=await withTimeout(
+    c.from('premier_league_matches').select('id,matchday,home_team,away_team,home_score,away_score,status').eq('season',SEASON).in('status',['FULL_TIME','fulltime']).not('home_score','is',null).not('away_score','is',null),
+    15000,'Premier League matches'
+  );
+  if(matches.error)throw matches.error;
+  const completed=matches.data||[];
+  const ids=completed.map(m=>m.id);
+  if(!ids.length)throw new Error('No completed 2026/27 matches returned from Supabase');
+
+  const [details,stats,lineups,subs,events,players]=await withTimeout(Promise.all([
+    c.from('record_room_match_details').select('*').in('match_id',ids),
+    c.from('record_room_match_stats').select('*').in('match_id',ids),
+    c.from('record_room_lineups').select('*').in('match_id',ids),
+    c.from('record_room_substitutions').select('*').in('match_id',ids),
+    c.from('record_room_events').select('*').in('match_id',ids),
+    c.from('record_room_players').select('*').eq('season',SEASON)
+  ]),20000,'Record Room bulk hydration');
+
+  const results=[details,stats,lineups,subs,events,players];
+  const failed=results.find(x=>x?.error);
+  if(failed?.error)throw failed.error;
+
+  // Only reset after every required Supabase read has succeeded. This prevents
+  // a slow/offline mobile request from replacing valid on-screen data with zeros.
+  baseReset();
+
+  const detailMap=new Map((details.data||[]).map(r=>[String(r.match_id),r]));
+  const statMap=new Map((stats.data||[]).map(r=>[String(r.match_id),r]));
+  const lineupMap=rowsByMatch(lineups.data||[]);
+  const subMap=rowsByMatch(subs.data||[]);
+  const eventMap=rowsByMatch(events.data||[]);
+
+  let imported=0;
+  for(const m of completed){
+    const f=ALL_FIXTURES.find(x=>x.home===m.home_team&&x.away===m.away_team&&Number(x.mw)===Number(m.matchday));
+    if(!f)continue;
+    const k=String(m.id);
+    applyMatch(f,m,detailMap.get(k)||{},statMap.get(k)||{},lineupMap.get(k)||[],subMap.get(k)||[],eventMap.get(k)||[]);
+    imported++;
+  }
+
+  (players.data||[]).forEach(r=>{
+    const p=db?.[r.club]?.players?.find(x=>norm(x.name).toLowerCase()===norm(r.player_name).toLowerCase());
+    if(p)Object.assign(p,{appearances:r.appearances||0,starts:r.starts||0,minutes:r.minutes||0,goals:r.goals||0,assists:r.assists||0,cleanSheets:r.clean_sheets||0,yellowCards:r.yellow_cards||0,redCards:r.red_cards||0,mom:r.man_of_the_match||0,shots:r.shots||0,shotsOnTarget:r.shots_on_target||0,chancesCreated:r.chances_created||0,tackles:r.tackles||0,interceptions:r.interceptions||0,saves:r.saves||0});
+  });
+
+  try{
+    if(typeof TEAMS!=='undefined'&&typeof recalculateClubStatsFromFixtures==='function')TEAMS.forEach(t=>recalculateClubStatsFromFixtures(t));
+    if(typeof render==='function')render();
+  }catch(e){console.warn('[NL4 Record Room] Render/recalc after Supabase hydrate failed',e);}
+
+  memoryShadow=JSON.stringify(db);
+  const marker=document.getElementById('buildMarker');
+  if(marker)marker.textContent=`BUILD V39 • SUPABASE LIVE • ${imported} MATCHES HYDRATED • BULK MOBILE LOAD • HISTORY PRESERVED`;
+  document.documentElement.dataset.rrSupabaseHydrated=String(imported);
+  console.info(`[NL4 Record Room] V39 bulk hydration loaded ${imported} completed matches.`);
+  return {ok:true,imported};
+}
+function hydrate(){'''
+          ns,n=re.subn(pattern,replacement,s,flags=re.S)
+          if n!=1:
+              raise SystemExit(f'Expected one hydrateCore block, replaced {n}')
+          ns=ns.replace("marker.textContent='BUILD V38 • SUPABASE CONNECTING…';","marker.textContent='BUILD V39 • SUPABASE CONNECTING…';",1)
+          ns=ns.replace("m.textContent='BUILD V38 • SUPABASE HYDRATION ERROR';","m.textContent='BUILD V39 • SUPABASE HYDRATION ERROR';",1)
+          p.write_text(ns)
+          PY
+      - name: Verify V39 bulk hydration
+        run: |
+          node --check record-room-supabase-authority.js
+          grep -q 'BUILD V39 • SUPABASE LIVE' record-room-supabase-authority.js
+          grep -q "record_room_match_details').select('\*').in('match_id',ids)" record-room-supabase-authority.js
+          grep -q 'Only reset after every required Supabase read has succeeded' record-room-supabase-authority.js
+          ! grep -q "for(const m of matches.data||\[\]).*Promise.all" record-room-supabase-authority.js
+      - name: Commit V39
+        run: |
+          git config user.name 'NL4 Automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add record-room-supabase-authority.js
+          git commit -m 'Bulk hydrate Record Room from Supabase on mobile V39' || exit 0
+          git push
