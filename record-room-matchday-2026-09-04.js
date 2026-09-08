@@ -1,7 +1,7 @@
 // NL4 Record Room — verified Premier League Matchweek 3 lineups, substitutions and events
 (function(){
 'use strict';
-const VERSION='20260908-pl-mw3-complete-v1';
+const VERSION='20260908-pl-mw3-complete-v2-hydration-safe';
 const clone=v=>JSON.parse(JSON.stringify(v));
 const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[’‘`]/g,"'").replace(/\s+/g,' ').trim().toLowerCase();
 const split=v=>{const p=String(v||'').split('|||');return{team:p[0]||'',name:p.slice(1).join('|||')||''};};
@@ -91,7 +91,7 @@ const MW3=[
   {
     home:['Manchester City','Man City'],away:['Coventry City','Coventry'],score:[1,0],
     homeLineup:['Gianluigi Donnarumma','Abdukodir Khusanov','Ruben Dias','Marc Guehi','Josko Gvardiol','Enzo Fernandez','Elliot Anderson','Antoine Semenyo','Rayan Cherki','Iliman Ndiaye','Erling Haaland'],
-    awayLineup:['Carl Rushworth','Albian Ajeti Amenda','Bobby Thomas','Ethan Pinnock','Milan van Ewijk','Frank Onyeka','Matt Grimes','Jay Dasilva','Jack Rudoni','Ephron Mason-Clark','Taiwo Awoniyi'],
+    awayLineup:['Carl Rushworth','Aurele Amenda','Bobby Thomas','Ethan Pinnock','Milan van Ewijk','Frank Onyeka','Matt Grimes','Jay Dasilva','Jack Rudoni','Ephron Mason-Clark','Taiwo Awoniyi'],
     homeSubs:[{out:'Rayan Cherki',outMin:66,in:'Phil Foden',inMin:66},{out:'Enzo Fernandez',outMin:76,in:'Ayyoub Bouaddi',inMin:76},{out:'Iliman Ndiaye',outMin:87,in:'Ryan McAidoo',inMin:87}],
     awaySubs:[{out:'Jack Rudoni',outMin:63,in:'Loum Tchaouna',inMin:63},{out:'Frank Onyeka',outMin:63,in:'Caleb Yirenkyi',inMin:63},{out:'Ephron Mason-Clark',outMin:71,in:'Brandon Thomas-Asante',inMin:71},{out:'Taiwo Awoniyi',outMin:71,in:'Ellis Simms',inMin:71},{out:'Jay Dasilva',outMin:85,in:'Gustavo Hamer',inMin:85}],
     events:[['yellow',19,'a','Milan van Ewijk'],['goal',26,'h','Erling Haaland','h','Antoine Semenyo'],['yellow',92,'a','Ethan Pinnock'],['yellow',95,'h','Abdukodir Khusanov']]
@@ -132,7 +132,7 @@ const MW3=[
 function materializeEvents(raw,home,away){
   return raw.map(e=>({type:e[0],minute:e[1],player:(e[2]==='h'?home:away)+'|||'+e[3],assist:e[4]?(e[4]==='h'?home:away)+'|||'+e[5]:''}));
 }
-function apply(){
+function apply(recalculate=false){
   if(typeof db==='undefined'||typeof ALL_FIXTURES==='undefined')return false;
   const touched=new Set();let applied=0;
   MW3.forEach(m=>{
@@ -143,13 +143,26 @@ function apply(){
     applied++;
   });
   if(!applied)return false;
-  touched.forEach(recalcPlayers);
+  if(recalculate){
+    touched.forEach(team=>{
+      try{
+        if(typeof recalculatePlayerStatsFromFixtures==='function')recalculatePlayerStatsFromFixtures(team);else recalcPlayers(team);
+        if(typeof recalculateClubStatsFromFixtures==='function')recalculateClubStatsFromFixtures(team);
+      }catch(err){console.warn('[NL4 Record Room] MW3 season recalculation skipped for',team,err);}
+    });
+  }
   try{if(typeof persist==='function')persist();}catch(e){console.warn('[NL4] Matchday persist failed',e);}
   try{if(typeof render==='function')render();}catch(_){}
-  console.info('[NL4 Record Room] Matchweek 3 lineups/substitutions/events imported:',applied,'fixtures');
+  console.info('[NL4 Record Room] Matchweek 3 lineups/substitutions/events imported:',applied,'fixtures','recalculate=',recalculate);
   return true;
 }
-function run(){if(!apply())setTimeout(apply,800);}
+function run(){
+  if(!apply(false))setTimeout(()=>apply(false),800);
+  // Shared Supabase hydration runs after this startup module and previously
+  // overwrote MW3 with older empty fixture records. Re-assert MW3 after each
+  // hydration window; only the final pass recalculates season/player totals.
+  [1200,3200,6200,9200,13500].forEach((ms,i)=>setTimeout(()=>apply(i===4),ms));
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
-window.NL4RecordRoomMatchday20260904={apply,version:VERSION};
+window.NL4RecordRoomMatchday20260904={apply:()=>apply(true),version:VERSION};
 })();
