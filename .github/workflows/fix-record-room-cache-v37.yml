@@ -1,0 +1,34 @@
+name: Fix Record Room Mobile Cache V37
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-record-room-cache-v37.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bust Record Room mobile cache safely
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('record-room.html')
+          x=p.read_text()
+          x=x.replace('record-room.html?v=20260906-mobile-shared1','record-room.html?v=20260908-supabase-live-v37')
+          x=x.replace('supabase-client.js?v=20260907-odegaard1','supabase-client.js?v=20260908-supabase-live-v37')
+          x=x.replace('BUILD V34 • SINGLE AUTHORITY • MOBILE + PC CURRENT SQUADS • HISTORY PRESERVED','BUILD V37 • SUPABASE LIVE • MOBILE CACHE BUSTED • HISTORY PRESERVED')
+          p.write_text(x)
+          PY
+      - name: Verify patch
+        run: |
+          grep -q 'supabase-client.js?v=20260908-supabase-live-v37' record-room.html
+          grep -q 'BUILD V37 • SUPABASE LIVE • MOBILE CACHE BUSTED • HISTORY PRESERVED' record-room.html
+      - name: Commit patch
+        run: |
+          git config user.name 'NL4 Automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add record-room.html
+          git commit -m 'Bust Record Room mobile Supabase cache' || exit 0
+          git push
