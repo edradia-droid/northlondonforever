@@ -143,6 +143,7 @@ if (NL4_IS_RECORD_ROOM) {
     .then(()=>loadScript('record-room-player-match-stats.js?v=20260905-v5'))
     .then(()=>loadScript('record-room-matchday-2026-09-04.js?v=20260905-v1'))
     .then(()=>loadScript('record-room-goalkeeper-saves-v10.js?v=20260905-v2'))
+    .then(()=>loadScript(`record-room-own-goal-input.js?v=20260908-own-goal1-${Date.now()}`))
     .then(()=>{window.NL4RecordRoomGoalkeeperSaves?.install?.();window.NL4RecordRoomGoalkeeperSaves?.recalcAll?.();window.NL4FinalSquadHistorySync?.syncAll?.();registerArsenal(false);})
     .then(()=>loadScript(`record-room-arsenal-public-sync.js?v=20260908-hydrate-order2-${Date.now()}`))
     .then(()=>registerArsenal(false))
