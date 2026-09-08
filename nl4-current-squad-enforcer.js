@@ -76,8 +76,7 @@ function enforceRecordRoom(){
     return html;
   };
   try{window.playerOptions=(team,selected='')=>selectedOption(team,selected);playerOptions=window.playerOptions;}catch(_){ }
-  try{if(typeof window.persist==='function')window.persist();else if(typeof persist==='function')persist();}catch(_){ }
-  const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V34 • STABLE AUTHORITY • MOBILE + PC • MATCH METADATA RESTORED • HISTORY PRESERVED';
+  /* Supabase authority owns persistence and the live build marker. */
   return true;
 }
 
@@ -166,11 +165,10 @@ function rebuildHydratedRecordRoom(){
     }catch(err){console.warn('[NL4 Record Room] Hydrated rebuild skipped for',team,err);}
   }
   if(rebuilt){
-    try{if(typeof persist==='function')persist();}catch(_){ }
+    /* Do not persist during hydration rebuild; Supabase authority owns durable state. */
     try{if(typeof render==='function')render();}catch(_){ }
     try{window.NL4RecordRoomArsenalPublicSync?.hydrateFromSupabase?.();}catch(_){ }
-    const marker=document.getElementById('buildMarker');
-    if(marker)marker.textContent='BUILD V34 • STABLE AUTHORITY • HYDRATED TOTALS RECOVERED • MOBILE + PC • HISTORY PRESERVED';
+    /* Live build/hydration marker is owned by Supabase authority. */
   }
   return rebuilt>0;
 }

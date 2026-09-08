@@ -10,6 +10,7 @@ const norm=v=>String(v||'').trim();
 const split=v=>{const p=String(v||'').split('|||');return {team:norm(p.shift()),name:norm(p.join('|||'))};};
 const nullable=v=>(v===null||v===undefined||v==='')?null:Number(v);
 let memoryShadow=null;
+let hydrateFlight=null;
 
 // Keep legacy Record Room call sites working without persisting Record Room data in browser storage.
 try{
@@ -79,7 +80,7 @@ function applyMatch(f,match,d,st,lineups,subs,events){
   const homeXI=lineups.filter(x=>x.team_name===f.home&&x.is_starter).sort((a,b)=>(Number(a.pitch_slot)||99)-(Number(b.pitch_slot)||99)).map(x=>x.player_name);const awayXI=lineups.filter(x=>x.team_name===f.away&&x.is_starter).sort((a,b)=>(Number(a.pitch_slot)||99)-(Number(b.pitch_slot)||99)).map(x=>x.player_name);const mapSubs=team=>subs.filter(x=>x.team_name===team).map(x=>({out:x.player_out,in:x.player_in,outMin:Number(x.minute)||0,inMin:Number(x.minute)||0}));const mappedEvents=events.map(x=>({type:x.event_type==='yellow_card'?'yellow':x.event_type==='red_card'?'red':'goal',player:`${x.team_name}|||${x.player_name}`,assist:x.related_player_name?`${x.team_name}|||${x.related_player_name}`:'',minute:Number(x.minute)||0}));
   [f.home,f.away].forEach(team=>{const s=ensureFixture(team,f);if(!s)return;s.homeScore=match.home_score;s.awayScore=match.away_score;s.homeLineup=[...homeXI,...Array(Math.max(0,11-homeXI.length)).fill('')].slice(0,11);s.awayLineup=[...awayXI,...Array(Math.max(0,11-awayXI.length)).fill('')].slice(0,11);s.homeSubs=mapSubs(f.home);s.awaySubs=mapSubs(f.away);s.events=mappedEvents;s.manOfTheMatch=d?.man_of_the_match?`${(lineups.find(x=>x.player_name===d.man_of_the_match)||{}).team_name||''}|||${d.man_of_the_match}`:'';s.matchDetails={...(s.matchDetails||{}),referee:d?.referee||'',venue:d?.venue||'',attendance:d?.attendance??'',halftimeHomeScore:d?.halftime_home_score??'',halftimeAwayScore:d?.halftime_away_score??'',addedTime:d?.added_time??0};s.stats={...(s.stats||{}),possession:{h:Number(st?.home_possession)||0,a:Number(st?.away_possession)||0},shots:{h:Number(st?.home_shots)||0,a:Number(st?.away_shots)||0},sot:{h:Number(st?.home_shots_on_target)||0,a:Number(st?.away_shots_on_target)||0},corners:{h:Number(st?.home_corners)||0,a:Number(st?.away_corners)||0},cornerGoals:{h:Number(st?.home_corner_goals)||0,a:Number(st?.away_corner_goals)||0},fouls:{h:Number(st?.home_fouls)||0,a:Number(st?.away_fouls)||0},offsides:{h:Number(st?.home_offsides)||0,a:Number(st?.away_offsides)||0},saves:{h:Number(st?.home_saves)||0,a:Number(st?.away_saves)||0}};});f.homeScore=match.home_score;f.awayScore=match.away_score;
 }
-async function hydrate(){
+async function hydrateCore(){
   const c=client();if(!c||typeof ALL_FIXTURES==='undefined'||typeof db==='undefined')return {ok:false};
   baseReset();
   const matches=await c.from('premier_league_matches').select('id,matchday,home_team,away_team,home_score,away_score,status').eq('season',SEASON).in('status',['FULL_TIME','fulltime']).not('home_score','is',null).not('away_score','is',null);
@@ -89,9 +90,19 @@ async function hydrate(){
   const pr=await c.from('record_room_players').select('*').eq('season',SEASON);if(!pr.error)(pr.data||[]).forEach(r=>{const p=db?.[r.club]?.players?.find(x=>norm(x.name).toLowerCase()===norm(r.player_name).toLowerCase());if(p)Object.assign(p,{appearances:r.appearances||0,starts:r.starts||0,minutes:r.minutes||0,goals:r.goals||0,assists:r.assists||0,cleanSheets:r.clean_sheets||0,yellowCards:r.yellow_cards||0,redCards:r.red_cards||0,mom:r.man_of_the_match||0,shots:r.shots||0,shotsOnTarget:r.shots_on_target||0,chancesCreated:r.chances_created||0,tackles:r.tackles||0,interceptions:r.interceptions||0,saves:r.saves||0});});
   try{if(typeof TEAMS!=='undefined'&&typeof recalculateClubStatsFromFixtures==='function')TEAMS.forEach(t=>recalculateClubStatsFromFixtures(t));if(typeof render==='function')render();}catch(e){console.warn('[NL4 Record Room] Render/recalc after Supabase hydrate failed',e);}
   memoryShadow=JSON.stringify(db);
-  const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V34 • SUPABASE SINGLE AUTHORITY • LOCAL STORAGE DISABLED • HISTORY PRESERVED';
+  const marker=document.getElementById('buildMarker');if(marker)marker.textContent=`BUILD V38 • SUPABASE LIVE • ${imported} MATCHES HYDRATED • MOBILE + PC • HISTORY PRESERVED`;
+  document.documentElement.dataset.rrSupabaseHydrated=String(imported);
   console.info(`[NL4 Record Room] Supabase authority hydrated ${imported} completed matches.`);
   return {ok:true,imported};
+}
+function hydrate(){
+  if(hydrateFlight)return hydrateFlight;
+  const marker=document.getElementById('buildMarker');if(marker)marker.textContent='BUILD V38 • SUPABASE CONNECTING…';
+  hydrateFlight=hydrateCore().catch(error=>{
+    const m=document.getElementById('buildMarker');if(m)m.textContent='BUILD V38 • SUPABASE HYDRATION ERROR';
+    throw error;
+  }).finally(()=>{hydrateFlight=null;});
+  return hydrateFlight;
 }
 async function saveOpenFixture(){const box=document.getElementById('fixtureDetail');const id=Number(box?.dataset?.fixtureId);const f=(typeof ALL_FIXTURES!=='undefined'?ALL_FIXTURES:[]).find(x=>Number(x.id)===id);if(!f)return;const s=db?.[f.home]?.fixtureData?.[f.id]||db?.[f.away]?.fixtureData?.[f.id];if(!s)return;const state=document.getElementById('fixtureSaveState');if(state){state.style.color='#d8ad45';state.textContent='SAVING TO SUPABASE…';}const r=await saveFixture(f,s);if(r.ok){if(state){state.style.color='#49d17d';state.textContent='SUPABASE CONFIRMED';setTimeout(()=>{if(state)state.textContent='';},3000);}window.dispatchEvent(new CustomEvent('nl4:record-room-supabase-confirmed',{detail:{fixtureId:id,matchId:r.matchId}}));}else{if(state){state.style.color='#ff5f6d';state.textContent='SUPABASE SAVE FAILED';}console.error('[NL4 Record Room] Supabase authoritative save failed',r.error);}}
 function start(){hydrate().catch(e=>console.error('[NL4 Record Room] Supabase authoritative hydrate failed',e));document.addEventListener('click',e=>{const b=e.target.closest?.('button');if(!b)return;if(b.classList.contains('detail-save')||/SAVE MATCH DETAILS/i.test(b.textContent||''))setTimeout(()=>saveOpenFixture(),80);},true);document.getElementById('savePlayer')?.addEventListener('click',()=>setTimeout(()=>savePlayers().catch(console.error),80));}
