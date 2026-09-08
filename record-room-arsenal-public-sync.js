@@ -87,4 +87,5 @@ function start(){
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 bootstrap('record-room-player-match-stats.js?v=20260905-v5','NL4RecordRoomPlayerMatchStats',()=>setTimeout(()=>window.NL4RecordRoomPlayerMatchStats?.inject?.(),0));
 bootstrap('record-room-match-meta.js?v=20260905-v1','NL4RecordRoomMatchInfo',()=>setTimeout(()=>window.NL4RecordRoomMatchInfo?.inject?.(),0));
+bootstrap(`record-room-matchday-2026-09-05-06.js?v=20260908-mw3-${Date.now()}`,'NL4RecordRoomMatchday2026090506',()=>setTimeout(()=>window.NL4RecordRoomMatchday2026090506?.apply?.(),40));
 })();
