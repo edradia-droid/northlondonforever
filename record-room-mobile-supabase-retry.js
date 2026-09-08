@@ -9,7 +9,6 @@ let attempts=0;
 let lastImported=null;
 
 const norm=v=>String(v||'').trim();
-const split=v=>{const p=String(v||'').split('|||');return {team:norm(p.shift()),name:norm(p.join('|||'))};};
 const client=()=>window.nl4Supabase||window.supabaseClient||window.supabaseDb||null;
 const marker=text=>{const el=document.getElementById('buildMarker');if(el)el.textContent=text;};
 const withTimeout=(promise,ms,label)=>new Promise((resolve,reject)=>{
@@ -20,7 +19,7 @@ function byMatch(rows){const map=new Map();(rows||[]).forEach(r=>{const k=String
 function ensureFixture(team,f){
   if(!db?.[team])return null;
   db[team].fixtureData=db[team].fixtureData||{};
-  if(!db[team].fixtureData[f.id])db[team].fixtureData[f.id]={homeScore:null,awayScore:null,homeLineup:Array(11).fill(''),awayLineup:Array(11).fill(''),homeSubs:[],awaySubs:[],events:[],stats:{},matchDetails:{}};
+  if(!db[team].fixtureData[f.id])db[team].fixtureData[f.id]={homeScore:null,awayScore:null,homeLineup:Array(11).fill(''),awayLineup:Array(11).fill(''),homeSubs:[],awaySubs:[],events:[],stats:{},matchDetails:{},matchInfo:{}};
   return db[team].fixtureData[f.id];
 }
 function applyMatch(f,m,d,st,lineups,subs,events){
@@ -34,12 +33,41 @@ function applyMatch(f,m,d,st,lineups,subs,events){
     s.homeLineup=[...homeXI,...Array(Math.max(0,11-homeXI.length)).fill('')].slice(0,11);
     s.awayLineup=[...awayXI,...Array(Math.max(0,11-awayXI.length)).fill('')].slice(0,11);
     s.homeSubs=mapSubs(f.home);s.awaySubs=mapSubs(f.away);s.events=mappedEvents;
-    const motmTeam=d?.man_of_the_match?(lineups.find(x=>x.player_name===d.man_of_the_match)||{}).team_name||'':'';
+    const motmTeam=d?.man_of_the_match?(lineups.find(x=>norm(x.player_name).toLowerCase()===norm(d.man_of_the_match).toLowerCase())||{}).team_name||'':'';
     s.manOfTheMatch=d?.man_of_the_match?`${motmTeam}|||${d.man_of_the_match}`:'';
-    s.matchDetails={...(s.matchDetails||{}),referee:d?.referee||'',venue:d?.venue||'',attendance:d?.attendance??'',halftimeHomeScore:d?.halftime_home_score??'',halftimeAwayScore:d?.halftime_away_score??'',addedTime:d?.added_time??0};
+    const info={
+      referee:d?.referee||'',
+      venue:d?.venue||'',
+      stadium:d?.venue||'',
+      attendance:d?.attendance??'',
+      halftimeHomeScore:d?.halftime_home_score??'',
+      halftimeAwayScore:d?.halftime_away_score??'',
+      addedTime:d?.added_time??0,
+      kickoff:f?.kickoff||'',
+      weather:d?.weather||'',
+      notes:d?.notes||''
+    };
+    s.matchInfo={...(s.matchInfo||{}),...info};
+    s.matchDetails={...(s.matchDetails||{}),...info};
     s.stats={...(s.stats||{}),possession:{h:Number(st?.home_possession)||0,a:Number(st?.away_possession)||0},shots:{h:Number(st?.home_shots)||0,a:Number(st?.away_shots)||0},sot:{h:Number(st?.home_shots_on_target)||0,a:Number(st?.away_shots_on_target)||0},corners:{h:Number(st?.home_corners)||0,a:Number(st?.away_corners)||0},cornerGoals:{h:Number(st?.home_corner_goals)||0,a:Number(st?.away_corner_goals)||0},fouls:{h:Number(st?.home_fouls)||0,a:Number(st?.away_fouls)||0},offsides:{h:Number(st?.home_offsides)||0,a:Number(st?.away_offsides)||0},saves:{h:Number(st?.home_saves)||0,a:Number(st?.away_saves)||0}};
   });
   f.homeScore=m.home_score;f.awayScore=m.away_score;
+}
+function refreshOpenFixture(){
+  try{
+    const box=document.getElementById('fixtureDetail');
+    if(!box||!box.classList.contains('open'))return;
+    if(window.NL4RecordRoomMatchInfo){
+      window.NL4RecordRoomMatchInfo.inject?.();
+      window.NL4RecordRoomMatchInfo.restoreSavedSelections?.();
+    }
+  }catch(e){console.warn('[NL4 V39] Post-hydration field refresh skipped',e);}
+}
+function postHydrationRefresh(){
+  [0,80,220,500,900].forEach(ms=>setTimeout(()=>{
+    try{if(typeof render==='function')render();}catch(_){ }
+    refreshOpenFixture();
+  },ms));
 }
 async function bulkHydrate(){
   if(flight)return flight;
@@ -78,6 +106,7 @@ async function bulkHydrate(){
     });
     try{if(typeof recalculateClubStatsFromFixtures==='function'&&typeof TEAMS!=='undefined')TEAMS.forEach(t=>recalculateClubStatsFromFixtures(t));}catch(e){console.warn('[NL4 V39] Club recalc skipped',e);}
     try{if(typeof render==='function')render();}catch(e){console.warn('[NL4 V39] Render skipped',e);}
+    postHydrationRefresh();
     lastImported=imported;
     document.documentElement.dataset.rrSupabaseHydrated=String(imported);
     marker(`BUILD V39 • SUPABASE LIVE • ${imported} MATCHES HYDRATED • BULK MOBILE LOAD • HISTORY PRESERVED`);
@@ -99,6 +128,6 @@ function install(){
   const el=document.getElementById('buildMarker');
   if(el)new MutationObserver(()=>{if(lastImported!==null&&!String(el.textContent||'').includes('BUILD V39'))el.textContent=`BUILD V39 • SUPABASE LIVE • ${lastImported} MATCHES HYDRATED • BULK MOBILE LOAD • HISTORY PRESERVED`;}).observe(el,{childList:true,subtree:true,characterData:true});
 }
-window.NL4RecordRoomBulkMobileHydrateV39={hydrate:bulkHydrate,version:'39'};
+window.NL4RecordRoomBulkMobileHydrateV39={hydrate:bulkHydrate,version:'39-display-bridge'};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(install,0),{once:true});else setTimeout(install,0);
 })();
