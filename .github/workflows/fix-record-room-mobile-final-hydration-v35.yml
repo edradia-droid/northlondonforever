@@ -1,61 +1,31 @@
-name: Fix Record Room Mobile Final Hydration V36
+name: Record Room Hydration Safety Check
 on:
+  workflow_dispatch:
   push:
     paths:
+      - 'record-room.html'
+      - 'supabase-client.js'
+      - 'record-room-supabase-authority.js'
+      - 'record-room-mobile-supabase-retry.js'
       - '.github/workflows/fix-record-room-mobile-final-hydration-v35.yml'
 permissions:
-  contents: write
+  contents: read
 jobs:
-  patch:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Protect saved Record Room totals during startup hydration
+      - name: Verify Record Room Supabase startup safety
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          r=Path('record-room.html')
-          x=r.read_text()
-          old="""})();
-TEAMS.forEach(team=>syncTeamSeasonFromFixtures(team));
-try{persist();}catch(_){}
-try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(db)); }catch(_){ }
-
-const $=id=>document.getElementById(id);"""
-          new="""})();
-// V36 startup safety: load and mirror saved fixture records without immediately
-// rebuilding every season summary. Shared/Supabase hydration can arrive after this
-// inline script on mobile; recalculating here could see an incomplete fixture set
-// and persist zero totals over valid saved Record Room data. Normal match saves still
-// call syncTeamSeasonFromFixtures() for both participants, so live calculations remain automatic.
-
-const $=id=>document.getElementById(id);"""
-          if old not in x:
-              raise SystemExit('Expected destructive startup recalculation block not found; refusing unsafe patch')
-          x=x.replace(old,new,1)
-          x=x.replace('supabase-client.js?v=20260906-mobile-final-v35','supabase-client.js?v=20260907-record-room-v36',1)
-          r.write_text(x)
-
-          a=Path('admin.html')
-          s=a.read_text()
-          s=s.replace('record-room.html?v=20260906-mobile-final-v35','record-room.html?v=20260907-record-room-v36')
-          a.write_text(s)
-          PY
-      - name: Verify startup zero-reset guard
-        run: |
-          grep -q 'V36 startup safety' record-room.html
+          set -e
+          test -f record-room.html
+          test -f supabase-client.js
+          test -f record-room-supabase-authority.js
+          test -f record-room-mobile-supabase-retry.js
+          grep -q 'record-room-supabase-authority.js' supabase-client.js
+          grep -q 'record-room-mobile-supabase-retry.js' supabase-client.js
           if grep -q 'TEAMS.forEach(team=>syncTeamSeasonFromFixtures(team));' record-room.html; then
-            echo 'Destructive startup recalc is still present'
+            echo 'Destructive startup recalc is present'
             exit 1
           fi
-          grep -q 'supabase-client.js?v=20260907-record-room-v36' record-room.html
-          grep -q 'record-room.html?v=20260907-record-room-v36' admin.html
-      - name: Commit
-        run: |
-          git config user.name 'NL4 Automation'
-          git config user.email 'actions@users.noreply.github.com'
-          git add record-room.html admin.html
-          git commit -m 'Stop Record Room startup from overwriting saved stats with zero' || exit 0
-          git push
-# trigger: 20260907-record-room-v36
+          echo 'Record Room Supabase hydration safety checks passed.'
