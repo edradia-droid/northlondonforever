@@ -7,6 +7,7 @@ const SEASON='2026/27';
 let flight=null;
 let attempts=0;
 let lastImported=null;
+const authoritativeFixtures=new Map();
 
 const norm=v=>String(v||'').trim();
 const client=()=>window.nl4Supabase||window.supabaseClient||window.supabaseDb||null;
@@ -53,16 +54,62 @@ function applyMatch(f,m,d,st,lineups,subs,events){
   });
   f.homeScore=m.home_score;f.awayScore=m.away_score;
 }
+function fixtureFromOpenPanel(){
+  const box=document.getElementById('fixtureDetail');
+  const id=Number(box?.dataset?.fixtureId);
+  if(!box||!box.classList.contains('open')||!Number.isFinite(id)||typeof ALL_FIXTURES==='undefined')return null;
+  return ALL_FIXTURES.find(x=>Number(x.id)===id)||null;
+}
+function setInput(id,value){
+  const el=document.getElementById(id);if(!el)return;
+  const v=value===undefined||value===null?'':String(value);
+  if(el.value!==v)el.value=v;
+}
+function ensureSelect(select,value,label){
+  if(!select||value===undefined||value===null||String(value)==='')return;
+  const wanted=String(value);
+  let opt=[...select.options].find(o=>o.value===wanted);
+  if(!opt){opt=new Option(label||wanted,wanted,true,true);opt.dataset.savedFallback='1';select.insertBefore(opt,select.firstChild);}
+  select.value=wanted;
+}
+function reassertOpenFixture(){
+  const f=fixtureFromOpenPanel();if(!f)return false;
+  const bundle=authoritativeFixtures.get(String(f.id));if(!bundle)return false;
+  applyMatch(f,bundle.m,bundle.d,bundle.st,bundle.lineups,bundle.subs,bundle.events);
+  return true;
+}
+function fillOpenPanelDirect(){
+  const f=fixtureFromOpenPanel();if(!f)return;
+  const bundle=authoritativeFixtures.get(String(f.id));if(!bundle)return;
+  const d=bundle.d||{};
+  setInput('rrReferee',d.referee||'');
+  setInput('rrAttendance',d.attendance??'');
+  setInput('rrVenue',d.venue||'');
+  setInput('rrHtHome',d.halftime_home_score??'');
+  setInput('rrHtAway',d.halftime_away_score??'');
+  setInput('rrAddedTime',d.added_time??0);
+  setInput('rrWeather',d.weather||'');
+  setInput('rrMatchNotes',d.notes||'');
+  const motm=d.man_of_the_match||'';
+  if(motm){
+    const row=(bundle.lineups||[]).find(x=>norm(x.player_name).toLowerCase()===norm(motm).toLowerCase());
+    const team=row?.team_name||f.home;
+    ensureSelect(document.getElementById('manOfTheMatch'),`${team}|||${motm}`,`Saved • ${motm} — ${team}`);
+  }
+}
 function refreshOpenFixture(){
   try{
     const box=document.getElementById('fixtureDetail');
     if(!box||!box.classList.contains('open'))return;
+    reassertOpenFixture();
     if(window.NL4RecordRoomMatchInfo){
       window.NL4RecordRoomMatchInfo.inject?.();
       window.NL4RecordRoomMatchInfo.restoreSavedSelections?.();
     }
-  }catch(e){console.warn('[NL4 V39] Post-hydration field refresh skipped',e);}
+    fillOpenPanelDirect();
+  }catch(e){console.warn('[NL4 V39] Authoritative open-fixture refresh skipped',e);}
 }
+function scheduleOpenRefresh(){[0,60,160,320,700,1200].forEach(ms=>setTimeout(refreshOpenFixture,ms));}
 function postHydrationRefresh(){
   [0,80,220,500,900].forEach(ms=>setTimeout(()=>{
     try{if(typeof render==='function')render();}catch(_){ }
@@ -94,11 +141,15 @@ async function bulkHydrate(){
     const dm=new Map((details.data||[]).map(r=>[String(r.match_id),r]));
     const sm=new Map((stats.data||[]).map(r=>[String(r.match_id),r]));
     const lm=byMatch(lineups.data),um=byMatch(subs.data),em=byMatch(events.data);
+    authoritativeFixtures.clear();
     let imported=0;
     for(const m of completed){
       const f=ALL_FIXTURES.find(x=>x.home===m.home_team&&x.away===m.away_team&&Number(x.mw)===Number(m.matchday));
       if(!f)continue;
-      const k=String(m.id);applyMatch(f,m,dm.get(k)||{},sm.get(k)||{},lm.get(k)||[],um.get(k)||[],em.get(k)||[]);imported++;
+      const k=String(m.id);
+      const bundle={m,d:dm.get(k)||{},st:sm.get(k)||{},lineups:lm.get(k)||[],subs:um.get(k)||[],events:em.get(k)||[]};
+      authoritativeFixtures.set(String(f.id),bundle);
+      applyMatch(f,bundle.m,bundle.d,bundle.st,bundle.lineups,bundle.subs,bundle.events);imported++;
     }
     (players.data||[]).forEach(r=>{
       const p=db?.[r.club]?.players?.find(x=>norm(x.name).toLowerCase()===norm(r.player_name).toLowerCase());
@@ -109,8 +160,8 @@ async function bulkHydrate(){
     postHydrationRefresh();
     lastImported=imported;
     document.documentElement.dataset.rrSupabaseHydrated=String(imported);
-    marker(`BUILD V39 • SUPABASE LIVE • ${imported} MATCHES HYDRATED • BULK MOBILE LOAD • HISTORY PRESERVED`);
-    console.info('[NL4 Record Room] V39 bulk mobile hydration complete',imported);
+    marker(`BUILD V39 • SUPABASE LIVE • ${imported} MATCHES HYDRATED • AUTHORITATIVE OPEN FIXTURE • HISTORY PRESERVED`);
+    console.info('[NL4 Record Room] V39 authoritative mobile hydration complete',imported);
     return {ok:true,imported};
   })().catch(error=>{
     marker(`BUILD V39 • SUPABASE ERROR • ${String(error?.message||error).slice(0,80)}`);
@@ -125,9 +176,16 @@ function install(){
   if(!ready){attempts++;if(attempts<80)setTimeout(install,250);return;}
   authority.hydrate=bulkHydrate;
   bulkHydrate().catch(()=>{});
+  if(!document.documentElement.dataset.rrV39OpenWatch){
+    document.documentElement.dataset.rrV39OpenWatch='1';
+    document.addEventListener('click',e=>{if(e.target.closest?.('.fixture-open'))scheduleOpenRefresh();},true);
+    document.addEventListener('touchend',e=>{if(e.target.closest?.('.fixture-open'))scheduleOpenRefresh();},true);
+    window.addEventListener('pageshow',scheduleOpenRefresh);
+    window.addEventListener('focus',scheduleOpenRefresh);
+  }
   const el=document.getElementById('buildMarker');
-  if(el)new MutationObserver(()=>{if(lastImported!==null&&!String(el.textContent||'').includes('BUILD V39'))el.textContent=`BUILD V39 • SUPABASE LIVE • ${lastImported} MATCHES HYDRATED • BULK MOBILE LOAD • HISTORY PRESERVED`;}).observe(el,{childList:true,subtree:true,characterData:true});
+  if(el)new MutationObserver(()=>{if(lastImported!==null&&!String(el.textContent||'').includes('BUILD V39'))el.textContent=`BUILD V39 • SUPABASE LIVE • ${lastImported} MATCHES HYDRATED • AUTHORITATIVE OPEN FIXTURE • HISTORY PRESERVED`;}).observe(el,{childList:true,subtree:true,characterData:true});
 }
-window.NL4RecordRoomBulkMobileHydrateV39={hydrate:bulkHydrate,version:'39-display-bridge'};
+window.NL4RecordRoomBulkMobileHydrateV39={hydrate:bulkHydrate,refreshOpenFixture,version:'39-authoritative-open-fixture'};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(install,0),{once:true});else setTimeout(install,0);
 })();
