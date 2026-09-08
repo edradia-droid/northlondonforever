@@ -1,4 +1,4 @@
-name: Direct Record Room V42 Hydration
+name: Record Room V43 Display Bridge Cache Bust
 on:
   push:
     paths:
@@ -10,32 +10,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Patch Record Room direct hydration scripts
+      - name: Bust only the Record Room V39 helper cache
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p=Path('record-room.html')
           s=p.read_text()
-          old='''<script src="supabase-client.js?v=20260908-v41-page-proof"></script>\n<script src="premier-league-final-squads-2026-27.js?v=20260907-odegaard1"></script>'''
-          new='''<script src="supabase-client.js?v=20260909-v42-direct-hydration"></script>\n<script src="record-room-supabase-authority.js?v=20260909-v42-direct-authority"></script>\n<script src="record-room-mobile-supabase-retry.js?v=20260909-v42-direct-bulk"></script>\n<script src="premier-league-final-squads-2026-27.js?v=20260907-odegaard1"></script>'''
+          old='record-room-mobile-supabase-retry.js?v=20260909-v42-direct-bulk'
+          new='record-room-mobile-supabase-retry.js?v=20260909-v43-display-bridge'
           if old not in s:
-              raise SystemExit('Expected Record Room script block not found')
-          s=s.replace(old,new,1)
-          s=s.replace('BUILD V41 • PAGE LOADED • WAITING FOR BULK SUPABASE…','BUILD V42 • PAGE LOADED • DIRECT BULK SUPABASE STARTUP…',1)
-          p.write_text(s)
+              raise SystemExit('Expected V42 Record Room bulk helper URL not found')
+          p.write_text(s.replace(old,new,1))
           PY
-      - name: Verify direct V42 startup
+      - name: Verify V43 cache token
         shell: bash
         run: |
-          grep -q 'record-room-supabase-authority.js?v=20260909-v42-direct-authority' record-room.html
-          grep -q 'record-room-mobile-supabase-retry.js?v=20260909-v42-direct-bulk' record-room.html
-          grep -q 'BUILD V42 • PAGE LOADED • DIRECT BULK SUPABASE STARTUP' record-room.html
-      - name: Commit direct V42 startup
+          grep -q 'record-room-mobile-supabase-retry.js?v=20260909-v43-display-bridge' record-room.html
+      - name: Commit cache-bust only
         shell: bash
         run: |
           git config user.name 'NL4 Automation'
           git config user.email 'actions@users.noreply.github.com'
           git add record-room.html
-          git commit -m 'Load Record Room V39 hydration directly from page' || exit 0
+          git commit -m 'Force fresh Record Room V39 display bridge' || exit 0
           git push
