@@ -150,7 +150,7 @@ if (NL4_IS_RECORD_ROOM) {
     .then(()=>loadScript(`record-room-arsenal-public-sync.js?v=20260908-hydrate-order2-${Date.now()}`))
     .then(()=>registerArsenal(false))
     .then(()=>{
-      const finalHydrate=()=>{try{window.NL4RecordRoomSupabaseAuthority?.hydrate?.();window.NL4RecordRoomArsenalPublicSync?.hydrateFromSupabase?.();window.NL4RecordRoomBulkHydrate?.(true);}catch(err){console.warn('[NL4 Record Room] Final shared hydration failed:',err);}};
+      const finalHydrate=()=>{try{window.NL4RecordRoomBulkMobileHydrateV39?.hydrate?.();window.NL4RecordRoomArsenalPublicSync?.hydrateFromSupabase?.();window.NL4RecordRoomBulkHydrate?.(true);}catch(err){console.warn('[NL4 Record Room] Final shared hydration failed:',err);}};
       [0,500,1500,3500,7000].forEach(ms=>setTimeout(finalHydrate,ms));
     })
     .catch(err=>console.warn('[NL4 Record Room] Lightweight startup module failed:',err));
