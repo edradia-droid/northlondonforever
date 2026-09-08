@@ -53,13 +53,11 @@ async function protectOdegaardFromZeroOverwrite(client,players,completed,stamp){
 async function push(){
  const client=window.nl4Supabase;if(!client)return {skipped:true,reason:'no-client'};
  const current=arsenalData();if(!current)return {skipped:true,reason:'no-arsenal-data'};
+ try{window.NL4RecordRoomOdegaardCanonicalize?.run?.();}catch(e){console.warn('[NL4] Ødegaard canonicalizer pre-push failed',e)}
  const copied=ensureCanonicalArsenalFixtures();
  try{if(typeof recalculatePlayerStatsFromFixtures==='function')recalculatePlayerStatsFromFixtures(ARSENAL)}catch(e){console.warn('[NL4] Arsenal player recalc failed',e)}
  try{if(window.NL4RecordRoomPlayerMatchStats?.aggregateTeam)window.NL4RecordRoomPlayerMatchStats.aggregateTeam(ARSENAL)}catch(e){console.warn('[NL4] Arsenal advanced player stat recalc failed',e)}
  try{if(typeof recalculateClubStatsFromFixtures==='function')recalculateClubStatsFromFixtures(ARSENAL)}catch(e){console.warn('[NL4] Arsenal club recalc failed',e)}
- // Important: hydration must happen AFTER fixture recalculation. Recalculation can
- // legitimately rebuild many players, but it must not leave a resolved season row
- // at zero when Supabase already contains the verified season totals.
  await hydrateFromSupabase({renderNow:false});
  const completed=completedCount(),stamp=new Date().toISOString(),c=current.club||{};
  const team={season:SEASON,matches:n(c.matches),avg_possession:n(c.avgPossession),total_shots:n(c.totalShots),shots_on_target:n(c.shotsOnTarget),corners:n(c.corners),corner_goals:n(c.cornerGoals),fouls:n(c.fouls),offsides:n(c.offsides),yellow_cards:n(c.yellowCards),red_cards:n(c.redCards),points:n(c.points),updated_at:stamp};
@@ -78,10 +76,15 @@ async function push(){
 let timer=null;function queue(delay=250){clearTimeout(timer);timer=setTimeout(()=>push().catch(err=>console.error('[NL4] Arsenal public sync failed:',err)),delay)}
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.classList.contains('detail-save')||/SAVE MATCH DETAILS/i.test(b.textContent||''))queue(120);},true);
 window.addEventListener('nl4:record-room-saved',()=>queue(80));
-const start=()=>hydrateFromSupabase().finally(()=>queue(900));
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 window.NL4RecordRoomArsenalPublicSync={push,queue,hydrateFromSupabase,ensureCanonicalArsenalFixtures,completedCount};
 function bootstrap(src,key,onload){if(window[key]){onload?.();return;}const existing=[...document.scripts].find(s=>String(s.src||'').includes(src.split('?')[0]));if(existing){existing.addEventListener('load',()=>onload?.(),{once:true});return;}const s=document.createElement('script');s.src=src;s.async=false;s.onload=()=>onload?.();s.onerror=()=>console.error('[NL4] Failed to load',src);document.head.appendChild(s);}
+function start(){
+ bootstrap(`record-room-odegaard-canonicalize.js?v=20260908-canon1-${Date.now()}`,'NL4RecordRoomOdegaardCanonicalize',()=>{
+   try{window.NL4RecordRoomOdegaardCanonicalize?.run?.();}catch(e){console.warn('[NL4] Ødegaard canonicalizer startup failed',e)}
+   hydrateFromSupabase().finally(()=>queue(900));
+ });
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 bootstrap('record-room-player-match-stats.js?v=20260905-v5','NL4RecordRoomPlayerMatchStats',()=>setTimeout(()=>window.NL4RecordRoomPlayerMatchStats?.inject?.(),0));
 bootstrap('record-room-match-meta.js?v=20260905-v1','NL4RecordRoomMatchInfo',()=>setTimeout(()=>window.NL4RecordRoomMatchInfo?.inject?.(),0));
 })();
