@@ -1,4 +1,4 @@
-name: Record Room V43 Display Bridge Cache Bust
+name: Record Room V44 Mobile Match Info Cache Bust
 on:
   push:
     paths:
@@ -10,28 +10,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Bust only the Record Room V39 helper cache
+      - name: Bust only the mobile match info helper cache
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          p=Path('record-room.html')
+          p=Path('supabase-client.js')
           s=p.read_text()
-          old='record-room-mobile-supabase-retry.js?v=20260909-v42-direct-bulk'
-          new='record-room-mobile-supabase-retry.js?v=20260909-v43-display-bridge'
+          old="record-room-mobile-match-info-v34.js?v=20260906-shared-hydrate-v2"
+          new="record-room-mobile-match-info-v34.js?v=20260909-v44-v39-only"
           if old not in s:
-              raise SystemExit('Expected V42 Record Room bulk helper URL not found')
+              raise SystemExit('Expected mobile match info URL not found')
           p.write_text(s.replace(old,new,1))
           PY
-      - name: Verify V43 cache token
+      - name: Verify V44 cache token
         shell: bash
         run: |
-          grep -q 'record-room-mobile-supabase-retry.js?v=20260909-v43-display-bridge' record-room.html
+          grep -q 'record-room-mobile-match-info-v34.js?v=20260909-v44-v39-only' supabase-client.js
       - name: Commit cache-bust only
         shell: bash
         run: |
           git config user.name 'NL4 Automation'
           git config user.email 'actions@users.noreply.github.com'
-          git add record-room.html
-          git commit -m 'Force fresh Record Room V39 display bridge' || exit 0
+          git add supabase-client.js
+          git commit -m 'Load V39-only mobile Record Room helper' || exit 0
           git push
