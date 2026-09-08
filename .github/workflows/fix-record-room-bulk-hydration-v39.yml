@@ -1,4 +1,4 @@
-name: Fix Record Room Single Hydration V39
+name: Fix Record Room Startup Cache V40
 on:
   push:
     paths:
@@ -10,39 +10,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Disable V38 auto hydrate and call V39 directly
+      - name: Bust Record Room supabase-client startup cache
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
 
-          a=Path('record-room-supabase-authority.js')
-          s=a.read_text()
-          old="function start(){hydrate().catch(e=>console.error('[NL4 Record Room] Supabase authoritative hydrate failed',e));document.addEventListener('click',e=>{"
-          new="function start(){document.addEventListener('click',e=>{"
-          if old not in s:
-              raise SystemExit('V38 authority auto-start pattern not found')
-          s=s.replace(old,new,1)
-          a.write_text(s)
-
-          p=Path('supabase-client.js')
+          p=Path('record-room.html')
           s=p.read_text()
-          old="const finalHydrate=()=>{try{window.NL4RecordRoomSupabaseAuthority?.hydrate?.();window.NL4RecordRoomArsenalPublicSync?.hydrateFromSupabase?.();window.NL4RecordRoomBulkHydrate?.(true);}catch(err){console.warn('[NL4 Record Room] Final shared hydration failed:',err);}};"
-          new="const finalHydrate=()=>{try{window.NL4RecordRoomBulkMobileHydrateV39?.hydrate?.();window.NL4RecordRoomArsenalPublicSync?.hydrateFromSupabase?.();window.NL4RecordRoomBulkHydrate?.(true);}catch(err){console.warn('[NL4 Record Room] Final shared hydration failed:',err);}};"
-          if old not in s:
-              raise SystemExit('supabase-client final hydration pattern not found')
-          s=s.replace(old,new,1)
-          p.write_text(s)
+          ns,n=re.subn(r'supabase-client\.js\?v=[^"\']+', 'supabase-client.js?v=20260908-v40-single-v39', s, count=1)
+          if n != 1:
+              raise SystemExit(f'Expected one supabase-client script URL, replaced {n}')
+          ns=ns.replace('BUILD V37 • SUPABASE LIVE • MOBILE CACHE BUSTED • HISTORY PRESERVED','BUILD V40 • SINGLE V39 STARTUP • SUPABASE CACHE BUSTED • HISTORY PRESERVED',1)
+          p.write_text(ns)
           PY
-      - name: Verify single startup hydration
+      - name: Verify V40 cache boundary
         run: |
-          node --check record-room-supabase-authority.js
-          node --check supabase-client.js
-          ! grep -q "function start(){hydrate().catch" record-room-supabase-authority.js
-          grep -q "NL4RecordRoomBulkMobileHydrateV39" supabase-client.js
-      - name: Commit single V39 startup
+          grep -q 'supabase-client.js?v=20260908-v40-single-v39' record-room.html
+          grep -q 'BUILD V40' record-room.html
+      - name: Commit V40 cache bust
         run: |
           git config user.name 'NL4 Automation'
           git config user.email 'actions@users.noreply.github.com'
-          git add record-room-supabase-authority.js supabase-client.js
-          git commit -m 'Use V39 as sole Record Room startup hydrator' || exit 0
+          git add record-room.html
+          git commit -m 'Bust Record Room startup cache for sole V39 hydrator' || exit 0
           git push
