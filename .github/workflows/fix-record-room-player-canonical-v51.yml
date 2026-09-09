@@ -1,0 +1,95 @@
+name: V51 Record Room Canonical Player Identity Fix
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-record-room-player-canonical-v51.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix-record-room-canonical-players:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch Record Room Supabase authority
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('record-room-supabase-authority.js')
+          s = p.read_text(encoding='utf-8')
+
+          old = "const norm=v=>String(v||'').trim();\nconst split=v=>{const p=String(v||'').split('|||');return {team:norm(p.shift()),name:norm(p.join('|||'))};};"
+          new = """const norm=v=>String(v||'').trim();
+const playerKey=v=>norm(v).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[Øø]/g,'o').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+function canonicalPlayerName(club,name){
+  if(club!=='Arsenal')return norm(name);
+  const k=playerKey(name);
+  if(k==='martin odegaard'||k==='odegaard')return 'Martin Ødegaard';
+  if(k==='martin zubimendi'||k==='martin zubimendi ibanez'||k==='zubimendi')return 'Martín Zubimendi Ibáñez';
+  if(k==='ezri konsa'||k==='ezri konsa ngoyo'||k==='konsa')return 'Ezri Konsa Ngoyo';
+  return norm(name);
+}
+const split=v=>{const p=String(v||'').split('|||');const team=norm(p.shift());return {team,name:canonicalPlayerName(team,norm(p.join('|||')))};};"""
+          if old not in s:
+              raise SystemExit('canonical helper insertion target not found')
+          s = s.replace(old, new, 1)
+
+          old = """function playerRows(){
+  const rows=[]; if(typeof TEAMS==='undefined'||typeof db==='undefined')return rows;
+  TEAMS.forEach(club=>(db[club]?.players||[]).forEach(p=>rows.push({season:SEASON,club,player_name:p.name,position:p.position||null,shirt_number:p.number??null,appearances:Number(p.appearances)||0,starts:Number(p.starts)||0,minutes:Number(p.minutes)||0,goals:Number(p.goals)||0,assists:Number(p.assists)||0,clean_sheets:Number(p.cleanSheets)||0,yellow_cards:Number(p.yellowCards)||0,red_cards:Number(p.redCards)||0,man_of_the_match:Number(p.mom)||0,shots:Number(p.shots)||0,shots_on_target:Number(p.shotsOnTarget)||0,chances_created:Number(p.chancesCreated)||0,tackles:Number(p.tackles)||0,interceptions:Number(p.interceptions)||0,saves:Number(p.saves)||0,updated_at:new Date().toISOString()})));
+  return rows;
+}"""
+          new = """function playerRows(){
+  const byIdentity=new Map(); if(typeof TEAMS==='undefined'||typeof db==='undefined')return [];
+  TEAMS.forEach(club=>(db[club]?.players||[]).forEach(p=>{
+    const player_name=canonicalPlayerName(club,p.name);
+    const row={season:SEASON,club,player_name,position:p.position||null,shirt_number:p.number??null,appearances:Number(p.appearances)||0,starts:Number(p.starts)||0,minutes:Number(p.minutes)||0,goals:Number(p.goals)||0,assists:Number(p.assists)||0,clean_sheets:Number(p.cleanSheets)||0,yellow_cards:Number(p.yellowCards)||0,red_cards:Number(p.redCards)||0,man_of_the_match:Number(p.mom)||0,shots:Number(p.shots)||0,shots_on_target:Number(p.shotsOnTarget)||0,chances_created:Number(p.chancesCreated)||0,tackles:Number(p.tackles)||0,interceptions:Number(p.interceptions)||0,saves:Number(p.saves)||0,updated_at:new Date().toISOString()};
+    const k=`${club}|||${playerKey(player_name)}`;
+    const prev=byIdentity.get(k);
+    if(!prev || (row.appearances+row.starts+row.minutes+row.man_of_the_match) >= (prev.appearances+prev.starts+prev.minutes+prev.man_of_the_match)) byIdentity.set(k,row);
+  }));
+  return [...byIdentity.values()];
+}"""
+          if old not in s:
+              raise SystemExit('playerRows target not found')
+          s = s.replace(old, new, 1)
+
+          old = "const homeXI=lineups.filter(x=>x.team_name===f.home&&x.is_starter).sort((a,b)=>(Number(a.pitch_slot)||99)-(Number(b.pitch_slot)||99)).map(x=>x.player_name);const awayXI=lineups.filter(x=>x.team_name===f.away&&x.is_starter).sort((a,b)=>(Number(a.pitch_slot)||99)-(Number(b.pitch_slot)||99)).map(x=>x.player_name);const mapSubs=team=>subs.filter(x=>x.team_name===team).map(x=>({out:x.player_out,in:x.player_in,outMin:Number(x.minute)||0,inMin:Number(x.minute)||0}));const mappedEvents=events.map(x=>({type:x.event_type==='yellow_card'?'yellow':x.event_type==='red_card'?'red':'goal',player:`${x.team_name}|||${x.player_name}`,assist:x.related_player_name?`${x.team_name}|||${x.related_player_name}`:'',minute:Number(x.minute)||0}));"
+          new = "const homeXI=lineups.filter(x=>x.team_name===f.home&&x.is_starter).sort((a,b)=>(Number(a.pitch_slot)||99)-(Number(b.pitch_slot)||99)).map(x=>canonicalPlayerName(f.home,x.player_name));const awayXI=lineups.filter(x=>x.team_name===f.away&&x.is_starter).sort((a,b)=>(Number(a.pitch_slot)||99)-(Number(b.pitch_slot)||99)).map(x=>canonicalPlayerName(f.away,x.player_name));const mapSubs=team=>subs.filter(x=>x.team_name===team).map(x=>({out:canonicalPlayerName(team,x.player_out),in:canonicalPlayerName(team,x.player_in),outMin:Number(x.minute)||0,inMin:Number(x.minute)||0}));const mappedEvents=events.map(x=>({type:x.event_type==='yellow_card'?'yellow':x.event_type==='red_card'?'red':'goal',player:`${x.team_name}|||${canonicalPlayerName(x.team_name,x.player_name)}`,assist:x.related_player_name?`${x.team_name}|||${canonicalPlayerName(x.team_name,x.related_player_name)}`:'',minute:Number(x.minute)||0}));"
+          if old not in s:
+              raise SystemExit('applyMatch mapping target not found')
+          s = s.replace(old, new, 1)
+
+          old = "s.manOfTheMatch=d?.man_of_the_match?`${(lineups.find(x=>x.player_name===d.man_of_the_match)||{}).team_name||''}|||${d.man_of_the_match}`:'';"
+          new = "s.manOfTheMatch=d?.man_of_the_match?(()=>{const motmTeam=(lineups.find(x=>playerKey(x.player_name)===playerKey(d.man_of_the_match))||{}).team_name||'';return `${motmTeam}|||${canonicalPlayerName(motmTeam,d.man_of_the_match)}`;})():'';"
+          if old not in s:
+              raise SystemExit('MOTM target not found')
+          s = s.replace(old, new, 1)
+
+          old = "const pr=await c.from('record_room_players').select('*').eq('season',SEASON);if(!pr.error)(pr.data||[]).forEach(r=>{const p=db?.[r.club]?.players?.find(x=>norm(x.name).toLowerCase()===norm(r.player_name).toLowerCase());if(p)Object.assign(p,{appearances:r.appearances||0,starts:r.starts||0,minutes:r.minutes||0,goals:r.goals||0,assists:r.assists||0,cleanSheets:r.clean_sheets||0,yellowCards:r.yellow_cards||0,redCards:r.red_cards||0,mom:r.man_of_the_match||0,shots:r.shots||0,shotsOnTarget:r.shots_on_target||0,chancesCreated:r.chances_created||0,tackles:r.tackles||0,interceptions:r.interceptions||0,saves:r.saves||0});});"
+          new = "const pr=await c.from('record_room_players').select('*').eq('season',SEASON);if(!pr.error)(pr.data||[]).forEach(r=>{const target=canonicalPlayerName(r.club,r.player_name);const p=db?.[r.club]?.players?.find(x=>playerKey(canonicalPlayerName(r.club,x.name))===playerKey(target));if(p)Object.assign(p,{name:target,shirtNumber:r.shirt_number??p.shirtNumber,number:r.shirt_number??p.number,appearances:r.appearances||0,starts:r.starts||0,minutes:r.minutes||0,goals:r.goals||0,assists:r.assists||0,cleanSheets:r.clean_sheets||0,yellowCards:r.yellow_cards||0,redCards:r.red_cards||0,mom:r.man_of_the_match||0,shots:r.shots||0,shotsOnTarget:r.shots_on_target||0,chancesCreated:r.chances_created||0,tackles:r.tackles||0,interceptions:r.interceptions||0,saves:r.saves||0});});"
+          if old not in s:
+              raise SystemExit('hydrate player lookup target not found')
+          s = s.replace(old, new, 1)
+
+          s = s.replace("version:'20260908-v1'", "version:'20260909-v51'", 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Verify canonical patch
+        run: |
+          grep -q "Martín Zubimendi Ibáñez" record-room-supabase-authority.js
+          grep -q "Martin Ødegaard" record-room-supabase-authority.js
+          grep -q "20260909-v51" record-room-supabase-authority.js
+      - name: Commit fix
+        run: |
+          git config user.name "NL4 Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add record-room-supabase-authority.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Canonicalize Record Room Arsenal player identities"
+          git push
