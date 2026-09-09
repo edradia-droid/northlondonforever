@@ -81,7 +81,7 @@ select,input{width:100%;background:#0f0f0f;border:1px solid var(--line);color:#f
     <h1>RECORD <span>ROOM.</span></h1>
     <p>Admin record workspace for all 20 Premier League clubs, including Arsenal, with full squad, fixtures, lineups, substitutions, events, match stats and season calculations.</p>
   </div>
-  <div><div class="badge">ADMIN RECORDS • MODEL-SAFE ISOLATION</div><div id="buildMarker" style="margin-top:8px;color:#49d17d;font-size:9px;font-weight:900;text-align:right">BUILD V49 • NATIVE MATCH INFORMATION • ALL TEAMS • SUPABASE AUTHORITY</div></div>
+  <div><div class="badge">ADMIN RECORDS • MODEL-SAFE ISOLATION</div><div id="buildMarker" style="margin-top:8px;color:#49d17d;font-size:9px;font-weight:900;text-align:right">BUILD V52 • SUPABASE PLAYER AUTHORITY • SAFE MATCH SAVES</div></div>
 </section>
 
 <div class="toolbar">
@@ -262,7 +262,7 @@ let db=loadData();
     });
   });
 })();
-TEAMS.forEach(team=>syncTeamSeasonFromFixtures(team));
+TEAMS.forEach(team=>recalculateClubStatsFromFixtures(team));
 try{persist();}catch(_){}
 try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(db)); }catch(_){ }
 
@@ -859,7 +859,7 @@ function saveFixtureDetails(){
       db[t].fixtureData[id]=JSON.parse(JSON.stringify(canonicalRecord));
     });
 
-    participantTeams.forEach(syncTeamSeasonFromFixtures);
+    participantTeams.forEach(recalculateClubStatsFromFixtures);
     persist();
 
     // Read back every Record Room participant so a partial browser-storage write
