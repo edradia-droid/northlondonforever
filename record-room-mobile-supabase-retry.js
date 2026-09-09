@@ -60,6 +60,24 @@ function fixtureFromOpenPanel(){
   if(!box||!box.classList.contains('open')||!Number.isFinite(id)||typeof ALL_FIXTURES==='undefined')return null;
   return ALL_FIXTURES.find(x=>Number(x.id)===id)||null;
 }
+function getAuthoritativeInfo(fixtureId){
+  const bundle=authoritativeFixtures.get(String(fixtureId));
+  if(!bundle)return null;
+  const d=bundle.d||{};
+  return {
+    referee:d.referee||'',
+    attendance:d.attendance??'',
+    venue:d.venue||'',
+    stadium:d.venue||'',
+    kickoff:'',
+    weather:d.weather||'',
+    halftimeHomeScore:d.halftime_home_score??'',
+    halftimeAwayScore:d.halftime_away_score??'',
+    addedTime:d.added_time??0,
+    notes:d.notes||'',
+    manOfTheMatch:d.man_of_the_match||''
+  };
+}
 function setInput(id,value){
   const el=document.getElementById(id);if(!el)return;
   const v=value===undefined||value===null?'':String(value);
@@ -186,6 +204,6 @@ function install(){
   const el=document.getElementById('buildMarker');
   if(el)new MutationObserver(()=>{if(lastImported!==null&&!String(el.textContent||'').includes('BUILD V39'))el.textContent=`BUILD V39 • SUPABASE LIVE • ${lastImported} MATCHES HYDRATED • AUTHORITATIVE OPEN FIXTURE • HISTORY PRESERVED`;}).observe(el,{childList:true,subtree:true,characterData:true});
 }
-window.NL4RecordRoomBulkMobileHydrateV39={hydrate:bulkHydrate,refreshOpenFixture,version:'39-authoritative-open-fixture'};
+window.NL4RecordRoomBulkMobileHydrateV39={hydrate:bulkHydrate,refreshOpenFixture,getAuthoritativeInfo,version:'39-authoritative-meta-source'};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(install,0),{once:true});else setTimeout(install,0);
 })();
