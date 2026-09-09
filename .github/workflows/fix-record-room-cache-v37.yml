@@ -1,4 +1,4 @@
-name: Fix Record Room Mobile Cache V37
+name: Fix Record Room Canonical Hydration Cache V54
 on:
   push:
     paths:
@@ -10,25 +10,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Bust Record Room mobile cache safely
+      - name: Force the V54 canonical hydrator URL
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p=Path('record-room.html')
-          x=p.read_text()
-          x=x.replace('record-room.html?v=20260906-mobile-shared1','record-room.html?v=20260908-supabase-live-v37')
-          x=x.replace('supabase-client.js?v=20260907-odegaard1','supabase-client.js?v=20260908-supabase-live-v37')
-          x=x.replace('BUILD V34 • SINGLE AUTHORITY • MOBILE + PC CURRENT SQUADS • HISTORY PRESERVED','BUILD V37 • SUPABASE LIVE • MOBILE CACHE BUSTED • HISTORY PRESERVED')
-          p.write_text(x)
+          x=p.read_text(encoding='utf-8')
+          old='record-room-mobile-supabase-retry.js?v=20260909-v46-meta-guard'
+          new='record-room-mobile-supabase-retry.js?v=20260909-v54-canonical-player-hydration'
+          if old not in x:
+              raise SystemExit('old Record Room retry script URL not found')
+          x=x.replace(old,new,1)
+          p.write_text(x,encoding='utf-8')
           PY
-      - name: Verify patch
+      - name: Verify cache bust
         run: |
-          grep -q 'supabase-client.js?v=20260908-supabase-live-v37' record-room.html
-          grep -q 'BUILD V37 • SUPABASE LIVE • MOBILE CACHE BUSTED • HISTORY PRESERVED' record-room.html
+          grep -Fq 'record-room-mobile-supabase-retry.js?v=20260909-v54-canonical-player-hydration' record-room.html
+          ! grep -Fq 'record-room-mobile-supabase-retry.js?v=20260909-v46-meta-guard' record-room.html
       - name: Commit patch
         run: |
           git config user.name 'NL4 Automation'
           git config user.email 'actions@users.noreply.github.com'
           git add record-room.html
-          git commit -m 'Bust Record Room mobile Supabase cache' || exit 0
+          git commit -m 'Force Record Room V54 canonical player hydrator' || exit 0
           git push
