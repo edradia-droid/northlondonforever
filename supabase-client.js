@@ -140,7 +140,7 @@ if (NL4_IS_RECORD_ROOM) {
     .then(()=>loadScript('record-room-final-squad-history-sync.js?v=20260905-v34'))
     .then(()=>loadScript(`record-room-supabase-authority.js?v=20260908-authority-direct2-${Date.now()}`))
     .then(()=>loadScript(`record-room-mobile-supabase-retry.js?v=20260908-mobile-direct2-${Date.now()}`))
-    .then(()=>loadScript('record-room-match-meta.js?v=20260909-v47-authoritative-meta'))
+    .then(()=>loadScript('record-room-match-meta.js?v=20260909-v48-stable-authoritative-meta'))
     .then(()=>loadScript('record-room-mobile-match-info-v34.js?v=20260909-v44-v39-only'))
     .then(()=>loadScript('record-room-player-match-stats.js?v=20260905-v5'))
     .then(()=>loadScript('record-room-matchday-2026-09-04.js?v=20260905-v1'))

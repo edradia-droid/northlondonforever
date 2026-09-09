@@ -196,7 +196,7 @@ const start=()=>{
  installMobileAndPerformanceFixes();
  const box=document.getElementById('fixtureDetail');if(!box)return;
  let queued=false;
- new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;if(box.classList.contains('open')&&fixture()){inject();restoreSavedSelections();}})}).observe(box,{childList:true,subtree:true,attributes:true,attributeFilter:['class','data-fixture-id']});
+ new MutationObserver(mutations=>{if(queued)return;const shouldInject=mutations.some(m=>m.type==='attributes')||!document.getElementById('rrMatchInfoBox');if(!shouldInject)return;queued=true;requestAnimationFrame(()=>{queued=false;if(box.classList.contains('open')&&fixture()){inject();restoreSavedSelections();}})}).observe(box,{childList:true,subtree:true,attributes:true,attributeFilter:['class','data-fixture-id']});
  if(box.classList.contains('open')){inject();restoreSavedSelections();}
  window.addEventListener('pageshow',()=>setTimeout(mobileEnsureMatchInfo,0));
  window.addEventListener('orientationchange',()=>setTimeout(mobileEnsureMatchInfo,120));
