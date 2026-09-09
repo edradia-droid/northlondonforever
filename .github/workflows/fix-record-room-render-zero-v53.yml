@@ -37,9 +37,9 @@ jobs:
           PY
       - name: Verify patch
         run: |
-          ! grep -q 'db\[team\]\.players=roster\.map' record-room.html
-          grep -q 'const players=(Array.isArray(entry.players)?entry.players:\[\])' record-room.html
-          grep -q 'BUILD V53' record-room.html
+          ! grep -Fq 'db[team].players=roster.map' record-room.html
+          grep -Fq 'const players=(Array.isArray(entry.players)?entry.players:[]).filter' record-room.html
+          grep -Fq 'BUILD V53' record-room.html
       - name: Commit
         run: |
           git config user.name "NL4 Automation"
