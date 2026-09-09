@@ -1,0 +1,36 @@
+name: V50 Konsa Zubimendi Identity Fix
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-konsa-zubimendi-identities-v50.yml'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix canonical Arsenal squad identities and numbers
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('premier-league-final-squads-2026-27.js')
+          s=p.read_text(encoding='utf-8')
+          old='{"name":"Ezri Konsa Ngoyo","webName":"Konsa","position":"Defender","number":null,"fplId":31}'
+          new='{"name":"Ezri Konsa Ngoyo","webName":"Konsa","position":"Defender","number":15,"fplId":31}'
+          if old not in s: raise SystemExit('Konsa squad entry not found')
+          s=s.replace(old,new,1)
+          old='{"name":"Martín Zubimendi Ibáñez","webName":"Zubimendi","position":"Midfielder","number":null,"fplId":19}'
+          new='{"name":"Martín Zubimendi Ibáñez","webName":"Zubimendi","position":"Midfielder","number":36,"fplId":19}'
+          if old not in s: raise SystemExit('Zubimendi squad entry not found')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add premier-league-final-squads-2026-27.js
+          git diff --cached --quiet && exit 0
+          git commit -m 'Fix Konsa and Zubimendi canonical squad numbers'
+          git push
