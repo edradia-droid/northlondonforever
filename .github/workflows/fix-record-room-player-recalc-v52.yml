@@ -1,0 +1,52 @@
+name: V52 Record Room Player Recalc Safety Fix
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-record-room-player-recalc-v52.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Remove destructive player recalculation
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('record-room.html')
+          s = p.read_text(encoding='utf-8')
+          a = 'TEAMS.forEach(team=>syncTeamSeasonFromFixtures(team));'
+          b = 'TEAMS.forEach(team=>recalculateClubStatsFromFixtures(team));'
+          c = 'participantTeams.forEach(syncTeamSeasonFromFixtures);'
+          d = 'participantTeams.forEach(recalculateClubStatsFromFixtures);'
+          if a not in s:
+              raise SystemExit('startup destructive recalc target not found')
+          if c not in s:
+              raise SystemExit('save destructive recalc target not found')
+          s = s.replace(a, b, 1).replace(c, d, 1)
+          s = s.replace('BUILD V49 • NATIVE MATCH INFORMATION • ALL TEAMS • SUPABASE AUTHORITY','BUILD V52 • SUPABASE PLAYER AUTHORITY • SAFE MATCH SAVES',1)
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Verify safety fix
+        shell: bash
+        run: |
+          ! grep -q 'TEAMS.forEach(team=>syncTeamSeasonFromFixtures(team));' record-room.html
+          ! grep -q 'participantTeams.forEach(syncTeamSeasonFromFixtures);' record-room.html
+          grep -q 'participantTeams.forEach(recalculateClubStatsFromFixtures);' record-room.html
+      - name: Commit Record Room safety fix
+        shell: bash
+        run: |
+          git config user.name "NL4 Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add record-room.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Keep Record Room player totals Supabase authoritative"
+          git push
