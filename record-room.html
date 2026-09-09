@@ -81,7 +81,7 @@ select,input{width:100%;background:#0f0f0f;border:1px solid var(--line);color:#f
     <h1>RECORD <span>ROOM.</span></h1>
     <p>Admin record workspace for all 20 Premier League clubs, including Arsenal, with full squad, fixtures, lineups, substitutions, events, match stats and season calculations.</p>
   </div>
-  <div><div class="badge">ADMIN RECORDS • MODEL-SAFE ISOLATION</div><div id="buildMarker" style="margin-top:8px;color:#49d17d;font-size:9px;font-weight:900;text-align:right">BUILD V42 • PAGE LOADED • DIRECT BULK SUPABASE STARTUP…</div></div>
+  <div><div class="badge">ADMIN RECORDS • MODEL-SAFE ISOLATION</div><div id="buildMarker" style="margin-top:8px;color:#49d17d;font-size:9px;font-weight:900;text-align:right">BUILD V49 • NATIVE MATCH INFORMATION • ALL TEAMS • SUPABASE AUTHORITY</div></div>
 </section>
 
 <div class="toolbar">
@@ -491,11 +491,41 @@ function openFixture(id){
   const f=ALL_FIXTURES.find(x=>x.id===id);
   if(!f) return;
   const s=fixtureStore(team,id);
+  const rrMetaFirst=(...vals)=>vals.find(v=>v!==undefined&&v!==null&&String(v)!=='')??'';
+  const rrAuth=window.NL4RecordRoomBulkMobileHydrateV39?.getAuthoritativeInfo?.(id)||{};
+  const rrMi=s.matchInfo||{},rrMd=s.matchDetails||{};
+  const rrKickRaw=rrMetaFirst(rrAuth.kickoff,rrMi.kickoff,rrMd.kickoff,rrMd.kickoffTime,f?.kickoff,f?.kickoffTime,f?.time);
+  const rrKickMatch=String(rrKickRaw||'').match(/(?:T|\s|^)(\d{2}:\d{2})/);
+  const rrMeta={
+    referee:rrMetaFirst(rrAuth.referee,rrMi.referee,rrMd.referee),
+    attendance:rrMetaFirst(rrAuth.attendance,rrMi.attendance,rrMd.attendance),
+    venue:rrMetaFirst(rrAuth.venue,rrAuth.stadium,rrMi.venue,rrMi.stadium,rrMd.venue,rrMd.stadium),
+    kickoff:rrKickMatch?rrKickMatch[1]:'',
+    weather:rrMetaFirst(rrAuth.weather,rrMi.weather,rrMd.weather),
+    halftimeHomeScore:rrMetaFirst(rrAuth.halftimeHomeScore,rrMi.halftimeHomeScore,rrMd.halftimeHomeScore),
+    halftimeAwayScore:rrMetaFirst(rrAuth.halftimeAwayScore,rrMi.halftimeAwayScore,rrMd.halftimeAwayScore),
+    addedTime:rrMetaFirst(rrAuth.addedTime,rrMi.addedTime,rrMd.addedTime),
+    notes:rrMetaFirst(rrAuth.notes,rrMi.notes,rrMd.notes)
+  };
   const box=$("fixtureDetail");
   box.dataset.fixtureId=id;
   box.innerHTML=`<div class="match-detail-head">
     <div><div class="eyebrow">MW ${f.mw??"—"} • ${formatKickoff(f.kickoff)}</div><h3>${esc(f.home)} vs ${esc(f.away)}</h3></div>
     <div class="match-detail-actions"><button class="detail-save" type="button" onclick="saveFixtureDetails()">SAVE MATCH DETAILS</button><span id="fixtureSaveState" style="align-self:center;color:#49d17d;font-size:9px;font-weight:900"></span><button class="mini-btn" type="button" onclick="document.getElementById('fixtureDetail').classList.remove('open')">CLOSE</button></div>
+  </div>
+  <div class="detail-box" id="rrMatchInfoBox" style="margin-top:15px">
+    <h4 style="color:#d8ad45">Match Information</h4>
+    <div class="admin-grid" style="margin-top:10px">
+      <div class="field"><label>REFEREE</label><input id="rrReferee" value="${esc(rrMeta.referee)}" placeholder="Referee name"></div>
+      <div class="field"><label>ATTENDANCE</label><input id="rrAttendance" type="number" min="0" step="1" value="${esc(rrMeta.attendance)}" placeholder="Attendance"></div>
+      <div class="field"><label>STADIUM / VENUE</label><input id="rrVenue" value="${esc(rrMeta.venue)}" placeholder="Stadium / venue"></div>
+      <div class="field"><label>KICK-OFF TIME</label><input id="rrKickoff" type="time" value="${esc(rrMeta.kickoff)}"></div>
+      <div class="field"><label>WEATHER</label><input id="rrWeather" value="${esc(rrMeta.weather)}" placeholder="Weather"></div>
+      <div class="field"><label>1ST HALF SCORE — ${esc(f.home)}</label><input id="rrHtHome" type="number" min="0" step="1" value="${esc(rrMeta.halftimeHomeScore)}" placeholder="HT"></div>
+      <div class="field"><label>1ST HALF SCORE — ${esc(f.away)}</label><input id="rrHtAway" type="number" min="0" step="1" value="${esc(rrMeta.halftimeAwayScore)}" placeholder="HT"></div>
+      <div class="field"><label>2ND HALF ADDED TIME</label><input id="rrAddedTime" type="number" min="0" step="1" value="${esc(rrMeta.addedTime)}" placeholder="Minutes"></div>
+    </div>
+    <div class="field" style="margin-top:10px"><label>MATCH NOTES</label><input id="rrMatchNotes" value="${esc(rrMeta.notes)}" placeholder="Other match information / notes"></div>
   </div>
   <div class="detail-box" style="margin-top:15px">
     <h4>Score</h4>
@@ -789,6 +819,20 @@ function saveFixtureDetails(){
     const s=fixtureStore(team,id);
     s.homeScore=$("detailHomeScore").value===""?null:n($("detailHomeScore").value);
     s.awayScore=$("detailAwayScore").value===""?null:n($("detailAwayScore").value);
+    const rrAttendance=$("rrAttendance")?.value??'',rrHtHome=$("rrHtHome")?.value??'',rrHtAway=$("rrHtAway")?.value??'',rrAdded=$("rrAddedTime")?.value??'';
+    const rrInfo={
+      referee:$("rrReferee")?.value?.trim()||'',
+      attendance:rrAttendance===''?'':Math.max(0,Number(rrAttendance)||0),
+      venue:$("rrVenue")?.value?.trim()||'',
+      kickoff:$("rrKickoff")?.value||'',
+      weather:$("rrWeather")?.value?.trim()||'',
+      halftimeHomeScore:rrHtHome===''?'':Math.max(0,Number(rrHtHome)||0),
+      halftimeAwayScore:rrHtAway===''?'':Math.max(0,Number(rrHtAway)||0),
+      addedTime:rrAdded===''?'':Math.max(0,Number(rrAdded)||0),
+      notes:$("rrMatchNotes")?.value?.trim()||''
+    };
+    s.matchInfo={...(s.matchInfo||{}),...rrInfo};
+    s.matchDetails={...(s.matchDetails||{}),...rrInfo,stadium:rrInfo.venue};
     s.homeLineup=[...document.querySelectorAll('[data-lineup="home"]')].map(x=>x.value);
     s.awayLineup=[...document.querySelectorAll('[data-lineup="away"]')].map(x=>x.value);
     s.homeSubs=collectSubs("home");
