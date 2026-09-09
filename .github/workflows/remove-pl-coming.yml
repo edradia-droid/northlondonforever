@@ -38,3 +38,5 @@ jobs:
           git add premier-league.html
           git diff --cached --quiet || git commit -m "Remove Premier League season story placeholder"
           git push
+
+# trigger workflow after initial creation
