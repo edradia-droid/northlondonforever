@@ -18,16 +18,17 @@ function recFor(f){
 function first(...vals){return vals.find(v=>v!==undefined&&v!==null&&String(v)!=='')??'';}
 function dataFor(f){
  const rec=recFor(f)||{},mi=rec.matchInfo||{},md=rec.matchDetails||{};
+ const auth=window.NL4RecordRoomBulkMobileHydrateV39?.getAuthoritativeInfo?.(f?.id)||{};
  return {
-  referee:first(mi.referee,md.referee),
-  attendance:first(mi.attendance,md.attendance),
-  venue:first(mi.venue,mi.stadium,md.venue,md.stadium),
-  kickoff:first(mi.kickoff,md.kickoff,md.kickoffTime,f?.kickoff,f?.kickoffTime,f?.time),
-  weather:first(mi.weather,md.weather),
-  halftimeHomeScore:first(mi.halftimeHomeScore,md.halftimeHomeScore),
-  halftimeAwayScore:first(mi.halftimeAwayScore,md.halftimeAwayScore),
-  addedTime:first(mi.addedTime,md.addedTime),
-  notes:first(mi.notes,md.notes)
+  referee:first(auth.referee,mi.referee,md.referee),
+  attendance:first(auth.attendance,mi.attendance,md.attendance),
+  venue:first(auth.venue,auth.stadium,mi.venue,mi.stadium,md.venue,md.stadium),
+  kickoff:first(auth.kickoff,mi.kickoff,md.kickoff,md.kickoffTime,f?.kickoff,f?.kickoffTime,f?.time),
+  weather:first(auth.weather,mi.weather,md.weather),
+  halftimeHomeScore:first(auth.halftimeHomeScore,mi.halftimeHomeScore,md.halftimeHomeScore),
+  halftimeAwayScore:first(auth.halftimeAwayScore,mi.halftimeAwayScore,md.halftimeAwayScore),
+  addedTime:first(auth.addedTime,mi.addedTime,md.addedTime),
+  notes:first(auth.notes,mi.notes,md.notes)
  };
 }
 function inject(){
