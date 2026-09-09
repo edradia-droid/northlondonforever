@@ -1,0 +1,83 @@
+name: V55 Record Room Calculated Player Save Guard
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/fix-record-room-calculated-player-save-v55.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch calculated player save flow
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('record-room-mobile-supabase-retry.js')
+          s=p.read_text()
+          marker='function install(){'
+          guard=r'''function installCalculatedSaveGuard(){
+  // V55: every Match Details save rebuilds fixture-derived player season totals
+  // from the complete hydrated fixture set before the Supabase authority writes
+  // record_room_players. This prevents both double counting and stale totals.
+  try{
+    if(typeof playerNameKey==='function'&&!window.__NL4_RR_V55_PLAYER_KEY__){
+      window.__NL4_RR_V55_PLAYER_KEY__=true;
+      playerNameKey=function(value){
+        let k=String(value||'').trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[Øø]/g,'o').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+        if(k==='martin odegaard'||k==='odegaard')return 'martin odegaard';
+        if(k==='martin zubimendi'||k==='martin zubimendi ibanez'||k==='zubimendi')return 'martin zubimendi';
+        if(k==='ezri konsa'||k==='ezri konsa ngoyo'||k==='konsa')return 'ezri konsa';
+        return k;
+      };
+    }
+    if(document.documentElement.dataset.rrV55CalculatedSaveGuard==='1')return;
+    document.documentElement.dataset.rrV55CalculatedSaveGuard='1';
+    document.addEventListener('click',e=>{
+      const b=e.target.closest?.('button');
+      if(!b||!(b.classList.contains('detail-save')||/SAVE MATCH DETAILS/i.test(b.textContent||'')))return;
+      // Native saveFixtureDetails runs on the click first. Rebuild shortly after it
+      // has copied the form into db, but before authority.saveOpenFixture's 80ms write.
+      setTimeout(()=>{
+        try{
+          const f=fixtureFromOpenPanel();
+          if(!f||typeof syncTeamSeasonFromFixtures!=='function')return;
+          [f.home,f.away].filter(t=>db?.[t]).forEach(t=>syncTeamSeasonFromFixtures(t));
+          if(typeof render==='function')render();
+          console.info('[NL4 V55] Calculated season player totals rebuilt before Supabase save',f.home,f.away);
+        }catch(err){console.error('[NL4 V55] Calculated player save guard failed',err);}
+      },25);
+    },true);
+  }catch(e){console.error('[NL4 V55] Could not install calculated save guard',e);}
+}
+'''
+          if 'function installCalculatedSaveGuard(){' not in s:
+              s=s.replace(marker,guard+marker)
+          old="authority.hydrate=bulkHydrate;installPanelGuard();bulkHydrate().catch(()=>{});"
+          new="authority.hydrate=bulkHydrate;installPanelGuard();installCalculatedSaveGuard();bulkHydrate().catch(()=>{});"
+          if old in s:
+              s=s.replace(old,new)
+          s=s.replace("BUILD V54 • SUPABASE CONNECTING • CANONICAL PLAYER LOAD…","BUILD V55 • SUPABASE CONNECTING • CALCULATED PLAYER SAVE…")
+          s=s.replace("BUILD V54 • SUPABASE LIVE • ${imported} MATCHES • CANONICAL PLAYER STATS","BUILD V55 • SUPABASE LIVE • ${imported} MATCHES • CALCULATED PLAYER STATS")
+          s=s.replace("version:'54-canonical-player-authority'","version:'55-calculated-player-save'")
+          p.write_text(s)
+          PY
+      - name: Verify V55 guard
+        run: |
+          grep -q 'function installCalculatedSaveGuard' record-room-mobile-supabase-retry.js
+          grep -q 'syncTeamSeasonFromFixtures(t)' record-room-mobile-supabase-retry.js
+          grep -q 'martin zubimendi ibanez' record-room-mobile-supabase-retry.js
+          grep -q 'martin odegaard' record-room-mobile-supabase-retry.js
+      - name: Commit patch
+        run: |
+          git config user.name 'NL4 Automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add record-room-mobile-supabase-retry.js
+          git diff --cached --quiet && exit 0
+          git commit -m 'Calculate Record Room player totals before every match save'
+          git push
