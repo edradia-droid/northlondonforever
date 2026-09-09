@@ -1,3 +1,13 @@
+const logoBase='https://media.api-sports.io/football/teams/';
+const teamLogos={
+  'Arsenal':42,'Aston Villa':66,'Atlético de Madrid':530,'Barcelona':529,'Bayern München':157,'Bodø/Glimt':413,
+  'Borussia Dortmund':165,'Club Brugge':569,'Como':895,'Fenerbahçe':611,'Feyenoord':234,'Galatasaray':645,
+  'Inter':505,'LASK':575,'Leipzig':173,'Lens':116,'Lille':79,'Liverpool':40,'Manchester City':50,'Manchester United':33,
+  'Napoli':492,'Paris Saint-Germain':85,'Porto':212,'PSV Eindhoven':197,'Real Betis':543,'Real Madrid':541,'Roma':497,
+  'Sabah':563,'Shakhtar Donetsk':550,'Slavia Praha':560,'Slovan Bratislava':656,'Sporting CP':228,'Stuttgart':172,
+  'Viking':327,'Villarreal':533,'AEK Athens':1026
+};
+
 const arsenalFixtures = [
   ['09 SEP 2026','Napoli','AWAY','Napoli vs Arsenal','MD1','21:00 CET'],
   ['13 OCT 2026','Lille','HOME','Arsenal vs Lille','MD2','21:00 CET'],
@@ -22,6 +32,11 @@ const results = [
  ['Real Madrid','Inter',2,1]
 ];
 
+function logo(team){
+  const id=teamLogos[team];
+  return id ? `<img class="team-logo" src="${logoBase}${id}.png" alt="${team} crest" loading="lazy" onerror="this.style.display='none'">` : `<span class="club-dot">${team.slice(0,3).toUpperCase()}</span>`;
+}
+
 function buildStandings(){
   const stats = Object.fromEntries(teams.map(team => [team,{team,p:0,w:0,d:0,l:0,gf:0,ga:0,gd:0,pts:0}]));
   results.forEach(([home,away,h,a])=>{
@@ -37,12 +52,14 @@ function renderFixtures(){
   const el=document.getElementById('arsenalUclFixtures');
   el.innerHTML=arsenalFixtures.map(([date,opponent,venue,match,md,time],i)=>{
     const home=venue==='HOME';
+    const left=home?'Arsenal':opponent;
+    const right=home?opponent:'Arsenal';
     return `<article class="ucl-fixture ${home?'arsenal-home':''}">
       <div class="fixture-top"><span>${md} • ${date}</span><span class="fixture-status">${i===0?'UPCOMING':'SCHEDULED'}</span></div>
       <div class="fixture-match">
-        <div class="fixture-team"><b>${home?'Arsenal':opponent}</b><small>${home?'HOME':'AWAY'}</small></div>
+        <div class="fixture-team">${logo(left)}<b>${left}</b><small>${home?'HOME':'AWAY'}</small></div>
         <div class="fixture-centre"><span>${time}</span><strong>VS</strong><small>Champions League</small></div>
-        <div class="fixture-team"><b>${home?opponent:'Arsenal'}</b><small>${home?'AWAY':'HOME'}</small></div>
+        <div class="fixture-team">${logo(right)}<b>${right}</b><small>${home?'AWAY':'HOME'}</small></div>
       </div>
       <div class="fixture-bottom"><span>${match}</span><span>2026/27</span></div>
     </article>`;
@@ -52,7 +69,7 @@ function renderFixtures(){
 function renderTable(){
   const body=document.getElementById('uclTableBody');
   body.innerHTML=buildStandings().map((row,i)=>`<tr class="${row.team==='Arsenal'?'arsenal-row':''}">
-    <td>${i+1}</td><td class="club-cell"><div class="club-wrap"><span class="club-dot">${row.team.slice(0,3).toUpperCase()}</span>${row.team}</div></td>
+    <td>${i+1}</td><td class="club-cell"><div class="club-wrap">${logo(row.team)}<span>${row.team}</span></div></td>
     <td>${row.p}</td><td>${row.w}</td><td>${row.d}</td><td>${row.l}</td><td>${row.gf}</td><td>${row.ga}</td><td>${row.gd>0?'+':''}${row.gd}</td><td>${row.pts}</td>
   </tr>`).join('');
 }
