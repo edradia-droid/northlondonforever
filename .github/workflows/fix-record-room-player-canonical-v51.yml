@@ -93,3 +93,5 @@ const split=v=>{const p=String(v||'').split('|||');const team=norm(p.shift());re
           git diff --cached --quiet && exit 0
           git commit -m "Canonicalize Record Room Arsenal player identities"
           git push
+
+# trigger-v51
