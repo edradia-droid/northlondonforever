@@ -1,4 +1,4 @@
-name: Record Room V47 Authoritative Match Metadata Source
+name: Record Room V48 Metadata Runtime Cache Fix
 on:
   push:
     paths:
@@ -10,51 +10,47 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Patch authoritative metadata source and loader
+      - name: Stop metadata rebuild loop and force fresh bootstrap
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
+
           p=Path('record-room-match-meta.js')
           s=p.read_text()
-          start=s.index('function dataFor(f){')
-          end=s.index('\nfunction inject(){', start)
-          lines=[
-            'function dataFor(f){',
-            ' const rec=recFor(f)||{},mi=rec.matchInfo||{},md=rec.matchDetails||{};',
-            ' const auth=window.NL4RecordRoomBulkMobileHydrateV39?.getAuthoritativeInfo?.(f?.id)||{};',
-            ' return {',
-            '  referee:first(auth.referee,mi.referee,md.referee),',
-            '  attendance:first(auth.attendance,mi.attendance,md.attendance),',
-            '  venue:first(auth.venue,auth.stadium,mi.venue,mi.stadium,md.venue,md.stadium),',
-            '  kickoff:first(auth.kickoff,mi.kickoff,md.kickoff,md.kickoffTime,f?.kickoff,f?.kickoffTime,f?.time),',
-            '  weather:first(auth.weather,mi.weather,md.weather),',
-            '  halftimeHomeScore:first(auth.halftimeHomeScore,mi.halftimeHomeScore,md.halftimeHomeScore),',
-            '  halftimeAwayScore:first(auth.halftimeAwayScore,mi.halftimeAwayScore,md.halftimeAwayScore),',
-            '  addedTime:first(auth.addedTime,mi.addedTime,md.addedTime),',
-            '  notes:first(auth.notes,mi.notes,md.notes)',
-            ' };',
-            '}'
-          ]
-          p.write_text(s[:start]+'\n'.join(lines)+s[end:])
+          old="new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;if(box.classList.contains('open')&&fixture()){inject();restoreSavedSelections();}})}).observe(box,{childList:true,subtree:true,attributes:true,attributeFilter:['class','data-fixture-id']});"
+          new="new MutationObserver(mutations=>{if(queued)return;const shouldInject=mutations.some(m=>m.type==='attributes')||!document.getElementById('rrMatchInfoBox');if(!shouldInject)return;queued=true;requestAnimationFrame(()=>{queued=false;if(box.classList.contains('open')&&fixture()){inject();restoreSavedSelections();}})}).observe(box,{childList:true,subtree:true,attributes:true,attributeFilter:['class','data-fixture-id']});"
+          if old not in s:
+              raise SystemExit('Expected metadata observer block not found')
+          p.write_text(s.replace(old,new,1))
+
           q=Path('supabase-client.js')
           t=q.read_text()
-          old='record-room-match-meta.js?v=20260905-v34-mobile-info2'
-          new='record-room-match-meta.js?v=20260909-v47-authoritative-meta'
-          if old not in t:
-              raise SystemExit('Expected V34 metadata loader not found')
-          q.write_text(t.replace(old,new,1))
+          old_loader='record-room-match-meta.js?v=20260909-v47-authoritative-meta'
+          new_loader='record-room-match-meta.js?v=20260909-v48-stable-authoritative-meta'
+          if old_loader not in t:
+              raise SystemExit('Expected V47 metadata loader not found')
+          q.write_text(t.replace(old_loader,new_loader,1))
+
+          h=Path('record-room.html')
+          u=h.read_text()
+          old_boot='supabase-client.js?v=20260909-v42-direct-hydration'
+          new_boot='supabase-client.js?v=20260909-v48-authoritative-meta-bootstrap'
+          if old_boot not in u:
+              raise SystemExit('Expected V42 Supabase bootstrap URL not found')
+          h.write_text(u.replace(old_boot,new_boot,1))
           PY
-      - name: Verify V47 patch
+      - name: Verify V48 patch
         shell: bash
         run: |
-          grep -q 'getAuthoritativeInfo' record-room-match-meta.js
-          grep -q 'record-room-match-meta.js?v=20260909-v47-authoritative-meta' supabase-client.js
-      - name: Commit V47 authoritative metadata fix
+          grep -q "shouldInject=mutations.some" record-room-match-meta.js
+          grep -q 'record-room-match-meta.js?v=20260909-v48-stable-authoritative-meta' supabase-client.js
+          grep -q 'supabase-client.js?v=20260909-v48-authoritative-meta-bootstrap' record-room.html
+      - name: Commit V48 runtime metadata fix
         shell: bash
         run: |
           git config user.name 'NL4 Automation'
           git config user.email 'actions@users.noreply.github.com'
-          git add record-room-match-meta.js supabase-client.js
-          git commit -m 'Use authoritative Supabase metadata in Record Room panel' || exit 0
+          git add record-room-match-meta.js supabase-client.js record-room.html
+          git commit -m 'Stabilize authoritative Record Room metadata runtime' || exit 0
           git push
