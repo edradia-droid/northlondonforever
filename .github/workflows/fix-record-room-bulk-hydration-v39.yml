@@ -1,4 +1,4 @@
-name: Record Room V48 Metadata Runtime Cache Fix
+name: Record Room V49 Native Match Information
 on:
   push:
     paths:
@@ -10,47 +10,99 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Stop metadata rebuild loop and force fresh bootstrap
+      - name: Put match information in native fixture renderer and save path
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
-
-          p=Path('record-room-match-meta.js')
+          p=Path('record-room.html')
           s=p.read_text()
-          old="new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;if(box.classList.contains('open')&&fixture()){inject();restoreSavedSelections();}})}).observe(box,{childList:true,subtree:true,attributes:true,attributeFilter:['class','data-fixture-id']});"
-          new="new MutationObserver(mutations=>{if(queued)return;const shouldInject=mutations.some(m=>m.type==='attributes')||!document.getElementById('rrMatchInfoBox');if(!shouldInject)return;queued=true;requestAnimationFrame(()=>{queued=false;if(box.classList.contains('open')&&fixture()){inject();restoreSavedSelections();}})}).observe(box,{childList:true,subtree:true,attributes:true,attributeFilter:['class','data-fixture-id']});"
+
+          old="""  const s=fixtureStore(team,id);
+  const box=$(\"fixtureDetail\");"""
+          new="""  const s=fixtureStore(team,id);
+  const rrMetaFirst=(...vals)=>vals.find(v=>v!==undefined&&v!==null&&String(v)!=='')??'';
+  const rrAuth=window.NL4RecordRoomBulkMobileHydrateV39?.getAuthoritativeInfo?.(id)||{};
+  const rrMi=s.matchInfo||{},rrMd=s.matchDetails||{};
+  const rrKickRaw=rrMetaFirst(rrAuth.kickoff,rrMi.kickoff,rrMd.kickoff,rrMd.kickoffTime,f?.kickoff,f?.kickoffTime,f?.time);
+  const rrKickMatch=String(rrKickRaw||'').match(/(?:T|\\s|^)(\\d{2}:\\d{2})/);
+  const rrMeta={
+    referee:rrMetaFirst(rrAuth.referee,rrMi.referee,rrMd.referee),
+    attendance:rrMetaFirst(rrAuth.attendance,rrMi.attendance,rrMd.attendance),
+    venue:rrMetaFirst(rrAuth.venue,rrAuth.stadium,rrMi.venue,rrMi.stadium,rrMd.venue,rrMd.stadium),
+    kickoff:rrKickMatch?rrKickMatch[1]:'',
+    weather:rrMetaFirst(rrAuth.weather,rrMi.weather,rrMd.weather),
+    halftimeHomeScore:rrMetaFirst(rrAuth.halftimeHomeScore,rrMi.halftimeHomeScore,rrMd.halftimeHomeScore),
+    halftimeAwayScore:rrMetaFirst(rrAuth.halftimeAwayScore,rrMi.halftimeAwayScore,rrMd.halftimeAwayScore),
+    addedTime:rrMetaFirst(rrAuth.addedTime,rrMi.addedTime,rrMd.addedTime),
+    notes:rrMetaFirst(rrAuth.notes,rrMi.notes,rrMd.notes)
+  };
+  const box=$(\"fixtureDetail\");"""
           if old not in s:
-              raise SystemExit('Expected metadata observer block not found')
-          p.write_text(s.replace(old,new,1))
+              raise SystemExit('openFixture setup block not found')
+          s=s.replace(old,new,1)
 
-          q=Path('supabase-client.js')
-          t=q.read_text()
-          old_loader='record-room-match-meta.js?v=20260909-v47-authoritative-meta'
-          new_loader='record-room-match-meta.js?v=20260909-v48-stable-authoritative-meta'
-          if old_loader not in t:
-              raise SystemExit('Expected V47 metadata loader not found')
-          q.write_text(t.replace(old_loader,new_loader,1))
+          old2="""  </div>
+  <div class=\"detail-box\" style=\"margin-top:15px\">
+    <h4>Score</h4>"""
+          new2="""  </div>
+  <div class=\"detail-box\" id=\"rrMatchInfoBox\" style=\"margin-top:15px\">
+    <h4 style=\"color:#d8ad45\">Match Information</h4>
+    <div class=\"admin-grid\" style=\"margin-top:10px\">
+      <div class=\"field\"><label>REFEREE</label><input id=\"rrReferee\" value=\"${esc(rrMeta.referee)}\" placeholder=\"Referee name\"></div>
+      <div class=\"field\"><label>ATTENDANCE</label><input id=\"rrAttendance\" type=\"number\" min=\"0\" step=\"1\" value=\"${esc(rrMeta.attendance)}\" placeholder=\"Attendance\"></div>
+      <div class=\"field\"><label>STADIUM / VENUE</label><input id=\"rrVenue\" value=\"${esc(rrMeta.venue)}\" placeholder=\"Stadium / venue\"></div>
+      <div class=\"field\"><label>KICK-OFF TIME</label><input id=\"rrKickoff\" type=\"time\" value=\"${esc(rrMeta.kickoff)}\"></div>
+      <div class=\"field\"><label>WEATHER</label><input id=\"rrWeather\" value=\"${esc(rrMeta.weather)}\" placeholder=\"Weather\"></div>
+      <div class=\"field\"><label>1ST HALF SCORE — ${esc(f.home)}</label><input id=\"rrHtHome\" type=\"number\" min=\"0\" step=\"1\" value=\"${esc(rrMeta.halftimeHomeScore)}\" placeholder=\"HT\"></div>
+      <div class=\"field\"><label>1ST HALF SCORE — ${esc(f.away)}</label><input id=\"rrHtAway\" type=\"number\" min=\"0\" step=\"1\" value=\"${esc(rrMeta.halftimeAwayScore)}\" placeholder=\"HT\"></div>
+      <div class=\"field\"><label>2ND HALF ADDED TIME</label><input id=\"rrAddedTime\" type=\"number\" min=\"0\" step=\"1\" value=\"${esc(rrMeta.addedTime)}\" placeholder=\"Minutes\"></div>
+    </div>
+    <div class=\"field\" style=\"margin-top:10px\"><label>MATCH NOTES</label><input id=\"rrMatchNotes\" value=\"${esc(rrMeta.notes)}\" placeholder=\"Other match information / notes\"></div>
+  </div>
+  <div class=\"detail-box\" style=\"margin-top:15px\">
+    <h4>Score</h4>"""
+          if old2 not in s:
+              raise SystemExit('native score insertion point not found')
+          s=s.replace(old2,new2,1)
 
-          h=Path('record-room.html')
-          u=h.read_text()
-          old_boot='supabase-client.js?v=20260909-v42-direct-hydration'
-          new_boot='supabase-client.js?v=20260909-v48-authoritative-meta-bootstrap'
-          if old_boot not in u:
-              raise SystemExit('Expected V42 Supabase bootstrap URL not found')
-          h.write_text(u.replace(old_boot,new_boot,1))
+          old3="""    s.homeScore=$(\"detailHomeScore\").value===\"\"?null:n($(\"detailHomeScore\").value);
+    s.awayScore=$(\"detailAwayScore\").value===\"\"?null:n($(\"detailAwayScore\").value);"""
+          new3="""    s.homeScore=$(\"detailHomeScore\").value===\"\"?null:n($(\"detailHomeScore\").value);
+    s.awayScore=$(\"detailAwayScore\").value===\"\"?null:n($(\"detailAwayScore\").value);
+    const rrAttendance=$(\"rrAttendance\")?.value??'',rrHtHome=$(\"rrHtHome\")?.value??'',rrHtAway=$(\"rrHtAway\")?.value??'',rrAdded=$(\"rrAddedTime\")?.value??'';
+    const rrInfo={
+      referee:$(\"rrReferee\")?.value?.trim()||'',
+      attendance:rrAttendance===''?'':Math.max(0,Number(rrAttendance)||0),
+      venue:$(\"rrVenue\")?.value?.trim()||'',
+      kickoff:$(\"rrKickoff\")?.value||'',
+      weather:$(\"rrWeather\")?.value?.trim()||'',
+      halftimeHomeScore:rrHtHome===''?'':Math.max(0,Number(rrHtHome)||0),
+      halftimeAwayScore:rrHtAway===''?'':Math.max(0,Number(rrHtAway)||0),
+      addedTime:rrAdded===''?'':Math.max(0,Number(rrAdded)||0),
+      notes:$(\"rrMatchNotes\")?.value?.trim()||''
+    };
+    s.matchInfo={...(s.matchInfo||{}),...rrInfo};
+    s.matchDetails={...(s.matchDetails||{}),...rrInfo,stadium:rrInfo.venue};"""
+          if old3 not in s:
+              raise SystemExit('native save score block not found')
+          s=s.replace(old3,new3,1)
+
+          s=s.replace('BUILD V42 • PAGE LOADED • DIRECT BULK SUPABASE STARTUP…','BUILD V49 • NATIVE MATCH INFORMATION • ALL TEAMS • SUPABASE AUTHORITY',1)
+          p.write_text(s)
           PY
-      - name: Verify V48 patch
+      - name: Verify V49 native fields
         shell: bash
         run: |
-          grep -q "shouldInject=mutations.some" record-room-match-meta.js
-          grep -q 'record-room-match-meta.js?v=20260909-v48-stable-authoritative-meta' supabase-client.js
-          grep -q 'supabase-client.js?v=20260909-v48-authoritative-meta-bootstrap' record-room.html
-      - name: Commit V48 runtime metadata fix
+          grep -q 'const rrAuth=window.NL4RecordRoomBulkMobileHydrateV39' record-room.html
+          grep -q 'id="rrMatchInfoBox"' record-room.html
+          grep -q 's.matchInfo={...(s.matchInfo||{}),...rrInfo}' record-room.html
+          grep -q 'BUILD V49 • NATIVE MATCH INFORMATION' record-room.html
+      - name: Commit V49 native all-team metadata fix
         shell: bash
         run: |
           git config user.name 'NL4 Automation'
           git config user.email 'actions@users.noreply.github.com'
-          git add record-room-match-meta.js supabase-client.js record-room.html
-          git commit -m 'Stabilize authoritative Record Room metadata runtime' || exit 0
+          git add record-room.html
+          git commit -m 'Render and save Record Room match information natively for all teams' || exit 0
           git push
