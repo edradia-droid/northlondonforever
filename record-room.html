@@ -298,19 +298,10 @@ function render(){
   const team=teamSelect.value;
   inputTeam.value=team;
 
-  // Guarantee this team always has its preloaded roster in memory.
-  if(!db[team]) db[team]={club:defaultClub(),players:[],fixtureData:{}};
-  const roster=rosterForTeam(team);
-  const current=Array.isArray(db[team].players)?db[team].players:[];
-  const currentByName=new Map(current.map(p=>[String(p.name||"").trim().toLowerCase(),p]));
-  db[team].players=roster.map(p=>({
-    ...p,
-    ...(currentByName.get(String(p.name).trim().toLowerCase())||{}),
-    name:p.name,
-    position:p.position,
-    number:p.number
-  }));
-
+  // Supabase authority owns hydrated player identity and totals.
+  // Never rebuild players from the static roster during render, because that can
+  // replace canonical hydrated players with fresh zero-stat seed objects.
+  if(!db[team]) db[team]={club:defaultClub(),players:rosterForTeam(team),fixtureData:{}};
   const entry=db[team];
   $("clubName").textContent=team;
   $("playerHeading").textContent=team.toUpperCase()+" PLAYER STATS";
@@ -334,12 +325,7 @@ function render(){
   }).join("");
 
   const q=$("playerSearch").value.trim().toLowerCase();
-  const savedByName=new Map((Array.isArray(db[team]?.players)?db[team].players:[]).map(p=>[String(p.name||"").trim().toLowerCase(),p]));
-  const players=rosterForTeam(team).map(p=>({
-    ...p,
-    ...(savedByName.get(String(p.name).trim().toLowerCase())||{}),
-    name:p.name,position:p.position,number:p.number
-  })).filter(p=>!q||String(p.name||"").toLowerCase().includes(q));
+  const players=(Array.isArray(entry.players)?entry.players:[]).filter(p=>!q||String(p.name||"").toLowerCase().includes(q));
 
   $("playerCount").textContent=`${players.length} PLAYER${players.length===1?"":"S"}`;
   $("playerRows").innerHTML=players.map(p=>`<tr>
