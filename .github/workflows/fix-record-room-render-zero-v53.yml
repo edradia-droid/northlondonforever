@@ -1,0 +1,50 @@
+name: V53 Record Room Render Zero Fix
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-record-room-render-zero-v53.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Stop render from replacing hydrated player stats
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('record-room.html')
+          s=p.read_text(encoding='utf-8')
+          old='''  // Guarantee this team always has its preloaded roster in memory.\n  if(!db[team]) db[team]={club:defaultClub(),players:[],fixtureData:{}};\n  const roster=rosterForTeam(team);\n  const current=Array.isArray(db[team].players)?db[team].players:[];\n  const currentByName=new Map(current.map(p=>[String(p.name||"").trim().toLowerCase(),p]));\n  db[team].players=roster.map(p=>({\n    ...p,\n    ...(currentByName.get(String(p.name).trim().toLowerCase())||{}),\n    name:p.name,\n    position:p.position,\n    number:p.number\n  }));\n\n  const entry=db[team];'''
+          new='''  // Supabase authority owns hydrated player identity and totals.\n  // Never rebuild players from the static roster during render, because that can\n  // replace canonical hydrated players with fresh zero-stat seed objects.\n  if(!db[team]) db[team]={club:defaultClub(),players:rosterForTeam(team),fixtureData:{}};\n  const entry=db[team];'''
+          if old not in s:
+              raise SystemExit('render rebuild target not found')
+          s=s.replace(old,new,1)
+          old2='''  const savedByName=new Map((Array.isArray(db[team]?.players)?db[team].players:[]).map(p=>[String(p.name||"").trim().toLowerCase(),p]));\n  const players=rosterForTeam(team).map(p=>({\n    ...p,\n    ...(savedByName.get(String(p.name).trim().toLowerCase())||{}),\n    name:p.name,position:p.position,number:p.number\n  })).filter(p=>!q||String(p.name||"").toLowerCase().includes(q));'''
+          new2='''  const players=(Array.isArray(entry.players)?entry.players:[]).filter(p=>!q||String(p.name||"").toLowerCase().includes(q));'''
+          if old2 not in s:
+              raise SystemExit('player table render target not found')
+          s=s.replace(old2,new2,1)
+          s=s.replace('BUILD V49 • NATIVE MATCH INFORMATION • ALL TEAMS • SUPABASE AUTHORITY','BUILD V53 • SUPABASE PLAYER DISPLAY AUTHORITY • ALL TEAMS',1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Verify patch
+        run: |
+          ! grep -q 'db\[team\]\.players=roster\.map' record-room.html
+          grep -q 'const players=(Array.isArray(entry.players)?entry.players:\[\])' record-room.html
+          grep -q 'BUILD V53' record-room.html
+      - name: Commit
+        run: |
+          git config user.name "NL4 Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add record-room.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Render Record Room player stats from Supabase-hydrated state"
+          git push
