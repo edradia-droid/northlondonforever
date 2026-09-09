@@ -1,0 +1,40 @@
+name: Remove Premier League placeholder
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  remove-placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Remove placeholder section
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('premier-league.html')
+          text = path.read_text(encoding='utf-8')
+          start = text.find('<section class="pl-coming">')
+          if start == -1:
+              raise SystemExit('Placeholder section not found')
+          end = text.find('</section>', start)
+          if end == -1:
+              raise SystemExit('Placeholder section closing tag not found')
+          end += len('</section>')
+          text = text[:start] + text[end:]
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit removal
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add premier-league.html
+          git diff --cached --quiet || git commit -m "Remove Premier League season story placeholder"
+          git push
