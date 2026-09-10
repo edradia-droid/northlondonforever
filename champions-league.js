@@ -9,14 +9,14 @@ const teamLogos={
 };
 
 const arsenalFixtures = [
-  ['09 SEP 2026','Napoli','AWAY','Napoli vs Arsenal','MD1','21:00 CET'],
-  ['13 OCT 2026','Lille','HOME','Arsenal vs Lille','MD2','21:00 CET'],
-  ['21 OCT 2026','Bayern München','AWAY','Bayern München vs Arsenal','MD3','21:00 CET'],
-  ['04 NOV 2026','Slavia Praha','AWAY','Slavia Praha vs Arsenal','MD4','21:00 CET'],
-  ['24 NOV 2026','Borussia Dortmund','HOME','Arsenal vs Borussia Dortmund','MD5','21:00 CET'],
-  ['09 DEC 2026','Real Madrid','HOME','Arsenal vs Real Madrid','MD6','21:00 CET'],
-  ['20 JAN 2027','Real Betis','AWAY','Real Betis vs Arsenal','MD7','21:00 CET'],
-  ['27 JAN 2027','Sabah','HOME','Arsenal vs Sabah','MD8','21:00 CET']
+  {date:'09 SEP 2026',opponent:'Napoli',venue:'AWAY',match:'Napoli vs Arsenal',md:'MD1',time:'21:00 CET',status:'scheduled',homeScore:null,awayScore:null},
+  {date:'13 OCT 2026',opponent:'Lille',venue:'HOME',match:'Arsenal vs Lille',md:'MD2',time:'21:00 CET',status:'scheduled',homeScore:null,awayScore:null},
+  {date:'21 OCT 2026',opponent:'Bayern München',venue:'AWAY',match:'Bayern München vs Arsenal',md:'MD3',time:'21:00 CET',status:'scheduled',homeScore:null,awayScore:null},
+  {date:'04 NOV 2026',opponent:'Slavia Praha',venue:'AWAY',match:'Slavia Praha vs Arsenal',md:'MD4',time:'21:00 CET',status:'scheduled',homeScore:null,awayScore:null},
+  {date:'24 NOV 2026',opponent:'Borussia Dortmund',venue:'HOME',match:'Arsenal vs Borussia Dortmund',md:'MD5',time:'21:00 CET',status:'scheduled',homeScore:null,awayScore:null},
+  {date:'09 DEC 2026',opponent:'Real Madrid',venue:'HOME',match:'Arsenal vs Real Madrid',md:'MD6',time:'21:00 CET',status:'scheduled',homeScore:null,awayScore:null},
+  {date:'20 JAN 2027',opponent:'Real Betis',venue:'AWAY',match:'Real Betis vs Arsenal',md:'MD7',time:'21:00 CET',status:'scheduled',homeScore:null,awayScore:null},
+  {date:'27 JAN 2027',opponent:'Sabah',venue:'HOME',match:'Arsenal vs Sabah',md:'MD8',time:'21:00 CET',status:'scheduled',homeScore:null,awayScore:null}
 ];
 
 const teams = [
@@ -37,6 +37,14 @@ function logo(team){
   return id ? `<img class="team-logo" src="${logoBase}${id}.png" alt="${team} crest" loading="lazy" onerror="this.style.display='none'">` : `<span class="club-dot">${team.slice(0,3).toUpperCase()}</span>`;
 }
 
+function fixtureState(fixture){
+  const s=String(fixture.status||'scheduled').toLowerCase();
+  const hasScore=Number.isFinite(fixture.homeScore)&&Number.isFinite(fixture.awayScore);
+  if(['fulltime','ft','aet','pen'].includes(s)||hasScore)return{label:'FULL TIME',completed:true,live:false};
+  if(['live','1h','ht','2h','et'].includes(s))return{label:'LIVE',completed:false,live:true};
+  return{label:'SCHEDULED',completed:false,live:false};
+}
+
 function buildStandings(){
   const stats = Object.fromEntries(teams.map(team => [team,{team,p:0,w:0,d:0,l:0,gf:0,ga:0,gd:0,pts:0}]));
   results.forEach(([home,away,h,a])=>{
@@ -50,21 +58,28 @@ function buildStandings(){
 
 function renderFixtures(){
   const el=document.getElementById('arsenalUclFixtures');
-  el.innerHTML=arsenalFixtures.map(([date,opponent,venue,match,md,time],i)=>{
+  el.innerHTML=arsenalFixtures.map((fixture,i)=>{
+    const {date,opponent,venue,match,md,time}=fixture;
     const home=venue==='HOME';
     const left=home?'Arsenal':opponent;
     const right=home?opponent:'Arsenal';
-    return `<article class="ucl-fixture ${home?'arsenal-home':''}">
-      <div class="fixture-top"><span>${md} • ${date}</span><span class="fixture-status">${i===0?'UPCOMING':'SCHEDULED'}</span></div>
+    const state=fixtureState(fixture);
+    const centre=state.completed
+      ? `<span>FULL TIME</span><strong class="ucl-score">${fixture.homeScore}–${fixture.awayScore}</strong><small>Champions League</small>`
+      : state.live
+        ? `<span>LIVE</span><strong class="ucl-score">${Number.isFinite(fixture.homeScore)?fixture.homeScore:0}–${Number.isFinite(fixture.awayScore)?fixture.awayScore:0}</strong><small>Champions League</small>`
+        : `<span>${time}</span><strong>VS</strong><small>Champions League</small>`;
+    return `<article class="ucl-fixture ${home?'arsenal-home':''}${state.completed?' completed':''}">
+      <div class="fixture-top"><span>${md} • ${date}</span><span class="fixture-status${state.completed?' fulltime':''}${state.live?' live':''}">${state.label}</span></div>
       <div class="fixture-match">
         <div class="fixture-team">${logo(left)}<b>${left}</b><small>${home?'HOME':'AWAY'}</small></div>
-        <div class="fixture-centre"><span>${time}</span><strong>VS</strong><small>Champions League</small></div>
+        <div class="fixture-centre">${centre}</div>
         <div class="fixture-team">${logo(right)}<b>${right}</b><small>${home?'AWAY':'HOME'}</small></div>
       </div>
       <div class="fixture-bottom ucl-fixture-bottom">
         <div class="ucl-fixture-caption"><span>${match}</span><span>2026/27</span></div>
         <div class="ucl-fixture-actions">
-          <a class="ucl-action ucl-action-predict" href="champions-league-prediction.html?match=${i}">Match Prediction</a>
+          ${state.completed?'':`<a class="ucl-action ucl-action-predict" href="champions-league-prediction.html?match=${i}">Match Prediction</a>`}
           <a class="ucl-action ucl-action-details" href="champions-league-match-details.html?match=${i}">More Details →</a>
         </div>
       </div>
@@ -94,6 +109,7 @@ function installFixtureActionStyles(){
     .ucl-action-predict:hover{background:#e7c362}
     .ucl-action-details{background:rgba(216,173,69,.06);color:#d8ad45;border:1px solid rgba(216,173,69,.38)}
     .ucl-action-details:hover{background:rgba(216,173,69,.12);border-color:rgba(216,173,69,.65)}
+    .fixture-status.fulltime{color:#8df0b2}.fixture-status.live{color:#ff8fa0}.ucl-fixture.completed{border-color:rgba(80,220,135,.24)}.fixture-centre .ucl-score{border-color:rgba(127,215,255,.48);color:#fff;font-size:20px;letter-spacing:1px}
     @media(max-width:600px){.ucl-fixture-actions{gap:6px}.ucl-action{flex:1 1 calc(50% - 3px);padding:8px 6px;font-size:8px}.ucl-fixture-caption{font-size:9px}}
   `;
   document.head.appendChild(style);
