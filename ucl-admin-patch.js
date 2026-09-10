@@ -7,7 +7,6 @@ function ensureNav(){
   const nav=document.querySelector('#adminView .side-nav')||document.querySelector('.side-nav');
   if(!nav) return setTimeout(ensureNav,250);
 
-  // Remove any stale Champions League launch card/button from Fan Predictions.
   document.querySelectorAll('#uclAdminLaunch,[data-ucl-admin-launch],a[href="champions-league-admin.html"]').forEach(el=>{
     if(el.id==='uclAdminNavLink') return;
     if(el.closest('.side-nav')) return;
@@ -21,7 +20,6 @@ function ensureNav(){
     link.className='nav-link';
     link.href='champions-league-admin.html';
     link.textContent='Champions League';
-
     const links=[...nav.querySelectorAll('.nav-link')];
     const premierLeagueLink=links.find(a=>/premier league/i.test(a.textContent||''));
     if(premierLeagueLink) premierLeagueLink.insertAdjacentElement('afterend',link);
@@ -33,6 +31,24 @@ function installPredictionSplit(){
   const list=document.getElementById('fanPredictionFixtureList');
   if(!list) return setTimeout(installPredictionSplit,250);
 
+  if(!document.getElementById('nl4FanPredictionDropdownStyles')){
+    const style=document.createElement('style');
+    style.id='nl4FanPredictionDropdownStyles';
+    style.textContent=`
+      .fan-competition-section{border:1px solid rgba(255,255,255,.1);border-radius:14px;background:#0d0d0d;overflow:hidden;margin:0 0 14px}
+      .fan-competition-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;background:#141414;color:#fff;border:0;cursor:pointer;text-align:left}
+      .fan-competition-toggle strong{display:block;font-size:14px}
+      .fan-competition-toggle small{display:block;margin-top:3px;color:#777;font-size:8px;letter-spacing:.8px;font-weight:900}
+      .fan-competition-arrow{font-size:16px;transition:transform .2s ease;color:#d8ad45}
+      .fan-competition-section.is-open .fan-competition-arrow{transform:rotate(180deg)}
+      .fan-competition-body{display:none;padding:0 14px 14px}
+      .fan-competition-section.is-open .fan-competition-body{display:block}
+      #fanPredictionsChampionsLeague .fan-competition-arrow{color:#7fd7ff}
+      @media(max-width:700px){.fan-competition-toggle{padding:12px}.fan-competition-body{padding:0 10px 10px}}
+    `;
+    document.head.appendChild(style);
+  }
+
   function classifyCard(card){
     const competition=(card.dataset.competition||'').toLowerCase();
     if(competition.includes('champions')) return 'ucl';
@@ -40,8 +56,20 @@ function installPredictionSplit(){
     return [...UCL].some(team=>title.includes(team)) ? 'ucl' : 'pl';
   }
 
+  function makeSection(id,label,title,holderAttr,open,color){
+    const section=document.createElement('section');
+    section.id=id;
+    section.className='fan-competition-section'+(open?' is-open':'');
+    section.innerHTML=`<button class="fan-competition-toggle" type="button" aria-expanded="${open?'true':'false'}"><span><small${color?` style="color:${color}"`:''}>${label}</small><strong>${title}</strong></span><span class="fan-competition-arrow">⌄</span></button><div class="fan-competition-body"><div class="fan-prediction-fixtures" ${holderAttr}></div></div>`;
+    section.querySelector('.fan-competition-toggle').addEventListener('click',()=>{
+      const next=!section.classList.contains('is-open');
+      section.classList.toggle('is-open',next);
+      section.querySelector('.fan-competition-toggle').setAttribute('aria-expanded',String(next));
+    });
+    return section;
+  }
+
   function split(){
-    // Remove stale launch every pass in case an old cached script injected it later.
     document.querySelectorAll('#uclAdminLaunch,[data-ucl-admin-launch]').forEach(el=>el.remove());
     document.querySelectorAll('#fanPredictionsPanel a[href="champions-league-admin.html"]').forEach(el=>el.remove());
 
@@ -54,22 +82,12 @@ function installPredictionSplit(){
     if(!pl||!ucl){
       const existingCards=[...rawCards];
       list.innerHTML='';
-
-      pl=document.createElement('section');
-      pl.id='fanPredictionsPremierLeague';
-      pl.innerHTML='<div class="fan-competition-heading" style="margin:4px 0 12px;padding:12px 0 9px;border-bottom:1px solid rgba(255,255,255,.12)"><p class="eyebrow">PREMIER LEAGUE</p><h3 style="margin:4px 0 0">Premier League Fan Predictions</h3></div><div class="fan-prediction-fixtures" data-pl-holder></div>';
-
-      ucl=document.createElement('section');
-      ucl.id='fanPredictionsChampionsLeague';
-      ucl.style.marginTop='30px';
-      ucl.innerHTML='<div class="fan-competition-heading" style="margin:4px 0 12px;padding:12px 0 9px;border-bottom:1px solid rgba(127,215,255,.28)"><p class="eyebrow" style="color:#7fd7ff">CHAMPIONS LEAGUE</p><h3 style="margin:4px 0 0">Champions League Fan Predictions</h3></div><div class="fan-prediction-fixtures" data-ucl-holder></div>';
-
-      // Fixed order: Premier League first, Champions League second.
+      pl=makeSection('fanPredictionsPremierLeague','PREMIER LEAGUE','Premier League Fan Predictions','data-pl-holder',true,'');
+      ucl=makeSection('fanPredictionsChampionsLeague','CHAMPIONS LEAGUE','Champions League Fan Predictions','data-ucl-holder',false,'#7fd7ff');
       list.append(pl,ucl);
       rawCards.splice(0,rawCards.length,...existingCards);
-    } else {
-      // Re-enforce the requested order even after refresh/re-render.
-      if(pl.nextElementSibling!==ucl){ list.append(pl,ucl); }
+    } else if(pl.nextElementSibling!==ucl){
+      list.append(pl,ucl);
     }
 
     const ph=pl.querySelector('[data-pl-holder]');
