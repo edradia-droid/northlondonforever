@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="NL4 Arsenal Champions League fixture match details.">
+<title>Champions League Match Details | NL4</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="shared-sidebar.css">
+<link rel="stylesheet" href="sidebar-toggle-fix.css">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#050611;color:#fff;font-family:Arial,sans-serif}.ucl-details-main{min-height:100vh;padding:38px 24px 70px}.shell{max-width:1080px;margin:0 auto}.back{display:inline-flex;color:#d8ad45;text-decoration:none;font-weight:900;margin-bottom:20px}.hero,.panel{border:1px solid rgba(255,255,255,.1);border-radius:22px;background:linear-gradient(145deg,rgba(14,19,49,.96),rgba(7,8,20,.98));overflow:hidden;box-shadow:0 22px 65px rgba(0,0,0,.3)}.hero{position:relative;padding:26px;margin-bottom:18px}.hero:after{content:'★';position:absolute;right:24px;top:14px;font-size:110px;color:rgba(255,255,255,.035)}.kicker{margin:0 0 8px;color:#d8ad45;font-size:10px;font-weight:1000;letter-spacing:1.4px}.hero h1{margin:0;font-size:clamp(28px,5vw,54px);line-height:1}.meta{margin-top:10px;color:#9aa0b6;font-size:12px}.scoreboard{position:relative;z-index:1;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;margin-top:25px;padding:24px;border:1px solid rgba(255,255,255,.09);border-radius:18px;background:rgba(3,4,14,.72)}.team{text-align:center}.crest{width:76px;height:76px;object-fit:contain;display:block;margin:0 auto 9px}.team strong{display:block;font-size:clamp(17px,3vw,27px)}.team small{display:block;margin-top:5px;color:#777;font-size:9px;letter-spacing:1px}.centre{text-align:center}.centre strong{display:block;font-size:clamp(32px,6vw,62px);line-height:1}.centre span{display:block;color:#d8ad45;font-size:9px;font-weight:1000;margin-top:8px}.actions{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:20px}.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border-radius:10px;padding:10px 14px;font-size:10px;font-weight:1000}.btn.gold{background:#d8ad45;color:#111}.btn.ghost{border:1px solid rgba(216,173,69,.4);color:#d8ad45}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.head{padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08)}.head p{margin:0 0 5px;color:#d8ad45;font-size:9px;font-weight:1000;letter-spacing:1px}.head h2{margin:0;font-size:18px}.rows{padding:10px 18px 18px}.row{display:flex;justify-content:space-between;gap:15px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:11px}.row:last-child{border-bottom:0}.row span{color:#85899a}.row strong{text-align:right}.empty{padding:24px 18px;color:#7e8294;font-size:11px;line-height:1.6}.full{grid-column:1/-1}.status-pill{display:inline-flex;margin-top:12px;padding:7px 10px;border-radius:999px;background:rgba(216,173,69,.1);border:1px solid rgba(216,173,69,.25);color:#d8ad45;font-size:8px;font-weight:1000;letter-spacing:1px}@media(max-width:720px){.ucl-details-main{padding:24px 12px 50px}.scoreboard{grid-template-columns:1fr auto 1fr;gap:8px;padding:16px 8px}.crest{width:54px;height:54px}.grid{grid-template-columns:1fr}.full{grid-column:auto}.hero{padding:18px}.team strong{font-size:13px}}
+</style>
+</head>
+<body class="ucl-match-details-page">
+<main class="ucl-details-main"><div class="shell">
+<a class="back" href="champions-league.html#fixtures">← Back to Champions League Fixtures</a>
+<section class="hero">
+<p class="kicker">UEFA CHAMPIONS LEAGUE • 2026/27</p>
+<h1 id="title">Loading match…</h1>
+<div id="meta" class="meta">NL4 European Match Centre</div>
+<div class="status-pill" id="status">SCHEDULED</div>
+<div class="scoreboard">
+<div class="team"><img id="homeLogo" class="crest" alt=""><strong id="homeTeam">Home</strong><small>HOME</small></div>
+<div class="centre"><strong id="score">VS</strong><span id="kickoff">21:00 CET</span></div>
+<div class="team"><img id="awayLogo" class="crest" alt=""><strong id="awayTeam">Away</strong><small>AWAY</small></div>
+</div>
+<div class="actions"><a id="predictionLink" class="btn gold" href="#">Match Prediction</a><a class="btn ghost" href="champions-league.html#fixtures">All UCL Fixtures</a></div>
+</section>
+<div class="grid">
+<section class="panel"><div class="head"><p>MATCH INFORMATION</p><h2>Fixture Details</h2></div><div class="rows"><div class="row"><span>Matchday</span><strong id="matchday">—</strong></div><div class="row"><span>Date</span><strong id="date">—</strong></div><div class="row"><span>Kick-off</span><strong id="time">—</strong></div><div class="row"><span>Venue</span><strong id="venue">—</strong></div><div class="row"><span>Competition</span><strong>UEFA Champions League</strong></div><div class="row"><span>Season</span><strong>2026/27</strong></div></div></section>
+<section class="panel"><div class="head"><p>MATCHDAY STATUS</p><h2>Match Centre</h2></div><div class="empty" id="matchCentre">This fixture has not been played yet. Full-time score, half-time score, referee, attendance and matchday information will appear here when recorded.</div></section>
+<section class="panel"><div class="head"><p>TEAM NEWS</p><h2>Arsenal Lineup</h2></div><div class="empty">Confirmed starting XI, formation and substitutes will appear here when the match lineup is available.</div></section>
+<section class="panel"><div class="head"><p>MATCH DATA</p><h2>Statistics & Events</h2></div><div class="empty">Possession, shots, shots on target, corners, fouls, offsides, cards, goals, assists, substitutions, goalkeeper saves and Player of the Match will be shown when match data is recorded.</div></section>
+<section class="panel full"><div class="head"><p>NL4 MATCH CENTRE</p><h2>Before Kick-off</h2></div><div class="empty">Use Match Prediction to submit your predicted score and build your Arsenal starting XI for this Champions League fixture.</div></section>
+</div>
+</div></main>
+<script>
+(function(){
+const logoBase='https://media.api-sports.io/football/teams/';
+const logos={'Arsenal':42,'Napoli':492,'Lille':79,'Bayern München':157,'Slavia Praha':560,'Borussia Dortmund':165,'Real Madrid':541,'Real Betis':543,'Sabah':563};
+const fixtures=[
+{date:'09 SEP 2026',opponent:'Napoli',venueType:'AWAY',md:'MD1',time:'21:00 CET',venue:'Stadio Diego Armando Maradona'},
+{date:'13 OCT 2026',opponent:'Lille',venueType:'HOME',md:'MD2',time:'21:00 CET',venue:'Emirates Stadium'},
+{date:'21 OCT 2026',opponent:'Bayern München',venueType:'AWAY',md:'MD3',time:'21:00 CET',venue:'Allianz Arena'},
+{date:'04 NOV 2026',opponent:'Slavia Praha',venueType:'AWAY',md:'MD4',time:'21:00 CET',venue:'Fortuna Arena'},
+{date:'24 NOV 2026',opponent:'Borussia Dortmund',venueType:'HOME',md:'MD5',time:'21:00 CET',venue:'Emirates Stadium'},
+{date:'09 DEC 2026',opponent:'Real Madrid',venueType:'HOME',md:'MD6',time:'21:00 CET',venue:'Emirates Stadium'},
+{date:'20 JAN 2027',opponent:'Real Betis',venueType:'AWAY',md:'MD7',time:'21:00 CET',venue:'Estadio Benito Villamarín'},
+{date:'27 JAN 2027',opponent:'Sabah',venueType:'HOME',md:'MD8',time:'21:00 CET',venue:'Emirates Stadium'}];
+const params=new URLSearchParams(location.search);let i=Number(params.get('match'));if(!Number.isInteger(i)||i<0||i>=fixtures.length)i=0;const f=fixtures[i];const home=f.venueType==='HOME'?'Arsenal':f.opponent;const away=f.venueType==='HOME'?f.opponent:'Arsenal';
+function set(id,value){const el=document.getElementById(id);if(el)el.textContent=value}function logo(team){return logos[team]?logoBase+logos[team]+'.png':''}
+set('title',home+' vs '+away);set('meta',f.date+' • '+f.time+' • '+f.venue);set('homeTeam',home);set('awayTeam',away);set('kickoff',f.time);set('matchday',f.md.replace('MD','Matchday '));set('date',f.date);set('time',f.time);set('venue',f.venue);document.getElementById('homeLogo').src=logo(home);document.getElementById('awayLogo').src=logo(away);document.getElementById('predictionLink').href='champions-league-prediction.html?match='+i;
+})();
+</script>
+</body></html>
