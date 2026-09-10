@@ -44,7 +44,7 @@ function installPredictionSplit(){
       .fan-competition-arrow{font-size:16px;transition:transform .2s ease;color:#d8ad45}
       .fan-competition-section.is-open .fan-competition-arrow{transform:rotate(180deg)}
       .fan-competition-body{display:none;padding:0 14px 14px}
-      .fan-competition-section.is-open .fan-competition-body{display:block}
+      .fan-competition-section.is-open>.fan-competition-body{display:block}
       #fanPredictionsChampionsLeague .fan-competition-arrow{color:#7fd7ff}
       @media(max-width:700px){.fan-competition-toggle{padding:12px}.fan-competition-body{padding:0 10px 10px}}
     `;
@@ -58,15 +58,26 @@ function installPredictionSplit(){
     return [...UCL].some(team=>title.includes(team)) ? 'ucl' : 'pl';
   }
 
+  function setSectionOpen(section,open){
+    if(!section) return;
+    section.classList.toggle('is-open',!!open);
+    section.dataset.open=open?'1':'0';
+    const btn=section.querySelector(':scope > .fan-competition-toggle');
+    if(btn) btn.setAttribute('aria-expanded',String(!!open));
+  }
+
   function makeSection(id,label,title,holderAttr,color){
     const section=document.createElement('section');
     section.id=id;
     section.className='fan-competition-section';
+    section.dataset.open='0';
     section.innerHTML=`<button class="fan-competition-toggle" type="button" aria-expanded="false"><span><small${color?` style="color:${color}"`:''}>${label}</small><strong>${title}</strong></span><span class="fan-competition-arrow">⌄</span></button><div class="fan-competition-body"><div class="fan-prediction-fixtures" ${holderAttr}></div></div>`;
-    section.querySelector('.fan-competition-toggle').addEventListener('click',()=>{
-      const next=!section.classList.contains('is-open');
-      section.classList.toggle('is-open',next);
-      section.querySelector('.fan-competition-toggle').setAttribute('aria-expanded',String(next));
+    const toggle=section.querySelector(':scope > .fan-competition-toggle');
+    toggle.addEventListener('click',event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      const next=section.dataset.open!=='1';
+      setSectionOpen(section,next);
     });
     return section;
   }
@@ -75,18 +86,24 @@ function installPredictionSplit(){
     document.querySelectorAll('#uclAdminLaunch,[data-ucl-admin-launch]').forEach(el=>el.remove());
     document.querySelectorAll('#fanPredictionsPanel a[href="champions-league-admin.html"]').forEach(el=>el.remove());
 
-    const rawCards=[...list.querySelectorAll('.fan-prediction-card')];
-    if(!rawCards.length && !document.getElementById('fanPredictionsPremierLeague')) return;
+    const rawCards=[...list.querySelectorAll('.fan-prediction-card')].filter(card=>{
+      return !card.closest('#fanPredictionsPremierLeague [data-pl-holder],#fanPredictionsChampionsLeague [data-ucl-holder]');
+    });
 
     let pl=document.getElementById('fanPredictionsPremierLeague');
     let ucl=document.getElementById('fanPredictionsChampionsLeague');
 
+    const plWasOpen=pl?.dataset.open==='1'||pl?.classList.contains('is-open')||false;
+    const uclWasOpen=ucl?.dataset.open==='1'||ucl?.classList.contains('is-open')||false;
+
     if(!pl||!ucl){
-      const existingCards=[...rawCards];
+      const existingCards=[...list.querySelectorAll('.fan-prediction-card')];
       list.innerHTML='';
       pl=makeSection('fanPredictionsPremierLeague','PREMIER LEAGUE','Premier League Fan Predictions','data-pl-holder','');
       ucl=makeSection('fanPredictionsChampionsLeague','CHAMPIONS LEAGUE','Champions League Fan Predictions','data-ucl-holder','#7fd7ff');
       list.append(pl,ucl);
+      setSectionOpen(pl,plWasOpen);
+      setSectionOpen(ucl,uclWasOpen);
       rawCards.splice(0,rawCards.length,...existingCards);
     } else if(pl.nextElementSibling!==ucl){
       list.append(pl,ucl);
@@ -100,8 +117,17 @@ function installPredictionSplit(){
       (classifyCard(card)==='ucl'?uh:ph).appendChild(card);
     });
 
-    if(!ph.querySelector('.fan-prediction-card')) ph.innerHTML='<p class="muted">No Premier League fixtures loaded yet.</p>';
-    if(!uh.querySelector('.fan-prediction-card')) uh.innerHTML='<p class="muted">No Champions League fixtures loaded yet.</p>';
+    const plEmpty=ph.querySelector(':scope > .fan-empty-state');
+    const uclEmpty=uh.querySelector(':scope > .fan-empty-state');
+    if(!ph.querySelector('.fan-prediction-card')){
+      if(!plEmpty) ph.insertAdjacentHTML('beforeend','<p class="muted fan-empty-state">No Premier League fixtures loaded yet.</p>');
+    }else plEmpty?.remove();
+    if(!uh.querySelector('.fan-prediction-card')){
+      if(!uclEmpty) uh.insertAdjacentHTML('beforeend','<p class="muted fan-empty-state">No Champions League fixtures loaded yet.</p>');
+    }else uclEmpty?.remove();
+
+    setSectionOpen(pl,pl.dataset.open==='1');
+    setSectionOpen(ucl,ucl.dataset.open==='1');
   }
 
   let busy=false;
