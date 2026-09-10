@@ -61,7 +61,13 @@ function renderFixtures(){
         <div class="fixture-centre"><span>${time}</span><strong>VS</strong><small>Champions League</small></div>
         <div class="fixture-team">${logo(right)}<b>${right}</b><small>${home?'AWAY':'HOME'}</small></div>
       </div>
-      <div class="fixture-bottom"><span>${match}</span><span>2026/27</span></div>
+      <div class="fixture-bottom ucl-fixture-bottom">
+        <div class="ucl-fixture-caption"><span>${match}</span><span>2026/27</span></div>
+        <div class="ucl-fixture-actions">
+          <a class="ucl-action ucl-action-predict" href="champions-league-prediction.html?match=${i}">Match Prediction</a>
+          <a class="ucl-action ucl-action-details" href="champions-league-match-details.html?match=${i}">More Details →</a>
+        </div>
+      </div>
     </article>`;
   }).join('');
 }
@@ -74,4 +80,23 @@ function renderTable(){
   </tr>`).join('');
 }
 
-document.addEventListener('DOMContentLoaded',()=>{renderFixtures();renderTable();});
+function installFixtureActionStyles(){
+  if(document.getElementById('uclFixtureActionStyles')) return;
+  const style=document.createElement('style');
+  style.id='uclFixtureActionStyles';
+  style.textContent=`
+    .ucl-fixture-bottom{display:block!important;padding-top:13px!important}
+    .ucl-fixture-caption{display:flex;justify-content:space-between;gap:12px;align-items:center}
+    .ucl-fixture-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+    .ucl-action{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:8px 11px;border-radius:9px;text-decoration:none;font-size:9px;font-weight:1000;letter-spacing:.45px;transition:transform .18s ease,background .18s ease,border-color .18s ease}
+    .ucl-action:hover{transform:translateY(-1px)}
+    .ucl-action-predict{background:#d8ad45;color:#101018;border:1px solid #d8ad45}
+    .ucl-action-predict:hover{background:#e7c362}
+    .ucl-action-details{background:rgba(216,173,69,.06);color:#d8ad45;border:1px solid rgba(216,173,69,.38)}
+    .ucl-action-details:hover{background:rgba(216,173,69,.12);border-color:rgba(216,173,69,.65)}
+    @media(max-width:600px){.ucl-fixture-actions{gap:6px}.ucl-action{flex:1 1 calc(50% - 3px);padding:8px 6px;font-size:8px}.ucl-fixture-caption{font-size:9px}}
+  `;
+  document.head.appendChild(style);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{installFixtureActionStyles();renderFixtures();renderTable();});
