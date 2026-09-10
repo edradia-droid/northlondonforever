@@ -82,7 +82,7 @@ function installPredictionSplit(){
     if(!pl||!ucl){
       const existingCards=[...rawCards];
       list.innerHTML='';
-      pl=makeSection('fanPredictionsPremierLeague','PREMIER LEAGUE','Premier League Fan Predictions','data-pl-holder',true,'');
+      pl=makeSection('fanPredictionsPremierLeague','PREMIER LEAGUE','Premier League Fan Predictions','data-pl-holder',false,'');
       ucl=makeSection('fanPredictionsChampionsLeague','CHAMPIONS LEAGUE','Champions League Fan Predictions','data-ucl-holder',false,'#7fd7ff');
       list.append(pl,ucl);
       rawCards.splice(0,rawCards.length,...existingCards);
