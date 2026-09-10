@@ -1,5 +1,7 @@
 (function(){
 'use strict';
+if(window.__NL4_UCL_ADMIN_PATCH_ACTIVE__) return;
+window.__NL4_UCL_ADMIN_PATCH_ACTIVE__=true;
 
 const UCL=new Set(['Napoli','Lille','Bayern München','Slavia Praha','Borussia Dortmund','Real Madrid','Real Betis','Sabah']);
 
@@ -56,11 +58,11 @@ function installPredictionSplit(){
     return [...UCL].some(team=>title.includes(team)) ? 'ucl' : 'pl';
   }
 
-  function makeSection(id,label,title,holderAttr,open,color){
+  function makeSection(id,label,title,holderAttr,color){
     const section=document.createElement('section');
     section.id=id;
-    section.className='fan-competition-section'+(open?' is-open':'');
-    section.innerHTML=`<button class="fan-competition-toggle" type="button" aria-expanded="${open?'true':'false'}"><span><small${color?` style="color:${color}"`:''}>${label}</small><strong>${title}</strong></span><span class="fan-competition-arrow">⌄</span></button><div class="fan-competition-body"><div class="fan-prediction-fixtures" ${holderAttr}></div></div>`;
+    section.className='fan-competition-section';
+    section.innerHTML=`<button class="fan-competition-toggle" type="button" aria-expanded="false"><span><small${color?` style="color:${color}"`:''}>${label}</small><strong>${title}</strong></span><span class="fan-competition-arrow">⌄</span></button><div class="fan-competition-body"><div class="fan-prediction-fixtures" ${holderAttr}></div></div>`;
     section.querySelector('.fan-competition-toggle').addEventListener('click',()=>{
       const next=!section.classList.contains('is-open');
       section.classList.toggle('is-open',next);
@@ -82,8 +84,8 @@ function installPredictionSplit(){
     if(!pl||!ucl){
       const existingCards=[...rawCards];
       list.innerHTML='';
-      pl=makeSection('fanPredictionsPremierLeague','PREMIER LEAGUE','Premier League Fan Predictions','data-pl-holder',false,'');
-      ucl=makeSection('fanPredictionsChampionsLeague','CHAMPIONS LEAGUE','Champions League Fan Predictions','data-ucl-holder',false,'#7fd7ff');
+      pl=makeSection('fanPredictionsPremierLeague','PREMIER LEAGUE','Premier League Fan Predictions','data-pl-holder','');
+      ucl=makeSection('fanPredictionsChampionsLeague','CHAMPIONS LEAGUE','Champions League Fan Predictions','data-ucl-holder','#7fd7ff');
       list.append(pl,ucl);
       rawCards.splice(0,rawCards.length,...existingCards);
     } else if(pl.nextElementSibling!==ucl){
