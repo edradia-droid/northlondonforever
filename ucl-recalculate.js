@@ -43,4 +43,4 @@ async function recalculateUclStats(client=window.nl4Supabase){
 window.recalculateUclStats=recalculateUclStats;
 })();
 
-const nl4PlayerAdminLoader=document.createElement('script');nl4PlayerAdminLoader.src='ucl-player-admin.js?v=20260911-1';document.head.appendChild(nl4PlayerAdminLoader);
+const nl4PlayerAdminLoader=document.createElement('script');nl4PlayerAdminLoader.src='ucl-player-admin.js?v=20260911-4';document.head.appendChild(nl4PlayerAdminLoader);
