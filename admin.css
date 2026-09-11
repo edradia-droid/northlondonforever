@@ -26,3 +26,6 @@
   .topbar{flex-direction:column}.top-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}.top-actions>*{width:100%}
   .content-grid{gap:10px}.card-actions{grid-template-columns:1fr}.dialog-actions{grid-template-columns:1fr}
 }
+
+/* NL4: hide player stats from the admin match-details dialog */
+.match-admin-section:has(.stats-admin-table){display:none!important}
