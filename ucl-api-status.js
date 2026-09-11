@@ -4,6 +4,10 @@
   const db = window.nl4Supabase;
   const $ = id => document.getElementById(id);
   const EXPECTED_FIXTURES = 8;
+  // Legacy anon JWT is intentionally used only for protected Edge Function gateway
+  // compatibility. It is a public browser key, not a secret/service-role credential.
+  const UCL_FUNCTION_JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyanhlanV5aXlubGx5Z2lvemhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDk1ODcsImV4cCI6MjEwMjIyNTU4N30.4TJLwF0FjDvTj0ZwlzPJoUJF-pP655hz-ROCnHJcStw';
+  const functionHeaders = { Authorization: `Bearer ${UCL_FUNCTION_JWT}` };
 
   function setText(id, value, state){
     const el = $(id);
@@ -29,6 +33,10 @@
       else seen.add(key);
     }
     return duplicates;
+  }
+
+  async function invokeProtected(name){
+    return db.functions.invoke(name, { body: {}, headers: functionHeaders });
   }
 
   async function readFixtureStatus(){
@@ -60,7 +68,7 @@
     setText('uclProviderHealth','Checking…','neutral');
     setText('uclFunctionHealth','Checking…','neutral');
     try {
-      const { data, error } = await db.functions.invoke('test-ucl-football-data', { body: {} });
+      const { data, error } = await invokeProtected('test-ucl-football-data');
       if (error) throw error;
       if (!data || data.ok !== true) throw new Error(data?.error || `Provider returned ${data?.status || 'an error'}`);
       setText('uclProviderHealth', `Online • HTTP ${data.status || 200}`, 'good');
@@ -109,7 +117,7 @@
     button.textContent = 'Syncing UCL…';
     setText('uclStatusError','None','neutral');
     try {
-      const { data, error } = await db.functions.invoke('sync-ucl-football', { body: {} });
+      const { data, error } = await invokeProtected('sync-ucl-football');
       if (error) throw error;
       if (data?.error) throw new Error(`${data.error}${data.stage ? ` (${data.stage})` : ''}`);
       button.textContent = 'Sync Complete ✓';
