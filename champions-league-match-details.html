@@ -25,5 +25,5 @@
 <script>const q=new URLSearchParams(location.search);let i=Number(q.get('match'));if(!Number.isInteger(i)||i<0||i>7)i=0;predictionLink.href='champions-league-prediction.html?match='+i;const logos={'Arsenal':42,'Napoli':492,'Lille':79,'Bayern München':157,'Slavia Praha':560,'Borussia Dortmund':165,'Real Madrid':541,'Real Betis':543,'Sabah':563};window.addEventListener('DOMContentLoaded',()=>{const obs=new MutationObserver(()=>{[homeTeam,awayTeam].forEach((e,j)=>{const img=j?awayLogo:homeLogo,id=logos[e.textContent];if(id){img.src='https://media.api-sports.io/football/teams/'+id+'.png';img.alt=e.textContent+' crest'}})});obs.observe(document.body,{subtree:true,childList:true,characterData:true})});</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
 <script src="supabase-client.js"></script>
-<script src="ucl-match-details-sync.js?v=20260911-4"></script>
+<script src="ucl-match-details-sync.js?v=20260911-5"></script>
 </body></html>
