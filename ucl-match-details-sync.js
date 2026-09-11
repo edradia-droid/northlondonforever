@@ -120,10 +120,11 @@ async function load(){
 
   renderStats(f,home,away);
 
-  const [{data:events,error:eventsError},{data:lineups,error:lineupsError},{data:teamTotals,error:teamTotalsError}]=await Promise.all([
+  const [{data:events,error:eventsError},{data:lineups,error:lineupsError},{data:teamTotals,error:teamTotalsError},{data:comparison,error:comparisonError}]=await Promise.all([
     client.from('match_events').select('*').eq('fixture_id',f.id).order('minute',{ascending:true,nullsFirst:false}).order('stoppage_minute',{ascending:true,nullsFirst:false}),
     client.from('match_lineups').select('*').eq('fixture_id',f.id).order('is_starter',{ascending:false}).order('minute_on'),
-    client.from('ucl_team_stats').select('*').eq('season','2026/27').in('team_name',[home,away])
+    client.from('ucl_team_stats').select('*').eq('season','2026/27').in('team_name',[home,away]),
+    client.from('ucl_match_comparisons').select('home_stats,away_stats').eq('fixture_id',f.id).maybeSingle()
   ]);
   if(eventsError){
     console.warn('NL4 UCL match events:',eventsError);
@@ -138,9 +139,9 @@ async function load(){
     lineupBox.innerHTML=[home,away].map(team=>{const rows=(lineups||[]).filter(x=>(x.team_name||'Arsenal')===team);const starters=rows.filter(x=>x.is_starter),subs=rows.filter(x=>!x.is_starter);const row=(x,role)=>`<div class="lineup-row"><span>${role}</span><strong>${esc(x.player_name)}</strong><small>${x.minute_on}'–${x.minute_off??90+Number(f.added_time||0)}'</small></div>`;return `<div class="team-lineup"><h3>${esc(team)}</h3>${starters.length?starters.map(x=>row(x,'STARTER')).join(''):'<div class="empty">No starters recorded.</div>'}${subs.length?subs.map(x=>row(x,'SUB')).join(''):''}</div>`}).join('');
   }
   const totalsBox=document.getElementById('teamTotalsBox');
-  if(teamTotalsError){totalsBox.textContent='UCL season totals could not be loaded.';}
+  if(teamTotalsError||comparisonError){totalsBox.textContent='UCL season totals could not be loaded.';}
   else if(!(teamTotals||[]).length){totalsBox.className='empty';totalsBox.textContent='Team totals will appear after a completed match.';}
-  else{totalsBox.className='';totalsBox.innerHTML=renderComparison(teamTotals||[],home,away,true);}
+  else{const rows=[...(teamTotals||[])],apply=(name,override)=>{if(!override)return;const i=rows.findIndex(x=>x.team_name===name);if(i>=0)rows[i]={...rows[i],...override,team_name:name};else rows.push({...override,team_name:name})};apply(home,comparison?.home_stats);apply(away,comparison?.away_stats);totalsBox.className='';totalsBox.innerHTML=renderComparison(rows,home,away,true);}
 }
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load);else load();
