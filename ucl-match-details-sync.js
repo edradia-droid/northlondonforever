@@ -52,6 +52,26 @@ function renderEvents(events,home,away){
   }).join('');
 }
 
+const shirtColours={
+  Arsenal:['#d8001f','#f4f4f4'],Napoli:['#1498d4','#0873ad'],Lille:['#d7193f','#102d61'],
+  'Bayern München':['#dc052d','#f5f5f5'],'Slavia Praha':['#d71920','#f5f5f5'],
+  'Borussia Dortmund':['#fdeb0a','#111111'],'Real Madrid':['#f5f5f5','#d9b44a'],
+  'Real Betis':['#159447','#f5f5f5'],Sabah:['#203b89','#e01e35']
+};
+function balancedProbability(a,b,isHome){
+  const rate=(x,n)=>n?Number(x||0)/n:0, clamp=(x,min,max)=>Math.max(min,Math.min(max,x));
+  const strength=t=>{const mp=Number(t.matches)||0;if(!mp)return 0;const ppm=rate(t.points,mp)/3,win=rate(t.wins,mp),gd=rate(Number(t.goals_for)-Number(t.goals_against),mp),sot=rate(t.shots_on_target,mp),poss=rate(t.possession_total,mp)/100,eff=Number(t.shots)?Number(t.goals_for)/Number(t.shots):0;return .32*ppm+.18*win+.15*(.5+.5*Math.tanh(gd/2))+.14*clamp(sot/8,0,1)+.08*clamp(poss,0,1)+.08*clamp(eff/.2,0,1)};
+  const delta=(strength(a)-strength(b))+(isHome?.08:-.08),home=100/(1+Math.exp(-3.2*delta));
+  return [Math.round(clamp(home,8,92)),0];
+}
+function renderComparison(rows,home,away,isHome){
+  const empty=name=>({team_name:name,matches:0,wins:0,draws:0,losses:0,goals_for:0,goals_against:0,points:0,possession_total:0,shots:0,shots_on_target:0,corners:0,corner_goals:0,fouls:0,offsides:0,saves:0,yellow_cards:0,red_cards:0});
+  const h=rows.find(x=>x.team_name===home)||empty(home),a=rows.find(x=>x.team_name===away)||empty(away),avg=(x,k,d=1)=>x.matches?(Number(x[k])/Number(x.matches)).toFixed(d):'0.0';
+  const metrics=[['Matches','matches'],['Wins','wins'],['Draws','draws'],['Losses','losses'],['Goals for','goals_for'],['Goals against','goals_against'],['Goal difference',x=>Number(x.goals_for)-Number(x.goals_against)],['Points','points'],['Avg possession',x=>avg(x,'possession_total')+'%'],['Shots','shots'],['Shots on target','shots_on_target'],['Corners','corners'],['Corner goals','corner_goals'],['Fouls','fouls'],['Offsides','offsides'],['Saves','saves'],['Yellow / red',x=>`${x.yellow_cards} / ${x.red_cards}`]];
+  const get=(x,k)=>typeof k==='function'?k(x):x[k];let [hp]=balancedProbability(h,a,isHome);const ap=100-hp,hc=shirtColours[home]||['#3454a5','#16264f'],ac=shirtColours[away]||['#b18b32','#3a2c12'];
+  return `<div class="ucl-comparison"><div class="comparison-title"><small>2026/27 CHAMPIONS LEAGUE</small><p>Side-by-side season performance</p></div><div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>METRIC</th><th>${esc(home)}</th><th>${esc(away)}</th></tr></thead><tbody>${metrics.map(m=>`<tr><th>${m[0]}</th><td>${get(h,m[1])}</td><td>${get(a,m[1])}</td></tr>`).join('')}</tbody></table></div><div class="probability-card" style="--home-primary:${hc[0]};--home-secondary:${hc[1]};--away-primary:${ac[0]};--away-secondary:${ac[1]}"><div class="probability-heading"><strong>Win Probability</strong><small>Balanced from points, form, goal difference, shooting, possession and home advantage</small></div><div class="probability-names"><span>${esc(home)}</span><span>${esc(away)}</span></div><div class="probability-track" role="img" aria-label="${esc(home)} ${hp} percent, ${esc(away)} ${ap} percent"><div class="probability-side probability-home" style="width:${hp}%"><strong>${hp}%</strong></div><div class="probability-side probability-away" style="width:${ap}%"><strong>${ap}%</strong></div></div><p class="probability-note">Model estimate based only on the UCL table above—not a guarantee.</p></div></div>`;
+}
+
 async function load(){
   const client=db();
   if(!client)return;
@@ -120,7 +140,7 @@ async function load(){
   const totalsBox=document.getElementById('teamTotalsBox');
   if(teamTotalsError){totalsBox.textContent='UCL season totals could not be loaded.';}
   else if(!(teamTotals||[]).length){totalsBox.className='empty';totalsBox.textContent='Team totals will appear after a completed match.';}
-  else{totalsBox.className='aggregate-grid';totalsBox.innerHTML=(teamTotals||[]).map(t=>`<div class="aggregate-card"><strong>${esc(t.team_name)}</strong><small>${t.matches} matches • ${t.wins}W ${t.draws}D ${t.losses}L • ${t.points} pts<br>${t.goals_for} GF • ${t.goals_against} GA • ${t.shots} shots • ${t.shots_on_target} on target<br>${t.corners} corners • ${t.corner_goals} corner goals • ${t.yellow_cards} YC • ${t.red_cards} RC</small></div>`).join('');}
+  else{totalsBox.className='';totalsBox.innerHTML=renderComparison(teamTotals||[],home,away,true);}
 }
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load);else load();
