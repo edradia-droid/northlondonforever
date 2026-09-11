@@ -161,6 +161,7 @@
           ? `<div class="result-score"><b>${escapeHtml(match.homeScore)}</b><em>—</em><b>${escapeHtml(match.awayScore)}</b></div>`
           : `<span class="fixture-vs">VS</span>`;
         const confirmedText = match.kickoffConfirmed ? '' : ' • TIME PROVISIONAL';
+        const predictionClosed = state.result || (match.kickoffAt && new Date(match.kickoffAt).getTime() <= Date.now());
 
         return `
           <article class="unified-match-card${state.result ? ' result-card' : ''}" data-tilt-card data-match-id="${escapeHtml(match.id)}">
@@ -190,7 +191,7 @@
             <div class="unified-card-bottom">
               <span>MATCH ${String(match.matchday || '').padStart(2,'0')} / 38</span>
               <div class="fixture-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-                <a class="predict-lineup-link details-link" href="predict-lineup.html?fixture=${encodeURIComponent(match.id)}">Predict Lineup</a>
+                ${predictionClosed ? '' : `<a class="predict-lineup-link details-link" href="predict-lineup.html?fixture=${encodeURIComponent(match.id)}">Predict Lineup</a>`}
                 <a class="details-link" href="match-details.html?fixture=${encodeURIComponent(match.id)}">More Details →</a>
               </div>
             </div>
