@@ -137,6 +137,14 @@
     }
   }
 
+  function loadCompetitionDataModule(){
+    if (document.querySelector('script[data-ucl-competition-data]')) return;
+    const script = document.createElement('script');
+    script.src = 'ucl-competition-data.js?v=20260912-1';
+    script.dataset.uclCompetitionData = '1';
+    document.head.appendChild(script);
+  }
+
   function init(){
     const refresh = $('uclRefreshStatus');
     const sync = $('syncApi');
@@ -144,6 +152,7 @@
     if (sync) sync.addEventListener('click', syncNow);
     setText('uclJwt','Required • verify_jwt enabled','good');
     refreshStatus();
+    loadCompetitionDataModule();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once:true });
