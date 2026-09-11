@@ -13,6 +13,7 @@ function renderStats(f,home,away){
     ['Shots',f.home_shots,f.away_shots,''],
     ['Shots on target',f.home_shots_on_target,f.away_shots_on_target,''],
     ['Corners',f.home_corners,f.away_corners,''],
+    ['Corner goals',f.home_corner_goals,f.away_corner_goals,''],
     ['Fouls',f.home_fouls,f.away_fouls,''],
     ['Offsides',f.home_offsides,f.away_offsides,''],
     ['Saves',f.home_saves,f.away_saves,'']
@@ -93,17 +94,33 @@ async function load(){
   }
   if(f.referee)detailParts.push(`<div><span>Referee</span><strong>${esc(f.referee)}</strong></div>`);
   if(f.attendance!=null)detailParts.push(`<div><span>Attendance</span><strong>${Number(f.attendance).toLocaleString()}</strong></div>`);
+  if(f.added_time!=null)detailParts.push(`<div><span>Added time</span><strong>+${Number(f.added_time)} minutes</strong></div>`);
   if(f.man_of_the_match)detailParts.push(`<div><span>Man of the Match</span><strong>${esc(f.man_of_the_match)}</strong></div>`);
   if(detailParts.length){mc.className='result-summary';mc.innerHTML=detailParts.join('');}
 
   renderStats(f,home,away);
 
-  const {data:events,error:eventsError}=await client.from('match_events').select('*').eq('fixture_id',f.id).order('minute',{ascending:true,nullsFirst:false}).order('stoppage_minute',{ascending:true,nullsFirst:false});
+  const [{data:events,error:eventsError},{data:lineups,error:lineupsError},{data:teamTotals,error:teamTotalsError}]=await Promise.all([
+    client.from('match_events').select('*').eq('fixture_id',f.id).order('minute',{ascending:true,nullsFirst:false}).order('stoppage_minute',{ascending:true,nullsFirst:false}),
+    client.from('match_lineups').select('*').eq('fixture_id',f.id).order('is_starter',{ascending:false}).order('minute_on'),
+    client.from('ucl_team_stats').select('*').eq('season','2026/27').in('team_name',[home,away])
+  ]);
   if(eventsError){
     console.warn('NL4 UCL match events:',eventsError);
     const box=document.getElementById('eventsBox');
     if(box){box.className='empty';box.textContent='Match events could not be loaded.';}
   }else renderEvents(events||[],home,away);
+  const lineupBox=document.getElementById('lineupsBox');
+  if(lineupsError){lineupBox.textContent='Lineups could not be loaded.';}
+  else if(!(lineups||[]).length){lineupBox.className='empty';lineupBox.textContent="Both teams' lineups will appear here when recorded.";}
+  else{
+    lineupBox.className='lineups';
+    lineupBox.innerHTML=[home,away].map(team=>{const rows=(lineups||[]).filter(x=>(x.team_name||'Arsenal')===team);const starters=rows.filter(x=>x.is_starter),subs=rows.filter(x=>!x.is_starter);const row=(x,role)=>`<div class="lineup-row"><span>${role}</span><strong>${esc(x.player_name)}</strong><small>${x.minute_on}'–${x.minute_off??90+Number(f.added_time||0)}'</small></div>`;return `<div class="team-lineup"><h3>${esc(team)}</h3>${starters.length?starters.map(x=>row(x,'STARTER')).join(''):'<div class="empty">No starters recorded.</div>'}${subs.length?subs.map(x=>row(x,'SUB')).join(''):''}</div>`}).join('');
+  }
+  const totalsBox=document.getElementById('teamTotalsBox');
+  if(teamTotalsError){totalsBox.textContent='UCL season totals could not be loaded.';}
+  else if(!(teamTotals||[]).length){totalsBox.className='empty';totalsBox.textContent='Team totals will appear after a completed match.';}
+  else{totalsBox.className='aggregate-grid';totalsBox.innerHTML=(teamTotals||[]).map(t=>`<div class="aggregate-card"><strong>${esc(t.team_name)}</strong><small>${t.matches} matches • ${t.wins}W ${t.draws}D ${t.losses}L • ${t.points} pts<br>${t.goals_for} GF • ${t.goals_against} GA • ${t.shots} shots • ${t.shots_on_target} on target<br>${t.corners} corners • ${t.corner_goals} corner goals • ${t.yellow_cards} YC • ${t.red_cards} RC</small></div>`).join('');}
 }
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load);else load();
