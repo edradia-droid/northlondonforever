@@ -18,7 +18,9 @@ const aliases={
 };
 const clean=n=>aliases[String(n||'').trim()]||String(n||'').replace(/\s+(FC|AFC)$/i,'').trim();
 const key=n=>clean(n).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
-const colours={Arsenal:['#d8001f','#f4f4f4'],Napoli:['#1498d4','#0873ad'],Lille:['#d7193f','#102d61'],'Bayern München':['#dc052d','#f5f5f5'],'Slavia Praha':['#d71920','#f5f5f5'],'Borussia Dortmund':['#fdeb0a','#111111'],'Real Madrid':['#f5f5f5','#d9b44a'],'Real Betis':['#159447','#f5f5f5'],Sabah:['#203b89','#e01e35']};
+/* Arsenal always uses its own deep cannon-red gradient so it remains visually distinct from red opponents. */
+const ARSENAL_PROBABILITY=['#b00020','#ef0107'];
+const colours={Arsenal:ARSENAL_PROBABILITY,Napoli:['#1498d4','#0873ad'],Lille:['#d7193f','#102d61'],'Bayern München':['#dc052d','#f5f5f5'],'Slavia Praha':['#d71920','#f5f5f5'],'Borussia Dortmund':['#fdeb0a','#111111'],'Real Madrid':['#f5f5f5','#d9b44a'],'Real Betis':['#159447','#f5f5f5'],Sabah:['#203b89','#e01e35']};
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 function findByTeam(rows,name){const k=key(name);return (rows||[]).find(r=>key(r.team_name)===k)||null;}
 function row(name,standing){return{team_name:clean(name),position:standing?.position??null,matches:Number(standing?.played??0),wins:Number(standing?.wins??0),draws:Number(standing?.draws??0),losses:Number(standing?.losses??0),goals_for:Number(standing?.goals_for??0),goals_against:Number(standing?.goals_against??0),goal_difference:Number(standing?.goal_difference??0),points:Number(standing?.points??0)};}
