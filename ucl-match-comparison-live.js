@@ -52,30 +52,54 @@ function probability(home,away){
   return Math.round(clamp(hp,10,90));
 }
 function avg(x,k,d=1){return x.matches?(Number(x[k]||0)/Number(x.matches)).toFixed(d):'0.0';}
-function render(home,away,h,a){
-  const box=document.getElementById('teamTotalsBox'); if(!box)return;
+function html(home,away,h,a){
   const metrics=[['Table position',x=>x.position??'—'],['Matches','matches'],['Wins','wins'],['Draws','draws'],['Losses','losses'],['Goals for','goals_for'],['Goals against','goals_against'],['Goal difference',x=>(x.goal_difference>0?'+':'')+x.goal_difference],['Points','points']];
   const supplemental=[['Avg possession',x=>x.possession_total?avg(x,'possession_total')+'%':'—'],['Shots',x=>x.shots||'—'],['Shots on target',x=>x.shots_on_target||'—'],['Corners',x=>x.corners||'—'],['Fouls',x=>x.fouls||'—'],['Offsides',x=>x.offsides||'—'],['Saves',x=>x.saves||'—']];
   const get=(x,k)=>typeof k==='function'?k(x):x[k];
   const hp=probability(h,a),ap=100-hp,hc=colours[clean(home)]||['#3454a5','#16264f'],ac=colours[clean(away)]||['#b18b32','#3a2c12'];
   const extraAvailable=[h.possession_total,h.shots,h.shots_on_target,h.corners,h.fouls,h.offsides,h.saves,a.possession_total,a.shots,a.shots_on_target,a.corners,a.fouls,a.offsides,a.saves].some(Number);
   const rows=[...metrics,...(extraAvailable?supplemental:[])];
-  box.className='';
-  box.innerHTML=`<div class="ucl-comparison"><div class="comparison-title"><small>LIVE API-BACKED • 2026/27 CHAMPIONS LEAGUE</small><p>Table data syncs from football-data.org after each UCL update${extraAvailable?' • detailed NL4 stats supplement the table':''}.</p></div><div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>METRIC</th><th>${esc(clean(home))}</th><th>${esc(clean(away))}</th></tr></thead><tbody>${rows.map(m=>`<tr><th>${esc(m[0])}</th><td>${esc(get(h,m[1]))}</td><td>${esc(get(a,m[1]))}</td></tr>`).join('')}</tbody></table></div><div class="probability-card" style="--home-primary:${hc[0]};--home-secondary:${hc[1]};--away-primary:${ac[0]};--away-secondary:${ac[1]}"><div class="probability-heading"><strong>Win Probability</strong><small>Calculated from live UCL position, points per game, wins, goal difference, scoring rate and home advantage.</small></div><div class="probability-names"><span>${esc(clean(home))}</span><span>${esc(clean(away))}</span></div><div class="probability-track" role="img" aria-label="${esc(clean(home))} ${hp} percent, ${esc(clean(away))} ${ap} percent"><div class="probability-side probability-home" style="width:${hp}%"><strong>${hp}%</strong></div><div class="probability-side probability-away" style="width:${ap}%"><strong>${ap}%</strong></div></div><p class="probability-note">Updates automatically from the synced Champions League table. This is an NL4 estimate, not betting advice.</p></div></div>`;
+  return `<div class="ucl-comparison" data-live-ucl-comparison="1"><div class="comparison-title"><small>LIVE API-BACKED • 2026/27 CHAMPIONS LEAGUE</small><p>Table data syncs from football-data.org after each UCL update${extraAvailable?' • detailed NL4 stats supplement the table':''}.</p></div><div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>METRIC</th><th>${esc(clean(home))}</th><th>${esc(clean(away))}</th></tr></thead><tbody>${rows.map(m=>`<tr><th>${esc(m[0])}</th><td>${esc(get(h,m[1]))}</td><td>${esc(get(a,m[1]))}</td></tr>`).join('')}</tbody></table></div><div class="probability-card" style="--home-primary:${hc[0]};--home-secondary:${hc[1]};--away-primary:${ac[0]};--away-secondary:${ac[1]}"><div class="probability-heading"><strong>Win Probability</strong><small>Calculated from live UCL position, points per game, wins, goal difference, scoring rate and home advantage.</small></div><div class="probability-names"><span>${esc(clean(home))}</span><span>${esc(clean(away))}</span></div><div class="probability-track" role="img" aria-label="${esc(clean(home))} ${hp} percent, ${esc(clean(away))} ${ap} percent"><div class="probability-side probability-home" style="width:${hp}%"><strong>${hp}%</strong></div><div class="probability-side probability-away" style="width:${ap}%"><strong>${ap}%</strong></div></div><p class="probability-note">Updates automatically from the synced Champions League table. This is an NL4 estimate, not betting advice.</p></div></div>`;
+}
+function keepLive(box,markup){
+  let restoring=false;
+  const apply=()=>{
+    if(restoring)return;
+    if(!box.querySelector('[data-live-ucl-comparison="1"]')){
+      restoring=true;
+      box.className='';
+      box.innerHTML=markup;
+      restoring=false;
+    }
+  };
+  apply();
+  const observer=new MutationObserver(()=>apply());
+  observer.observe(box,{childList:true,subtree:true,characterData:true});
+  setTimeout(apply,250);
+  setTimeout(apply,750);
+  setTimeout(apply,1500);
 }
 async function load(){
   const client=db();if(!client)return;
+  const box=document.getElementById('teamTotalsBox');if(!box)return;
   const {data:f,error}=await client.from('fixtures').select('matchday,home_team,away_team,is_home,opponent').eq('season','2026/27').eq('competition','UEFA Champions League').eq('matchday',idx+1).maybeSingle();
-  if(error||!f)return;
+  if(error||!f){if(error)console.warn('NL4 UCL fixture comparison:',error);return;}
   const home=f.home_team||(f.is_home?'Arsenal':f.opponent),away=f.away_team||(f.is_home?f.opponent:'Arsenal');
   const [{data:standings,error:se},{data:supp,error:ue}]=await Promise.all([
     client.from('ucl_standings').select('position,team_name,played,wins,draws,losses,goals_for,goals_against,goal_difference,points').eq('season','2026/27'),
     client.from('ucl_team_stats').select('*').eq('season','2026/27')
   ]);
-  if(se){console.warn('NL4 UCL live comparison standings:',se);return;}
+  if(se){console.warn('NL4 UCL live comparison standings:',se);box.textContent='Live Champions League table could not be loaded.';return;}
+  if(ue)console.warn('NL4 UCL supplemental stats:',ue);
   const hs=findByTeam(standings,home),as=findByTeam(standings,away),hu=findByTeam(supp,home),au=findByTeam(supp,away);
-  if(!hs&&!as)return;
-  render(home,away,mergedRow(home,hs,hu),mergedRow(away,as,au));
+  if(!hs||!as){
+    console.warn('NL4 UCL comparison team match missing',{home,away,homeKey:key(home),awayKey:key(away),homeFound:!!hs,awayFound:!!as});
+    box.className='empty';
+    box.textContent='Live Champions League comparison is waiting for both teams in the synced table.';
+    return;
+  }
+  const h=mergedRow(home,hs,hu),a=mergedRow(away,as,au);
+  keepLive(box,html(home,away,h,a));
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(load,80));else setTimeout(load,80);
 })();
