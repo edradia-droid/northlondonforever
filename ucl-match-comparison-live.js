@@ -21,6 +21,39 @@ const key=n=>clean(n).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCas
 const ARSENAL_PROBABILITY=['#b00020','#ef0107'];
 const colours={Arsenal:ARSENAL_PROBABILITY,Napoli:['#1498d4','#0873ad'],Lille:['#d7193f','#102d61'],'Bayern München':['#dc052d','#f5f5f5'],'Slavia Praha':['#d71920','#f5f5f5'],'Borussia Dortmund':['#fdeb0a','#111111'],'Real Madrid':['#f5f5f5','#d9b44a'],'Real Betis':['#159447','#f5f5f5'],Sabah:['#203b89','#e01e35']};
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+function applyMatchHeaderFix(){
+  if(!document.getElementById('nl4-ucl-mobile-score-fix')){
+    const style=document.createElement('style');
+    style.id='nl4-ucl-mobile-score-fix';
+    style.textContent=`
+      #title{text-transform:none!important;letter-spacing:normal!important}
+      #score{text-transform:none!important}
+      @media(max-width:720px){
+        .main{padding-left:10px!important;padding-right:10px!important}
+        .hero{min-height:0!important;padding:22px 12px 24px!important}
+        .scoreboard{grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr)!important;gap:8px!important;padding:18px 10px!important;min-height:138px!important;border-radius:18px!important;align-items:center!important}
+        .scoreboard .team{min-width:0!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important}
+        .scoreboard .crest{width:54px!important;height:54px!important;flex:0 0 54px!important}
+        .scoreboard .team strong{display:block!important;min-height:0!important;margin-top:8px!important;font-size:12px!important;line-height:1.2!important;text-align:center!important;overflow-wrap:normal!important;word-break:normal!important}
+        .scoreboard .centre{min-width:64px!important;width:64px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important}
+        .scoreboard .centre strong{font-size:32px!important;line-height:1!important;white-space:nowrap!important}
+        .scoreboard .centre span{margin-top:7px!important;font-size:8px!important;white-space:nowrap!important}
+      }
+      @media(max-width:380px){
+        .scoreboard{grid-template-columns:minmax(0,1fr) 56px minmax(0,1fr)!important;gap:5px!important;padding:16px 6px!important}
+        .scoreboard .crest{width:48px!important;height:48px!important;flex-basis:48px!important}
+        .scoreboard .centre{min-width:56px!important;width:56px!important}
+        .scoreboard .centre strong{font-size:28px!important}
+        .scoreboard .team strong{font-size:11px!important}
+      }
+    `;
+    document.head.appendChild(style);
+  }
+  const title=document.getElementById('title');
+  if(title){title.style.setProperty('text-transform','none','important');title.innerHTML=title.textContent.replace(/\s+VS\s+/g,' vs ').replace(/\s+Vs\s+/g,' vs ');}
+  const score=document.getElementById('score');
+  if(score&&/^vs$/i.test(score.textContent.trim()))score.textContent='vs';
+}
 function findByTeam(rows,name){const k=key(name);return (rows||[]).find(r=>key(r.team_name)===k)||null;}
 function row(name,standing){return{team_name:clean(name),position:standing?.position??null,matches:Number(standing?.played??0),wins:Number(standing?.wins??0),draws:Number(standing?.draws??0),losses:Number(standing?.losses??0),goals_for:Number(standing?.goals_for??0),goals_against:Number(standing?.goals_against??0),goal_difference:Number(standing?.goal_difference??0),points:Number(standing?.points??0)};}
 function strength(t){const mp=Math.max(1,Number(t.matches)||0),ppg=(Number(t.points)||0)/(mp*3),wr=(Number(t.wins)||0)/mp,gdpg=(Number(t.goal_difference)||0)/mp,gfpg=(Number(t.goals_for)||0)/mp,pos=t.position?clamp((37-Number(t.position))/36,0,1):.5;return .34*ppg+.20*wr+.18*(.5+.5*Math.tanh(gdpg/2))+.13*clamp(gfpg/3,0,1)+.15*pos;}
@@ -34,10 +67,12 @@ function html(home,away,h,a,locked){
 }
 function keepLive(box,markup){let restoring=false;const apply=()=>{if(restoring)return;if(!box.querySelector('[data-live-ucl-comparison="1"]')){restoring=true;box.className='';box.innerHTML=markup;restoring=false;}};apply();const observer=new MutationObserver(()=>apply());observer.observe(box,{childList:true,subtree:true,characterData:true});setTimeout(apply,250);setTimeout(apply,750);setTimeout(apply,1500);}
 async function load(){
+  applyMatchHeaderFix();
   const client=db();if(!client)return;const box=document.getElementById('teamTotalsBox');if(!box)return;
   const {data:f,error}=await client.from('fixtures').select('id,matchday,home_team,away_team,is_home,opponent,status,kickoff_at').eq('season','2026/27').eq('competition','UEFA Champions League').eq('matchday',idx+1).maybeSingle();
   if(error||!f){if(error)console.warn('NL4 UCL fixture comparison:',error);return;}
   const home=f.home_team||(f.is_home?'Arsenal':f.opponent),away=f.away_team||(f.is_home?f.opponent:'Arsenal');
+  const title=document.getElementById('title');if(title){title.innerHTML=`${esc(home)} <span style="text-transform:lowercase!important">vs</span> ${esc(away)}`;title.style.setProperty('text-transform','none','important');}
   const [{data:standings,error:se},{data:locked,error:le}]=await Promise.all([
     client.from('ucl_standings').select('position,team_name,played,wins,draws,losses,goals_for,goals_against,goal_difference,points').eq('season','2026/27'),
     client.from('ucl_match_comparisons').select('home_win_probability,away_win_probability,probability_locked_at').eq('fixture_id',f.id).maybeSingle()
@@ -46,6 +81,7 @@ async function load(){
   if(le)console.warn('NL4 UCL probability lock:',le);
   const hs=findByTeam(standings,home),as=findByTeam(standings,away);if(!hs||!as){console.warn('NL4 UCL comparison team match missing',{home,away,homeFound:!!hs,awayFound:!!as});box.className='empty';box.textContent='Live Champions League comparison is waiting for both teams in the synced table.';return;}
   keepLive(box,html(home,away,row(home,hs),row(away,as),locked||null));
+  applyMatchHeaderFix();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(load,80));else setTimeout(load,80);
 })();
