@@ -44,7 +44,7 @@ async function load(){
   }
 
   const status=String(f.status||'scheduled').toLowerCase(),complete=['fulltime','finished','ft','aet','pen'].includes(status);
-  document.getElementById('title').textContent=home+' vs '+away;document.getElementById('homeTeam').textContent=home;document.getElementById('awayTeam').textContent=away;document.getElementById('venue').textContent=f.venue||'TBC';document.getElementById('matchday').textContent='Matchday '+(f.matchday||idx+1);
+  document.getElementById('title').innerHTML=`${esc(home)} <span class="vs-word">vs</span> ${esc(away)}`;document.getElementById('homeTeam').textContent=home;document.getElementById('awayTeam').textContent=away;document.getElementById('venue').textContent=f.venue||'TBC';document.getElementById('matchday').textContent='Matchday '+(f.matchday||idx+1);
   const d=new Date(f.kickoff_at);if(!Number.isNaN(d.getTime())){document.getElementById('date').textContent=d.toLocaleDateString([],{day:'2-digit',month:'short',year:'numeric'});document.getElementById('time').textContent=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
   const statusEl=document.getElementById('status');statusEl.textContent=complete?'FULL TIME':status==='live'?'LIVE':'SCHEDULED';statusEl.className='pill'+(complete?' fulltime':status==='live'?' live':'');
   const score=document.getElementById('score'),mc=document.getElementById('matchCentre'),detailParts=[];
