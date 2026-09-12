@@ -4,6 +4,41 @@
   const $ = id => document.getElementById(id);
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const cleanTeam = v => String(v || '').replace(/\s+(FC|AFC)$/i,'').trim();
+  const glanceIds=['uclPosition','uclPoints','uclPlayed','uclWins','uclGoals','uclGoalDiff'];
+  let lastOverview=null;
+  let restoring=false;
+
+  function applyOverview(arsenal){
+    if(!arsenal)return;
+    const gd=Number(arsenal.goal_difference||0);
+    const values={
+      uclPosition:arsenal.position??'—',
+      uclPoints:arsenal.points??0,
+      uclPlayed:arsenal.played??0,
+      uclWins:arsenal.wins??0,
+      uclGoals:arsenal.goals_for??0,
+      uclGoalDiff:`${gd>0?'+':''}${gd}`
+    };
+    lastOverview=values;
+    restoring=true;
+    Object.entries(values).forEach(([id,value])=>{const el=$(id);if(el&&el.textContent!==String(value))el.textContent=String(value);});
+    restoring=false;
+  }
+
+  function guardOverview(){
+    const nodes=glanceIds.map($).filter(Boolean);
+    if(!nodes.length)return;
+    const observer=new MutationObserver(()=>{
+      if(restoring||!lastOverview)return;
+      const changed=nodes.some(el=>String(el.textContent)!==String(lastOverview[el.id]));
+      if(changed){
+        restoring=true;
+        nodes.forEach(el=>{const expected=lastOverview[el.id];if(expected!=null&&el.textContent!==String(expected))el.textContent=String(expected);});
+        restoring=false;
+      }
+    });
+    nodes.forEach(el=>observer.observe(el,{childList:true,subtree:true,characterData:true}));
+  }
 
   async function loadLiveStandings(){
     if (!db) return;
@@ -38,15 +73,7 @@
     }
 
     const arsenal = rows.find(r => /arsenal/i.test(String(r.team_name || '')));
-    if (arsenal) {
-      if ($('uclPosition')) $('uclPosition').textContent = arsenal.position ?? '—';
-      if ($('uclPoints')) $('uclPoints').textContent = arsenal.points ?? 0;
-      if ($('uclPlayed')) $('uclPlayed').textContent = arsenal.played ?? 0;
-      if ($('uclWins')) $('uclWins').textContent = arsenal.wins ?? 0;
-      if ($('uclGoals')) $('uclGoals').textContent = arsenal.goals_for ?? 0;
-      const gd = Number(arsenal.goal_difference || 0);
-      if ($('uclGoalDiff')) $('uclGoalDiff').textContent = `${gd > 0 ? '+' : ''}${gd}`;
-    }
+    applyOverview(arsenal);
 
     const status = document.querySelector('.ucl-table-status');
     const lastSync = rows.map(r => r.source_updated_at).filter(Boolean).sort().pop();
@@ -54,6 +81,7 @@
   }
 
   window.NL4ReloadUclStandings = loadLiveStandings;
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadLiveStandings, {once:true});
-  else loadLiveStandings();
+  const init=()=>{guardOverview();loadLiveStandings();setTimeout(loadLiveStandings,500);setTimeout(loadLiveStandings,1500);};
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, {once:true});
+  else init();
 })();
