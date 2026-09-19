@@ -1392,15 +1392,15 @@
       });
 
       const exactSubHtml = substitutionRows.map(row => {
-        const minuteText = \`\${row.minute}’\`;
-        return \`
-          <div class="broadcast-sub" title="\${esc(minuteText)}">
+        const minuteText = `${row.minute}’`;
+        return `
+          <div class="broadcast-sub" title="${esc(minuteText)}">
             <span class="sub-name">
-              <span style="color:#d8ad45">\${esc(minuteText)}</span>
-              \${esc(row.inPlayer)} <span style="color:#d8ad45">IN</span>
-              \${row.outPlayer ? \`<span style="color:#777"> • </span>\${esc(row.outPlayer)} <span style="color:#d8ad45">OUT</span>\` : ""}
+              <span style="color:#d8ad45">${esc(minuteText)}</span>
+              ${esc(row.inPlayer)} <span style="color:#d8ad45">IN</span>
+              ${row.outPlayer ? `<span style="color:#777"> • </span>${esc(row.outPlayer)} <span style="color:#d8ad45">OUT</span>` : ""}
             </span>
-          </div>\`;
+          </div>`;
       }).join("");
 
       const playerMedia = await loadPlayerMedia(lineup || []);
