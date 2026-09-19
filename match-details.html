@@ -1375,16 +1375,48 @@
       const starters = (lineup || []).filter(row => row.is_starter);
       const subs = (lineup || []).filter(row => !row.is_starter);
 
+      // Match Events contain the exact player-in/player-out pairing. The lineup
+      // table remains the fallback so public Match Details still works if the
+      // event stream is temporarily unavailable.
+      let substitutionEvents = [];
+      try {
+        const { data: subEvents, error: subEventsError } = await db
+          .from("match_events")
+          .select("player_name,related_player_name,minute,stoppage_minute,team_name,event_type")
+          .eq("fixture_id", fixture.id)
+          .eq("team_name", "Arsenal")
+          .eq("event_type", "substitution")
+          .order("minute", { ascending:true })
+          .order("stoppage_minute", { ascending:true });
+        if (!subEventsError) substitutionEvents = subEvents || [];
+        else console.warn("NL4 substitution events unavailable:", subEventsError.message);
+      } catch (eventError) {
+        console.warn("NL4 substitution event query failed:", eventError);
+      }
+
+      const formatEventMinute = row => {
+        const minute = Number(row?.minute);
+        const added = Number(row?.stoppage_minute);
+        if (!Number.isFinite(minute)) return "—";
+        return Number.isFinite(added) && added > 0 ? `${minute}+${added}’` : `${minute}’`;
+      };
+      const exactSubHtml = substitutionEvents.map(row => `
+        <div class="broadcast-sub" title="${esc(formatEventMinute(row))}">
+          <span class="sub-name">${esc(row.player_name || "")} <span style="color:#d8ad45">IN ${esc(formatEventMinute(row))}</span> <span style="color:#777">FOR</span> ${esc(row.related_player_name || "")}</span>
+        </div>`).join("");
+
       const playerMedia = await loadPlayerMedia(lineup || []);
       render3DPitch(starters, playerMedia, fixture.lineup_formation);
 
-      els.subs.innerHTML = subs.length
-        ? subs.map(row => rowHtml(row, playerMedia)).join("")
-        : (
-            status === "live"
-              ? '<div class="empty">No substitutions have been made yet.</div>'
-              : '<div class="empty">Substitutions will appear here when they are entered in Admin.</div>'
-          );
+      els.subs.innerHTML = exactSubHtml || (
+        subs.length
+          ? subs.map(row => rowHtml(row, playerMedia)).join("")
+          : (
+              status === "live"
+                ? '<div class="empty">No substitutions have been made yet.</div>'
+                : '<div class="empty">Substitutions will appear here when they are entered in Admin.</div>'
+            )
+      );
 
       let availabilityText = "";
       if (status === "scheduled") {
