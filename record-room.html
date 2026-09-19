@@ -47,6 +47,7 @@ select,input{width:100%;background:#0f0f0f;border:1px solid var(--line);color:#f
 .mini-btn{border:1px solid var(--line);background:#171717;color:#fff;border-radius:8px;padding:7px 9px;cursor:pointer;font-size:8px;font-weight:900}
 .remove-row{border:0;background:#321018;color:#fff;border-radius:7px;height:30px;cursor:pointer}.detail-save{background:var(--gold);color:#090909;border:0;border-radius:10px;padding:10px 14px;font-weight:1000;cursor:pointer}
 .fixture-empty{padding:20px;color:#777;text-align:center}
+.saved-match-panel{margin-top:15px;border:1px solid rgba(216,173,69,.22);border-radius:16px;background:linear-gradient(145deg,rgba(216,173,69,.06),#101010);padding:14px}.saved-match-panel h4{margin:0 0 12px;color:#d8ad45;font-size:13px}.saved-match-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.saved-team-box{border:1px solid rgba(255,255,255,.07);border-radius:12px;background:#0b0b0b;padding:12px}.saved-team-box h5{margin:0 0 9px;color:#fff;font-size:11px}.saved-xi{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.saved-player{padding:6px 7px;border:1px solid rgba(255,255,255,.055);border-radius:8px;color:#ddd;font-size:9px}.saved-subs{display:grid;gap:5px;margin-top:10px}.saved-sub{padding:7px 8px;border-radius:8px;background:#151515;border:1px solid rgba(255,255,255,.055);font-size:9px;color:#ddd}.saved-sub b{color:#d8ad45}.saved-empty{color:#666;font-size:9px}.saved-match-note{margin-top:10px;color:#777;font-size:9px}@media(max-width:700px){.saved-match-grid{grid-template-columns:1fr}.saved-xi{grid-template-columns:1fr 1fr}}
 @media(max-width:900px){.fixture-card{grid-template-columns:58px 1fr 76px}.fixture-card .fixture-date{grid-column:2/4}.detail-grid-2,.lineup-grid{grid-template-columns:1fr}.score-grid{grid-template-columns:1fr 70px 70px 1fr}.event-row{grid-template-columns:70px 56px 1fr}.event-row select:nth-of-type(3){grid-column:3}.event-row .assist-select{grid-column:3}.remove-row{grid-column:4}.sub-row{grid-template-columns:1fr 54px 1fr 54px 30px}}
 
 .collapsible-head-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
@@ -457,6 +458,23 @@ function subRowsHtml(side,team,rows){
     <button class="remove-row" type="button" onclick="this.parentElement.remove()">×</button>
   </div>`).join("");
 }
+function renderSavedMatchData(f,s){
+  const host=$("savedMatchData"); if(!host||!f||!s)return;
+  const sideHtml=(team,xi,subs)=>{
+    const starters=(xi||[]).filter(Boolean);
+    const subList=(subs||[]).filter(r=>r&&((r.out||r.in)));
+    return '<div class="saved-team-box"><h5>'+esc(team)+' — STARTING XI</h5>'+
+      (starters.length?'<div class="saved-xi">'+starters.map((p,i)=>'<div class="saved-player"><b>'+(i+1)+'.</b> '+esc(p)+'</div>').join('')+'</div>':'<div class="saved-empty">No saved starting XI.</div>')+
+      '<h5 style="margin-top:14px">SUBSTITUTIONS</h5>'+
+      (subList.length?'<div class="saved-subs">'+subList.map(r=>'<div class="saved-sub"><b>'+esc(r.inMin??r.minute??'')+"'"+'</b> '+esc(r.in||'')+' <span style="color:#666">for</span> '+esc(r.out||'')+'</div>').join('')+'</div>':'<div class="saved-empty">No saved substitutions.</div>')+
+      '</div>';
+  };
+  const hasXI=(s.homeLineup||[]).some(Boolean)||(s.awayLineup||[]).some(Boolean);
+  const hasSubs=(s.homeSubs||[]).length||(s.awaySubs||[]).length;
+  host.innerHTML='<h4>Saved Match Lineup &amp; Substitutions</h4><div class="saved-match-grid">'+sideHtml(f.home,s.homeLineup,s.homeSubs)+sideHtml(f.away,s.awayLineup,s.awaySubs)+'</div><div class="saved-match-note">This is the saved Record Room match data. The editable starting-lineup and substitution fields remain below it.</div>';
+  host.hidden=!(hasXI||hasSubs);
+}
+window.NL4RecordRoomSavedMatch={render:renderSavedMatchData};
 function eventRowsHtml(f,rows){
   return (rows||[]).map(r=>eventRowHtml(f,r)).join("");
 }
@@ -517,6 +535,7 @@ function openFixture(id){
     <h4>Score</h4>
     <div class="score-grid"><div class="team-label">${esc(f.home)}</div><input id="detailHomeScore" type="number" min="0" value="${s.homeScore??""}"><input id="detailAwayScore" type="number" min="0" value="${s.awayScore??""}"><div class="team-label">${esc(f.away)}</div></div>
   </div>
+  <div class="saved-match-panel" id="savedMatchData"></div>
   <div class="detail-grid-2">
     <div class="detail-box"><h4>Starting lineups</h4><div class="lineup-grid">
       <div class="lineup-side"><h5>${esc(f.home)} XI</h5>${lineupsHtml("home",f.home,s.homeLineup)}</div>
@@ -546,6 +565,7 @@ function openFixture(id){
     <div class="detail-box"><h4>Match events</h4><p class="admin-note">Goals can include an assist. Yellow/red cards use the same event row; leave assist blank.</p><div id="eventRows">${eventRowsHtml(f,s.events)}</div><button class="mini-btn" type="button" onclick="addEventRow()">+ ADD EVENT</button></div>
   </div>`;
   box.classList.add("open");
+  renderSavedMatchData(f,s);
   box.scrollIntoView({behavior:"smooth",block:"start"});
 }
 
