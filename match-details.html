@@ -1071,12 +1071,12 @@
 
     const FORMATION_SLOTS = {
       '4-3-3':['GK','LB','LCB','RCB','RB','LCM','CM','RCM','LW','ST','RW'],
-      '4-2-3-1':['GK','LB','LCB','RCB','RB','LDM','RDM','LAM','CAM','RAM','ST'],
+      '4-2-3-1':['GK','LB','LCB','RCB','RB','LDM','RDM','LW','CAM','RW','ST'],
       '4-4-2':['GK','LB','LCB','RCB','RB','LM','LCM','RCM','RM','LST','RST'],
       '3-4-3':['GK','LCB','CB','RCB','LM','LCM','RCM','RM','LW','ST','RW'],
       '3-5-2':['GK','LCB','CB','RCB','LWB','LCM','CM','RCM','RWB','LST','RST'],
       '4-1-4-1':['GK','LB','LCB','RCB','RB','DM','LM','LCM','RCM','RM','ST'],
-      '4-5-1':['GK','LB','LCB','RCB','RB','LDM','RDM','LM','CAM','RM','ST']
+      '4-5-1':['GK','LB','LCB','RCB','RB','LDM','RDM','LW','CAM','RW','ST']
     };
 
     function normalizedFormation(value){
@@ -1115,6 +1115,8 @@
         // 1. Specific tactical role stored by Record Room.
         let requested = (!Number.isInteger(numeric) && rawPitch) ? rawPitch : '';
         if (requested === 'AM') requested = 'CAM';
+        if (requested === 'LAM') requested = 'LW';
+        if (requested === 'RAM') requested = 'RW';
 
         // 2. Exact Arsenal player-role safeguard for older Record Room rows
         // that only contain broad DEF/MID/FWD labels or numeric pitch slots.
