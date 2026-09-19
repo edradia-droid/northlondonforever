@@ -1356,20 +1356,13 @@
       };
       els.status.textContent = labels[status] || status.toUpperCase();
 
-      const [{ data: lineup, error: lineupError }, { data: substitutionEvents, error: substitutionEventsError }] = await Promise.all([
-        db.from("match_lineups")
-          .select("player_name,position,formation,pitch_slot,position_x,position_y,is_starter,minute_on,minute_off,updated_at,team_name")
-          .eq("fixture_id", fixture.id)
-          .eq("team_name", "Arsenal")
-          .order("is_starter", { ascending:false })
-          .order("minute_on", { ascending:true }),
-        db.from("match_events")
-          .select("team_name,player_name,related_player_name,minute,stoppage_minute")
-          .eq("fixture_id", fixture.id)
-          .eq("event_type", "substitution")
-          .order("minute", { ascending:true })
-          .order("stoppage_minute", { ascending:true })
-      ]);
+      const { data: lineup, error: lineupError } = await db
+        .from("match_lineups")
+        .select("player_name,position,formation,pitch_slot,position_x,position_y,is_starter,minute_on,minute_off,updated_at,team_name")
+        .eq("fixture_id", fixture.id)
+        .eq("team_name", "Arsenal")
+        .order("is_starter", { ascending:false })
+        .order("minute_on", { ascending:true });
 
       if (lineupError) {
         els.starters.innerHTML = '<div class="empty">Could not load starting lineup.</div>';
@@ -1385,32 +1378,13 @@
       const playerMedia = await loadPlayerMedia(lineup || []);
       render3DPitch(starters, playerMedia, fixture.lineup_formation);
 
-      const normalizedSubEvents = (substitutionEvents || []).map(event => ({
-        team: event.team_name || "",
-        playerIn: event.player_name || "",
-        playerOut: event.related_player_name || "",
-        minute: Number(event.minute ?? 0),
-        stoppage: event.stoppage_minute
-      })).filter(event => event.team && event.playerIn);
-
-      if (!substitutionEventsError && normalizedSubEvents.length) {
-        els.subs.innerHTML = normalizedSubEvents.map(event => {
-          const minuteLabel = Number.isFinite(event.minute)
-            ? `${event.minute}${event.stoppage ? `+${event.stoppage}` : ""}'`
-            : "—";
-          return `<div class="broadcast-sub" title="${esc(event.team)}">
-            <span class="sub-name"><b>${esc(event.team)}</b> • ${esc(event.playerIn)} <span style="color:#d8ad45">IN ${esc(minuteLabel)}</span> <span style="color:#777">for</span> ${esc(event.playerOut || "—")}</span>
-          </div>`;
-        }).join("");
-      } else {
-        els.subs.innerHTML = subs.length
-          ? subs.map(row => rowHtml(row, playerMedia)).join("")
-          : (
-              status === "live"
-                ? '<div class="empty">No substitutions have been made yet.</div>'
-                : '<div class="empty">Substitutions will appear here when they are entered in Admin.</div>'
-            );
-      }
+      els.subs.innerHTML = subs.length
+        ? subs.map(row => rowHtml(row, playerMedia)).join("")
+        : (
+            status === "live"
+              ? '<div class="empty">No substitutions have been made yet.</div>'
+              : '<div class="empty">Substitutions will appear here when they are entered in Admin.</div>'
+          );
 
       let availabilityText = "";
       if (status === "scheduled") {
@@ -1428,7 +1402,6 @@
       els.lineupStatus.textContent =
         `${starters.length} starter${starters.length === 1 ? "" : "s"} • ` +
         `${subs.length} substitute${subs.length === 1 ? "" : "s"} • ` +
-        `${normalizedSubEvents.length} recorded substitution event${normalizedSubEvents.length === 1 ? "" : "s"} • ` +
         availabilityText;
     }
 
