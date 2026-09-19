@@ -460,19 +460,26 @@ function subRowsHtml(side,team,rows){
 }
 function renderSavedMatchData(f,s){
   const host=$("savedMatchData"); if(!host||!f||!s)return;
-  const sideHtml=(team,xi,subs)=>{
+  const sideHtml=(team,xi,subs,bench)=>{
     const starters=(xi||[]).filter(Boolean);
     const subList=(subs||[]).filter(r=>r&&((r.out||r.in)));
+    const benchList=(bench||[]).filter(Boolean);
+    const usedByName=new Map(subList.filter(r=>r.in).map(r=>[String(r.in).trim().toLowerCase(),r]));
+    const benchHtml=benchList.length
+      ? '<div class="saved-subs">'+benchList.map(p=>{const used=usedByName.get(String(p).trim().toLowerCase());const badge=used?'<b>USED '+esc(used.inMin??used.minute??'')+"'"+'</b>':'<span style="color:#777;font-weight:800">UNUSED</span>';return '<div class="saved-sub"><span>'+esc(p)+'</span> <span style="float:right">'+badge+'</span></div>';}).join('')+'</div>'
+      : '<div class="saved-empty">No saved substitutes.</div>';
     return '<div class="saved-team-box"><h5>'+esc(team)+' — STARTING XI</h5>'+
       (starters.length?'<div class="saved-xi">'+starters.map((p,i)=>'<div class="saved-player"><b>'+(i+1)+'.</b> '+esc(p)+'</div>').join('')+'</div>':'<div class="saved-empty">No saved starting XI.</div>')+
-      '<h5 style="margin-top:14px">SUBSTITUTIONS</h5>'+
-      (subList.length?'<div class="saved-subs">'+subList.map(r=>'<div class="saved-sub"><b>'+esc(r.inMin??r.minute??'')+"'"+'</b> '+esc(r.in||'')+' <span style="color:#666">for</span> '+esc(r.out||'')+'</div>').join('')+'</div>':'<div class="saved-empty">No saved substitutions.</div>')+
+      '<h5 style="margin-top:14px">SUBSTITUTES — '+benchList.length+'</h5>'+benchHtml+
+      '<h5 style="margin-top:14px">SUBSTITUTIONS MADE</h5>'+
+      (subList.length?'<div class="saved-subs">'+subList.map(r=>'<div class="saved-sub"><b>'+esc(r.inMin??r.minute??'')+"'"+'</b> '+esc(r.in||'')+' <span style="color:#666">for</span> '+esc(r.out||'')+'</div>').join('')+'</div>':'<div class="saved-empty">No substitutions made.</div>')+
       '</div>';
   };
   const hasXI=(s.homeLineup||[]).some(Boolean)||(s.awayLineup||[]).some(Boolean);
   const hasSubs=(s.homeSubs||[]).length||(s.awaySubs||[]).length;
-  host.innerHTML='<h4>Saved Match Lineup &amp; Substitutions</h4><div class="saved-match-grid">'+sideHtml(f.home,s.homeLineup,s.homeSubs)+sideHtml(f.away,s.awayLineup,s.awaySubs)+'</div><div class="saved-match-note">This is the saved Record Room match data. The editable starting-lineup and substitution fields remain below it.</div>';
-  host.hidden=!(hasXI||hasSubs);
+  const hasBench=(s.homeBench||[]).length||(s.awayBench||[]).length;
+  host.innerHTML='<h4>Saved Match Lineup, Bench &amp; Substitutions</h4><div class="saved-match-grid">'+sideHtml(f.home,s.homeLineup,s.homeSubs,s.homeBench)+sideHtml(f.away,s.awayLineup,s.awaySubs,s.awayBench)+'</div><div class="saved-match-note">Full named matchday benches are preserved here. Used substitutes are marked with their entry minute; unused substitutes remain listed.</div>';
+  host.hidden=!(hasXI||hasSubs||hasBench);
 }
 window.NL4RecordRoomSavedMatch={render:renderSavedMatchData};
 function eventRowsHtml(f,rows){
@@ -973,8 +980,8 @@ render();
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
 <script src="supabase-client.js?v=20260909-v48-authoritative-meta-bootstrap"></script>
-<script src="record-room-supabase-authority.js?v=20260909-v42-direct-authority"></script>
-<script src="record-room-mobile-supabase-retry.js?v=20260909-v54-canonical-player-hydration"></script>
+<script src="record-room-supabase-authority.js?v=20260920-v43-safe-bench"></script>
+<script src="record-room-mobile-supabase-retry.js?v=20260920-v55-safe-bench"></script>
 <script src="premier-league-final-squads-2026-27.js?v=20260907-odegaard1"></script>
 <script src="nl4-current-squad-enforcer.js?v=20260908-v38"></script>
 
