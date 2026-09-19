@@ -1040,7 +1040,10 @@
       'christos tzolis':17,'noni madueke':20,'ethan nwaneri':22,'mikel merino':23,'reiss nelson':24,
       'kai havertz':29,'illan meslier':30,'riccardo calafiori':33,'tommy setford':35,
       'martin zubimendi':36,'martín zubimendi':36,'bruno guimaraes':39,'bruno guimarães':39,
-      'declan rice':41,'myles lewis-skelly':49,'max dowman':56
+      'declan rice':41,'myles lewis-skelly':49,'max dowman':56,
+      'ezri konsa ngoyo':15,'ezri konsa':15,
+      'martín zubimendi ibáñez':36,'martin zubimendi ibanez':36,
+      'bruno guimaraes rodriguez moura':39
     };
     function currentShirtNumber(name){
       return NL4_CURRENT_SHIRT_NUMBERS[String(name || '').trim().toLowerCase()] ?? '';
@@ -1130,7 +1133,9 @@
         const depth = (0.78 + (y/100)*0.24).toFixed(2);
         const displayName = row.player_name || 'Arsenal';
         const media = mediaMap.get(String(displayName).trim().toLowerCase()) || {};
-        const shirtNumber = media.shirt ?? currentShirtNumber(displayName) ?? '';
+        const shirtNumber = (media.shirt !== undefined && media.shirt !== null && String(media.shirt).trim() !== '')
+          ? media.shirt
+          : currentShirtNumber(displayName);
         const safeShirtNumber = (shirtNumber === '—' || shirtNumber === '-' || shirtNumber == null) ? '' : shirtNumber;
         const shirtName = String(displayName).trim().split(/\s+/).slice(-1)[0] || 'ARSENAL';
         return `<div class="player-marker" style="--x:${x}%;--y:${y}%;--depth:${depth}" title="${esc(displayName)} • #${esc(safeShirtNumber)}">
@@ -1297,8 +1302,9 @@
 
       const { data: lineup, error: lineupError } = await db
         .from("match_lineups")
-        .select("player_name,position,formation,pitch_slot,position_x,position_y,is_starter,minute_on,minute_off,updated_at")
+        .select("player_name,position,formation,pitch_slot,position_x,position_y,is_starter,minute_on,minute_off,updated_at,team_name")
         .eq("fixture_id", fixture.id)
+        .eq("team_name", "Arsenal")
         .order("is_starter", { ascending:false })
         .order("minute_on", { ascending:true });
 
