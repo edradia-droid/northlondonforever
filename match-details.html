@@ -35,6 +35,16 @@
     .lineup-row strong{display:block}
     .lineup-row small{display:block;color:#777;margin-top:3px;font-size:10px}
     .lineup-time{color:#d8ad45;font-size:11px;font-weight:900;white-space:nowrap}
+    .post-pitch-subs-panel{grid-column:1/-1;margin-top:0}
+    .post-pitch-subs{display:grid;gap:9px;padding:18px}
+    .sub-bench-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;padding:13px 14px!important}
+    .sub-bench-used{color:#d8ad45;font-size:11px;font-weight:900;white-space:nowrap}
+    .sub-bench-unused{color:#777;font-size:11px;font-weight:900;white-space:nowrap}
+    .sub-bench-minute{margin-right:5px}
+    @media(max-width:700px){
+      .sub-bench-row{padding:12px!important}
+      .sub-bench-used,.sub-bench-unused{font-size:10px}
+    }
     .formation-panel{grid-column:1/-1;overflow:hidden!important;background:#05070a!important;border-color:rgba(255,255,255,.12)!important;box-shadow:0 28px 70px rgba(0,0,0,.6)}
     .broadcast-lineup{position:relative;min-height:760px;background:linear-gradient(180deg,#090b0f 0,#050607 100%);overflow:hidden}
     .broadcast-lineup::before{content:none!important;display:none!important}
@@ -925,17 +935,7 @@
 
         <div id="matchError" class="error-card" hidden></div>
 
-        <section class="match-panel pre-lineup-subs-panel" id="matchSubstitutionsPanel">
-          <div class="match-panel-head">
-            <p>MATCH EVENTS</p>
-            <h2>Substitutions</h2>
-          </div>
-          <div class="broadcast-subs pre-lineup-subs" id="substitutes">
-            <div class="empty">Loading substitutions…</div>
-          </div>
-        </section>
-
-<section class="details-grid" id="lineupSection">
+        <section class="details-grid" id="lineupSection">
           <article class="match-panel formation-panel">
             <div class="broadcast-lineup">
               <div id="lineupPhotoExport">
@@ -967,6 +967,16 @@
               </div>
             </div>
           </article>
+        </section>
+
+        <section class="match-panel post-pitch-subs-panel" id="matchSubstitutionsPanel">
+          <div class="match-panel-head">
+            <p>MATCH SQUAD</p>
+            <h2>Arsenal Substitutes</h2>
+          </div>
+          <div class="broadcast-subs post-pitch-subs" id="substitutes">
+            <div class="empty">Loading substitutes…</div>
+          </div>
         </section>
 
         <p class="status-note" id="lineupStatus">
@@ -1364,6 +1374,45 @@
         .order("is_starter", { ascending:false })
         .order("minute_on", { ascending:true });
 
+      // Record Room is the authoritative source for the complete named Arsenal bench.
+      // Public match_lineups intentionally contains only starters + players who actually came on.
+      let recordRoomBench = [];
+      try {
+        const { data: rrMatches } = await db
+          .from("premier_league_matches")
+          .select("id,source_fixture_id,season,matchday,home_team,away_team")
+          .eq("source_fixture_id", fixture.id)
+          .limit(1);
+
+        let rrMatch = rrMatches?.[0] || null;
+        if (!rrMatch) {
+          const { data: fallbackMatches } = await db
+            .from("premier_league_matches")
+            .select("id,source_fixture_id,season,matchday,home_team,away_team")
+            .eq("season", fixture.season)
+            .eq("matchday", fixture.matchday)
+            .eq("home_team", fixture.home_team)
+            .eq("away_team", fixture.away_team)
+            .limit(1);
+          rrMatch = fallbackMatches?.[0] || null;
+        }
+
+        if (rrMatch?.id) {
+          const { data: rrLineups } = await db
+            .from("record_room_lineups")
+            .select("player_name,is_starter,minute_on,minute_off,team_name,updated_at")
+            .eq("match_id", rrMatch.id)
+            .eq("team_name", "Arsenal")
+            .eq("is_starter", false)
+            .order("minute_on", { ascending:false })
+            .order("player_name", { ascending:true });
+
+          recordRoomBench = rrLineups || [];
+        }
+      } catch (rrErr) {
+        console.warn("[NL4 Match Details] Complete Record Room bench unavailable:", rrErr);
+      }
+
       if (lineupError) {
         els.starters.innerHTML = '<div class="empty">Could not load starting lineup.</div>';
         els.subs.innerHTML = '<div class="empty">Could not load substitutions.</div>';
@@ -1406,14 +1455,32 @@
       const playerMedia = await loadPlayerMedia(lineup || []);
       render3DPitch(starters, playerMedia, fixture.lineup_formation);
 
-      els.subs.innerHTML = exactSubHtml || (
+      const usedNames = new Map(
+        substitutionRows
+          .filter(row => row.inPlayer)
+          .map(row => [String(row.inPlayer).trim().toLowerCase(), row])
+      );
+
+      const completeBench = recordRoomBench.length
+        ? recordRoomBench.map(row => {
+            const key = String(row.player_name || "").trim().toLowerCase();
+            const used = usedNames.get(key);
+            const minute = used ? `<span class="sub-bench-minute">${esc(used.minute)}’</span>` : "";
+            const state = used
+              ? `<span class="sub-bench-used">${minute} USED</span>`
+              : '<span class="sub-bench-unused">UNUSED</span>';
+            return `
+              <div class="broadcast-sub sub-bench-row">
+                <span class="sub-name">${esc(row.player_name)}</span>
+                ${state}
+              </div>`;
+          }).join("")
+        : "";
+
+      els.subs.innerHTML = completeBench || exactSubHtml || (
         subs.length
           ? subs.map(row => rowHtml(row, playerMedia)).join("")
-          : (
-              status === "live"
-                ? '<div class="empty">No substitutions have been made yet.</div>'
-                : '<div class="empty">Substitutions will appear here when they are entered in Admin.</div>'
-            )
+          : '<div class="empty">Substitutes will appear here when they are entered in Record Room.</div>'
       );
       let availabilityText = "";
       if (status === "scheduled") {
