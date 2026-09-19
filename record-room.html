@@ -36,16 +36,6 @@ select,input{width:100%;background:#0f0f0f;border:1px solid var(--line);color:#f
 .fixture-pair{font-size:11px;font-weight:900}.fixture-pair span{color:#777;font-weight:700;padding:0 5px}.fixture-date{font-size:9px;color:#888}.fixture-score{text-align:center;font-size:15px;font-weight:1000}
 .fixture-open{background:#1b1b1b;border:1px solid var(--line);color:#fff;border-radius:10px;padding:9px;cursor:pointer;font-size:9px;font-weight:900}
 .fixture-detail{display:none;border-top:1px solid var(--line);padding:18px;background:#090909}.fixture-detail.open{display:block}
-.rr-saved-match-data{background:linear-gradient(145deg,rgba(216,173,69,.06),#0f0f0f)}
-.rr-saved-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.rr-saved-team{border:1px solid rgba(255,255,255,.07);border-radius:12px;background:#0b0b0b;padding:12px}
-.rr-saved-team h5{margin:0 0 9px;color:var(--gold);font-size:9px;letter-spacing:.6px}
-.rr-saved-team ol{margin:0;padding-left:22px;display:grid;gap:5px;color:#ddd;font-size:10px}
-.rr-saved-sub{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.055);font-size:10px}
-.rr-saved-sub:last-child{border-bottom:0}
-.rr-saved-sub em{color:var(--gold);font-style:normal;font-weight:900;margin-left:6px}
-@media(max-width:900px){.rr-saved-grid{grid-template-columns:1fr}}
-
 .match-detail-head{display:flex;justify-content:space-between;gap:15px;align-items:flex-start}.match-detail-head h3{margin:4px 0}.match-detail-actions{display:flex;gap:8px;flex-wrap:wrap}
 .detail-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:15px}
 .detail-box{border:1px solid var(--line);border-radius:16px;background:#101010;padding:14px}.detail-box h4{margin:0 0 10px;font-size:13px}.detail-box h5{margin:14px 0 7px;color:var(--gold);font-size:9px;letter-spacing:.6px}
@@ -467,14 +457,6 @@ function subRowsHtml(side,team,rows){
     <button class="remove-row" type="button" onclick="this.parentElement.remove()">×</button>
   </div>`).join("");
 }
-function renderSavedMatchData(f,s){
-  const host=$("rrSavedMatchDataContent");
-  if(!host||!f||!s)return;
-  const escName=v=>esc(String(v||""));
-  const lineup=(team,arr)=>`<div class="rr-saved-team"><h5>${escName(team)} — STARTING XI</h5><ol>${(arr||[]).filter(Boolean).map(p=>`<li>${escName(p)}</li>`).join("")||"<li>No lineup saved</li>"}</ol></div>`;
-  const subs=(team,rows)=>`<div class="rr-saved-team"><h5>${escName(team)} — SUBSTITUTIONS</h5>${(rows||[]).length?(rows||[]).map(x=>`<div class="rr-saved-sub"><span><b>${escName(x.in||"—")}</b> <em>IN ${x.inMin??x.outMin??"—"}'</em></span><span>for <b>${escName(x.out||"—")}</b></span></div>`).join(""):"<div class="empty">No substitutions saved</div>"}</div>`;
-  host.innerHTML=`<div class="rr-saved-grid">${lineup(f.home,s.homeLineup)}${lineup(f.away,s.awayLineup)}${subs(f.home,s.homeSubs)}${subs(f.away,s.awaySubs)}</div>`;
-}
 function eventRowsHtml(f,rows){
   return (rows||[]).map(r=>eventRowHtml(f,r)).join("");
 }
@@ -513,7 +495,6 @@ function openFixture(id){
   };
   const box=$("fixtureDetail");
   box.dataset.fixtureId=id;
-  renderSavedMatchData(f,s);
   box.innerHTML=`<div class="match-detail-head">
     <div><div class="eyebrow">MW ${f.mw??"—"} • ${formatKickoff(f.kickoff)}</div><h3>${esc(f.home)} vs ${esc(f.away)}</h3></div>
     <div class="match-detail-actions"><button class="detail-save" type="button" onclick="saveFixtureDetails()">SAVE MATCH DETAILS</button><span id="fixtureSaveState" style="align-self:center;color:#49d17d;font-size:9px;font-weight:900"></span><button class="mini-btn" type="button" onclick="document.getElementById('fixtureDetail').classList.remove('open')">CLOSE</button></div>
@@ -535,10 +516,6 @@ function openFixture(id){
   <div class="detail-box" style="margin-top:15px">
     <h4>Score</h4>
     <div class="score-grid"><div class="team-label">${esc(f.home)}</div><input id="detailHomeScore" type="number" min="0" value="${s.homeScore??""}"><input id="detailAwayScore" type="number" min="0" value="${s.awayScore??""}"><div class="team-label">${esc(f.away)}</div></div>
-  </div>
-  <div class="detail-box rr-saved-match-data" id="rrSavedMatchData" style="margin-top:15px">
-    <h4>Saved Lineups & Substitutions</h4>
-    <div id="rrSavedMatchDataContent"><div class="empty">Loading saved match data…</div></div>
   </div>
   <div class="detail-grid-2">
     <div class="detail-box"><h4>Starting lineups</h4><div class="lineup-grid">
