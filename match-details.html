@@ -95,6 +95,12 @@
     .broadcast-side .empty{padding:25px 13px}
     @media(max-width:980px){.broadcast-grid{grid-template-columns:minmax(0,1fr) 125px;gap:7px;padding-left:8px;padding-right:8px}.broadcast-side{margin-top:18px}.broadcast-subs{grid-template-columns:1fr}.pitch-stage{min-height:560px}.football-pitch{width:min(760px,96%)}}
     @media(max-width:700px){.broadcast-lineup{min-height:0}.broadcast-top{padding:20px 12px 8px}.broadcast-kicker{font-size:24px}.formation-badge{font-size:12px;min-width:68px;padding:8px 10px}.broadcast-grid{grid-template-columns:minmax(0,1fr) 132px;gap:6px;padding:0 5px 14px}.pitch-stage{min-height:500px;padding:26px 0 18px}.football-pitch{width:96%;aspect-ratio:72/104;transform:none}.player-marker{width:68px;height:92px;transform:translate(-50%,-50%) scale(var(--depth,1))}.kit-player{width:62px;height:60px}.kit-shirt{width:43px;height:49px}.kit-back-name{display:none!important}.kit-front-number,.kit-back-number{top:13px;font-size:24px}.kit-collar{width:15px;height:6px;border-width:2px}.player-pos{right:0;top:36px;font-size:5px;min-width:20px;padding:3px}.player-name{bottom:0;width:68px;min-height:23px;font-size:6.2px;padding:4px 3px;letter-spacing:.1px}.player-ground-shadow{bottom:17px;width:40px;height:9px}.broadcast-side{margin-top:14px;margin-bottom:14px}.broadcast-side-head{padding:9px 8px;font-size:10px}.broadcast-subs{grid-template-columns:1fr;padding:3px 0}.broadcast-sub{grid-template-columns:24px 25px minmax(0,1fr);gap:4px;padding:5px 5px}.sub-photo{width:22px;height:27px}.sub-num{height:21px;font-size:8px}.sub-name{font-size:7px}.sub-time{display:none}}
+    .pre-lineup-subs-panel{margin-bottom:22px;border-color:rgba(216,173,69,.22);background:linear-gradient(145deg,rgba(216,173,69,.07),rgba(16,16,16,.96) 32%)}
+    .pre-lineup-subs-panel .pre-lineup-subs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:18px;overflow:visible}
+    .pre-lineup-subs-panel .broadcast-sub{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px;border:1px solid rgba(255,255,255,.07);border-radius:12px;background:#111}
+    .pre-lineup-subs-panel .sub-name{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pre-lineup-subs-panel .broadcast-sub::after{content:attr(title);color:#d8ad45;font-size:10px;font-weight:900;white-space:nowrap}
+    @media(max-width:700px){.pre-lineup-subs-panel .pre-lineup-subs{grid-template-columns:1fr;padding:12px}}
     .empty{padding:20px;color:#777;text-align:center}
     .status-note{padding:14px 18px;border-top:1px solid rgba(255,255,255,.07);color:#777;font-size:11px}
     .error-card{padding:22px;border:1px solid rgba(216,0,31,.35);border-radius:16px;background:rgba(216,0,31,.06);color:#ddd}
@@ -919,7 +925,15 @@
 
         <div id="matchError" class="error-card" hidden></div>
 
-        
+        <section class="match-panel pre-lineup-subs-panel" id="matchSubstitutionsPanel">
+          <div class="match-panel-head">
+            <p>MATCH EVENTS</p>
+            <h2>Substitutions</h2>
+          </div>
+          <div class="broadcast-subs pre-lineup-subs" id="substitutes">
+            <div class="empty">Loading substitutions…</div>
+          </div>
+        </section>
 
 <section class="details-grid" id="lineupSection">
           <article class="match-panel formation-panel">
@@ -948,12 +962,7 @@
                     <div class="pitch-empty">Loading starting lineup…</div>
                   </div>
                 </div>
-                <aside class="broadcast-side">
-                  <div class="broadcast-side-head">Substitutes</div>
-                  <div class="broadcast-subs" id="substitutes">
-                    <div class="empty">Loading substitutions…</div>
-                  </div>
-                </aside>
+                
               </div>
               </div>
             </div>
