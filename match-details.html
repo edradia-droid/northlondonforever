@@ -1087,21 +1087,60 @@
     function resolveFormationSlots(starters, formation){
       const template = [...FORMATION_SLOTS[normalizedFormation(formation)]];
       const used = new Set();
+
+      // Exact Arsenal tactical roles are preferred whenever Record Room has
+      // them. This prevents a left-sided player from ever being rendered in
+      // the corresponding right-sided slot.
+      const PLAYER_ROLE_OVERRIDES = {
+        'david raya':'GK',
+        'ben white':'RB',
+        'cristhian mosquera':'RCB',
+        'ezri konsa':'RCB',
+        'gabriel magalhães':'LCB',
+        'riccardo calafiori':'LB',
+        'declan rice':'LDM',
+        'myles lewis-skelly':'RDM',
+        'martin ødegaard':'CAM',
+        'bukayo saka':'RW',
+        'christos tzolis':'LW',
+        'kai havertz':'ST'
+      };
+
       return starters.map((row,index) => {
-        const raw = String(row.pitch_slot ?? '').trim().toUpperCase();
-        const numeric = Number(raw);
-        // Record Room may store pitch_slot as 1–11. Those numbers map directly
-        // to the formation's ordered tactical slots.
-        let requested = raw;
-        if (Number.isInteger(numeric) && numeric >= 1 && numeric <= template.length) {
-          requested = template[numeric - 1];
-        } else if (requested === 'AM') {
-          requested = 'CAM';
+        const nameKey = String(row.player_name || '').trim().toLowerCase();
+        const rawPitch = String(row.pitch_slot ?? '').trim().toUpperCase();
+        const rawPosition = String(row.position ?? '').trim().toUpperCase();
+        const numeric = Number(rawPitch);
+
+        // 1. Specific tactical role stored by Record Room.
+        let requested = (!Number.isInteger(numeric) && rawPitch) ? rawPitch : '';
+        if (requested === 'AM') requested = 'CAM';
+
+        // 2. Exact Arsenal player-role safeguard for older Record Room rows
+        // that only contain broad DEF/MID/FWD labels or numeric pitch slots.
+        if (!requested || !template.includes(requested)) {
+          const playerRole = PLAYER_ROLE_OVERRIDES[nameKey];
+          if (playerRole && template.includes(playerRole)) requested = playerRole;
         }
+
+        // 3. Exact position field if it is already tactical (LB/RB/LW/RW/etc).
+        if ((!requested || !template.includes(requested)) &&
+            rawPosition && template.includes(rawPosition)) {
+          requested = rawPosition;
+        }
+
+        // 4. Legacy numeric Record Room slot. This is only a fallback now.
+        if ((!requested || !template.includes(requested)) &&
+            Number.isInteger(numeric) && numeric >= 1 && numeric <= template.length) {
+          requested = template[numeric - 1];
+        }
+
+        // Never allow a duplicate role to push a player into the opposite side.
         if (requested && template.includes(requested) && !used.has(requested)) {
           used.add(requested);
           return requested;
         }
+
         const open = template.find(slot => !used.has(slot));
         const slot = open || template[index] || 'CM';
         used.add(slot);
