@@ -1065,7 +1065,7 @@
       LWB:[10,57], RWB:[90,57],
       DM:[50,58], LDM:[35,59], RDM:[65,59],
       LM:[11,45], LCM:[34,47], CM:[50,47], RCM:[66,47], RM:[89,45],
-      LAM:[27,34], CAM:[50,33], RAM:[73,34],
+      LAM:[27,34], CAM:[50,33], RAM:[73,34], AM:[50,33],
       LW:[12,20], RW:[88,20], ST:[50,15], LST:[35,18], RST:[65,18]
     };
 
@@ -1075,7 +1075,8 @@
       '4-4-2':['GK','LB','LCB','RCB','RB','LM','LCM','RCM','RM','LST','RST'],
       '3-4-3':['GK','LCB','CB','RCB','LM','LCM','RCM','RM','LW','ST','RW'],
       '3-5-2':['GK','LCB','CB','RCB','LWB','LCM','CM','RCM','RWB','LST','RST'],
-      '4-1-4-1':['GK','LB','LCB','RCB','RB','DM','LM','LCM','RCM','RM','ST']
+      '4-1-4-1':['GK','LB','LCB','RCB','RB','DM','LM','LCM','RCM','RM','ST'],
+      '4-5-1':['GK','LB','LCB','RCB','RB','LDM','RDM','LM','CAM','RM','ST']
     };
 
     function normalizedFormation(value){
@@ -1087,7 +1088,16 @@
       const template = [...FORMATION_SLOTS[normalizedFormation(formation)]];
       const used = new Set();
       return starters.map((row,index) => {
-        const requested = String(row.pitch_slot || '').trim().toUpperCase();
+        const raw = String(row.pitch_slot ?? '').trim().toUpperCase();
+        const numeric = Number(raw);
+        // Record Room may store pitch_slot as 1–11. Those numbers map directly
+        // to the formation's ordered tactical slots.
+        let requested = raw;
+        if (Number.isInteger(numeric) && numeric >= 1 && numeric <= template.length) {
+          requested = template[numeric - 1];
+        } else if (requested === 'AM') {
+          requested = 'CAM';
+        }
         if (requested && template.includes(requested) && !used.has(requested)) {
           used.add(requested);
           return requested;
@@ -1103,7 +1113,7 @@
       return String(name || 'A').trim().split(/\s+/).slice(0,2).map(x => x[0] || '').join('').toUpperCase();
     }
 
-    function render3DPitch(starters, mediaMap = new Map()){
+    function render3DPitch(starters, mediaMap = new Map(), fixtureFormation = ''){
       const exportBoard = document.getElementById('lineupPhotoExport');
       if (exportBoard) exportBoard.classList.toggle('has-lineup', starters.length > 0);
       const markings = '<span class="penalty-box top"></span><span class="goal-box top"></span><span class="goal-net top"></span><span class="penalty-box bottom"></span><span class="goal-box bottom"></span><span class="goal-net bottom"></span><span class="centre-spot"></span>';
@@ -1112,22 +1122,18 @@
         els.formationBadge.textContent = 'TBC';
         return;
       }
-      const formation = normalizedFormation(starters.find(r => r.formation)?.formation);
+      const formation = normalizedFormation(fixtureFormation || starters.find(r => r.formation)?.formation);
       els.formationBadge.textContent = formation;
       const resolvedSlots = resolveFormationSlots(starters, formation);
       const figures = starters.map((row,index) => {
         const slot = resolvedSlots[index];
         const [fallbackX,fallbackY] = PITCH_COORDS[slot] || PITCH_COORDS.CM;
 
-        // Admin Manual Touch Lineup is the source of truth.
-        // Use each player's exact saved coordinates whenever present.
-        const savedX = Number(row.position_x);
-        const savedY = Number(row.position_y);
-        const hasSavedX = row.position_x !== null && row.position_x !== undefined && row.position_x !== '' && Number.isFinite(savedX);
-        const hasSavedY = row.position_y !== null && row.position_y !== undefined && row.position_y !== '' && Number.isFinite(savedY);
-
-        const x = hasSavedX ? Math.max(0, Math.min(100, savedX)) : fallbackX;
-        const y = hasSavedY ? Math.max(0, Math.min(100, savedY)) : fallbackY;
+        // Record Room formation + tactical slot are the source of truth.
+        // Coordinates are always derived from the formation slot so players
+        // cannot appear in arbitrary/random pitch positions.
+        const x = fallbackX;
+        const y = fallbackY;
 
         // Depth is visual only; x/y are never reordered by shirt number or query order.
         const depth = (0.78 + (y/100)*0.24).toFixed(2);
@@ -1320,7 +1326,7 @@
       const subs = (lineup || []).filter(row => !row.is_starter);
 
       const playerMedia = await loadPlayerMedia(lineup || []);
-      render3DPitch(starters, playerMedia);
+      render3DPitch(starters, playerMedia, fixture.lineup_formation);
 
       els.subs.innerHTML = subs.length
         ? subs.map(row => rowHtml(row, playerMedia)).join("")
