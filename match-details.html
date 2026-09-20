@@ -1273,6 +1273,7 @@
         const safeShirtNumber = (shirtNumber === '—' || shirtNumber === '-' || shirtNumber == null) ? '' : shirtNumber;
         const shirtName = String(displayName).trim().split(/\s+/).slice(-1)[0] || 'ARSENAL';
         const normalizePlayerKey = value => String(value || "")
+          .replace(/[Øø]/g, 'o')
           .normalize('NFD')
           .replace(/[\u0300-\u036f]/g, '')
           .replace(/[^a-z0-9]+/gi, '')
