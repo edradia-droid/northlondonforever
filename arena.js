@@ -1,4 +1,4 @@
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+import * as THREE from "three";
 import {OrbitControls} from "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/controls/OrbitControls.js";
 const DATA={formation:"4-3-3",starters:[
 {name:"David Raya",number:22,pos:"GK",x:0,y:-38},{name:"Ben White",number:4,pos:"RB",x:30,y:-22},{name:"William Saliba",number:2,pos:"CB",x:10,y:-27},{name:"Gabriel",number:6,pos:"CB",x:-10,y:-27},{name:"Riccardo Calafiori",number:33,pos:"LB",x:-30,y:-22},{name:"Martin Ødegaard",number:8,pos:"CM",x:24,y:2},{name:"Declan Rice",number:41,pos:"DM",x:0,y:-2},{name:"Mikel Merino",number:23,pos:"CM",x:-24,y:2},{name:"Bukayo Saka",number:7,pos:"RW",x:30,y:30},{name:"Viktor Gyökeres",number:14,pos:"ST",x:0,y:34},{name:"Gabriel Martinelli",number:11,pos:"LW",x:-30,y:30}],bench:[
