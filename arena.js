@@ -11,6 +11,8 @@ try{
   renderer.shadowMap.enabled=true;
   renderer.outputColorSpace=THREE.SRGBColorSpace;
   root.appendChild(renderer.domElement);
+  const staticArena=document.querySelector("#staticArena");
+  if(staticArena) staticArena.style.display="none";
 }catch(error){
   console.error("NL4 3D Arena WebGL initialization failed:",error);
   const fallback=document.createElement("div");
