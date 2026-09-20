@@ -905,10 +905,18 @@
   font-weight:900!important;
 }
 .pitch-substitution-out{
-  display:inline-flex!important;
+  display:flex!important;
   align-items:center!important;
-  margin-left:5px!important;
+  justify-content:center!important;
+  width:100%!important;
+  margin:2px 0 0!important;
   font-weight:1000!important;
+  white-space:nowrap!important;
+}
+.player-name{
+  white-space:nowrap!important;
+}
+.player-name .pitch-substitution-out{
   white-space:nowrap!important;
 }
 .pitch-substitution-out .substitution-time{
@@ -1495,11 +1503,27 @@
         .filter(row => row.is_starter && Number.isFinite(Number(row.minute_off)))
         .sort((a,b) => Number(a.minute_off) - Number(b.minute_off));
 
+      // Pair every incoming player with the corresponding outgoing player by substitution minute.
+      // Keep all rows; do not truncate the match to a fixed number of substitutions.
       const substitutionRows = incoming.map(inn => {
         const minute = Number(inn.minute_on);
         const out = outgoing.find(row => Number(row.minute_off) === minute);
         return { inPlayer: inn.player_name, outPlayer: out?.player_name || "", minute };
       });
+
+      // Some feeds can contain incomplete minute pairs. Preserve those entries and also
+      // surface unmatched outgoing players so no valid removal is silently lost.
+      const pairedOutNames = new Set(
+        substitutionRows.filter(row => row.outPlayer).map(row => String(row.outPlayer).trim().toLowerCase())
+      );
+      outgoing.forEach(out => {
+        const key = String(out.player_name || "").trim().toLowerCase();
+        const minute = Number(out.minute_off);
+        if (key && Number.isFinite(minute) && !pairedOutNames.has(key)) {
+          substitutionRows.push({ inPlayer: "", outPlayer: out.player_name, minute });
+        }
+      });
+      substitutionRows.sort((a,b) => Number(a.minute) - Number(b.minute));
 
       const exactSubHtml = substitutionRows.map(row => {
         const minuteText = `${row.minute}’`;
