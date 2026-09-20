@@ -1620,12 +1620,12 @@
       const usedNames = new Map(
         substitutionRows
           .filter(row => row.inPlayer)
-          .map(row => [String(row.inPlayer).trim().toLowerCase(), row])
+          .map(row => [normalizePlayerKey(row.inPlayer), row])
       );
 
       const completeBench = recordRoomBench.length
         ? recordRoomBench.map(row => {
-            const key = String(row.player_name || "").trim().toLowerCase();
+            const key = normalizePlayerKey(row.player_name);
             const used = usedNames.get(key);
             const minute = used ? `<span class="substitution-time">${esc(used.minute)}’</span>` : "";
             const state = used
