@@ -1522,8 +1522,12 @@
         return { inPlayer: inn.player_name, outPlayer: out?.player_name || "", minute };
       });
 
-      // Preserve any unmatched valid outgoing rows rather than silently dropping them.
+      // A minute 90 starter may simply have completed the match. Only show
+      // minute-90 OUT when it was matched to a real minute-90 IN substitution.
+      // For earlier minutes, preserve unmatched outgoing rows so valid
+      // substitution data is never silently dropped.
       outgoingByMinute.forEach((remaining, minute) => {
+        if (Number(minute) >= 90) return;
         remaining.forEach(out => {
           if (out?.player_name) {
             substitutionRows.push({ inPlayer: "", outPlayer: out.player_name, minute });
