@@ -7,12 +7,6 @@ on:
     paths:
       - '.github/workflows/deploy-3d-arena.yml'
   workflow_dispatch:
-    inputs:
-      deploy_branch:
-        description: Branch to deploy
-        required: true
-        default: 3d-arena-publish
-        type: string
 
 permissions:
   contents: read
@@ -33,13 +27,26 @@ jobs:
       - name: Checkout Arena branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.deploy_branch }}
+          ref: 3d-arena-publish
+          fetch-depth: 1
+
+      - name: Verify Arena files
+        run: |
+          test -f index.html
+          test -f arena.css
+          test -f arena.js
+          grep -q 'NL4 3D Matchday Arena' index.html
+          grep -q 'WebGLRenderer' arena.js
+          echo "Arena files verified."
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
+
       - name: Upload Arena
         uses: actions/upload-pages-artifact@v3
         with:
           path: .
+
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
