@@ -26,3 +26,5 @@
 .formation-card,.mode-card{position:relative;z-index:101!important;display:block!important;visibility:visible!important;opacity:1!important}
 .pitch-controls{position:absolute!important;z-index:101!important;display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
 .controls{position:relative;z-index:101!important;display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+
+.player-focus{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:120;min-width:220px;padding:11px 15px;border:1px solid rgba(255,255,255,.14);border-radius:14px;background:rgba(3,12,8,.82);backdrop-filter:blur(16px);box-shadow:0 16px 40px rgba(0,0,0,.35);text-align:center;pointer-events:none}.player-focus span,.player-focus small{display:block;color:#9aa9a1;font-size:8px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.player-focus strong{display:block;margin:3px 0;font-size:13px}.player-row.selected{box-shadow:inset 3px 0 0 var(--green)}@media(max-width:560px){.player-focus{bottom:12px;min-width:190px}.player-focus strong{font-size:12px}}
