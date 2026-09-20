@@ -1248,7 +1248,10 @@
       const outgoingByName = new Map(
         substitutionRows
           .filter(row => row.outPlayer && Number.isFinite(Number(row.minute)))
-          .map(row => [String(row.outPlayer).trim().toLowerCase(), Number(row.minute)])
+          .map(row => [
+            String(row.outPlayer).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/gi, '').toLowerCase(),
+            Number(row.minute)
+          ])
       );
       const figures = starters.map((row,index) => {
         const slot = resolvedSlots[index];
@@ -1269,7 +1272,12 @@
           : currentShirtNumber(displayName);
         const safeShirtNumber = (shirtNumber === '—' || shirtNumber === '-' || shirtNumber == null) ? '' : shirtNumber;
         const shirtName = String(displayName).trim().split(/\s+/).slice(-1)[0] || 'ARSENAL';
-        const offMinute = outgoingByName.get(String(displayName).trim().toLowerCase());
+        const normalizePlayerKey = value => String(value || "")
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]+/gi, '')
+          .toLowerCase();
+        const offMinute = outgoingByName.get(normalizePlayerKey(displayName));
         const outgoingBadge = Number.isFinite(offMinute)
           ? `<span class="pitch-substitution-out" aria-label="Substituted off at ${esc(offMinute)} minutes"><span class="substitution-arrow out" aria-hidden="true">↓</span><span class="substitution-time">${esc(offMinute)}’</span></span>`
           : '';
@@ -1509,15 +1517,35 @@
         .order("created_at", { ascending:true })
         .order("id", { ascending:true });
 
+      // match_events is the authoritative substitution source:
+      // player_name = IN, related_player_name = OUT.
+      // Keep every event as its own row so simultaneous substitutions retain
+      // their exact IN -> OUT relationship and order.
       const substitutionRows = (substitutionEvents || [])
         .filter(row => row.player_name)
-        .map(row => ({
-          inPlayer: row.player_name,
-          outPlayer: row.related_player_name || "",
+        .map((row, index) => ({
+          inPlayer: String(row.player_name).trim(),
+          outPlayer: String(row.related_player_name || "").trim(),
           minute: Number(row.minute),
           stoppageMinute: Number.isFinite(Number(row.stoppage_minute)) ? Number(row.stoppage_minute) : null,
-          externalEventId: row.external_event_id || ""
-        }));
+          externalEventId: row.external_event_id || "",
+          _sourceOrder: index
+        }))
+        .filter(row => row.inPlayer && Number.isFinite(row.minute))
+        .sort((a, b) => {
+          const minuteDiff = a.minute - b.minute;
+          if (minuteDiff) return minuteDiff;
+
+          const stoppageA = Number.isFinite(a.stoppageMinute) ? a.stoppageMinute : -1;
+          const stoppageB = Number.isFinite(b.stoppageMinute) ? b.stoppageMinute : -1;
+          if (stoppageA !== stoppageB) return stoppageA - stoppageB;
+
+          const externalA = String(a.externalEventId || "");
+          const externalB = String(b.externalEventId || "");
+          if (externalA !== externalB) return externalA.localeCompare(externalB);
+
+          return a._sourceOrder - b._sourceOrder;
+        });
 
       // Fallback only for fixtures where substitution events have not been
       // recorded yet. Keep the exact-minute pairing logic as a safe backup.
