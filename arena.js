@@ -23,6 +23,46 @@ function fillLists(){
 }
 fillLists();
 
+const normalizeArtworkName=value=>String(value||"")
+  .replace(/[Øø]/g,"o")
+  .normalize("NFD")
+  .replace(/[\u0300-\\u036f]/g,"")
+  .replace(/[^a-z0-9]+/gi,"")
+  .toLowerCase();
+
+let artworkManifestPromise=null;
+async function loadArtworkManifest(){
+  if(artworkManifestPromise) return artworkManifestPromise;
+  artworkManifestPromise=fetch("./player-assets/manifest.json?v=20260920",{cache:"no-store"})
+    .then(res=>res.ok?res.json():{})
+    .catch(()=>({}));
+  return artworkManifestPromise;
+}
+
+async function renderStaticPlayerPhotos(){
+  if(!staticPitch) return;
+  const manifest=await loadArtworkManifest();
+  staticPitch.querySelectorAll(".arena-photo-player").forEach(el=>el.remove());
+  DATA.starters.forEach(async p=>{
+    const url=manifest[normalizeArtworkName(p.name)];
+    if(!url) return;
+    const photo=document.createElement("img");
+    photo.className="arena-photo-player";
+    photo.alt=p.name;
+    photo.title=p.name;
+    photo.draggable=false;
+    photo.loading="eager";
+    photo.style.left=(50+(p.x/60)*42)+"%";
+    photo.style.top=(50-(p.y/72)*43)+"%";
+    photo.style.height=(p.pos==="GK"?"170px":"190px");
+    photo.src=url;
+    photo.addEventListener("click",()=>selectPlayer(p));
+    photo.onerror=()=>photo.remove();
+    staticPitch.appendChild(photo);
+  });
+}
+renderStaticPlayerPhotos();
+
 function initCssFallback(){
   if(staticArena) staticArena.style.display="grid";
   document.querySelectorAll(".fallback-message,.arena-fallback").forEach(e=>e.remove());
