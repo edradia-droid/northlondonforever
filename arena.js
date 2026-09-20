@@ -56,7 +56,7 @@ async function renderStaticPlayerPhotos(){
     photo.style.top=(50-(p.y/58)*42)+"%";
     photo.style.height=(p.pos==="GK"?"145px":"155px");
     photo.src=url;
-    photo.addEventListener("click",()=>selectPlayer(p));
+    photo.addEventListener("click",(event)=>{event.stopPropagation();selectPlayer(p);});
     photo.onerror=()=>photo.remove();
     staticPitch.appendChild(photo);
   });
@@ -131,7 +131,7 @@ if(typeof THREE==="undefined"){
         photo.style.top=(50-(p.y/58)*42)+"%";
         photo.style.height=(p.pos==="GK"?"82px":"92px");
         photo.dataset.player=p.name;
-        photo.addEventListener("click",()=>selectPlayer(p));
+        photo.addEventListener("click",(event)=>{event.stopPropagation();selectPlayer(p);});
         staticPitch.appendChild(photo);
         addGroundShadow(g);
       };
