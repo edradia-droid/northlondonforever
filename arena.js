@@ -139,13 +139,6 @@ if(typeof THREE==="undefined"){
     }
 
 
-      if(artworkManifestPromise) return artworkManifestPromise;
-      artworkManifestPromise=fetch("./player-assets/manifest.json",{cache:"no-store"})
-        .then(res=>res.ok?res.json():{})
-        .catch(()=>({}));
-      return artworkManifestPromise;
-    }
-
     async function resolvePlayerRender(p){
       const manifest=await loadArtworkManifest();
       return manifest[normalizeArtworkName(p.name)] || null;
