@@ -1515,7 +1515,8 @@
           inPlayer: row.player_name,
           outPlayer: row.related_player_name || "",
           minute: Number(row.minute),
-          stoppageMinute: Number.isFinite(Number(row.stoppage_minute)) ? Number(row.stoppage_minute) : null
+          stoppageMinute: Number.isFinite(Number(row.stoppage_minute)) ? Number(row.stoppage_minute) : null,
+          externalEventId: row.external_event_id || ""
         }));
 
       // Fallback only for fixtures where substitution events have not been
