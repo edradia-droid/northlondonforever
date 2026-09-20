@@ -1,10 +1,13 @@
 name: Deploy NL4 3D Matchday Arena
 
 on:
-  push:
-    branches:
-      - 3d-arena-publish
   workflow_dispatch:
+    inputs:
+      deploy_branch:
+        description: Branch to deploy
+        required: true
+        default: 3d-arena-publish
+        type: string
 
 permissions:
   contents: read
@@ -22,11 +25,13 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout Arena branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.deploy_branch }}
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - name: Upload site
+      - name: Upload Arena
         uses: actions/upload-pages-artifact@v3
         with:
           path: .
