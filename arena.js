@@ -98,17 +98,34 @@ if(typeof THREE==="undefined"){
       photo.onerror=()=>addFallbackPlayer(p,g);
     }
 
+    const normalizeArtworkName=value=>String(value||"")
+      .replace(/[Øø]/g,"o")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g,"")
+      .replace(/[^a-z0-9]+/gi,"")
+      .toLowerCase();
+
+    let arsenalArtworkPromise=null;
+    async function loadArsenalArtwork(){
+      if(arsenalArtworkPromise) return arsenalArtworkPromise;
+      arsenalArtworkPromise=(async()=>{
+        try{
+          const res=await fetch("https://www.thesportsdb.com/api/v1/json/123/lookup_all_players.php?id=133604");
+          if(!res.ok) throw new Error("Arsenal roster artwork lookup failed");
+          const json=await res.json();
+          return json.player||[];
+        }catch(error){
+          return [];
+        }
+      })();
+      return arsenalArtworkPromise;
+    }
+
     async function resolvePlayerRender(p){
-      try{
-        const q=encodeURIComponent(p.name.replace(/\s+/g,"_"));
-        const res=await fetch("https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p="+q);
-        if(!res.ok) throw new Error("player lookup failed");
-        const json=await res.json();
-        const player=(json.player||[]).find(x=>String(x.strTeam||"").toLowerCase().includes("arsenal")) || (json.player||[])[0];
-        return player && (player.strRender || player.strCutout || player.strThumb || null);
-      }catch(error){
-        return null;
-      }
+      const roster=await loadArsenalArtwork();
+      const key=normalizeArtworkName(p.name);
+      const player=roster.find(x=>normalizeArtworkName(x.strPlayer)===key);
+      return player && (player.strRender || player.strCutout || player.strThumb || null);
     }
 
     async function createPlayer(p){
