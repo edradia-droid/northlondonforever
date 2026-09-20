@@ -94,7 +94,9 @@ jobs:
               if (!imageResponse.ok) throw new Error('image ' + imageResponse.status);
               const buffer = Buffer.from(await imageResponse.arrayBuffer());
               const extMatch = new URL(imageUrl).pathname.match(/\.[a-z0-9]+$/i);
-              const ext = extMatch ? extMatch[1].slice(1).toLowerCase() : 'png';
+              const contentType = String(imageResponse.headers.get('content-type') || '').toLowerCase();
+              const extFromType = contentType.includes('webp') ? 'webp' : contentType.includes('jpeg') || contentType.includes('jpg') ? 'jpg' : contentType.includes('gif') ? 'gif' : 'png';
+              const ext = extMatch ? extMatch[0].slice(1).toLowerCase() : extFromType;
               const filename = key + '.' + ext;
               fs.writeFileSync(path.join('_site/3d-arena/player-assets', filename), buffer);
               manifest[key] = './player-assets/' + filename;
