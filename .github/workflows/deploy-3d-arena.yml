@@ -62,7 +62,6 @@ jobs:
           const normalize = value => String(value || '')
             .replace(/[Øø]/g, 'o')
             .normalize('NFD')
-            .replace(/[\\u0300-\\u036f]/g, '')
             .replace(/[^a-z0-9]+/gi, '')
             .toLowerCase();
 
@@ -100,6 +99,7 @@ jobs:
           (async () => {
             for (const name of players) await downloadPlayer(name);
             fs.writeFileSync('player-assets/manifest.json', JSON.stringify(manifest, null, 2));
+            if (Object.keys(manifest).length < 11) throw new Error('Too few player artworks downloaded: ' + Object.keys(manifest).length);
             console.log('Artwork manifest:', manifest);
           })().catch(error => {
             console.error(error);
