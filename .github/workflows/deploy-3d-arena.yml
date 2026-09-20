@@ -12,7 +12,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: nl4-3d-arena-pages
   cancel-in-progress: true
 
 jobs:
@@ -22,14 +22,33 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout Arena branch
         uses: actions/checkout@v4
+        with:
+          ref: 3d-arena-publish
+          fetch-depth: 1
+
+      - name: Verify Arena source
+        run: |
+          test -f index.html
+          test -f arena.css
+          test -f arena.js
+          grep -q 'NL4 3D Matchday Arena' index.html
+          grep -q 'initCssFallback' arena.js
+          if grep -q '3D renderer unavailable' arena.js arena.css index.html; then
+            echo "Old renderer error text is still present."
+            exit 1
+          fi
+          echo "Arena source verified."
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - name: Upload site
-        uses: actions/upload-pages-artifact@v3
+
+      - name: Upload Arena artifact
+        uses: actions/upload-pages-artifact@v4
         with:
           path: .
-      - name: Deploy
+
+      - name: Deploy Arena
         id: deployment
         uses: actions/deploy-pages@v4
