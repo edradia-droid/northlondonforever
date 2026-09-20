@@ -1,5 +1,4 @@
 name: Deploy NL4 3D Matchday Arena
-# Redeploy Arena branch when this workflow is updated.
 
 on:
   push:
@@ -51,3 +50,4 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+# Arena visibility fix redeploy
