@@ -52,9 +52,9 @@ async function renderStaticPlayerPhotos(){
     photo.title=p.name;
     photo.draggable=false;
     photo.loading="eager";
-    photo.style.left=(50+(p.x/60)*42)+"%";
-    photo.style.top=(50-(p.y/72)*43)+"%";
-    photo.style.height=(p.pos==="GK"?"170px":"190px");
+    photo.style.left=(50+(p.x/48)*44)+"%";
+    photo.style.top=(50-(p.y/58)*42)+"%";
+    photo.style.height=(p.pos==="GK"?"145px":"155px");
     photo.src=url;
     photo.addEventListener("click",()=>selectPlayer(p));
     photo.onerror=()=>photo.remove();
@@ -127,9 +127,9 @@ if(typeof THREE==="undefined"){
       photo.draggable=false;
       photo.src=url;
       photo.onload=()=>{
-        photo.style.left=(50+(p.x/60)*42)+"%";
-        photo.style.top=(50-(p.y/72)*43)+"%";
-        photo.style.height=(p.pos==="GK"?"92px":"108px");
+        photo.style.left=(50+(p.x/48)*44)+"%";
+        photo.style.top=(50-(p.y/58)*42)+"%";
+        photo.style.height=(p.pos==="GK"?"82px":"92px");
         photo.dataset.player=p.name;
         photo.addEventListener("click",()=>selectPlayer(p));
         staticPitch.appendChild(photo);
