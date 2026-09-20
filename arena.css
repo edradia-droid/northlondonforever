@@ -10,3 +10,9 @@
 .pitch-player{position:absolute;z-index:4;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#b5000d;color:#fff;border:2px solid #fff;font-size:10px;font-weight:950;box-shadow:0 8px 16px rgba(0,0,0,.45);transform:translate(-50%,-50%)}
 .p1{left:50%;top:84%}.p2{left:73%;top:69%}.p3{left:58%;top:72%}.p4{left:42%;top:72%}.p5{left:27%;top:69%}.p6{left:68%;top:50%}.p7{left:50%;top:54%}.p8{left:32%;top:50%}.p9{left:73%;top:29%}.p10{left:50%;top:22%}.p11{left:27%;top:29%}
 @media(max-width:700px){.static-pitch{width:min(62%,330px);height:70%;min-height:360px}.pitch-player{width:27px;height:27px;font-size:8px}}
+
+/* Layering fix: keep the HUD and camera controls above the CSS 3D fallback pitch. */
+.topbar{position:relative;z-index:20}
+.hud{z-index:10}
+.pitch-controls{z-index:10}
+#staticArena{pointer-events:none}
