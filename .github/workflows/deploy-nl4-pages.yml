@@ -78,16 +78,32 @@ jobs:
 
           async function downloadPlayer(name) {
             const key = normalize(name);
-            const api = 'https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p=' + encodeURIComponent(name.replace(/\s+/g, '_'));
+            const aliases = name === 'Gabriel'
+              ? ['Gabriel_Magalhaes', 'Gabriel_Magalhães', 'Gabriel']
+              : [name.replace(/\\s+/g, '_')];
             try {
-              const response = await fetch(api);
-              if (!response.ok) throw new Error('API ' + response.status);
-              const json = await response.json();
-              const list = Array.isArray(json.player) ? json.player : [];
+              let list = [];
+              for (const alias of aliases) {
+                const api = 'https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p=' + encodeURIComponent(alias);
+                const response = await fetch(api);
+                if (!response.ok) continue;
+                const json = await response.json();
+                if (Array.isArray(json.player)) list.push(...json.player);
+              }
+              const seen = new Set();
+              list = list.filter(x => {
+                const id = String(x.idPlayer || x.strPlayer || '');
+                if (seen.has(id)) return false;
+                seen.add(id);
+                return true;
+              });
+              const arsenalPlayers = list.filter(x => String(x.strTeam || '').toLowerCase().includes('arsenal'));
               const player =
-                list.find(x => normalize(x.strPlayer) === key && String(x.strTeam || '').toLowerCase() === 'arsenal') ||
+                arsenalPlayers.find(x => normalize(x.strPlayer) === key) ||
+                arsenalPlayers.find(x => name === 'Gabriel' && /gabriel.*magalh/i.test(String(x.strPlayer || ''))) ||
+                arsenalPlayers[0] ||
                 list.find(x => normalize(x.strPlayer) === key) ||
-                list.find(x => String(x.strTeam || '').toLowerCase() === 'arsenal');
+                list[0];
               const imageUrl = player && (player.strRender || player.strCutout || player.strThumb);
               if (!imageUrl) throw new Error('no artwork');
               const imageResponse = await fetch(imageUrl);
