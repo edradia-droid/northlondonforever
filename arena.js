@@ -101,31 +101,23 @@ if(typeof THREE==="undefined"){
     const normalizeArtworkName=value=>String(value||"")
       .replace(/[Øø]/g,"o")
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g,"")
+      .replace(/[\\u0300-\\u036f]/g,"")
       .replace(/[^a-z0-9]+/gi,"")
       .toLowerCase();
 
-    const artworkCache=new Map();
+    let artworkManifestPromise=null;
+
+    async function loadArtworkManifest(){
+      if(artworkManifestPromise) return artworkManifestPromise;
+      artworkManifestPromise=fetch("./player-assets/manifest.json",{cache:"no-store"})
+        .then(res=>res.ok?res.json():{})
+        .catch(()=>({}));
+      return artworkManifestPromise;
+    }
 
     async function resolvePlayerRender(p){
-      const key=normalizeArtworkName(p.name);
-      if(artworkCache.has(key)) return artworkCache.get(key);
-      try{
-        const q=encodeURIComponent(p.name.replace(/\s+/g,"_"));
-        const res=await fetch("https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p="+q,{cache:"no-store"});
-        if(!res.ok) throw new Error("player artwork lookup failed");
-        const json=await res.json();
-        const players=json.player||[];
-        const player=players.find(x=>normalizeArtworkName(x.strPlayer)===key && String(x.strTeam||"").toLowerCase()==="arsenal")
-          || players.find(x=>normalizeArtworkName(x.strPlayer)===key)
-          || players.find(x=>String(x.strTeam||"").toLowerCase()==="arsenal");
-        const url=player && (player.strRender || player.strCutout || player.strThumb || null);
-        artworkCache.set(key,url);
-        return url;
-      }catch(error){
-        artworkCache.set(key,null);
-        return null;
-      }
+      const manifest=await loadArtworkManifest();
+      return manifest[normalizeArtworkName(p.name)] || null;
     }
 
     async function createPlayer(p){
