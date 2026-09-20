@@ -1249,7 +1249,7 @@
         substitutionRows
           .filter(row => row.outPlayer && Number.isFinite(Number(row.minute)))
           .map(row => [
-            String(row.outPlayer).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/gi, '').toLowerCase(),
+            normalizePlayerKey(row.outPlayer),
             Number(row.minute)
           ])
       );
@@ -1272,12 +1272,7 @@
           : currentShirtNumber(displayName);
         const safeShirtNumber = (shirtNumber === '—' || shirtNumber === '-' || shirtNumber == null) ? '' : shirtNumber;
         const shirtName = String(displayName).trim().split(/\s+/).slice(-1)[0] || 'ARSENAL';
-        const normalizePlayerKey = value => String(value || "")
-          .replace(/[Øø]/g, 'o')
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/[^a-z0-9]+/gi, '')
-          .toLowerCase();
+
         const offMinute = outgoingByName.get(normalizePlayerKey(displayName));
         const outgoingBadge = Number.isFinite(offMinute)
           ? `<span class="pitch-substitution-out" aria-label="Substituted off at ${esc(offMinute)} minutes"><span class="substitution-arrow out" aria-hidden="true">↓</span><span class="substitution-time">${esc(offMinute)}’</span></span>`
@@ -1518,6 +1513,30 @@
         .order("created_at", { ascending:true })
         .order("id", { ascending:true });
 
+      // Canonical player-name matching for substitution display.
+      // The lineup is the display source of truth, while match_events remains
+      // the authoritative source for the actual IN -> OUT relationship.
+      // This fixes variants such as "Martin Odegaard" vs "Martin Ødegaard"
+      // without changing the underlying substitution event pairing.
+      const normalizePlayerKey = value => String(value || "")
+        .replace(/[Øø]/g, 'o')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/gi, '')
+        .toLowerCase();
+
+      const canonicalPlayerNames = new Map(
+        (lineup || [])
+          .map(row => String(row.player_name || '').trim())
+          .filter(Boolean)
+          .map(name => [normalizePlayerKey(name), name])
+      );
+
+      const canonicalSubstitutionName = value => {
+        const raw = String(value || '').trim();
+        return canonicalPlayerNames.get(normalizePlayerKey(raw)) || raw;
+      };
+
       // match_events is the authoritative substitution source:
       // player_name = IN, related_player_name = OUT.
       // Keep every event as its own row so simultaneous substitutions retain
@@ -1525,8 +1544,8 @@
       const substitutionRows = (substitutionEvents || [])
         .filter(row => row.player_name)
         .map((row, index) => ({
-          inPlayer: String(row.player_name).trim(),
-          outPlayer: String(row.related_player_name || "").trim(),
+          inPlayer: canonicalSubstitutionName(row.player_name),
+          outPlayer: canonicalSubstitutionName(row.related_player_name),
           minute: Number(row.minute),
           stoppageMinute: Number.isFinite(Number(row.stoppage_minute)) ? Number(row.stoppage_minute) : null,
           externalEventId: row.external_event_id || "",
