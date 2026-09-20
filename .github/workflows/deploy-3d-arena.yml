@@ -17,13 +17,13 @@ concurrency:
 
 jobs:
   deploy:
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
     steps:
       - name: Checkout Arena branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: 3d-arena-publish
           fetch-depth: 1
@@ -39,14 +39,11 @@ jobs:
           echo "Clean Arena site prepared:"
           ls -lah _arena_site
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload Arena artifact
+      - name: Upload Arena Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
           path: _arena_site
 
-      - name: Deploy Arena
+      - name: Deploy Arena to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
