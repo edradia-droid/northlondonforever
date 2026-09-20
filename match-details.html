@@ -868,6 +868,58 @@
   border-radius:0!important;
 }
 </style>
+
+<style id="nl4-substitution-arrows-v1">
+/* Substitution status: incoming bench players use green up arrows; outgoing pitch players use red down arrows. */
+.substitution-arrow{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  font-weight:1000!important;
+  line-height:1!important;
+  margin-left:6px!important;
+}
+.substitution-arrow.in{
+  color:#35d66f!important;
+}
+.substitution-arrow.out{
+  color:#ff4b4b!important;
+}
+.substitution-time{
+  font-size:.9em!important;
+  font-weight:900!important;
+  margin-left:3px!important;
+}
+.sub-bench-used{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:2px!important;
+  color:#35d66f!important;
+  font-weight:1000!important;
+}
+.sub-bench-used .substitution-time{
+  color:#35d66f!important;
+}
+.sub-bench-unused{
+  color:#777!important;
+  font-weight:900!important;
+}
+.pitch-substitution-out{
+  display:inline-flex!important;
+  align-items:center!important;
+  margin-left:5px!important;
+  font-weight:1000!important;
+  white-space:nowrap!important;
+}
+.pitch-substitution-out .substitution-time{
+  color:#ff4b4b!important;
+}
+@media(max-width:700px){
+  .substitution-arrow{margin-left:4px!important}
+  .pitch-substitution-out{margin-left:3px!important}
+}
+</style>
+
 </head>
 
 <body class="nl4-unified-sidebar match-details-page">
@@ -1173,7 +1225,7 @@
       return String(name || 'A').trim().split(/\s+/).slice(0,2).map(x => x[0] || '').join('').toUpperCase();
     }
 
-    function render3DPitch(starters, mediaMap = new Map(), fixtureFormation = ''){
+    function render3DPitch(starters, mediaMap = new Map(), fixtureFormation = '', substitutionRows = []){
       const exportBoard = document.getElementById('lineupPhotoExport');
       if (exportBoard) exportBoard.classList.toggle('has-lineup', starters.length > 0);
       const markings = '<span class="penalty-box top"></span><span class="goal-box top"></span><span class="goal-net top"></span><span class="penalty-box bottom"></span><span class="goal-box bottom"></span><span class="goal-net bottom"></span><span class="centre-spot"></span>';
@@ -1185,6 +1237,11 @@
       const formation = normalizedFormation(fixtureFormation || starters.find(r => r.formation)?.formation);
       els.formationBadge.textContent = formation;
       const resolvedSlots = resolveFormationSlots(starters, formation);
+      const outgoingByName = new Map(
+        substitutionRows
+          .filter(row => row.outPlayer && Number.isFinite(Number(row.minute)))
+          .map(row => [String(row.outPlayer).trim().toLowerCase(), Number(row.minute)])
+      );
       const figures = starters.map((row,index) => {
         const slot = resolvedSlots[index];
         const [fallbackX,fallbackY] = PITCH_COORDS[slot] || PITCH_COORDS.CM;
@@ -1204,7 +1261,11 @@
           : currentShirtNumber(displayName);
         const safeShirtNumber = (shirtNumber === '—' || shirtNumber === '-' || shirtNumber == null) ? '' : shirtNumber;
         const shirtName = String(displayName).trim().split(/\s+/).slice(-1)[0] || 'ARSENAL';
-        return `<div class="player-marker" style="--x:${x}%;--y:${y}%;--depth:${depth}" title="${esc(displayName)} • #${esc(safeShirtNumber)}">
+        const offMinute = outgoingByName.get(String(displayName).trim().toLowerCase());
+        const outgoingBadge = Number.isFinite(offMinute)
+          ? `<span class="pitch-substitution-out" aria-label="Substituted off at ${esc(offMinute)} minutes"><span class="substitution-arrow out" aria-hidden="true">↓</span><span class="substitution-time">${esc(offMinute)}’</span></span>`
+          : '';
+        return `<div class="player-marker" style="--x:${x}%;--y:${y}%;--depth:${depth}" title="${esc(displayName)} • #${esc(safeShirtNumber)}${Number.isFinite(offMinute) ? ` • OFF ${esc(offMinute)}’` : ''}">
           <span class="player-ground-shadow"></span>
           <div class="kit-player" aria-label="${esc(displayName)} Arsenal home shirt number ${esc(safeShirtNumber)}">
             <span class="kit-shirt${slot === 'GK' ? ' goalkeeper-kit' : ''}" data-number="${esc(safeShirtNumber)}">
@@ -1213,7 +1274,7 @@
               <span class="kit-back-number">${esc(safeShirtNumber)}</span>
             </span>
           </div>
-          <span class="player-name">${esc(displayName)}</span>
+          <span class="player-name">${esc(displayName)}${outgoingBadge}</span>
         </div>`;
       }).join('');
       els.starters.innerHTML = markings + figures;
@@ -1453,7 +1514,7 @@
       }).join("");
 
       const playerMedia = await loadPlayerMedia(lineup || []);
-      render3DPitch(starters, playerMedia, fixture.lineup_formation);
+      render3DPitch(starters, playerMedia, fixture.lineup_formation, substitutionRows);
 
       const usedNames = new Map(
         substitutionRows
@@ -1465,9 +1526,9 @@
         ? recordRoomBench.map(row => {
             const key = String(row.player_name || "").trim().toLowerCase();
             const used = usedNames.get(key);
-            const minute = used ? `<span class="sub-bench-minute">${esc(used.minute)}’</span>` : "";
+            const minute = used ? `<span class="substitution-time">${esc(used.minute)}’</span>` : "";
             const state = used
-              ? `<span class="sub-bench-used">${minute} USED</span>`
+              ? `<span class="sub-bench-used"><span class="substitution-arrow in" aria-hidden="true">↑</span>${minute}</span>`
               : '<span class="sub-bench-unused">UNUSED</span>';
             return `
               <div class="broadcast-sub sub-bench-row">
