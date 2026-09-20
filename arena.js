@@ -138,15 +138,7 @@ if(typeof THREE==="undefined"){
       photo.onerror=()=>addFallbackPlayer(p,g);
     }
 
-    const normalizeArtworkName=value=>String(value||"")
-      .replace(/[Øø]/g,"o")
-      .normalize("NFD")
-      .replace(/[^a-z0-9]+/gi,"")
-      .toLowerCase();
 
-    let artworkManifestPromise=null;
-
-    async function loadArtworkManifest(){
       if(artworkManifestPromise) return artworkManifestPromise;
       artworkManifestPromise=fetch("./player-assets/manifest.json",{cache:"no-store"})
         .then(res=>res.ok?res.json():{})
