@@ -41,7 +41,7 @@ if(typeof THREE==="undefined"){
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
     const rect=root.getBoundingClientRect(); renderer.setSize(Math.max(1,rect.width),Math.max(1,rect.height),false);
     renderer.shadowMap.enabled=true; renderer.outputColorSpace=THREE.SRGBColorSpace; root.appendChild(renderer.domElement);
-    if(staticArena) staticArena.style.display="none";
+    if(staticArena) staticArena.style.display="grid";
   }catch(error){ initCssFallback(); renderer=null; }
 
   if(renderer){
@@ -80,24 +80,22 @@ if(typeof THREE==="undefined"){
     }
 
     function addImagePlayer(p,g,url){
-      const img=new Image();
-      img.crossOrigin="anonymous";
-      img.onload=()=>{
-        const tex=textureLoader.load(url);
-        tex.colorSpace=THREE.SRGBColorSpace;
-        const ratio=img.naturalWidth/img.naturalHeight || .65;
-        const height=10.5;
-        const mesh=new THREE.Mesh(
-          new THREE.PlaneGeometry(height*ratio,height),
-          new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide,depthWrite:false})
-        );
-        mesh.position.y=height/2;
-        mesh.renderOrder=5;
-        g.add(mesh);
+      const photo=document.createElement("img");
+      photo.className="arena-photo-player";
+      photo.alt=p.name;
+      photo.title=p.name;
+      photo.draggable=false;
+      photo.src=url;
+      photo.onload=()=>{
+        photo.style.left=(50+(p.x/60)*42)+"%";
+        photo.style.top=(50-(p.y/72)*43)+"%";
+        photo.style.height=(p.pos==="GK"?"92px":"108px");
+        photo.dataset.player=p.name;
+        photo.addEventListener("click",()=>selectPlayer(p));
+        staticPitch.appendChild(photo);
         addGroundShadow(g);
       };
-      img.onerror=()=>addFallbackPlayer(p,g);
-      img.src=url;
+      photo.onerror=()=>addFallbackPlayer(p,g);
     }
 
     async function resolvePlayerRender(p){
