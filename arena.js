@@ -156,7 +156,7 @@ if(typeof THREE==="undefined"){
       else addFallbackPlayer(p,g);
     }
 
-    DATA.starters.forEach(p=>createPlayer(p));    const raycaster=new THREE.Raycaster();const pointer=new THREE.Vector2();
+    // Player photos are rendered once by renderStaticPlayerPhotos(). Do not create a second photo layer here; duplicate layers caused clicks to select the player underneath.\n    DATA.starters.forEach(p=>{ const g=new THREE.Group(); g.userData.player=p; g.position.set(p.x,0,p.y); group.add(g); playerMeshes.push(g); addGroundShadow(g); });\n    const raycaster=new THREE.Raycaster();const pointer=new THREE.Vector2();
     renderer.domElement.addEventListener("pointerdown",event=>{const r=renderer.domElement.getBoundingClientRect();pointer.x=((event.clientX-r.left)/r.width)*2-1;pointer.y=-((event.clientY-r.top)/r.height)*2+1;raycaster.setFromCamera(pointer,camera);const hit=raycaster.intersectObjects(playerMeshes,true)[0];if(hit){let o=hit.object;while(o.parent&& !o.userData.player)o=o.parent; if(o.userData.player){selectPlayer(o.userData.player);playerMeshes.forEach(m=>m.scale.setScalar(m===o?1.12:1));}}});
     const setCamera=mode=>{if(mode==="top")camera.position.set(0,125,.1);else if(mode==="tactical")camera.position.set(0,70,118);else camera.position.set(0,55,92)};
     document.querySelectorAll("[data-camera]").forEach(b=>b.onclick=()=>setCamera(b.dataset.camera));document.querySelector("#resetCamera").onclick=()=>setCamera("broadcast");document.querySelector("#zoomIn").onclick=()=>camera.position.multiplyScalar(.9);document.querySelector("#zoomOut").onclick=()=>camera.position.multiplyScalar(1.1);
