@@ -3,8 +3,25 @@ import {OrbitControls} from "https://cdn.jsdelivr.net/npm/three@0.180.0/examples
 const DATA={formation:"4-3-3",starters:[
 {name:"David Raya",number:22,pos:"GK",x:0,y:-38},{name:"Ben White",number:4,pos:"RB",x:30,y:-22},{name:"William Saliba",number:2,pos:"CB",x:10,y:-27},{name:"Gabriel",number:6,pos:"CB",x:-10,y:-27},{name:"Riccardo Calafiori",number:33,pos:"LB",x:-30,y:-22},{name:"Martin Ødegaard",number:8,pos:"CM",x:24,y:2},{name:"Declan Rice",number:41,pos:"DM",x:0,y:-2},{name:"Mikel Merino",number:23,pos:"CM",x:-24,y:2},{name:"Bukayo Saka",number:7,pos:"RW",x:30,y:30},{name:"Viktor Gyökeres",number:14,pos:"ST",x:0,y:34},{name:"Gabriel Martinelli",number:11,pos:"LW",x:-30,y:30}],bench:[
 {name:"Kepa Arrizabalaga",number:13,pos:"GK"},{name:"Jurrien Timber",number:12,pos:"DEF"},{name:"Piero Hincapié",number:5,pos:"DEF"},{name:"Martin Zubimendi",number:36,pos:"MID"},{name:"Eberechi Eze",number:10,pos:"MID"},{name:"Noni Madueke",number:20,pos:"FWD"}],substitutions:[]};
-const root=document.querySelector("#scene"),renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(root.clientWidth,root.clientHeight);renderer.shadowMap.enabled=true;renderer.outputColorSpace=THREE.SRGBColorSpace;root.appendChild(renderer.domElement);
+const root=document.querySelector("#scene");
+let renderer;
+try{
+  renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:"high-performance",alpha:false});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  const rect=root.getBoundingClientRect();
+  renderer.setSize(Math.max(1,rect.width),Math.max(1,rect.height),false);
+  renderer.shadowMap.enabled=true;
+  renderer.outputColorSpace=THREE.SRGBColorSpace;
+  root.appendChild(renderer.domElement);
+}catch(error){
+  console.error("NL4 3D Arena WebGL initialization failed:",error);
+  const fallback=document.createElement("div");
+  fallback.className="arena-fallback";
+  fallback.innerHTML='<div class="fallback-pitch"><div class="fallback-half"></div><div class="fallback-circle"></div><div class="fallback-line mid"></div></div><div class="fallback-message"><strong>3D renderer unavailable</strong><span>WebGL is unavailable in this browser. Try enabling hardware acceleration.</span></div>';
+  root.appendChild(fallback);
+  const fp=fallback.querySelector(".fallback-pitch");
+  DATA.starters.forEach(p=>{const el=document.createElement("div");el.className="fallback-player";el.textContent=p.number;el.title=p.name;el.style.left=(50+p.x/68*46)+"%";el.style.top=(50-p.y/105*72)+"%";fp.appendChild(el)});
+}
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x020a06);scene.fog=new THREE.Fog(0x020a06,90,190);
 const camera=new THREE.PerspectiveCamera(42,root.clientWidth/root.clientHeight,.1,500);camera.position.set(0,78,92);
 const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,0,4);controls.enableDamping=true;controls.minDistance=52;controls.maxDistance=155;controls.maxPolarAngle=Math.PI*.48;controls.minPolarAngle=.22;
@@ -22,5 +39,5 @@ function select(name,e){document.querySelectorAll(".player-row").forEach(x=>x.cl
 fillLists();
 function setCamera(mode){if(mode==="top"){camera.position.set(0,125,.1);controls.target.set(0,0,0)}else if(mode==="tactical"){camera.position.set(0,70,118);controls.target.set(0,0,5)}else{camera.position.set(0,55,92);controls.target.set(0,0,8)}}
 document.querySelectorAll("[data-camera]").forEach(b=>b.onclick=()=>setCamera(b.dataset.camera));document.querySelector("#resetCamera").onclick=()=>setCamera("broadcast");document.querySelector("#zoomIn").onclick=()=>camera.position.multiplyScalar(.9);document.querySelector("#zoomOut").onclick=()=>camera.position.multiplyScalar(1.1);
-addEventListener("resize",()=>{const w=root.clientWidth,h=root.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)});
-(function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)})();
+addEventListener("resize",()=>{const w=Math.max(1,root.clientWidth),h=Math.max(1,root.clientHeight);camera.aspect=w/h;camera.updateProjectionMatrix();if(renderer) renderer.setSize(w,h,false)});
+(function animate(){requestAnimationFrame(animate);controls.update();if(renderer) renderer.render(scene,camera)})();
