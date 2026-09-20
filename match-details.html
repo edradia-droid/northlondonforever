@@ -1496,32 +1496,39 @@
       // Build substitutions directly from the authoritative match_lineups rows.
       // Incoming players carry minute_on and outgoing starters carry minute_off.
       // Matching those timestamps gives the public page both sides reliably.
+      // A starter's minute_off of 90 means "played to full time" in the
+      // lineup data, not "was substituted at 90". Likewise, minute_on 0
+      // means a starter. Only positive substitution minutes are eligible.
       const incoming = (lineup || [])
-        .filter(row => !row.is_starter && Number.isFinite(Number(row.minute_on)))
+        .filter(row => !row.is_starter && Number.isFinite(Number(row.minute_on)) && Number(row.minute_on) > 0)
         .sort((a,b) => Number(a.minute_on) - Number(b.minute_on));
       const outgoing = (lineup || [])
-        .filter(row => row.is_starter && Number.isFinite(Number(row.minute_off)))
+        .filter(row => row.is_starter && Number.isFinite(Number(row.minute_off)) && Number(row.minute_off) > 0 && Number(row.minute_off) < 90)
         .sort((a,b) => Number(a.minute_off) - Number(b.minute_off));
 
-      // Pair every incoming player with the corresponding outgoing player by substitution minute.
-      // Keep all rows; do not truncate the match to a fixed number of substitutions.
+      // Pair substitutions one-to-one by minute. This matters when two players
+      // come on at the same minute: each outgoing player must be consumed once.
+      const outgoingByMinute = new Map();
+      outgoing.forEach(row => {
+        const minute = Number(row.minute_off);
+        if (!outgoingByMinute.has(minute)) outgoingByMinute.set(minute, []);
+        outgoingByMinute.get(minute).push(row);
+      });
+
       const substitutionRows = incoming.map(inn => {
         const minute = Number(inn.minute_on);
-        const out = outgoing.find(row => Number(row.minute_off) === minute);
+        const candidates = outgoingByMinute.get(minute) || [];
+        const out = candidates.shift();
         return { inPlayer: inn.player_name, outPlayer: out?.player_name || "", minute };
       });
 
-      // Some feeds can contain incomplete minute pairs. Preserve those entries and also
-      // surface unmatched outgoing players so no valid removal is silently lost.
-      const pairedOutNames = new Set(
-        substitutionRows.filter(row => row.outPlayer).map(row => String(row.outPlayer).trim().toLowerCase())
-      );
-      outgoing.forEach(out => {
-        const key = String(out.player_name || "").trim().toLowerCase();
-        const minute = Number(out.minute_off);
-        if (key && Number.isFinite(minute) && !pairedOutNames.has(key)) {
-          substitutionRows.push({ inPlayer: "", outPlayer: out.player_name, minute });
-        }
+      // Preserve any unmatched valid outgoing rows rather than silently dropping them.
+      outgoingByMinute.forEach((remaining, minute) => {
+        remaining.forEach(out => {
+          if (out?.player_name) {
+            substitutionRows.push({ inPlayer: "", outPlayer: out.player_name, minute });
+          }
+        });
       });
       substitutionRows.sort((a,b) => Number(a.minute) - Number(b.minute));
 
