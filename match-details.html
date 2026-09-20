@@ -1493,48 +1493,65 @@
       const starters = (lineup || []).filter(row => row.is_starter);
       const subs = (lineup || []).filter(row => !row.is_starter);
 
-      // Build substitutions directly from the authoritative match_lineups rows.
-      // Incoming players carry minute_on and outgoing starters carry minute_off.
-      // Matching those timestamps gives the public page both sides reliably.
-      // A starter's minute_off of 90 means "played to full time" in the
-      // lineup data, not "was substituted at 90". Likewise, minute_on 0
-      // means a starter. Only positive substitution minutes are eligible.
-      const incoming = (lineup || [])
-        .filter(row => !row.is_starter && Number.isFinite(Number(row.minute_on)) && Number(row.minute_on) > 0)
-        .sort((a,b) => Number(a.minute_on) - Number(b.minute_on));
-      const outgoing = (lineup || [])
-        .filter(row => row.is_starter && Number.isFinite(Number(row.minute_off)) && Number(row.minute_off) > 0)
-        .sort((a,b) => Number(a.minute_off) - Number(b.minute_off));
+      // Build substitutions from the actual recorded substitution events.
+      // match_events stores the authoritative IN -> OUT relationship, so the
+      // public Match Details page must never guess the pairing from alphabetical
+      // or lineup-row order when multiple players change at the same minute.
+      const { data: substitutionEvents, error: substitutionEventsError } = await db
+        .from("match_events")
+        .select("player_name,related_player_name,minute,stoppage_minute,external_event_id,created_at,id")
+        .eq("fixture_id", fixture.id)
+        .eq("team_name", "Arsenal")
+        .eq("event_type", "substitution")
+        .order("minute", { ascending:true })
+        .order("stoppage_minute", { ascending:true, nullsFirst:true })
+        .order("external_event_id", { ascending:true, nullsFirst:false })
+        .order("created_at", { ascending:true })
+        .order("id", { ascending:true });
 
-      // Pair substitutions one-to-one by minute. This matters when two players
-      // come on at the same minute: each outgoing player must be consumed once.
-      const outgoingByMinute = new Map();
-      outgoing.forEach(row => {
-        const minute = Number(row.minute_off);
-        if (!outgoingByMinute.has(minute)) outgoingByMinute.set(minute, []);
-        outgoingByMinute.get(minute).push(row);
-      });
+      const substitutionRows = (substitutionEvents || [])
+        .filter(row => row.player_name)
+        .map(row => ({
+          inPlayer: row.player_name,
+          outPlayer: row.related_player_name || "",
+          minute: Number(row.minute),
+          stoppageMinute: Number.isFinite(Number(row.stoppage_minute)) ? Number(row.stoppage_minute) : null
+        }));
 
-      const substitutionRows = incoming.map(inn => {
-        const minute = Number(inn.minute_on);
-        const candidates = outgoingByMinute.get(minute) || [];
-        const out = candidates.shift();
-        return { inPlayer: inn.player_name, outPlayer: out?.player_name || "", minute };
-      });
+      // Fallback only for fixtures where substitution events have not been
+      // recorded yet. Keep the exact-minute pairing logic as a safe backup.
+      if (!substitutionRows.length) {
+        const incoming = (lineup || [])
+          .filter(row => !row.is_starter && Number.isFinite(Number(row.minute_on)) && Number(row.minute_on) > 0)
+          .sort((a,b) => Number(a.minute_on) - Number(b.minute_on));
+        const outgoing = (lineup || [])
+          .filter(row => row.is_starter && Number.isFinite(Number(row.minute_off)) && Number(row.minute_off) > 0)
+          .sort((a,b) => Number(a.minute_off) - Number(b.minute_off));
 
-      // A minute 90 starter may simply have completed the match. Only show
-      // minute-90 OUT when it was matched to a real minute-90 IN substitution.
-      // For earlier minutes, preserve unmatched outgoing rows so valid
-      // substitution data is never silently dropped.
-      outgoingByMinute.forEach((remaining, minute) => {
-        if (Number(minute) >= 90) return;
-        remaining.forEach(out => {
+        const outgoingByMinute = new Map();
+        outgoing.forEach(row => {
+          const minute = Number(row.minute_off);
+          if (!outgoingByMinute.has(minute)) outgoingByMinute.set(minute, []);
+          outgoingByMinute.get(minute).push(row);
+        });
+
+        incoming.forEach(inn => {
+          const minute = Number(inn.minute_on);
+          const candidates = outgoingByMinute.get(minute) || [];
+          const out = candidates.shift();
           if (out?.player_name) {
-            substitutionRows.push({ inPlayer: "", outPlayer: out.player_name, minute });
+            substitutionRows.push({ inPlayer: inn.player_name, outPlayer: out.player_name, minute });
           }
         });
+      }
+
+      substitutionRows.sort((a,b) => {
+        const minuteDiff = Number(a.minute) - Number(b.minute);
+        if (minuteDiff !== 0) return minuteDiff;
+        const aId = String(a.external_event_id || "");
+        const bId = String(b.external_event_id || "");
+        return aId.localeCompare(bId);
       });
-      substitutionRows.sort((a,b) => Number(a.minute) - Number(b.minute));
 
       const exactSubHtml = substitutionRows.map(row => {
         const minuteText = `${row.minute}’`;
