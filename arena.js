@@ -42,23 +42,47 @@ async function loadArtworkManifest(){
 async function renderStaticPlayerPhotos(){
   if(!staticPitch) return;
   const manifest=await loadArtworkManifest();
-  staticPitch.querySelectorAll(".arena-photo-player").forEach(el=>el.remove());
-  DATA.starters.forEach(async p=>{
+  staticPitch.querySelectorAll(".arena-player-hit,.arena-photo-player").forEach(el=>el.remove());
+
+  DATA.starters.forEach(p=>{
     const url=manifest[normalizeArtworkName(p.name)];
     if(!url) return;
+
+    const hit=document.createElement("button");
+    hit.type="button";
+    hit.className="arena-player-hit";
+    hit.setAttribute("aria-label","Select "+p.name);
+    hit.title=p.name;
+    hit.dataset.player=p.name;
+    hit.style.left=(50+(p.x/48)*44)+"%";
+    hit.style.top=(50-(p.y/58)*42)+"%";
+    hit.style.width="86px";
+    hit.style.height="180px";
+
     const photo=document.createElement("img");
     photo.className="arena-photo-player";
-    photo.alt=p.name;
-    photo.title=p.name;
+    photo.alt="";
     photo.draggable=false;
     photo.loading="eager";
-    photo.style.left=(50+(p.x/48)*44)+"%";
-    photo.style.top=(50-(p.y/58)*42)+"%";
-    photo.style.height=(p.pos==="GK"?"145px":"155px");
     photo.src=url;
-    photo.addEventListener("click",(event)=>{event.stopPropagation();selectPlayer(p);});
-    photo.onerror=()=>photo.remove();
-    staticPitch.appendChild(photo);
+    photo.style.height=(p.pos==="GK"?"145px":"155px");
+    photo.style.left="50%";
+    photo.style.top="100%";
+    photo.style.transform="translate(-50%,-100%) rotateX(-52deg)";
+    photo.style.pointerEvents="none";
+
+    hit.appendChild(photo);
+    hit.addEventListener("pointerdown",event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      selectPlayer(p);
+    });
+    hit.addEventListener("click",event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      selectPlayer(p);
+    });
+    staticPitch.appendChild(hit);
   });
 }
 renderStaticPlayerPhotos();
