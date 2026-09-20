@@ -21,7 +21,7 @@
 .topbar{position:relative!important;z-index:100!important}
 .arena-shell{isolation:isolate}
 #scene{z-index:1}
-#staticArena{z-index:0!important}
+#staticArena{z-index:5!important}
 .hud{position:absolute!important;z-index:100!important;pointer-events:none!important}
 .formation-card,.mode-card{position:relative;z-index:101!important;display:block!important;visibility:visible!important;opacity:1!important}
 .pitch-controls{position:absolute!important;z-index:101!important;display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
