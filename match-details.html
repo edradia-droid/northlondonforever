@@ -1503,7 +1503,7 @@
         .filter(row => !row.is_starter && Number.isFinite(Number(row.minute_on)) && Number(row.minute_on) > 0)
         .sort((a,b) => Number(a.minute_on) - Number(b.minute_on));
       const outgoing = (lineup || [])
-        .filter(row => row.is_starter && Number.isFinite(Number(row.minute_off)) && Number(row.minute_off) > 0 && Number(row.minute_off) < 90)
+        .filter(row => row.is_starter && Number.isFinite(Number(row.minute_off)) && Number(row.minute_off) > 0)
         .sort((a,b) => Number(a.minute_off) - Number(b.minute_off));
 
       // Pair substitutions one-to-one by minute. This matters when two players
