@@ -1,9 +1,10 @@
-name: Deploy NL4 Arsenal Website
+name: Deploy NL4 Arsenal Website + 3D Arena
 
 on:
   push:
     branches:
       - main
+      - 3d-arena-publish
   workflow_dispatch:
 
 permissions:
@@ -24,21 +25,98 @@ jobs:
     steps:
       - name: Checkout NL4 main site
         uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Fetch latest 3D Arena branch
+        run: |
+          git fetch origin 3d-arena-publish --depth=1
+          git archive origin/3d-arena-publish index.html arena.css arena.js README.md | tar -x
+          mkdir -p _arena_source
+          cp index.html arena.css arena.js README.md _arena_source/
 
       - name: Prepare NL4 Pages site
         run: |
           rm -rf _site
           mkdir -p _site
-          rsync -av --exclude='.git' --exclude='.github' --exclude='_site' ./ _site/
+          rsync -av --exclude='.git' --exclude='.github' --exclude='_site' --exclude='_arena_source' ./ _site/
           test -s _site/index.html
-          echo "NL4 site prepared from main:"
+          mkdir -p _site/3d-arena
+          cp _arena_source/index.html _site/3d-arena/index.html
+          cp _arena_source/arena.css _site/3d-arena/arena.css
+          cp _arena_source/arena.js _site/3d-arena/arena.js
+          cp _arena_source/README.md _site/3d-arena/README.md
+          echo "NL4 root:"
           ls -lah _site/index.html
+          echo "Arena:"
+          ls -lah _site/3d-arena/
 
-      - name: Upload NL4 Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Download Arsenal player artwork for Arena
+        run: |
+          rm -rf _site/3d-arena/player-assets
+          mkdir -p _site/3d-arena/player-assets
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+
+          const players = [
+            'David Raya','Jurriën Timber','Ezri Konsa','Gabriel','Riccardo Calafiori',
+            'Declan Rice','Bruno Guimarães','Martin Ødegaard','Bukayo Saka','Christos Tzolis',
+            'Kai Havertz','Kepa Arrizabalaga','Piero Hincapié','Eberechi Eze','Viktor Gyökeres',
+            'Noni Madueke','Mikel Merino','Martín Zubimendi','Myles Lewis-Skelly','Max Dowman'
+          ];
+
+          const normalize = value => String(value || '')
+            .replace(/[Øø]/g, 'o')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/gi, '')
+            .toLowerCase();
+
+          const manifest = {};
+
+          async function downloadPlayer(name) {
+            const key = normalize(name);
+            const api = 'https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p=' + encodeURIComponent(name.replace(/\s+/g, '_'));
+            try {
+              const response = await fetch(api);
+              if (!response.ok) throw new Error('API ' + response.status);
+              const json = await response.json();
+              const list = Array.isArray(json.player) ? json.player : [];
+              const player =
+                list.find(x => normalize(x.strPlayer) === key && String(x.strTeam || '').toLowerCase() === 'arsenal') ||
+                list.find(x => normalize(x.strPlayer) === key) ||
+                list.find(x => String(x.strTeam || '').toLowerCase() === 'arsenal');
+              const imageUrl = player && (player.strRender || player.strCutout || player.strThumb);
+              if (!imageUrl) throw new Error('no artwork');
+              const imageResponse = await fetch(imageUrl);
+              if (!imageResponse.ok) throw new Error('image ' + imageResponse.status);
+              const buffer = Buffer.from(await imageResponse.arrayBuffer());
+              const extMatch = new URL(imageUrl).pathname.match(/\.[a-z0-9]+$/i);
+              const ext = extMatch ? extMatch[1].slice(1).toLowerCase() : 'png';
+              const filename = key + '.' + ext;
+              fs.writeFileSync(path.join('_site/3d-arena/player-assets', filename), buffer);
+              manifest[key] = './player-assets/' + filename;
+              console.log('Downloaded ' + name);
+            } catch (error) {
+              console.log('Artwork unavailable for ' + name + ': ' + error.message);
+            }
+          }
+
+          (async () => {
+            for (const name of players) await downloadPlayer(name);
+            fs.writeFileSync('_site/3d-arena/player-assets/manifest.json', JSON.stringify(manifest, null, 2));
+            if (Object.keys(manifest).length < 11) throw new Error('Too few player artworks: ' + Object.keys(manifest).length);
+            console.log('Arena artwork count:', Object.keys(manifest).length);
+          })().catch(error => { console.error(error); process.exit(1); });
+          NODE
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
         with:
           path: _site
 
-      - name: Deploy NL4 to GitHub Pages
+      - name: Deploy NL4 and Arena to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
