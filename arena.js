@@ -5,12 +5,21 @@ const staticArena=document.querySelector("#staticArena");
 const staticPitch=document.querySelector(".static-pitch");
 let renderer=null;
 
+function selectPlayer(player){
+  document.querySelectorAll(".player-row").forEach(row=>row.classList.toggle("selected", row.dataset.player===player.name));
+  const existing=document.querySelector("#playerFocus");
+  if(existing) existing.remove();
+  const card=document.createElement("div"); card.id="playerFocus"; card.className="player-focus";
+  card.innerHTML="<span>#"+player.number+" · "+player.pos+"</span><strong>"+player.name+"</strong><small>"+DATA.formation+" · Arsenal XI</small>";
+  document.querySelector(".arena-shell").appendChild(card);
+}
+
 function fillLists(){
   document.querySelector("#formation").textContent=DATA.formation;
   const list=document.querySelector("#lineupList"); list.innerHTML="";
-  DATA.starters.forEach(p=>{const e=document.createElement("div");e.className="player-row";e.innerHTML='<div class="player-main"><span class="num">'+p.number+'</span><div><div class="name">'+p.name+'</div><div class="pos">'+p.pos+'</div></div></div>';list.appendChild(e)});
+  DATA.starters.forEach(p=>{const e=document.createElement("div");e.className="player-row";e.dataset.player=p.name;e.innerHTML='<div class="player-main"><span class="num">'+p.number+'</span><div><div class="name">'+p.name+'</div><div class="pos">'+p.pos+'</div></div></div>';list.appendChild(e);e.onclick=()=>selectPlayer(p)});
   const bench=document.querySelector("#benchList"); bench.innerHTML="";
-  DATA.bench.forEach(p=>{const e=document.createElement("div");e.className="player-row";e.innerHTML='<div class="player-main"><span class="num">'+p.number+'</span><div><div class="name">'+p.name+'</div><div class="pos">'+p.pos+'</div></div></div><span class="badge">BENCH</span>';bench.appendChild(e)});
+  DATA.bench.forEach(p=>{const e=document.createElement("div");e.className="player-row";e.dataset.player=p.name;e.innerHTML='<div class="player-main"><span class="num">'+p.number+'</span><div><div class="name">'+p.name+'</div><div class="pos">'+p.pos+'</div></div></div><span class="badge">BENCH</span>';bench.appendChild(e);e.onclick=()=>selectPlayer(p)});
 }
 fillLists();
 
@@ -45,7 +54,10 @@ if(typeof THREE==="undefined"){
     const line=(w,h,x,z)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.72,side:THREE.DoubleSide}));m.rotation.x=-Math.PI/2;m.position.set(x,.025,z);group.add(m)};
     line(64,.16,0,-52.5);line(64,.16,0,52.5);line(.16,105,-34,0);line(.16,105,34,0);line(64,.16,0,0);
     const circle=new THREE.Mesh(new THREE.RingGeometry(9.1,9.25,96),new THREE.MeshBasicMaterial({color:0xffffff,side:THREE.DoubleSide,transparent:true,opacity:.72}));circle.rotation.x=-Math.PI/2;circle.position.y=.03;group.add(circle);
-    DATA.starters.forEach(p=>{const g=new THREE.Group();const body=new THREE.Mesh(new THREE.CapsuleGeometry(1.55,3.8,6,12),new THREE.MeshStandardMaterial({color:0xffffff,roughness:.5}));body.position.y=3.2;body.castShadow=true;g.add(body);const shirt=new THREE.Mesh(new THREE.CylinderGeometry(1.62,1.55,2.6,16),new THREE.MeshStandardMaterial({color:0xb5000d,roughness:.5}));shirt.position.y=4;shirt.castShadow=true;g.add(shirt);const head=new THREE.Mesh(new THREE.SphereGeometry(1.02,16,12),new THREE.MeshStandardMaterial({color:0xc98765,roughness:.8}));head.position.y=6.2;head.castShadow=true;g.add(head);g.position.set(p.x,0,p.y);group.add(g)});
+    const playerMeshes=[];
+    DATA.starters.forEach(p=>{const g=new THREE.Group();g.userData.player=p;g.userData.baseScale=1;const body=new THREE.Mesh(new THREE.CapsuleGeometry(1.55,3.8,6,12),new THREE.MeshStandardMaterial({color:0xffffff,roughness:.5}));body.position.y=3.2;body.castShadow=true;g.add(body);const shirt=new THREE.Mesh(new THREE.CylinderGeometry(1.62,1.55,2.6,16),new THREE.MeshStandardMaterial({color:0xb5000d,roughness:.5}));shirt.position.y=4;shirt.castShadow=true;g.add(shirt);const head=new THREE.Mesh(new THREE.SphereGeometry(1.02,16,12),new THREE.MeshStandardMaterial({color:0xc98765,roughness:.8}));head.position.y=6.2;head.castShadow=true;g.add(head);g.position.set(p.x,0,p.y);g.userData.player=p;group.add(g);playerMeshes.push(g)});
+    const raycaster=new THREE.Raycaster();const pointer=new THREE.Vector2();
+    renderer.domElement.addEventListener("pointerdown",event=>{const r=renderer.domElement.getBoundingClientRect();pointer.x=((event.clientX-r.left)/r.width)*2-1;pointer.y=-((event.clientY-r.top)/r.height)*2+1;raycaster.setFromCamera(pointer,camera);const hit=raycaster.intersectObjects(playerMeshes,true)[0];if(hit){let o=hit.object;while(o.parent&& !o.userData.player)o=o.parent; if(o.userData.player){selectPlayer(o.userData.player);playerMeshes.forEach(m=>m.scale.setScalar(m===o?1.12:1));}}});
     const setCamera=mode=>{if(mode==="top")camera.position.set(0,125,.1);else if(mode==="tactical")camera.position.set(0,70,118);else camera.position.set(0,55,92)};
     document.querySelectorAll("[data-camera]").forEach(b=>b.onclick=()=>setCamera(b.dataset.camera));document.querySelector("#resetCamera").onclick=()=>setCamera("broadcast");document.querySelector("#zoomIn").onclick=()=>camera.position.multiplyScalar(.9);document.querySelector("#zoomOut").onclick=()=>camera.position.multiplyScalar(1.1);
     addEventListener("resize",()=>{const w=Math.max(1,root.clientWidth),h=Math.max(1,root.clientHeight);camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false)});
