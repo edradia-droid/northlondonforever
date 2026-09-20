@@ -55,8 +55,77 @@ if(typeof THREE==="undefined"){
     line(64,.16,0,-52.5);line(64,.16,0,52.5);line(.16,105,-34,0);line(.16,105,34,0);line(64,.16,0,0);
     const circle=new THREE.Mesh(new THREE.RingGeometry(9.1,9.25,96),new THREE.MeshBasicMaterial({color:0xffffff,side:THREE.DoubleSide,transparent:true,opacity:.72}));circle.rotation.x=-Math.PI/2;circle.position.y=.03;group.add(circle);
     const playerMeshes=[];
-    DATA.starters.forEach(p=>{const g=new THREE.Group();g.userData.player=p;g.userData.baseScale=1;const body=new THREE.Mesh(new THREE.CapsuleGeometry(1.55,3.8,6,12),new THREE.MeshStandardMaterial({color:0xffffff,roughness:.5}));body.position.y=3.2;body.castShadow=true;g.add(body);const shirt=new THREE.Mesh(new THREE.CylinderGeometry(1.62,1.55,2.6,16),new THREE.MeshStandardMaterial({color:0xb5000d,roughness:.5}));shirt.position.y=4;shirt.castShadow=true;g.add(shirt);const head=new THREE.Mesh(new THREE.SphereGeometry(1.02,16,12),new THREE.MeshStandardMaterial({color:0xc98765,roughness:.8}));head.position.y=6.2;head.castShadow=true;g.add(head);g.position.set(p.x,0,p.y);g.userData.player=p;group.add(g);playerMeshes.push(g)});
-    const raycaster=new THREE.Raycaster();const pointer=new THREE.Vector2();
+    const textureLoader=new THREE.TextureLoader();
+    textureLoader.setCrossOrigin("anonymous");
+
+    function addGroundShadow(g){
+      const shadow=new THREE.Mesh(
+        new THREE.CircleGeometry(2.2,32),
+        new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.28,depthWrite:false})
+      );
+      shadow.rotation.x=-Math.PI/2;
+      shadow.position.y=.04;
+      shadow.scale.set(1,.55,1);
+      g.add(shadow);
+    }
+
+    function addFallbackPlayer(p,g){
+      const body=new THREE.Mesh(new THREE.CapsuleGeometry(1.55,3.8,6,12),new THREE.MeshStandardMaterial({color:0xffffff,roughness:.5}));
+      body.position.y=3.2; body.castShadow=true; g.add(body);
+      const shirt=new THREE.Mesh(new THREE.CylinderGeometry(1.62,1.55,2.6,16),new THREE.MeshStandardMaterial({color:0xb5000d,roughness:.5}));
+      shirt.position.y=4; shirt.castShadow=true; g.add(shirt);
+      const head=new THREE.Mesh(new THREE.SphereGeometry(1.02,16,12),new THREE.MeshStandardMaterial({color:0xc98765,roughness:.8}));
+      head.position.y=6.2; head.castShadow=true; g.add(head);
+      addGroundShadow(g);
+    }
+
+    function addImagePlayer(p,g,url){
+      const img=new Image();
+      img.crossOrigin="anonymous";
+      img.onload=()=>{
+        const tex=textureLoader.load(url);
+        tex.colorSpace=THREE.SRGBColorSpace;
+        const ratio=img.naturalWidth/img.naturalHeight || .65;
+        const height=10.5;
+        const mesh=new THREE.Mesh(
+          new THREE.PlaneGeometry(height*ratio,height),
+          new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide,depthWrite:false})
+        );
+        mesh.position.y=height/2;
+        mesh.renderOrder=5;
+        g.add(mesh);
+        addGroundShadow(g);
+      };
+      img.onerror=()=>addFallbackPlayer(p,g);
+      img.src=url;
+    }
+
+    async function resolvePlayerRender(p){
+      try{
+        const q=encodeURIComponent(p.name.replace(/\s+/g,"_"));
+        const res=await fetch("https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p="+q);
+        if(!res.ok) throw new Error("player lookup failed");
+        const json=await res.json();
+        const player=(json.player||[]).find(x=>String(x.strTeam||"").toLowerCase().includes("arsenal")) || (json.player||[])[0];
+        return player && (player.strRender || player.strCutout || player.strThumb || null);
+      }catch(error){
+        return null;
+      }
+    }
+
+    async function createPlayer(p){
+      const g=new THREE.Group();
+      g.userData.player=p;
+      g.position.set(p.x,0,p.y);
+      group.add(g);
+      playerMeshes.push(g);
+
+      const url=await resolvePlayerRender(p);
+      if(url) addImagePlayer(p,g,url);
+      else addFallbackPlayer(p,g);
+    }
+
+    DATA.starters.forEach(p=>createPlayer(p));    const raycaster=new THREE.Raycaster();const pointer=new THREE.Vector2();
     renderer.domElement.addEventListener("pointerdown",event=>{const r=renderer.domElement.getBoundingClientRect();pointer.x=((event.clientX-r.left)/r.width)*2-1;pointer.y=-((event.clientY-r.top)/r.height)*2+1;raycaster.setFromCamera(pointer,camera);const hit=raycaster.intersectObjects(playerMeshes,true)[0];if(hit){let o=hit.object;while(o.parent&& !o.userData.player)o=o.parent; if(o.userData.player){selectPlayer(o.userData.player);playerMeshes.forEach(m=>m.scale.setScalar(m===o?1.12:1));}}});
     const setCamera=mode=>{if(mode==="top")camera.position.set(0,125,.1);else if(mode==="tactical")camera.position.set(0,70,118);else camera.position.set(0,55,92)};
     document.querySelectorAll("[data-camera]").forEach(b=>b.onclick=()=>setCamera(b.dataset.camera));document.querySelector("#resetCamera").onclick=()=>setCamera("broadcast");document.querySelector("#zoomIn").onclick=()=>camera.position.multiplyScalar(.9);document.querySelector("#zoomOut").onclick=()=>camera.position.multiplyScalar(1.1);
