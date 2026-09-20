@@ -28,16 +28,100 @@ jobs:
           ref: 3d-arena-publish
           fetch-depth: 1
 
+      - name: Download Arsenal player artwork
+        run: |
+          rm -rf player-assets
+          mkdir -p player-assets
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+
+          const players = [
+            'David Raya',
+            'Jurriën Timber',
+            'Ezri Konsa',
+            'Gabriel',
+            'Riccardo Calafiori',
+            'Declan Rice',
+            'Bruno Guimarães',
+            'Martin Ødegaard',
+            'Bukayo Saka',
+            'Christos Tzolis',
+            'Kai Havertz',
+            'Kepa Arrizabalaga',
+            'Piero Hincapié',
+            'Eberechi Eze',
+            'Viktor Gyökeres',
+            'Noni Madueke',
+            'Mikel Merino',
+            'Martín Zubimendi',
+            'Myles Lewis-Skelly',
+            'Max Dowman'
+          ];
+
+          const normalize = value => String(value || '')
+            .replace(/[Øø]/g, 'o')
+            .normalize('NFD')
+            .replace(/[\\u0300-\\u036f]/g, '')
+            .replace(/[^a-z0-9]+/gi, '')
+            .toLowerCase();
+
+          const manifest = {};
+
+          async function downloadPlayer(name) {
+            const key = normalize(name);
+            const api = 'https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p=' + encodeURIComponent(name.replace(/\\s+/g, '_'));
+            try {
+              const response = await fetch(api);
+              if (!response.ok) throw new Error('API ' + response.status);
+              const json = await response.json();
+              const list = Array.isArray(json.player) ? json.player : [];
+              const player =
+                list.find(x => normalize(x.strPlayer) === key && String(x.strTeam || '').toLowerCase() === 'arsenal') ||
+                list.find(x => normalize(x.strPlayer) === key) ||
+                list.find(x => String(x.strTeam || '').toLowerCase() === 'arsenal');
+              const imageUrl = player && (player.strRender || player.strCutout || player.strThumb);
+              if (!imageUrl) throw new Error('no artwork');
+
+              const imageResponse = await fetch(imageUrl);
+              if (!imageResponse.ok) throw new Error('image ' + imageResponse.status);
+              const buffer = Buffer.from(await imageResponse.arrayBuffer());
+              const extMatch = new URL(imageUrl).pathname.match(/\\.([a-z0-9]+)$/i);
+              const ext = extMatch ? extMatch[1].toLowerCase() : 'png';
+              const filename = key + '.' + ext;
+              fs.writeFileSync(path.join('player-assets', filename), buffer);
+              manifest[key] = './player-assets/' + filename;
+              console.log('Downloaded ' + name + ' -> ' + filename);
+            } catch (error) {
+              console.log('Artwork unavailable for ' + name + ': ' + error.message);
+            }
+          }
+
+          (async () => {
+            for (const name of players) await downloadPlayer(name);
+            fs.writeFileSync('player-assets/manifest.json', JSON.stringify(manifest, null, 2));
+            console.log('Artwork manifest:', manifest);
+          })().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+          test -s player-assets/manifest.json
+          echo "Downloaded player assets:"
+          ls -lah player-assets
+
       - name: Prepare clean Pages site
         run: |
           rm -rf _arena_site
           mkdir -p _arena_site
           cp index.html arena.css arena.js README.md _arena_site/
+          cp -R player-assets _arena_site/
           test -s _arena_site/index.html
           test -s _arena_site/arena.css
           test -s _arena_site/arena.js
+          test -s _arena_site/player-assets/manifest.json
           echo "Clean Arena site prepared:"
-          ls -lah _arena_site
+          find _arena_site -maxdepth 2 -type f -print
 
       - name: Upload Arena Pages artifact
         uses: actions/upload-pages-artifact@v4
