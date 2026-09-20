@@ -80,7 +80,7 @@ jobs:
             const key = normalize(name);
             const aliases = name === 'Gabriel'
               ? ['Gabriel_Magalhaes', 'Gabriel_Magalhães', 'Gabriel']
-              : [name.replace(/\\s+/g, '_')];
+              : [name.replace(/\s+/g, '_')];
             try {
               let list = [];
               for (const alias of aliases) {
