@@ -997,3 +997,11 @@
 #staticArena .static-art-layer .static-art:active{
   cursor:grabbing!important;
 }
+
+
+/* BENCH TO FIELD SUBSTITUTIONS */
+.bench-draggable{cursor:grab!important;}
+.bench-draggable:active{cursor:grabbing!important;}
+#staticArena.substitution-ready{outline:2px dashed rgba(25,216,121,.55);outline-offset:-5px;}
+#staticArena.substitution-hover{outline:3px solid rgba(25,216,121,.8);outline-offset:-7px;}
+.bench-draggable .badge{color:var(--green);}
