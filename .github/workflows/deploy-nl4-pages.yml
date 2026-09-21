@@ -121,8 +121,8 @@ jobs:
               // Restore the same player-render artwork that was previously
               // used successfully for the Arena's Half Body view.
               // Keep all fallbacks on the exact matched player only.
-              const halfUrl = player.strRender || player.strThumb || player.strCutout || null;
-              if (!halfUrl) throw new Error('exact player has no usable half-body artwork');
+              const halfUrl = player.strRender || null;
+              if (!halfUrl) throw new Error('exact player has no half-body render artwork');
               async function saveArtwork(url, suffix) {
                 if (!url) return null;
                 const imageResponse = await fetch(url);
