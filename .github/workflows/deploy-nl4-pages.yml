@@ -137,16 +137,19 @@ jobs:
               const player = await getPlayer(id);
               if (!player) throw new Error('No player data for ' + name);
 
-              // Full Body uses the standing Player Render for EVERY player, so the football is visible at the feet.
-              // Half Body remains the Player Render as the dedicated half-body view.
+              // LOCKED FULL BODY: Player Render with the ball at the feet for EVERY player.
+              // Do not change this Full Body source when working on Half Body.
               const fullUrl = player.strRender || null;
-              const halfUrl = player.strRender || null;
+
+              // HALF BODY: dedicated Player Cutout for every player.
+              // Saka's Half Body is the separately supplied local artwork restored below.
+              const halfUrl = player.strCutout || null;
 
               if (!fullUrl) throw new Error('Missing Full Body cutout for ' + name);
               if (!halfUrl) throw new Error('Missing Half Body Player Render for ' + name);
 
               const fullExt = (path.extname(new URL(fullUrl).pathname) || '.png').toLowerCase();
-              const halfExt = name === 'Bukayo Saka' ? '.png' : (path.extname(new URL(halfUrl).pathname) || '.png').toLowerCase();
+              const halfExt = '.png';
 
               const fullFile = key + '-full' + fullExt;
               const halfFile = key + '-half' + halfExt;
@@ -166,9 +169,8 @@ jobs:
               console.log('Arena artwork ready: ' + name);
             }
 
-            // Saka Full uses the standing Player Render with the ball at his feet.
-            // Saka Half uses the dedicated half-body artwork and stays directly below
-            // the Full Body image in the HTML artwork stack.
+            // Saka Full remains locked to the Player Render above.
+            // Saka Half is isolated to the dedicated supplied half-body artwork.
             manifest.bukayosaka.half = './player-assets/bukayosaka-half.png';
             manifest.bukayosaka.remoteHalf = './player-assets/bukayosaka-half.png';
 
