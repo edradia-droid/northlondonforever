@@ -52,7 +52,7 @@ jobs:
           echo "Arena:"
           ls -lah _site/3d-arena/
 
-      - name: Download Arsenal player artwork for Arena
+      - name: Download separate Arena player artwork
         run: |
           rm -rf _site/3d-arena/player-assets
           mkdir -p _site/3d-arena/player-assets
@@ -75,30 +75,57 @@ jobs:
             .toLowerCase();
 
           const manifest = {};
+          let fullCount = 0;
+          let halfCount = 0;
+
+          async function getExactArsenalPlayer(name) {
+            const api = 'https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p=' + encodeURIComponent(name.replace(/\s+/g, '_'));
+            const response = await fetch(api);
+            if (!response.ok) throw new Error('API ' + response.status);
+            const json = await response.json();
+            const list = Array.isArray(json.player) ? json.player : [];
+            const key = normalize(name);
+            return list.find(x =>
+              normalize(x.strPlayer) === key &&
+              String(x.strTeam || '').trim().toLowerCase() === 'arsenal'
+            ) || null;
+          }
+
+          async function downloadImage(url, filename) {
+            if (!url) return null;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('image ' + response.status);
+            const buffer = Buffer.from(await response.arrayBuffer());
+            fs.writeFileSync(path.join('_site/3d-arena/player-assets', filename), buffer);
+            return './player-assets/' + filename;
+          }
 
           async function downloadPlayer(name) {
             const key = normalize(name);
-            const api = 'https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p=' + encodeURIComponent(name.replace(/\s+/g, '_'));
             try {
-              const response = await fetch(api);
-              if (!response.ok) throw new Error('API ' + response.status);
-              const json = await response.json();
-              const list = Array.isArray(json.player) ? json.player : [];
-              const player =
-                list.find(x => normalize(x.strPlayer) === key && String(x.strTeam || '').toLowerCase() === 'arsenal') ||
-                list.find(x => normalize(x.strPlayer) === key) ||
-                list.find(x => String(x.strTeam || '').toLowerCase() === 'arsenal');
-              const imageUrl = player && (player.strRender || player.strCutout || player.strThumb);
-              if (!imageUrl) throw new Error('no artwork');
-              const imageResponse = await fetch(imageUrl);
-              if (!imageResponse.ok) throw new Error('image ' + imageResponse.status);
-              const buffer = Buffer.from(await imageResponse.arrayBuffer());
-              const extMatch = new URL(imageUrl).pathname.match(/\.[a-z0-9]+$/i);
-              const ext = extMatch ? extMatch[1].slice(1).toLowerCase() : 'png';
-              const filename = key + '.' + ext;
-              fs.writeFileSync(path.join('_site/3d-arena/player-assets', filename), buffer);
-              manifest[key] = './player-assets/' + filename;
-              console.log('Downloaded ' + name);
+              const player = await getExactArsenalPlayer(name);
+              if (!player) throw new Error('exact Arsenal player not found');
+
+              // Full Body: Player Cutout first. Render/thumbnail are only fallbacks
+              // when TheSportsDB has no cutout for that exact Arsenal player.
+              const fullUrl = player.strCutout || player.strRender || player.strThumb || null;
+
+              // Half Body: Player Render first. Cutout/thumbnail are fallbacks.
+              const halfUrl = player.strRender || player.strThumb || player.strCutout || null;
+
+              if (!fullUrl) throw new Error('no full-body artwork');
+              if (!halfUrl) throw new Error('no half-body artwork');
+
+              const fullExt = (new URL(fullUrl).pathname.match(/\.[a-z0-9]+$/i) || ['.png'])[0].slice(1).toLowerCase();
+              const halfExt = (new URL(halfUrl).pathname.match(/\.[a-z0-9]+$/i) || ['.png'])[0].slice(1).toLowerCase();
+
+              const full = await downloadImage(fullUrl, key + '-full.' + fullExt);
+              const half = await downloadImage(halfUrl, key + '-half.' + halfExt);
+
+              manifest[key] = { full, half };
+              if (full) fullCount++;
+              if (half) halfCount++;
+              console.log('Downloaded exact Arsenal artwork: ' + name);
             } catch (error) {
               console.log('Artwork unavailable for ' + name + ': ' + error.message);
             }
@@ -106,10 +133,46 @@ jobs:
 
           (async () => {
             for (const name of players) await downloadPlayer(name);
-            fs.writeFileSync('_site/3d-arena/player-assets/manifest.json', JSON.stringify(manifest, null, 2));
-            if (Object.keys(manifest).length < 11) throw new Error('Too few player artworks: ' + Object.keys(manifest).length);
-            console.log('Arena artwork count:', Object.keys(manifest).length);
-          })().catch(error => { console.error(error); process.exit(1); });
+
+            fs.writeFileSync(
+              '_site/3d-arena/player-assets/manifest.json',
+              JSON.stringify(manifest, null, 2)
+            );
+
+            console.log('Arena full-body artwork count:', fullCount);
+            console.log('Arena half-body artwork count:', halfCount);
+
+            if (fullCount < 11) throw new Error('Too few full-body artworks: ' + fullCount);
+            if (halfCount < 11) throw new Error('Too few half-body artworks: ' + halfCount);
+            if (Object.keys(manifest).length < 20) {
+              throw new Error('Not all 20 Arena players have separate artwork: ' + Object.keys(manifest).length);
+            }
+          })().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Verify Arena artwork package
+        run: |
+          test -s _site/3d-arena/player-assets/manifest.json
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const dir = '_site/3d-arena/player-assets';
+          const manifest = JSON.parse(fs.readFileSync(path.join(dir, 'manifest.json'), 'utf8'));
+          const keys = Object.keys(manifest);
+          if (keys.length !== 20) throw new Error('Expected 20 players, found ' + keys.length);
+          for (const [key, value] of Object.entries(manifest)) {
+            if (!value || !value.full || !value.half) throw new Error('Missing full/half asset for ' + key);
+            for (const mode of ['full', 'half']) {
+              const rel = value[mode].replace(/^\.\//, '');
+              if (!fs.existsSync(path.join('_site/3d-arena', rel))) {
+                throw new Error('Missing file for ' + key + ' ' + mode + ': ' + rel);
+              }
+            }
+          }
+          console.log('Verified 20 players × 2 artwork modes.');
           NODE
 
       - name: Upload Pages artifact
