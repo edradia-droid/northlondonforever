@@ -104,8 +104,9 @@ jobs:
                 arsenalPlayers[0] ||
                 list.find(x => normalize(x.strPlayer) === key) ||
                 list[0];
-              const fullUrl = player && (player.strRender || player.strCutout || player.strThumb);
-              const halfUrl = player && (player.strCutout || player.strThumb || player.strRender);
+              // TheSportsDB cutouts are the standing/full-body artwork; rendered images are used for the half-body view.
+              const fullUrl = player && (player.strCutout || player.strRender || player.strThumb);
+              const halfUrl = player && (player.strRender || player.strThumb || player.strCutout);
               if (!fullUrl && !halfUrl) throw new Error('no artwork');
 
               async function saveArtwork(url, suffix) {
