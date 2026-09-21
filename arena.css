@@ -942,3 +942,24 @@
   visibility:visible!important;
   opacity:1!important;
 }
+
+
+/* FINAL SAKA HALF BODY: use the supplied transparent artwork and show the complete figure. */
+#staticArena .static-art-layer .static-art-half[data-art-key="bukayosaka"]{
+  width:auto!important;
+  height:260px!important;
+  max-width:180px!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  transform:translate3d(-50%,-50%,0)!important;
+  overflow:visible!important;
+}
+@media(max-width:700px){
+  #staticArena .static-art-layer .static-art-half[data-art-key="bukayosaka"]{
+    width:auto!important;
+    height:230px!important;
+    max-width:160px!important;
+    max-height:none!important;
+  }
+}
