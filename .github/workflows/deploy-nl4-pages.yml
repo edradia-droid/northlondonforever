@@ -192,6 +192,9 @@ jobs:
           node -e "const m=require('./_site/3d-arena/player-assets/manifest.json'); if(!m.ricardocalafiori || !m.ricardocalafiori.full || !m.ricardocalafiori.half) process.exit(1); console.log('Calafiori manifest verified:',m.ricardocalafiori.full,m.ricardocalafiori.half)"
           test -s _site/3d-arena/player-assets/ricardocalafiori-full.png || test -s _site/3d-arena/player-assets/ricardocalafiori-full.jpg || test -s _site/3d-arena/player-assets/ricardocalafiori-full.webp
           test -s _site/3d-arena/player-assets/ricardocalafiori-half.png || test -s _site/3d-arena/player-assets/ricardocalafiori-half.jpg || test -s _site/3d-arena/player-assets/ricardocalafiori-half.webp
+          # Saka must use different assets for the two view modes: Full Body above, Half Body below.
+          test -s _site/3d-arena/player-assets/bukayosaka-full.png
+          test -s _site/3d-arena/player-assets/bukayosaka-half.png
           test "$(find _site/3d-arena/player-assets -type f -name '*-full.*' | wc -l)" -eq 20
           test "$(find _site/3d-arena/player-assets -type f -name '*-half.*' | wc -l)" -eq 20
           if find _site/3d-arena/player-assets -type f | grep -Ei 'thumb|thumbnail'; then
@@ -242,6 +245,8 @@ jobs:
           grep -q 'src="./player-assets/ricardocalafiori-full' _site/3d-arena/index.html
           grep -q 'src="./player-assets/davidraya-half' _site/3d-arena/index.html
           grep -q 'src="./player-assets/ricardocalafiori-half' _site/3d-arena/index.html
+          grep -q 'data-art-key="bukayosaka" data-art-mode="full"' _site/3d-arena/index.html
+          grep -q 'data-art-key="bukayosaka" data-art-mode="half"' _site/3d-arena/index.html
 
       - name: Verify Arena artwork package
         run: |
