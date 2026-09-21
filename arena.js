@@ -71,7 +71,28 @@ async function renderStaticPlayerPhotos(){
 
   for(const p of DATA.starters){
     let artwork=manifest[normalizeArtworkName(p.name)];
-    if(!artwork || typeof artwork!=="object" || !artwork[playerView]) artwork=await loadLiveArtwork(p);
+
+    // Accept the legacy half-body manifest entries that are plain image paths.
+    // They are the dedicated Player Render assets, not thumbnails.
+    if(playerView==="half" && typeof artwork==="string"){
+      artwork={half:artwork};
+    }
+
+    // Older full-body manifests used generated keys, so also resolve by sourceName.
+    if((!artwork || typeof artwork!=="object" || !artwork[playerView]) && playerView==="full"){
+      const wanted=normalizeArtworkName(p.name);
+      const match=Object.values(manifest).find(value =>
+        value && typeof value==="object" &&
+        normalizeArtworkName(value.sourceName)===wanted &&
+        value.full
+      );
+      if(match) artwork=match;
+    }
+
+    if(!artwork || typeof artwork!=="object" || !artwork[playerView]){
+      artwork=await loadLiveArtwork(p);
+    }
+
     const url=artwork && typeof artwork==="object" ? artwork[playerView] : null;
     if(!url) continue;
 
