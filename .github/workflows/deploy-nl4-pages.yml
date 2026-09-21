@@ -70,8 +70,9 @@ jobs:
           unzip -q /tmp/arena-assets/known-good-pages.zip -d /tmp/arena-assets/pages
           mkdir -p /tmp/arena-assets/extracted
           tar -xf /tmp/arena-assets/pages/artifact.tar -C /tmp/arena-assets/extracted
-          cp /tmp/arena-assets/extracted/3d-arena/player-assets/*-half.* _site/3d-arena/player-assets/
-          cp /tmp/arena-assets/extracted/3d-arena/player-assets/manifest.json _site/3d-arena/player-assets/manifest.json
+          cp -a /tmp/arena-assets/extracted/3d-arena/player-assets/. _site/3d-arena/player-assets/
+          echo "Restored Arena asset directory:"
+          ls -lah _site/3d-arena/player-assets | head -60
 
           node <<'NODE'
           const fs = require('fs');
