@@ -96,13 +96,37 @@ async function renderStaticPlayerPhotos(){
       img.setAttribute("src",asset);
     }
 
-    img.onload=()=>{ 
+    img.loading="eager";
+    img.decoding="sync";
+    img.setAttribute("fetchpriority","high");
+
+    const oldFallback=img.parentElement && img.parentElement.querySelector('.mobile-art-fallback[data-for="'+key+'"]');
+    if(oldFallback) oldFallback.remove();
+
+    const showFallback=()=>{
+      if(img.dataset.artMode!==playerView || !window.matchMedia("(max-width:700px)").matches) return;
+      img.style.visibility="hidden";
+      img.style.opacity="0";
+      const fallback=document.createElement("div");
+      fallback.className="mobile-art-fallback";
+      fallback.dataset.for=key;
+      fallback.style.left=img.style.left;
+      fallback.style.top=img.style.top;
+      fallback.innerHTML='<b>'+playerView.toUpperCase()+'</b><strong>'+key.replace(/([a-z])([0-9])/i,'$1 $2')+'</strong>';
+      img.parentElement.appendChild(fallback);
+    };
+
+    img.onerror=showFallback;
+    img.onload=()=>{
+      const f=img.parentElement && img.parentElement.querySelector('.mobile-art-fallback[data-for="'+key+'"]');
+      if(f) f.remove();
       if(img.dataset.artMode===playerView){
         img.style.display="block";
         img.style.visibility="visible";
         img.style.opacity="1";
       }
     };
+    if(img.complete && img.naturalWidth===0) showFallback();
   });
 }
 function applyCamera(){
