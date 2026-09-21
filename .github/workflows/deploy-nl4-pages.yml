@@ -202,7 +202,7 @@ jobs:
             count++;
               const asset = manifest[key] && manifest[key][mode];
               if (!asset) throw new Error('Missing generated artwork for ' + key + ' ' + mode);
-              return '<img class="static-art static-art-' + mode + '" alt="" src="' + asset + '?v=20260921-50" data-art-key="' + key + '" data-art-mode="' + mode + '"' + rest + '>';
+              return '<img class="static-art static-art-' + mode + '" alt="" src="' + asset + '?v=20260921-53" data-art-key="' + key + '" data-art-mode="' + mode + '"' + rest + '>';
             }
           );
           if (count !== 22) throw new Error('Expected 22 starting-player artwork images to bind, found ' + count);
