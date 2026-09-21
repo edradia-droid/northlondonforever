@@ -165,9 +165,11 @@ jobs:
               console.log('Arena artwork ready: ' + name);
             }
 
-            // Saka Full and Half must use the exact same standing Player Render.
-            manifest.bukayosaka.half = manifest.bukayosaka.full;
-            manifest.bukayosaka.remoteHalf = manifest.bukayosaka.remoteFull;
+            // Saka Full uses the standing Player Render with the ball at his feet.
+            // Saka Half uses the dedicated half-body artwork and stays directly below
+            // the Full Body image in the HTML artwork stack.
+            manifest.bukayosaka.half = './player-assets/bukayosaka-half.png';
+            manifest.bukayosaka.remoteHalf = './player-assets/bukayosaka-half.png';
 
             fs.writeFileSync(
               path.join(dir, 'manifest.json'),
