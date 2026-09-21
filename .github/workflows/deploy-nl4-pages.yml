@@ -1,5 +1,5 @@
 name: Deploy NL4 Arsenal Website + 3D Arena
-# Arena deployment refresh: 2026-09-21 full-body standing fix 14
+# Arena deployment refresh: 2026-09-21 full-body standing fix 15
 
 on:
   push:
@@ -79,16 +79,27 @@ jobs:
           let fullCount = 0;
           let halfCount = 0;
 
+          const searchAliases = {
+            'Gabriel': 'Gabriel Magalhães',
+            'Max Dowman': 'Max Dowman'
+          };
+
+          const acceptedTeams = {
+            'Max Dowman': new Set(['arsenal', 'arsenal u21'])
+          };
+
           async function getExactArsenalPlayer(name) {
-            const api = 'https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p=' + encodeURIComponent(name.replace(/\s+/g, '_'));
+            const queryName = searchAliases[name] || name;
+            const api = 'https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p=' + encodeURIComponent(queryName.replace(/\s+/g, '_'));
             const response = await fetch(api);
             if (!response.ok) throw new Error('API ' + response.status);
             const json = await response.json();
             const list = Array.isArray(json.player) ? json.player : [];
-            const key = normalize(name);
+            const key = normalize(queryName);
+            const allowedTeams = acceptedTeams[name] || new Set(['arsenal']);
             return list.find(x =>
               normalize(x.strPlayer) === key &&
-              String(x.strTeam || '').trim().toLowerCase() === 'arsenal'
+              allowedTeams.has(String(x.strTeam || '').trim().toLowerCase())
             ) || null;
           }
 
