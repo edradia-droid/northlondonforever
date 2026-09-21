@@ -2,6 +2,19 @@ const DATA={formation:"4-3-3",starters:[{name:"David Raya",number:1,pos:"GK",x:0
 
 const staticPitch=document.querySelector(".static-pitch");
 const staticArena=document.querySelector("#staticArena");
+
+function loadStaticArtworkFromManifest(){
+  const manifest=window.ARENA_ARTWORK_MANIFEST||{};
+  document.querySelectorAll(".static-art[data-art-key][data-art-mode]").forEach(img=>{
+    const key=img.dataset.artKey;
+    const mode=img.dataset.artMode;
+    const artwork=manifest[key];
+    if(!artwork || !artwork[mode]) return;
+    img.src=artwork[mode] + (artwork[mode].includes("?")?"":"?v=20260921-38");
+    img.onerror=()=>{ img.style.display="none"; };
+  });
+}
+loadStaticArtworkFromManifest();
 let playerView="full";
 let cameraMode="broadcast";
 let zoom=1;
