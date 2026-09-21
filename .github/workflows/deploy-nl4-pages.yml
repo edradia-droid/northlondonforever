@@ -173,19 +173,11 @@ jobs:
             .replace(/[Øø]/g, 'o').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')
             .replace(/[^a-z0-9]+/gi, '').toLowerCase();
 
-          // Build the runtime manifest from the actual files that were just
-          // placed in the deployment. This prevents a stale/incomplete JSON
-          // manifest from making every player disappear.
-          const files = fs.readdirSync(dir).filter(f => /\\.(png|jpe?g|webp)$/i.test(f));
-          const manifest = {};
-          for (const file of files) {
-            const m = file.match(/^(.+)-(full|half)\\.(png|jpe?g|webp)$/i);
-            if (!m) continue;
-            const key = normalize(m[1]);
-            const mode = m[2].toLowerCase();
-            manifest[key] = manifest[key] || {};
-            manifest[key][mode] = './player-assets/' + file;
-          }
+          // Keep the restored Half Body mappings exactly as supplied by the
+          // known-good artwork package. Only rebuild the Full Body mappings,
+          // because those files were downloaded in the immediately preceding step.
+          const manifestPath = path.join(dir, 'manifest.json');
+          const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 
           const players = [
             'David Raya','Jurriën Timber','Ezri Konsa','Gabriel','Riccardo Calafiori',
@@ -196,13 +188,20 @@ jobs:
 
           for (const name of players) {
             const key = normalize(name);
-            if (!manifest[key]?.full) throw new Error('Missing FULL artwork file for '+name+' ('+key+')');
-            if (!manifest[key]?.half) throw new Error('Missing HALF artwork file for '+name+' ('+key+')');
+            const candidates = fs.readdirSync(dir).filter(f => new RegExp('^'+key+'-full\\\\.(png|jpe?g|webp)$','i').test(f));
+            if (candidates.length !== 1) {
+              throw new Error('Expected exactly one FULL artwork file for '+name+' ('+key+'), found '+candidates.length);
+            }
+            manifest[key] = manifest[key] || {};
+            manifest[key].full = './player-assets/' + candidates[0];
+            if (typeof manifest[key].half !== 'string' || !manifest[key].half) {
+              throw new Error('Missing restored HALF artwork mapping for '+name+' ('+key+')');
+            }
           }
 
-          fs.writeFileSync(path.join(dir,'manifest.json'), JSON.stringify(manifest,null,2)+'\\n');
+          fs.writeFileSync(manifestPath, JSON.stringify(manifest,null,2)+'\\n');
           fs.writeFileSync(path.join(dir,'manifest.js'), 'window.ARENA_ARTWORK_MANIFEST='+JSON.stringify(manifest)+';\\n');
-          console.log('Embedded '+players.length+' verified Arena player mappings.');
+          console.log('Embedded '+players.length+' verified Arena player mappings using restored Half Body + freshly built Full Body artwork.');
           NODE
           test -s _site/3d-arena/player-assets/manifest.js
 
