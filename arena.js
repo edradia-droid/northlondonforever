@@ -52,7 +52,7 @@ async function loadArtworkManifest(){
 
 async function loadLiveArtwork(player){
   try{
-    const q=encodeURIComponent(player.name.replace(/\\s+/g,"_"));
+    const q=encodeURIComponent(player.name.replace(/\s+/g,"_"));
     const res=await fetch("https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p="+q,{cache:"no-store"});
     if(!res.ok) return null;
     const json=await res.json();
