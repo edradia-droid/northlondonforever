@@ -163,6 +163,25 @@ jobs:
           test "$(find _site/3d-arena/player-assets -name '*-full.*' | wc -l)" -eq 20
           echo "Full-body artwork built for all 20 Arena players."
 
+      - name: Embed Arena artwork manifest
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const manifestPath = '_site/3d-arena/player-assets/manifest.json';
+          const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+          const keys = Object.keys(manifest);
+          if (keys.length < 20) throw new Error('Arena manifest contains fewer than 20 players: '+keys.length);
+          for (const key of keys) {
+            if (!manifest[key] || typeof manifest[key].full !== 'string' || typeof manifest[key].half !== 'string') {
+              throw new Error('Incomplete Arena artwork mapping for '+key);
+            }
+          }
+          const js = 'window.ARENA_ARTWORK_MANIFEST='+JSON.stringify(manifest)+';';
+          fs.writeFileSync('_site/3d-arena/player-assets/manifest.js', js+'\\n');
+          console.log('Embedded Arena artwork manifest for '+keys.length+' players.');
+          NODE
+          test -s _site/3d-arena/player-assets/manifest.js
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
