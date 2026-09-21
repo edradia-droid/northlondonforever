@@ -30,7 +30,7 @@
 .player-focus{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:120;min-width:220px;padding:11px 15px;border:1px solid rgba(255,255,255,.14);border-radius:14px;background:rgba(3,12,8,.82);backdrop-filter:blur(16px);box-shadow:0 16px 40px rgba(0,0,0,.35);text-align:center;pointer-events:none}.player-focus span,.player-focus small{display:block;color:#9aa9a1;font-size:8px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.player-focus strong{display:block;margin:3px 0;font-size:13px}.player-row.selected{box-shadow:inset 3px 0 0 var(--green)}@media(max-width:560px){.player-focus{bottom:12px;min-width:190px}.player-focus strong{font-size:12px}}
 
 
-.arena-photo-player{position:absolute;z-index:30;width:auto;max-width:72px;object-fit:contain;object-position:center bottom;pointer-events:auto;cursor:pointer;filter:drop-shadow(0 8px 5px rgba(0,0,0,.45));transform:translate(-50%,-100%) rotateX(-52deg);transform-origin:50% 100%;user-select:none;-webkit-user-drag:none;image-rendering:auto}.arena-photo-player:hover{filter:drop-shadow(0 10px 7px rgba(0,0,0,.55)) brightness(1.08);z-index:40}@media(max-width:700px){.arena-photo-player{max-width:54px;height:70px!important}}
+.arena-photo-player{position:absolute;z-index:30;width:auto;max-width:72px;object-fit:contain;object-position:center bottom;pointer-events:auto;cursor:pointer;filter:drop-shadow(0 8px 5px rgba(0,0,0,.45));transform:translate(-50%,-100%) rotateX(-52deg);transform-origin:50% 100%;user-select:none;-webkit-user-drag:none;image-rendering:auto}.arena-photo-player:hover{filter:drop-shadow(0 10px 7px rgba(0,0,0,.55)) brightness(1.08);z-index:40}@media(max-width:700px){.arena-photo-player{max-width:64px;height:145px!important}}
 
 /* Exact touch targets for Arena players: the image is visual, the button owns the tap. */
 .arena-player-hit{position:absolute;z-index:80;display:block;width:72px;height:155px;padding:0;margin:0;border:0;background:transparent;appearance:none;-webkit-appearance:none;transform:translate(-50%,-100%);transform-origin:50% 100%;transform-style:preserve-3d;cursor:pointer;touch-action:manipulation;pointer-events:auto;}
@@ -45,3 +45,10 @@
 /* Keep the two artwork modes visually distinct. Full-body players stand upright; half-body keeps the existing pitch-perspective treatment. */
 .static-pitch.view-full .arena-player-hit .arena-photo-player{transform:translate(-50%,-100%) rotateX(-52deg)!important;transform-origin:50% 100%!important;}
 .static-pitch.view-half .arena-player-hit .arena-photo-player{transform:translate(-50%,-100%) rotateX(-52deg)!important;transform-origin:50% 100%!important;}
+
+/* Full-body artwork must remain upright and fully visible from head to boots. Half-body keeps the pitch-perspective tilt. */
+.static-pitch.view-full .arena-player-hit{height:245px;overflow:visible;}
+.static-pitch.view-full .arena-player-hit .arena-photo-player{height:245px!important;max-width:92px;transform:translate(-50%,-100%)!important;transform-origin:50% 100%!important;object-fit:contain;object-position:center bottom;}
+.static-pitch.view-half .arena-player-hit{overflow:visible;}
+.static-pitch.view-half .arena-player-hit .arena-photo-player{transform:translate(-50%,-100%) rotateX(-52deg)!important;transform-origin:50% 100%!important;object-fit:contain;object-position:center bottom;}
+@media(max-width:700px){.static-pitch.view-full .arena-player-hit{height:155px}.static-pitch.view-full .arena-player-hit .arena-photo-player{height:145px!important;max-width:64px}.static-pitch.view-half .arena-player-hit .arena-photo-player{height:145px!important;max-width:64px}}
