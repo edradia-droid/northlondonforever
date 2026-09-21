@@ -69,7 +69,7 @@ async function renderStaticPlayerPhotos(){
     const photo=document.createElement("img");
     photo.className="arena-photo-player"; photo.alt=""; photo.draggable=false;
     photo.loading="eager"; photo.src=url;
-    photo.style.height=playerView==="full"?(p.pos==="GK"?"250px":"250px"):(p.pos==="GK"?"135px":"145px");
+    photo.style.height=playerView==="full"?"250px":"145px";
     photo.style.left="50%"; photo.style.top="100%"; photo.style.pointerEvents="none";
 
     hit.appendChild(photo);
