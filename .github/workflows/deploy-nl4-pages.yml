@@ -167,18 +167,42 @@ jobs:
         run: |
           node <<'NODE'
           const fs = require('fs');
-          const manifestPath = '_site/3d-arena/player-assets/manifest.json';
-          const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-          const keys = Object.keys(manifest);
-          if (keys.length < 20) throw new Error('Arena manifest contains fewer than 20 players: '+keys.length);
-          for (const key of keys) {
-            if (!manifest[key] || typeof manifest[key].full !== 'string' || typeof manifest[key].half !== 'string') {
-              throw new Error('Incomplete Arena artwork mapping for '+key);
-            }
+          const path = require('path');
+          const dir = '_site/3d-arena/player-assets';
+          const normalize = value => String(value || '')
+            .replace(/[Øø]/g, 'o').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')
+            .replace(/[^a-z0-9]+/gi, '').toLowerCase();
+
+          // Build the runtime manifest from the actual files that were just
+          // placed in the deployment. This prevents a stale/incomplete JSON
+          // manifest from making every player disappear.
+          const files = fs.readdirSync(dir).filter(f => /\\.(png|jpe?g|webp)$/i.test(f));
+          const manifest = {};
+          for (const file of files) {
+            const m = file.match(/^(.+)-(full|half)\\.(png|jpe?g|webp)$/i);
+            if (!m) continue;
+            const key = normalize(m[1]);
+            const mode = m[2].toLowerCase();
+            manifest[key] = manifest[key] || {};
+            manifest[key][mode] = './player-assets/' + file;
           }
-          const js = 'window.ARENA_ARTWORK_MANIFEST='+JSON.stringify(manifest)+';';
-          fs.writeFileSync('_site/3d-arena/player-assets/manifest.js', js+'\\n');
-          console.log('Embedded Arena artwork manifest for '+keys.length+' players.');
+
+          const players = [
+            'David Raya','Jurriën Timber','Ezri Konsa','Gabriel','Riccardo Calafiori',
+            'Declan Rice','Bruno Guimarães','Martin Ødegaard','Bukayo Saka','Christos Tzolis',
+            'Kai Havertz','Kepa Arrizabalaga','Piero Hincapié','Eberechi Eze','Viktor Gyökeres',
+            'Noni Madueke','Mikel Merino','Martín Zubimendi','Myles Lewis-Skelly','Max Dowman'
+          ];
+
+          for (const name of players) {
+            const key = normalize(name);
+            if (!manifest[key]?.full) throw new Error('Missing FULL artwork file for '+name+' ('+key+')');
+            if (!manifest[key]?.half) throw new Error('Missing HALF artwork file for '+name+' ('+key+')');
+          }
+
+          fs.writeFileSync(path.join(dir,'manifest.json'), JSON.stringify(manifest,null,2)+'\\n');
+          fs.writeFileSync(path.join(dir,'manifest.js'), 'window.ARENA_ARTWORK_MANIFEST='+JSON.stringify(manifest)+';\\n');
+          console.log('Embedded '+players.length+' verified Arena player mappings.');
           NODE
           test -s _site/3d-arena/player-assets/manifest.js
 
