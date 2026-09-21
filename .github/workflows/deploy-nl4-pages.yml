@@ -120,6 +120,17 @@ jobs:
             .replace(/[^a-z0-9]+/gi, '').toLowerCase();
           const manifestPath = '_site/3d-arena/player-assets/manifest.json';
           const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+
+          // The restored Half Body package may use legacy keys. Re-key those
+          // entries by their stored player/source name before adding Full Body.
+          const canonicalManifest = {};
+          for (const [rawKey, value] of Object.entries(manifest)) {
+            const candidates = [rawKey, value && value.sourceName, value && value.playerName, value && value.name];
+            const canonicalKey = candidates.map(normalize).find(Boolean) || rawKey;
+            canonicalManifest[canonicalKey] = value;
+          }
+          for (const key of Object.keys(manifest)) delete manifest[key];
+          Object.assign(manifest, canonicalManifest);
           const sleep = ms => new Promise(r => setTimeout(r, ms));
           async function getPlayer(name){
             const aliases = name === 'Gabriel'
