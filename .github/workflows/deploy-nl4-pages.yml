@@ -169,8 +169,7 @@ jobs:
               const { execFileSync } = require('child_process');
               const source = path.join(dir, 'bukayosaka-half.jpg');
               const output = path.join(dir, 'bukayosaka-half.png');
-              execFileSync('python3', ['-c', \
-`import cv2, numpy as np
+              const py = \`import cv2, numpy as np
 from PIL import Image
 src, out = __import__('sys').argv[1:3]
 img = cv2.imread(src, cv2.IMREAD_COLOR)
@@ -182,16 +181,18 @@ cv2.grabCut(img, mask, (95,5,820,1019), bgd, fgd, 8, cv2.GC_INIT_WITH_RECT)
 alpha = np.where((mask==2)|(mask==0),0,255).astype(np.uint8)
 rgba = cv2.cvtColor(img, cv2.COLOR_BGR2RGBA)
 rgba[:,:,3] = alpha
-Image.fromarray(rgba).save(out)`, source, output]);
+Image.fromarray(rgba).save(out)\`;
+              execFileSync('python3', ['-c', py, source, output]);
               fs.unlinkSync(source);
             }
+
+            manifest.bukayosaka.half = './player-assets/bukayosaka-half.png';
+            manifest.bukayosaka.remoteHalf = 'https://i.postimg.cc/9Q9mHqjv/image-c170763d.jpg';
 
             fs.writeFileSync(
               path.join(dir, 'manifest.json'),
               JSON.stringify(manifest, null, 2)
             );
-            manifest.bukayosaka.half = './player-assets/bukayosaka-half.png';
-            manifest.bukayosaka.remoteHalf = 'https://i.postimg.cc/9Q9mHqjv/image-c170763d.jpg';
 
             fs.writeFileSync(
               path.join(dir, 'manifest.js'),
