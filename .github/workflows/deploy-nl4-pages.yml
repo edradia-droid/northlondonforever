@@ -137,9 +137,10 @@ jobs:
               const player = await getPlayer(id);
               if (!player) throw new Error('No player data for ' + name);
 
-              // Saka uses the standing Player Render with the ball at his feet for both views.
-              const fullUrl = name === 'Bukayo Saka' ? (player.strRender || null) : (player.strCutout || null);
-              const halfUrl = name === 'Bukayo Saka' ? (player.strRender || null) : (player.strRender || null);
+              // Full Body uses the standing Player Render for EVERY player, so the football is visible at the feet.
+              // Half Body remains the Player Render as the dedicated half-body view.
+              const fullUrl = player.strRender || null;
+              const halfUrl = player.strRender || null;
 
               if (!fullUrl) throw new Error('Missing Full Body cutout for ' + name);
               if (!halfUrl) throw new Error('Missing Half Body Player Render for ' + name);
