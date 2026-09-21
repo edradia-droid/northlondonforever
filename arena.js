@@ -3,6 +3,10 @@ const DATA={formation:"4-3-3",starters:[{name:"David Raya",number:1,pos:"GK",x:0
 const staticPitch=document.querySelector(".static-pitch");
 const staticArena=document.querySelector("#staticArena");
 
+let playerView="full";
+let cameraMode="broadcast";
+let zoom=1;
+
 // ISOLATED MOBILE ARTWORK SYSTEM v2026-09-21-43
 // Desktop keeps the existing static-art layer. Mobile gets a completely separate
 // flat layer so mobile fixes cannot alter desktop rendering.
@@ -36,8 +40,6 @@ function syncMobileArtworkLayer(){
   if(!layer) return;
   layer.dataset.view=playerView;
 }
-ensureMobileArtworkLayer();
-
 function loadStaticArtworkFromManifest(){
   document.querySelectorAll(".static-art[data-art-key][data-art-mode]").forEach(img=>{
     if(img.getAttribute("src")) return;
@@ -52,9 +54,6 @@ function loadStaticArtworkFromManifest(){
 }
 loadStaticArtworkFromManifest();
 
-let playerView="full";
-let cameraMode="broadcast";
-let zoom=1;
 ensureMobileArtworkLayer();
 
 const normalizeArtworkName=value=>String(value||"")
