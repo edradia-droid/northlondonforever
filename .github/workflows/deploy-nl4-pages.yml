@@ -59,6 +59,7 @@ jobs:
         run: |
           rm -rf _site/3d-arena/player-assets
           mkdir -p _site/3d-arena/player-assets
+          python3 -m pip install --disable-pip-version-check -q opencv-python-headless pillow
 
           node <<'NODE'
           const fs = require('fs');
@@ -138,7 +139,7 @@ jobs:
               // Full Body is the dedicated cutout.
               const fullUrl = player.strCutout || null;
               // Half Body is the dedicated Player Render.
-              const halfUrl = player.strRender || null;
+              const halfUrl = name === 'Bukayo Saka' ? 'https://i.postimg.cc/9Q9mHqjv/image-c170763d.jpg' : (player.strRender || null);
 
               if (!fullUrl) throw new Error('Missing Full Body cutout for ' + name);
               if (!halfUrl) throw new Error('Missing Half Body Player Render for ' + name);
@@ -164,10 +165,34 @@ jobs:
               console.log('Arena artwork ready: ' + name);
             }
 
+            if (true) {
+              const { execFileSync } = require('child_process');
+              const source = path.join(dir, 'bukayosaka-half.jpg');
+              const output = path.join(dir, 'bukayosaka-half.png');
+              execFileSync('python3', ['-c', \
+`import cv2, numpy as np
+from PIL import Image
+src, out = __import__('sys').argv[1:3]
+img = cv2.imread(src, cv2.IMREAD_COLOR)
+if img is None: raise SystemExit('Could not read supplied Saka image')
+mask = np.zeros(img.shape[:2], np.uint8)
+bgd = np.zeros((1,65), np.float64)
+fgd = np.zeros((1,65), np.float64)
+cv2.grabCut(img, mask, (95,5,820,1019), bgd, fgd, 8, cv2.GC_INIT_WITH_RECT)
+alpha = np.where((mask==2)|(mask==0),0,255).astype(np.uint8)
+rgba = cv2.cvtColor(img, cv2.COLOR_BGR2RGBA)
+rgba[:,:,3] = alpha
+Image.fromarray(rgba).save(out)`, source, output]);
+              fs.unlinkSync(source);
+            }
+
             fs.writeFileSync(
               path.join(dir, 'manifest.json'),
               JSON.stringify(manifest, null, 2)
             );
+            manifest.bukayosaka.half = './player-assets/bukayosaka-half.png';
+            manifest.bukayosaka.remoteHalf = 'https://i.postimg.cc/9Q9mHqjv/image-c170763d.jpg';
+
             fs.writeFileSync(
               path.join(dir, 'manifest.js'),
               'window.ARENA_ARTWORK_MANIFEST=' + JSON.stringify(manifest) + ';'
@@ -212,8 +237,8 @@ jobs:
             if (!remote) throw new Error('Missing remote artwork for ' + key + ' ' + mode);
             const local = asset;
             const sourceMatch = rest.match(/\bsrc="([^"]*)"/);
-            const suppliedTestSrc = key === 'bukayosaka' && mode === 'half' && /data-test-art="saka-postimg"/.test(rest)
-              ? (sourceMatch ? sourceMatch[1] : remote)
+            const suppliedTestSrc = key === 'bukayosaka' && mode === 'half' && sourceMatch && sourceMatch[1].startsWith('./player-assets/')
+              ? sourceMatch[1]
               : remote;
             count++;
             const cleanedRest = rest
