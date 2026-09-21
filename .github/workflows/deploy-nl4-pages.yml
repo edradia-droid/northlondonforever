@@ -165,27 +165,6 @@ jobs:
               console.log('Arena artwork ready: ' + name);
             }
 
-            if (true) {
-              const { execFileSync } = require('child_process');
-              const source = path.join(dir, 'bukayosaka-half.jpg');
-              const output = path.join(dir, 'bukayosaka-half.png');
-              const py = `import cv2, numpy as np
-from PIL import Image
-src, out = __import__('sys').argv[1:3]
-img = cv2.imread(src, cv2.IMREAD_COLOR)
-if img is None: raise SystemExit('Could not read supplied Saka image')
-mask = np.zeros(img.shape[:2], np.uint8)
-bgd = np.zeros((1,65), np.float64)
-fgd = np.zeros((1,65), np.float64)
-cv2.grabCut(img, mask, (95,5,820,1019), bgd, fgd, 8, cv2.GC_INIT_WITH_RECT)
-alpha = np.where((mask==2)|(mask==0),0,255).astype(np.uint8)
-rgba = cv2.cvtColor(img, cv2.COLOR_BGR2RGBA)
-rgba[:,:,3] = alpha
-Image.fromarray(rgba).save(out)`;
-              execFileSync('python3', ['-c', py, source, output]);
-              fs.unlinkSync(source);
-            }
-
             manifest.bukayosaka.half = './player-assets/bukayosaka-half.png';
             manifest.bukayosaka.remoteHalf = 'https://i.postimg.cc/9Q9mHqjv/image-c170763d.jpg';
 
@@ -216,6 +195,45 @@ Image.fromarray(rgba).save(out)`;
             echo "Unexpected artwork filename detected"
             exit 1
           fi
+
+      - name: Make supplied Saka artwork transparent
+        run: |
+          python3 - <<'PY'
+          import cv2
+          import numpy as np
+          from PIL import Image
+
+          src = '_site/3d-arena/player-assets/bukayosaka-half.jpg'
+          out = '_site/3d-arena/player-assets/bukayosaka-half.png'
+          img = cv2.imread(src, cv2.IMREAD_COLOR)
+          if img is None:
+              raise SystemExit('Could not read supplied Saka image')
+
+          mask = np.zeros(img.shape[:2], np.uint8)
+          bgd = np.zeros((1, 65), np.float64)
+          fgd = np.zeros((1, 65), np.float64)
+          cv2.grabCut(img, mask, (95, 5, 820, 1019), bgd, fgd, 8, cv2.GC_INIT_WITH_RECT)
+
+          alpha = np.where((mask == 2) | (mask == 0), 0, 255).astype(np.uint8)
+          rgba = cv2.cvtColor(img, cv2.COLOR_BGR2RGBA)
+          rgba[:, :, 3] = alpha
+          Image.fromarray(rgba).save(out)
+          PY
+
+          rm -f _site/3d-arena/player-assets/bukayosaka-half.jpg
+
+          node <<'NODE'
+          const fs = require('fs');
+          const path = './_site/3d-arena/player-assets';
+          const manifestPath = path + '/manifest.json';
+          const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+          manifest.bukayosaka.half = './player-assets/bukayosaka-half.png';
+          manifest.bukayosaka.remoteHalf = 'https://i.postimg.cc/9Q9mHqjv/image-c170763d.jpg';
+          fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+          fs.writeFileSync(path + '/manifest.js', 'window.ARENA_ARTWORK_MANIFEST=' + JSON.stringify(manifest) + ';');
+          NODE
+
+          test -s _site/3d-arena/player-assets/bukayosaka-half.png
 
       - name: Bind generated artwork directly into Arena HTML
         run: |
