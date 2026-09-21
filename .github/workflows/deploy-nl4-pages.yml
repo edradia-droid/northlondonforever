@@ -155,6 +155,8 @@ jobs:
               manifest[key] = {
                 full: './player-assets/' + fullFile,
                 half: './player-assets/' + halfFile,
+                remoteFull: fullUrl,
+                remoteHalf: halfUrl,
                 playerId: id,
                 sourceName: name
               };
