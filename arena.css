@@ -713,3 +713,30 @@
   #staticArena .static-pitch.view-half.camera-top{transform:perspective(1200px) rotateX(0deg) scale(.94)!important;}
   #staticArena .static-pitch.view-half.camera-tactical{transform:perspective(1200px) rotateX(38deg) scale(1.04)!important;}
 }
+
+/* DEFENSIVE LINE VISIBILITY FIX v2026-09-21
+   Keep the keeper and back four in a separate top paint order so the
+   transformed pitch cannot visually cover them on mobile. */
+@media(max-width:700px){
+  #staticArena{
+    overflow:visible!important;
+    isolation:isolate!important;
+  }
+  #staticArena .static-pitch{
+    z-index:0!important;
+    isolation:auto!important;
+  }
+  #staticArena .static-art-layer{
+    z-index:1000!important;
+    isolation:isolate!important;
+    overflow:visible!important;
+    transform:translate3d(-50%,-50%,0)!important;
+  }
+  #staticArena .static-art-layer .static-art{
+    position:absolute!important;
+    visibility:visible!important;
+    opacity:1!important;
+    backface-visibility:visible!important;
+    -webkit-backface-visibility:visible!important;
+  }
+}
