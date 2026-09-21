@@ -198,8 +198,18 @@ if(typeof THREE==="undefined"){
       else addFallbackPlayer(p,g);
     }
 
-    // Visible player photos are the only interactive player layer.\n    // Keep Three.js player groups non-interactive so clicks can never resolve to a player underneath.\n    DATA.starters.forEach(p=>{ const g=new THREE.Group(); g.userData.player=p; g.position.set(p.x,0,p.y); group.add(g); addGroundShadow(g); });\n    const setCamera=mode=>{if(mode==="top")camera.position.set(0,125,.1);else if(mode==="tactical")camera.position.set(0,70,118);else camera.position.set(0,55,92)};
-    document.querySelectorAll("[data-camera]").forEach(b=>b.onclick=()=>setCamera(b.dataset.camera));document.querySelector("#resetCamera").onclick=()=>setCamera("broadcast");document.querySelector("#zoomIn").onclick=()=>camera.position.multiplyScalar(.9);document.querySelector("#zoomOut").onclick=()=>camera.position.multiplyScalar(1.1);
+    // Visible player photos are the only interactive player layer.\n    // Keep Three.js player groups non-interactive so clicks can never resolve to a player underneath.\n    DATA.starters.forEach(p=>{ const g=new THREE.Group(); g.userData.player=p; g.position.set(p.x,0,p.y); group.add(g); addGroundShadow(g); });\n    const setCamera=mode=>{
+      const resolved=mode==="top"?"top":mode==="tactical"?"tactical":"broadcast";
+      if(resolved==="top") camera.position.set(0,125,.1);
+      else if(resolved==="tactical") camera.position.set(0,70,118);
+      else camera.position.set(0,55,92);
+      if(staticPitch){
+        staticPitch.dataset.camera=resolved;
+        staticPitch.classList.remove("camera-broadcast","camera-top","camera-tactical");
+        staticPitch.classList.add("camera-"+resolved);
+      }
+    };
+    document.querySelectorAll("[data-camera]").forEach(b=>b.onclick=()=>setCamera(b.dataset.camera));document.querySelector("#resetCamera").onclick=()=>setCamera("broadcast");setCamera("broadcast");document.querySelector("#zoomIn").onclick=()=>camera.position.multiplyScalar(.9);document.querySelector("#zoomOut").onclick=()=>camera.position.multiplyScalar(1.1);
     addEventListener("resize",()=>{const w=Math.max(1,root.clientWidth),h=Math.max(1,root.clientHeight);camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false)});
     (function animate(){requestAnimationFrame(animate);renderer.render(scene,camera)})();
   }
