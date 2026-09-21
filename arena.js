@@ -60,8 +60,8 @@ async function renderStaticPlayerPhotos(){
     hit.style.top=(50-(p.y/58)*42)+"%";
     // The hitbox follows the player silhouette, with its bottom anchored at the player's feet.
     // It is deliberately narrower than the old giant box so nearby players can never steal the tap.
-    hit.style.width="72px";
-    hit.style.height="155px";
+    hit.style.width=playerView==="full" ? "76px" : "72px";
+    hit.style.height=playerView==="full" ? "220px" : "155px";
 
     const photo=document.createElement("img");
     photo.className="arena-photo-player";
@@ -69,7 +69,7 @@ async function renderStaticPlayerPhotos(){
     photo.draggable=false;
     photo.loading="eager";
     photo.src=url;
-    photo.style.height=playerView==="full" ? (p.pos==="GK"?"175px":"185px") : (p.pos==="GK"?"125px":"135px");
+    photo.style.height=playerView==="full" ? (p.pos==="GK"?"210px":"220px") : (p.pos==="GK"?"125px":"135px");
     photo.style.left="50%";
     photo.style.top="100%";
     photo.style.transform="translate(-50%,-100%)";
