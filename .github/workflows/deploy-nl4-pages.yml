@@ -117,10 +117,11 @@ jobs:
               // Use artwork only from the exact matched player. Prefer the intended
               // cutout/render, but keep a same-player thumbnail fallback so a missing
               // artwork field cannot make the entire player disappear.
-              const fullUrl = player.strCutout || player.strRender || player.strThumb || null;
-              const halfUrl = player.strRender || player.strThumb || player.strCutout || null;
-              if (!fullUrl) throw new Error('exact player has no usable artwork');
-              if (!halfUrl) throw new Error('exact player has no usable half-body artwork');
+              // Full Body is intentionally not downloaded yet.
+              // Half Body uses the player's THUMB artwork. TheSportsDB's
+              // strRender is a full-body render, not the half-body image.
+              const halfUrl = player.strThumb || null;
+              if (!halfUrl) throw new Error('exact player has no half-body thumb artwork');
               async function saveArtwork(url, suffix) {
                 if (!url) return null;
                 const imageResponse = await fetch(url);
