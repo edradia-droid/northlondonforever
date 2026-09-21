@@ -963,3 +963,13 @@
     max-height:none!important;
   }
 }
+
+/* FINAL WING POSITIONS: Saka right wing, Tzolis left wing. Keep them separated. */
+#staticArena .static-art-layer .static-art[data-art-key="bukayosaka"]{
+  left:73%!important;
+  top:29%!important;
+}
+#staticArena .static-art-layer .static-art[data-art-key="christostzolis"]{
+  left:27%!important;
+  top:29%!important;
+}
