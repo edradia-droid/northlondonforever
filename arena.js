@@ -52,12 +52,12 @@ async function loadArtworkManifest(){
 
 function artworkPathForView(artwork){
   if(!artwork || typeof artwork!=="object") return null;
-  const url=artwork[playerView];
+  // Authoritative mapping: Full Body = TheSportsDB cutout; Half Body = Player Render.
+  const url=playerView==="full"?artwork.cutout:artwork.render;
   if(typeof url!=="string") return null;
 
-  // Full Body can only load a file explicitly packaged as -full.
-  // Half Body can only load a file explicitly packaged as -half.
-  const expected=playerView==="full"?/-full\.(png|jpe?g|webp)$/i:/-half\.(png|jpe?g|webp)$/i;
+  // Full Body can only load the cutout package; Half Body can only load the render package.
+  const expected=playerView==="full"?/-cutout\.(png|jpe?g|webp)$/i:/-render\.(png|jpe?g|webp)$/i;
   return expected.test(url) ? url : null;
 }
 
