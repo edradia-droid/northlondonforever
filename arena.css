@@ -839,3 +839,20 @@
     max-width:74px!important;
   }
 }
+
+/* SAKA SUPPLIED TRANSPARENT ARTWORK — keep the complete supplied figure visible */
+#staticArena .static-art-layer .static-art-half[data-art-key="bukayosaka"]{
+  width:auto!important;
+  height:220px!important;
+  max-width:110px!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  transform:translate3d(-50%,-100%,0)!important;
+}
+@media(max-width:420px){
+  #staticArena .static-art-layer .static-art-half[data-art-key="bukayosaka"]{
+    height:195px!important;
+    max-width:98px!important;
+  }
+}
