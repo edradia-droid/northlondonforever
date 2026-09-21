@@ -165,6 +165,10 @@ jobs:
               path.join(dir, 'manifest.json'),
               JSON.stringify(manifest, null, 2)
             );
+            fs.writeFileSync(
+              path.join(dir, 'manifest.js'),
+              'window.ARENA_ARTWORK_MANIFEST=' + JSON.stringify(manifest) + ';'
+            );
 
             console.log('Verified 20 players with dedicated Full Body cutouts and dedicated Half Body Player Renders.');
           })().catch(error => {
