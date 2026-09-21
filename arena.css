@@ -52,3 +52,7 @@
 .static-pitch.view-half .arena-player-hit{overflow:visible;}
 .static-pitch.view-half .arena-player-hit .arena-photo-player{transform:translate(-50%,-100%) rotateX(-52deg)!important;transform-origin:50% 100%!important;object-fit:contain;object-position:center bottom;}
 @media(max-width:700px){.static-pitch.view-full .arena-player-hit{height:155px}.static-pitch.view-full .arena-player-hit .arena-photo-player{height:145px!important;max-width:64px}.static-pitch.view-half .arena-player-hit .arena-photo-player{height:145px!important;max-width:64px}}
+
+/* Final Full Body correction: counter the pitch's 3D tilt so the complete cutout remains upright. */
+.static-pitch.view-full .arena-player-hit .arena-photo-player{transform:translate(-50%,-100%) rotateX(-52deg)!important;transform-origin:50% 100%!important;object-fit:contain!important;object-position:center bottom!important;overflow:visible!important;}
+.static-pitch.view-full .arena-player-hit{overflow:visible!important;}
