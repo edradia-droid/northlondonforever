@@ -114,10 +114,13 @@ jobs:
               }
 
               console.log('Matched ' + name + ' -> ' + player.strPlayer + ' [' + player.idPlayer + ']');
-              const fullUrl = player.strCutout || null;
-              const halfUrl = player.strRender || null;
-              if (!fullUrl) throw new Error('no full-body cutout for exact player');
-              if (!halfUrl) throw new Error('no half-body render for exact player');
+              // Use artwork only from the exact matched player. Prefer the intended
+              // cutout/render, but keep a same-player thumbnail fallback so a missing
+              // artwork field cannot make the entire player disappear.
+              const fullUrl = player.strCutout || player.strRender || player.strThumb || null;
+              const halfUrl = player.strRender || player.strThumb || player.strCutout || null;
+              if (!fullUrl) throw new Error('exact player has no usable artwork');
+              if (!halfUrl) throw new Error('exact player has no usable half-body artwork');
               async function saveArtwork(url, suffix) {
                 if (!url) return null;
                 const imageResponse = await fetch(url);
