@@ -84,7 +84,10 @@ async function renderStaticPlayerPhotos(){
     const key=img.dataset.artKey;
     const mode=img.dataset.artMode;
     const boundAsset=img.getAttribute("src");
-    const asset=manifest && manifest[key] ? manifest[key][mode] : boundAsset;
+    if(boundAsset) img.dataset.boundAsset=boundAsset;
+    const manifestAsset=manifest && manifest[key] ? manifest[key][mode] : null;
+    // Never replace a known-good HTML asset with a stale/bad manifest entry.
+    const asset=(typeof boundAsset==="string" && boundAsset) ? boundAsset : manifestAsset;
     const active=mode===playerView;
 
     img.style.display=active && asset ? "block" : "none";
@@ -123,9 +126,15 @@ async function renderStaticPlayerPhotos(){
 
     img.onerror=()=>{
       const current=img.getAttribute("src")||"";
+      const bound=img.dataset.boundAsset || "";
+      if(!img.dataset.boundRetry && bound && current!==bound){
+        img.dataset.boundRetry="1";
+        img.setAttribute("src",bound);
+        return;
+      }
       if(!img.dataset.cacheRetry && current){
         img.dataset.cacheRetry="1";
-        img.setAttribute("src",current+(current.includes("?")?"&":"?")+"retry=20260921-50");
+        img.setAttribute("src",current+(current.includes("?")?"&":"?")+"retry=20260921-52");
         return;
       }
       showFallback();
