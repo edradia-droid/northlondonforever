@@ -118,10 +118,11 @@ jobs:
               // cutout/render, but keep a same-player thumbnail fallback so a missing
               // artwork field cannot make the entire player disappear.
               // Full Body is intentionally not downloaded yet.
-              // Half Body uses the player's THUMB artwork. TheSportsDB's
-              // strRender is a full-body render, not the half-body image.
-              const halfUrl = player.strThumb || null;
-              if (!halfUrl) throw new Error('exact player has no half-body thumb artwork');
+              // Restore the same player-render artwork that was previously
+              // used successfully for the Arena's Half Body view.
+              // Keep all fallbacks on the exact matched player only.
+              const halfUrl = player.strRender || player.strThumb || player.strCutout || null;
+              if (!halfUrl) throw new Error('exact player has no usable half-body artwork');
               async function saveArtwork(url, suffix) {
                 if (!url) return null;
                 const imageResponse = await fetch(url);
@@ -136,10 +137,9 @@ jobs:
                 return './player-assets/' + filename;
               }
 
-              const full = await saveArtwork(fullUrl, 'full');
               const half = await saveArtwork(halfUrl, 'half');
-              manifest[key] = {full, half, playerId: String(player.idPlayer || ''), sourceName: String(player.strPlayer || '')};
-              console.log('Downloaded ' + name + ' (full + half)');
+              manifest[key] = {full: null, half, playerId: String(player.idPlayer || ''), sourceName: String(player.strPlayer || '')};
+              console.log('Downloaded ' + name + ' (half body only)');
             } catch (error) {
               console.log('Artwork unavailable for ' + name + ': ' + error.message);
             }
