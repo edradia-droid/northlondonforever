@@ -198,7 +198,7 @@ jobs:
           const htmlPath = '_site/3d-arena/index.html';
           const manifest = JSON.parse(fs.readFileSync('_site/3d-arena/player-assets/manifest.json', 'utf8'));
           let html = fs.readFileSync(htmlPath, 'utf8');
-          const re = /<img class="static-art static-art-(full|half)" alt=""(?: src="[^"]*")? data-art-key="([^"]+)" data-art-mode="(full|half)"([^>]*)>/g;
+          const re = /<img\b(?=[^>]*\bclass="static-art static-art-(full|half)")(?=[^>]*\bdata-art-key="([^"]+)")(?=[^>]*\bdata-art-mode="(full|half)")([^>]*)>/g;
           let count = 0;
           html = html.replace(re, (tag, clsMode, key, mode, rest) => {
             const asset = manifest[key] && manifest[key][mode];
