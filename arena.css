@@ -286,9 +286,10 @@
   }
 }
 
-/* UNIVERSAL STATIC ARENA ARTWORK v2026-09-21-34
-   One authoritative flat overlay. It is a sibling of the transformed pitch,
-   so mobile browsers never have to paint artwork inside a CSS-3D ancestor. */
+/* UNIVERSAL STATIC ARENA ARTWORK v2026-09-21-35
+   Artwork overlay exactly matches the pitch box. Desktop follows the pitch
+   camera; mobile switches both layers to a flat projection so images cannot
+   disappear from CSS-3D compositing. */
 #staticArena{position:absolute!important;inset:0!important;display:grid!important;place-items:center!important;overflow:hidden!important;}
 .static-art-layer{
   position:absolute!important;
@@ -296,7 +297,9 @@
   top:50%!important;
   width:min(62%,520px)!important;
   height:min(82%,650px)!important;
-  transform:translate(-50%,-50%)!important;
+  min-height:420px!important;
+  transform:translate(-50%,-50%) perspective(1000px) rotateX(18deg)!important;
+  transform-origin:50% 50%!important;
   z-index:70!important;
   pointer-events:none!important;
   overflow:visible!important;
@@ -322,10 +325,33 @@
 .static-pitch.view-half~.static-art-layer .static-art-full{display:none!important}
 .static-pitch.view-half~.static-art-layer .static-art-half{display:block!important}
 @media(max-width:700px){
-  .static-art-layer{width:min(72%,360px)!important;height:70%!important;}
+  .static-pitch.view-full,
+  .static-pitch.view-half{
+    width:min(72%,360px)!important;
+    height:70%!important;
+    min-height:360px!important;
+    transform:none!important;
+    transform-style:flat!important;
+  }
+  .static-art-layer{
+    width:min(72%,360px)!important;
+    height:70%!important;
+    min-height:360px!important;
+    transform:translate(-50%,-50%)!important;
+  }
   .static-art{height:175px!important;max-width:78px!important;}
 }
 @media(max-width:420px){
-  .static-art-layer{width:min(82%,320px)!important;height:70%!important;}
+  .static-pitch.view-full,
+  .static-pitch.view-half{
+    width:min(82%,320px)!important;
+    height:70%!important;
+    min-height:320px!important;
+  }
+  .static-art-layer{
+    width:min(82%,320px)!important;
+    height:70%!important;
+    min-height:320px!important;
+  }
   .static-art{height:145px!important;max-width:66px!important;}
 }
