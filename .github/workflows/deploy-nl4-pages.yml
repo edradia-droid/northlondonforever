@@ -140,7 +140,7 @@ jobs:
               // Full Body is the dedicated cutout.
               const fullUrl = player.strCutout || null;
               // Half Body is the dedicated Player Render.
-              const halfUrl = name === 'Bukayo Saka' ? 'https://i.postimg.cc/9Q9mHqjv/image-c170763d.jpg' : (player.strRender || null);
+              const halfUrl = name === 'Bukayo Saka' ? './player-assets/bukayosaka-half.png' : (player.strRender || null);
 
               if (!fullUrl) throw new Error('Missing Full Body cutout for ' + name);
               if (!halfUrl) throw new Error('Missing Half Body Player Render for ' + name);
@@ -167,7 +167,7 @@ jobs:
             }
 
             manifest.bukayosaka.half = './player-assets/bukayosaka-half.png';
-            manifest.bukayosaka.remoteHalf = '';
+            manifest.bukayosaka.remoteHalf = './player-assets/bukayosaka-half.png';
 
             fs.writeFileSync(
               path.join(dir, 'manifest.json'),
