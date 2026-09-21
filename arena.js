@@ -57,7 +57,7 @@ function artworkPathForView(artwork){
 
   // Full Body can only load a file explicitly packaged as -full.
   // Half Body can only load a file explicitly packaged as -half.
-  const expected=playerView==="full"?/-full\\.(png|jpe?g|webp)$/i:/-half\\.(png|jpe?g|webp)$/i;
+  const expected=playerView==="full"?/-full\.(png|jpe?g|webp)$/i:/-half\.(png|jpe?g|webp)$/i;
   return expected.test(url) ? url : null;
 }
 
