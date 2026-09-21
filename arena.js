@@ -31,7 +31,7 @@ const normalizeArtworkName=value=>String(value||"")
   .toLowerCase();
 
 let artworkManifestPromise=null;
-let playerView="half";
+let playerView="full";
 async function loadArtworkManifest(){
   if(artworkManifestPromise) return artworkManifestPromise;
   artworkManifestPromise=fetch("./player-assets/manifest.json?v=20260921-13",{cache:"no-store"})
@@ -104,7 +104,7 @@ function setPlayerView(view){
 }
 
 document.querySelectorAll("[data-player-view]").forEach(b=>b.addEventListener("click",()=>setPlayerView(b.dataset.playerView)));
-setPlayerView("half");
+setPlayerView("full");
 
 function initCssFallback(){
   if(staticArena) staticArena.style.display="grid";
