@@ -106,14 +106,15 @@ jobs:
               const player = await getExactArsenalPlayer(name);
               if (!player) throw new Error('exact Arsenal player not found');
 
-              // Full Body: Player Cutout first. Render/thumbnail are only fallbacks
-              // when TheSportsDB has no cutout for that exact Arsenal player.
-              const fullUrl = player.strCutout || player.strRender || player.strThumb || null;
+              // Full Body MUST use the dedicated full-body cutout.
+              // Do not fall back to render/thumbnail here: those can be portrait/half-body
+              // images and are exactly what causes missing legs/boots in Full Body mode.
+              const fullUrl = player.strCutout || null;
 
               // Half Body: Player Render first. Cutout/thumbnail are fallbacks.
               const halfUrl = player.strRender || player.strThumb || player.strCutout || null;
 
-              if (!fullUrl) throw new Error('no full-body artwork');
+              if (!fullUrl) throw new Error('no dedicated full-body cutout');
               if (!halfUrl) throw new Error('no half-body artwork');
 
               const fullExt = (new URL(fullUrl).pathname.match(/\.[a-z0-9]+$/i) || ['.png'])[0].slice(1).toLowerCase();
@@ -139,7 +140,7 @@ jobs:
               JSON.stringify(manifest, null, 2)
             );
 
-            console.log('Arena full-body artwork count:', fullCount);
+            console.log('Arena full-body cutout count:', fullCount);
             console.log('Arena half-body artwork count:', halfCount);
 
             if (fullCount < 11) throw new Error('Too few full-body artworks: ' + fullCount);
