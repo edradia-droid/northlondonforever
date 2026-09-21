@@ -189,6 +189,29 @@ jobs:
             exit 1
           fi
 
+      - name: Bind generated artwork directly into Arena HTML
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const htmlPath = '_site/3d-arena/index.html';
+          const manifest = JSON.parse(fs.readFileSync('_site/3d-arena/player-assets/manifest.json', 'utf8'));
+          let html = fs.readFileSync(htmlPath, 'utf8');
+          html = html.replace(
+            /<img class="static-art static-art-(full|half)" alt="" data-art-key="([^"]+)" data-art-mode="(full|half)"([^>]*)>/g,
+            (tag, clsMode, key, mode, rest) => {
+              const asset = manifest[key] && manifest[key][mode];
+              if (!asset) throw new Error('Missing generated artwork for ' + key + ' ' + mode);
+              return '<img class="static-art static-art-' + mode + '" alt="" src="' + asset + '?v=20260921-40" data-art-key="' + key + '" data-art-mode="' + mode + '"' + rest + '>';
+            }
+          );
+          fs.writeFileSync(htmlPath, html);
+          console.log('Bound generated artwork URLs directly into Arena HTML.');
+          NODE
+          grep -q 'src="./player-assets/davidraya-full' _site/3d-arena/index.html
+          grep -q 'src="./player-assets/ricardocalafiori-full' _site/3d-arena/index.html
+          grep -q 'src="./player-assets/davidraya-half' _site/3d-arena/index.html
+          grep -q 'src="./player-assets/ricardocalafiori-half' _site/3d-arena/index.html
+
       - name: Verify Arena artwork package
         run: |
           test -s _site/3d-arena/player-assets/manifest.json
