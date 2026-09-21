@@ -206,3 +206,122 @@ const zoomOut=document.querySelector("#zoomOut"); if(zoomOut) zoomOut.onclick=()
 setCamera("broadcast");
 setPlayerView("full");
 renderStaticPlayerPhotos();
+
+
+/* DRAGGABLE ARENA PLAYERS
+   Each player can be positioned independently in Full Body and Half Body.
+   Positions are stored locally so the user's arrangement survives refreshes. */
+const PLAYER_POSITION_STORAGE_KEY="nl4-arena-player-positions-v1";
+
+function readPlayerPositions(){
+  try{
+    const raw=localStorage.getItem(PLAYER_POSITION_STORAGE_KEY);
+    const parsed=raw?JSON.parse(raw):{};
+    return parsed && typeof parsed==="object" ? parsed : {};
+  }catch(e){ return {}; }
+}
+
+function writePlayerPositions(positions){
+  try{ localStorage.setItem(PLAYER_POSITION_STORAGE_KEY,JSON.stringify(positions)); }catch(e){}
+}
+
+function playerPositionKey(img){
+  return String(img.dataset.artKey||"")+"__"+String(img.dataset.artMode||playerView);
+}
+
+function clampPercent(value,min,max){
+  return Math.max(min,Math.min(max,value));
+}
+
+function applySavedPlayerPositions(){
+  const positions=readPlayerPositions();
+  document.querySelectorAll("#staticArena .static-art").forEach(img=>{
+    const saved=positions[playerPositionKey(img)];
+    if(!saved || !Number.isFinite(saved.x) || !Number.isFinite(saved.y)) return;
+    img.style.setProperty("left",clampPercent(saved.x,0,100)+"%","important");
+    img.style.setProperty("top",clampPercent(saved.y,0,100)+"%","important");
+  });
+}
+
+function enableArenaPlayerDragging(){
+  const layer=document.querySelector("#staticArena .static-art-layer");
+  if(!layer) return;
+
+  applySavedPlayerPositions();
+
+  layer.querySelectorAll(".static-art").forEach(img=>{
+    if(img.dataset.dragReady==="1") return;
+    img.dataset.dragReady="1";
+    img.style.cursor="grab";
+    img.style.touchAction="none";
+    img.style.pointerEvents="auto";
+
+    let dragging=false;
+    let pointerId=null;
+
+    img.addEventListener("pointerdown",event=>{
+      if(img.dataset.artMode!==playerView) return;
+      if(event.button!==undefined && event.button!==0) return;
+      dragging=true;
+      pointerId=event.pointerId;
+      img.dataset.dragStartLeft=img.style.left || getComputedStyle(img).left;
+      img.dataset.dragStartTop=img.style.top || getComputedStyle(img).top;
+      img.setPointerCapture?.(pointerId);
+      img.style.cursor="grabbing";
+      event.preventDefault();
+      event.stopPropagation();
+    });
+
+    img.addEventListener("pointermove",event=>{
+      if(!dragging || event.pointerId!==pointerId) return;
+      const rect=layer.getBoundingClientRect();
+      if(!rect.width || !rect.height) return;
+
+      const x=clampPercent(((event.clientX-rect.left)/rect.width)*100,0,100);
+      const y=clampPercent(((event.clientY-rect.top)/rect.height)*100,0,100);
+
+      img.style.setProperty("left",x+"%","important");
+      img.style.setProperty("top",y+"%","important");
+      event.preventDefault();
+      event.stopPropagation();
+    });
+
+    const finishDrag=event=>{
+      if(!dragging || (event && pointerId!==event.pointerId)) return;
+      dragging=false;
+      img.style.cursor="grab";
+
+      const left=parseFloat(img.style.left);
+      const top=parseFloat(img.style.top);
+      if(Number.isFinite(left) && Number.isFinite(top)){
+        const positions=readPlayerPositions();
+        positions[playerPositionKey(img)]={x:clampPercent(left,0,100),y:clampPercent(top,0,100)};
+        writePlayerPositions(positions);
+      }
+      if(pointerId!==null){
+        try{ img.releasePointerCapture?.(pointerId); }catch(e){}
+      }
+      pointerId=null;
+    };
+
+    img.addEventListener("pointerup",finishDrag);
+    img.addEventListener("pointercancel",finishDrag);
+
+    img.addEventListener("dblclick",event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      const positions=readPlayerPositions();
+      delete positions[playerPositionKey(img)];
+      writePlayerPositions(positions);
+      img.style.removeProperty("left");
+      img.style.removeProperty("top");
+    });
+  });
+}
+
+const originalRenderStaticPlayerPhotos=renderStaticPlayerPhotos;
+renderStaticPlayerPhotos=async function(){
+  await originalRenderStaticPlayerPhotos();
+  enableArenaPlayerDragging();
+  applySavedPlayerPositions();
+};
