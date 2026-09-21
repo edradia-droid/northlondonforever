@@ -104,6 +104,57 @@ jobs:
           cp /tmp/arena-assets/extracted/*.png _site/3d-arena/player-assets/
           cp /tmp/arena-assets/extracted/manifest.json _site/3d-arena/player-assets/manifest.json
 
+      - name: Build Arena full-body artwork
+        run: |
+          python3 - <<'PY'
+          import json, os, re, time, urllib.request
+          manifest_path = '_site/3d-arena/player-assets/manifest.json'
+          with open(manifest_path, 'r', encoding='utf-8') as f:
+              manifest = json.load(f)
+
+          players = [
+            'David Raya','Jurriën Timber','Ezri Konsa','Gabriel','Riccardo Calafiori',
+            'Declan Rice','Bruno Guimarães','Martin Ødegaard','Bukayo Saka','Christos Tzolis','Kai Havertz',
+            'Kepa Arrizabalaga','Piero Hincapié','Eberechi Eze','Viktor Gyökeres','Noni Madueke',
+            'Mikel Merino','Martín Zubimendi','Myles Lewis-Skelly','Max Dowman'
+          ]
+          aliases = {
+            'Gabriel':['Gabriel_Magalhaes','Gabriel_Magalhães','Gabriel'],
+          }
+          def norm(s):
+            import unicodedata
+            s = unicodedata.normalize('NFD', str(s or ''))
+            s = ''.join(ch for ch in s if unicodedata.category(ch) != 'Mn')
+            return re.sub(r'[^a-z0-9]+','',s.lower())
+
+          data = json.load(urllib.request.urlopen('https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p=Arsenal', timeout=30))
+          arsenal = data.get('player') or data.get('players') or []
+          arsenal = [p for p in arsenal if str(p.get('strTeam') or '').lower() == 'arsenal' or str(p.get('strTeam2') or '').lower() == 'arsenal'] or arsenal
+          for name in players:
+              key = norm(name)
+              player = next((p for p in arsenal if norm(p.get('strPlayer')) == key), None)
+              if not player and name in aliases:
+                  player = next((p for p in arsenal if norm(p.get('strPlayer')) in [norm(x) for x in aliases[name]]), None)
+              if not player:
+                  raise RuntimeError('No exact Arsenal player match for full body: '+name)
+              url = player.get('strCutout')
+              if not url:
+                  raise RuntimeError('No Player Cutout artwork for full body: '+name)
+              ext = os.path.splitext(url.split('?')[0])[1] or '.png'
+              key = norm(name)
+              out = f'_site/3d-arena/player-assets/{key}-full{ext}'
+              urllib.request.urlretrieve(url, out)
+              manifest.setdefault(key, {})['full'] = './player-assets/' + os.path.basename(out)
+              manifest[key]['playerId'] = str(player.get('idPlayer') or '')
+              manifest[key]['sourceName'] = str(player.get('strPlayer') or '')
+              print('Downloaded full body '+name+' -> '+player.get('strPlayer','')+' ['+str(player.get('idPlayer',''))+']')
+              time.sleep(0.25)
+          with open(manifest_path, 'w', encoding='utf-8') as f:
+              json.dump(manifest, f, indent=2, ensure_ascii=False)
+          PY
+          test "$(find _site/3d-arena/player-assets -name '*-full.*' | wc -l)" -eq 20
+          echo "Full-body artwork built for all 20 Arena players."
+
           echo "Arena artwork files:"
           ls -lah _site/3d-arena/player-assets
           test -s _site/3d-arena/player-assets/manifest.json
