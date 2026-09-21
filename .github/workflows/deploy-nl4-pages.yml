@@ -116,7 +116,7 @@ jobs:
             'Noni Madueke','Mikel Merino','Martín Zubimendi','Myles Lewis-Skelly','Max Dowman'
           ];
           const normalize = value => String(value || '')
-            .replace(/[Øø]/g, 'o').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')
+            .replace(/[Øø]/g, 'o').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
             .replace(/[^a-z0-9]+/gi, '').toLowerCase();
           const manifestPath = '_site/3d-arena/player-assets/manifest.json';
           const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
@@ -124,7 +124,7 @@ jobs:
           async function getPlayer(name){
             const aliases = name === 'Gabriel'
               ? ['Gabriel_Magalhaes','Gabriel_Magalhães','Gabriel']
-              : [name.replace(/\\s+/g, '_')];
+              : [name.replace(/\s+/g, '_')];
             let list=[];
             for(const alias of aliases){
               const res=await fetch('https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p='+encodeURIComponent(alias));
@@ -170,7 +170,7 @@ jobs:
           const path = require('path');
           const dir = '_site/3d-arena/player-assets';
           const normalize = value => String(value || '')
-            .replace(/[Øø]/g, 'o').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')
+            .replace(/[Øø]/g, 'o').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
             .replace(/[^a-z0-9]+/gi, '').toLowerCase();
 
           // Keep the restored Half Body mappings exactly as supplied by the
@@ -199,8 +199,8 @@ jobs:
             }
           }
 
-          fs.writeFileSync(manifestPath, JSON.stringify(manifest,null,2)+'\\n');
-          fs.writeFileSync(path.join(dir,'manifest.js'), 'window.ARENA_ARTWORK_MANIFEST='+JSON.stringify(manifest)+';\\n');
+          fs.writeFileSync(manifestPath, JSON.stringify(manifest,null,2)+'\n');
+          fs.writeFileSync(path.join(dir,'manifest.js'), 'window.ARENA_ARTWORK_MANIFEST='+JSON.stringify(manifest)+';\n');
           console.log('Embedded '+players.length+' verified Arena player mappings using restored Half Body + freshly built Full Body artwork.');
           NODE
           test -s _site/3d-arena/player-assets/manifest.js
