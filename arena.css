@@ -355,3 +355,71 @@
   }
   .static-art{height:145px!important;max-width:66px!important;}
 }
+
+
+/* MOBILE PLAYER VISIBILITY — FLAT ARTWORK PLANE v2026-09-21-42
+   The pitch and artwork must never share a CSS-3D transform on small screens.
+   The artwork plane is independent, flat, and above the pitch. */
+@media (max-width:700px){
+  #staticArena{
+    overflow:visible!important;
+    isolation:isolate!important;
+  }
+  #staticArena .static-pitch{
+    position:absolute!important;
+    left:50%!important;
+    top:50%!important;
+    width:min(72%,360px)!important;
+    height:70%!important;
+    min-height:360px!important;
+    transform:none!important;
+    transform-style:flat!important;
+    z-index:1!important;
+  }
+  #staticArena .static-art-layer{
+    position:absolute!important;
+    left:50%!important;
+    top:50%!important;
+    width:min(72%,360px)!important;
+    height:70%!important;
+    min-height:360px!important;
+    margin:0!important;
+    transform:translate(-50%,-50%)!important;
+    transform-style:flat!important;
+    perspective:none!important;
+    z-index:50!important;
+    overflow:visible!important;
+    pointer-events:none!important;
+  }
+  #staticArena .static-art{
+    position:absolute!important;
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    width:auto!important;
+    height:175px!important;
+    max-width:78px!important;
+    transform:translate(-50%,-100%)!important;
+    transform-style:flat!important;
+    backface-visibility:visible!important;
+    -webkit-backface-visibility:visible!important;
+    object-fit:contain!important;
+    object-position:center bottom!important;
+    pointer-events:none!important;
+  }
+  #staticArena .static-art-half{display:none!important;}
+  #staticArena .static-art-layer .static-art-full{display:block!important;}
+  #staticArena .static-art-layer img[src=""]{display:none!important;}
+}
+@media (max-width:420px){
+  #staticArena .static-pitch,
+  #staticArena .static-art-layer{
+    width:min(82%,320px)!important;
+    height:70%!important;
+    min-height:320px!important;
+  }
+  #staticArena .static-art{
+    height:145px!important;
+    max-width:66px!important;
+  }
+}
