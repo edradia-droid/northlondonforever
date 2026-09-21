@@ -198,20 +198,29 @@ jobs:
           const htmlPath = '_site/3d-arena/index.html';
           const manifest = JSON.parse(fs.readFileSync('_site/3d-arena/player-assets/manifest.json', 'utf8'));
           let html = fs.readFileSync(htmlPath, 'utf8');
-          const re = /<img\b(?=[^>]*\bclass="static-art static-art-(full|half)")(?=[^>]*\bdata-art-key="([^"]+)")(?=[^>]*\bdata-art-mode="(full|half)")([^>]*)>/g;
+          const re = /<img class="static-art static-art-(full|half)" alt=""([^>]*)>/g;
           let count = 0;
-          html = html.replace(re, (tag, clsMode, key, mode, rest) => {
+          html = html.replace(re, (tag, clsMode, rest) => {
+            const keyMatch = rest.match(/\bdata-art-key="([^"]+)"/);
+            const modeMatch = rest.match(/\bdata-art-mode="(full|half)"/);
+            if (!keyMatch || !modeMatch) return tag;
+            const key = keyMatch[1];
+            const mode = modeMatch[1];
             const asset = manifest[key] && manifest[key][mode];
             if (!asset) throw new Error('Missing generated artwork for ' + key + ' ' + mode);
             const remote = manifest[key] && manifest[key]['remote' + (mode === 'full' ? 'Full' : 'Half')];
             if (!remote) throw new Error('Missing remote artwork for ' + key + ' ' + mode);
             const local = asset;
-            const sourceMatch = tag.match(/ src="([^"]*)"/);
-            const suppliedTestSrc = key === 'bukayosaka' && mode === 'half' && /data-test-art="saka-postimg"/.test(tag)
+            const sourceMatch = rest.match(/\bsrc="([^"]*)"/);
+            const suppliedTestSrc = key === 'bukayosaka' && mode === 'half' && /data-test-art="saka-postimg"/.test(rest)
               ? (sourceMatch ? sourceMatch[1] : remote)
               : remote;
             count++;
-            return '<img class="static-art static-art-' + mode + '" alt="" src="' + suppliedTestSrc + '" data-local-src="' + local + '" data-art-key="' + key + '" data-art-mode="' + mode + '" onerror="this.onerror=null;this.src=this.dataset.localSrc;"' + rest + '>';
+            const cleanedRest = rest
+              .replace(/\sdata-art-key="[^"]*"/, '')
+              .replace(/\sdata-art-mode="[^"]*"/, '')
+              .replace(/\ssrc="[^"]*"/, '');
+            return '<img class="static-art static-art-' + mode + '" alt="" src="' + suppliedTestSrc + '" data-local-src="' + local + '" data-art-key="' + key + '" data-art-mode="' + mode + '" onerror="this.onerror=null;this.src=this.dataset.localSrc;"' + cleanedRest + '>';
           });
           if (count !== 22) throw new Error('Expected 22 starting-player artwork images to bind, found ' + count);
           fs.writeFileSync(htmlPath, html);
