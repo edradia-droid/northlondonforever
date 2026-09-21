@@ -361,6 +361,7 @@
    Mobile uses its own artwork layer. Desktop artwork CSS is untouched.
    This layer is never transformed with the pitch and is rebuilt only on mobile. */
 @media (max-width:700px){
+  #staticArena .static-art-layer{display:none!important;}
   #mobileArenaArtwork{
     position:absolute!important;
     left:50%!important;
