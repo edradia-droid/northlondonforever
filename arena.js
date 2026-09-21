@@ -50,7 +50,7 @@ async function loadArtworkManifest(){
     return window.ARENA_ARTWORK_MANIFEST;
   }
   try{
-    const res=await fetch("./player-assets/manifest.json?v=20260921-32",{cache:"no-store"});
+    const res=await fetch("./player-assets/manifest.json?v=20260921-53",{cache:"no-store"});
     if(!res.ok) return {};
     return await res.json();
   }catch(e){ return {}; }
