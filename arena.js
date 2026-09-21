@@ -325,3 +325,172 @@ renderStaticPlayerPhotos=async function(){
   enableArenaPlayerDragging();
   applySavedPlayerPositions();
 };
+
+
+/* BENCH TO FIELD SUBSTITUTIONS
+   Drag a bench player onto the pitch. The nearest starting player is substituted
+   out and the bench player takes the dropped position. The outgoing player returns
+   to the bench. */
+let arenaLineup=[...DATA.starters.map(p=>({...p}))];
+let arenaBench=[...DATA.bench.map(p=>({...p}))];
+const SUB_STORAGE_KEY="nl4-arena-substitutions-v1";
+
+function substitutionArtworkKey(name){ return normalizeArtworkName(name); }
+
+function saveSubstitutionState(){
+  try{
+    localStorage.setItem(SUB_STORAGE_KEY,JSON.stringify({starters:arenaLineup,bench:arenaBench}));
+  }catch(e){}
+}
+
+function loadSubstitutionState(){
+  try{
+    const raw=localStorage.getItem(SUB_STORAGE_KEY);
+    if(!raw) return;
+    const saved=JSON.parse(raw);
+    if(Array.isArray(saved.starters) && Array.isArray(saved.bench)){
+      arenaLineup=saved.starters;
+      arenaBench=saved.bench;
+    }
+  }catch(e){}
+}
+
+function rebuildLineupLists(){
+  const list=document.querySelector("#lineupList");
+  const bench=document.querySelector("#benchList");
+  if(list){
+    list.innerHTML="";
+    arenaLineup.forEach(p=>{
+      const e=document.createElement("div");
+      e.className="player-row";
+      e.dataset.player=p.name;
+      e.innerHTML='<div class="player-main"><span class="num">'+p.number+'</span><div><div class="name">'+p.name+'</div><div class="pos">'+p.pos+'</div></div></div>';
+      e.onclick=()=>selectPlayer(p);
+      list.appendChild(e);
+    });
+  }
+  if(bench){
+    bench.innerHTML="";
+    arenaBench.forEach(p=>{
+      const e=document.createElement("div");
+      e.className="player-row bench-draggable";
+      e.dataset.player=p.name;
+      e.draggable=true;
+      e.innerHTML='<div class="player-main"><span class="num">'+p.number+'</span><div><div class="name">'+p.name+'</div><div class="pos">'+p.pos+'</div></div></div><span class="badge">DRAG TO FIELD</span>';
+      e.onclick=()=>selectPlayer(p);
+      e.addEventListener("dragstart",event=>{
+        event.dataTransfer.effectAllowed="move";
+        event.dataTransfer.setData("text/plain",p.name);
+        document.querySelector("#staticArena")?.classList.add("substitution-ready");
+      });
+      e.addEventListener("dragend",()=>document.querySelector("#staticArena")?.classList.remove("substitution-ready"));
+      bench.appendChild(e);
+    });
+  }
+}
+
+async function loadBenchArtwork(player,mode){
+  const key=substitutionArtworkKey(player.name);
+  const query=encodeURIComponent(player.name);
+  try{
+    const res=await fetch("https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p="+query,{cache:"no-store"});
+    if(!res.ok) return null;
+    const data=await res.json();
+    const found=(data.player||[])[0];
+    if(!found) return null;
+    return mode==="full" ? (found.strRender || found.strCutout || found.strThumb || null)
+                          : (found.strCutout || found.strRender || found.strThumb || null);
+  }catch(e){ return null; }
+}
+
+async function substituteBenchPlayer(benchName,x,y){
+  const benchIndex=arenaBench.findIndex(p=>p.name===benchName);
+  if(benchIndex<0) return;
+
+  const outgoingIndex=findNearestStarterIndex(x,y);
+  if(outgoingIndex<0) return;
+
+  const incoming={...arenaBench[benchIndex],x:(x-50)*2,y:(y-50)*-2};
+  const outgoing={...arenaLineup[outgoingIndex]};
+  arenaLineup[outgoingIndex]=incoming;
+  arenaBench[benchIndex]=outgoing;
+  saveSubstitutionState();
+  rebuildLineupLists();
+
+  const img=document.querySelector('#staticArena .static-art[data-art-key="'+substitutionArtworkKey(outgoing.name)+'"][data-art-mode="'+playerView+'"]');
+  const targetKey=normalizeArtworkName(incoming.name);
+  const targetImgs=document.querySelectorAll('#staticArena .static-art[data-art-key="'+normalizeArtworkName(outgoing.name)+'"]');
+
+  // Reuse the nearest starter's two artwork slots for the incoming player.
+  targetImgs.forEach(target=>{
+    target.dataset.artKey=targetKey;
+    target.alt=incoming.name;
+    target.style.setProperty("left",clampPercent(x,0,100)+"%","important");
+    target.style.setProperty("top",clampPercent(y,0,100)+"%","important");
+    target.dataset.boundAsset="";
+    target.removeAttribute("src");
+    target.dataset.dragReady="";
+  });
+
+  for(const target of targetImgs){
+    const src=await loadBenchArtwork(incoming,target.dataset.artMode);
+    if(src){
+      target.dataset.boundAsset=src;
+      target.setAttribute("src",src);
+      target.style.display=target.dataset.artMode===playerView?"block":"none";
+      target.style.visibility=target.dataset.artMode===playerView?"visible":"hidden";
+      target.style.opacity=target.dataset.artMode===playerView?"1":"0";
+    }
+  }
+  enableArenaPlayerDragging();
+  applySavedPlayerPositions();
+}
+
+function findNearestStarterIndex(x,y){
+  const layer=document.querySelector("#staticArena .static-art-layer");
+  if(!layer) return 0;
+  let best=0,bestDist=Infinity;
+  const visible=document.querySelectorAll('#staticArena .static-art[data-art-mode="'+playerView+'"]');
+  visible.forEach(img=>{
+    const left=parseFloat(img.style.left||getComputedStyle(img).left);
+    const top=parseFloat(img.style.top||getComputedStyle(img).top);
+    if(!Number.isFinite(left)||!Number.isFinite(top)) return;
+    const d=(left-x)*(left-x)+(top-y)*(top-y);
+    const key=normalizeArtworkName(img.dataset.artKey);
+    const idx=arenaLineup.findIndex(p=>normalizeArtworkName(p.name)===key);
+    if(idx>=0 && d<bestDist){bestDist=d;best=idx;}
+  });
+  return best;
+}
+
+function enableBenchDropZone(){
+  const arena=document.querySelector("#staticArena");
+  const layer=document.querySelector("#staticArena .static-art-layer");
+  if(!arena||!layer||arena.dataset.subDropReady==="1") return;
+  arena.dataset.subDropReady="1";
+
+  arena.addEventListener("dragover",event=>{
+    if(!event.dataTransfer.types.includes("text/plain")) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect="move";
+    arena.classList.add("substitution-hover");
+  });
+  arena.addEventListener("dragleave",event=>{
+    if(!arena.contains(event.relatedTarget)) arena.classList.remove("substitution-hover");
+  });
+  arena.addEventListener("drop",event=>{
+    event.preventDefault();
+    arena.classList.remove("substitution-hover");
+    const name=event.dataTransfer.getData("text/plain");
+    if(!name) return;
+    const rect=layer.getBoundingClientRect();
+    if(!rect.width||!rect.height) return;
+    const x=clampPercent(((event.clientX-rect.left)/rect.width)*100,0,100);
+    const y=clampPercent(((event.clientY-rect.top)/rect.height)*100,0,100);
+    substituteBenchPlayer(name,x,y);
+  });
+}
+
+loadSubstitutionState();
+rebuildLineupLists();
+enableBenchDropZone();
