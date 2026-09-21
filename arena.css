@@ -448,3 +448,59 @@
     filter:none!important;
   }
 }
+
+/* MOBILE PLAYER VISIBILITY SAFETY v2026-09-21
+   Keep artwork in a flat, unclipped paint layer. If iOS/WebKit rejects an
+   individual image decode, show a visible player marker instead of an empty pitch. */
+@media(max-width:700px){
+  #staticArena .static-art-layer{
+    contain:none!important;
+    overflow:visible!important;
+    isolation:auto!important;
+    z-index:200!important;
+  }
+  #staticArena .static-art-layer .static-art{
+    z-index:900!important;
+    -webkit-transform:translate3d(-50%,-100%,0)!important;
+    transform:translate3d(-50%,-100%,0)!important;
+    contain:none!important;
+  }
+  #staticArena .mobile-art-fallback{
+    position:absolute!important;
+    z-index:950!important;
+    width:76px!important;
+    min-height:46px!important;
+    padding:6px 5px!important;
+    transform:translate3d(-50%,-100%,0)!important;
+    border:2px solid rgba(255,255,255,.95)!important;
+    border-radius:10px!important;
+    background:linear-gradient(180deg,#d70716,#8f0010)!important;
+    color:#fff!important;
+    box-shadow:0 8px 18px rgba(0,0,0,.45)!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    text-align:center!important;
+    line-height:1.05!important;
+    pointer-events:none!important;
+  }
+  #staticArena .mobile-art-fallback b{
+    font-size:6px!important;
+    letter-spacing:.12em!important;
+    opacity:.78!important;
+  }
+  #staticArena .mobile-art-fallback strong{
+    margin-top:2px!important;
+    font-size:8px!important;
+    font-weight:950!important;
+    text-transform:capitalize!important;
+  }
+}
+@media(max-width:420px){
+  #staticArena .mobile-art-fallback{
+    width:68px!important;
+    min-height:42px!important;
+  }
+  #staticArena .mobile-art-fallback strong{font-size:7px!important}
+}
