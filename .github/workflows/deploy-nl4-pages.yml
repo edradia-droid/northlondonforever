@@ -1,4 +1,5 @@
 name: Deploy NL4 Arsenal Website + 3D Arena
+# Arena deployment refresh: 2026-09-21 full-body cutout correction
 
 on:
   push:
