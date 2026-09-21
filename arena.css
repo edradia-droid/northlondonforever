@@ -784,3 +784,58 @@
   #staticArena.camera-top{transform:scale(.90)!important;}
   #staticArena.camera-tactical{transform:scale(.92)!important;}
 }
+
+/* FINAL REAL PLAYER ARTWORK OVERRIDE v2026-09-21-55
+   The artwork layer is independent of the pitch. Active mode images are
+   always painted; inactive mode images are hidden. No player-name boxes. */
+#staticArena .static-art-layer .static-art{
+  position:absolute!important;
+  width:auto!important;
+  height:220px!important;
+  max-width:110px!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  display:none!important;
+  z-index:2000!important;
+  pointer-events:none!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  transform:translate3d(-50%,-100%,0)!important;
+}
+#staticArena .static-pitch.view-full ~ .static-art-layer .static-art[data-art-mode="full"],
+#staticArena .static-pitch.view-half ~ .static-art-layer .static-art[data-art-mode="half"]{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+@media(max-width:700px){
+  #staticArena .static-art-layer{
+    position:absolute!important;
+    left:50%!important;
+    top:50%!important;
+    width:88%!important;
+    height:82%!important;
+    overflow:visible!important;
+    z-index:2000!important;
+    transform:translate3d(-50%,-50%,0)!important;
+    isolation:isolate!important;
+  }
+  #staticArena .static-art-layer .static-art{
+    height:190px!important;
+    max-width:86px!important;
+    z-index:2100!important;
+    transform:translate3d(-50%,-100%,0)!important;
+  }
+  #staticArena .static-pitch.view-full ~ .static-art-layer .static-art[data-art-mode="full"],
+  #staticArena .static-pitch.view-half ~ .static-art-layer .static-art[data-art-mode="half"]{
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+  }
+}
+@media(max-width:420px){
+  #staticArena .static-art-layer .static-art{
+    height:165px!important;
+    max-width:74px!important;
+  }
+}
