@@ -114,6 +114,10 @@ jobs:
               }
 
               console.log('Matched ' + name + ' -> ' + player.strPlayer + ' [' + player.idPlayer + ']');
+              const fullUrl = player.strCutout || null;
+              const halfUrl = player.strRender || null;
+              if (!fullUrl) throw new Error('no full-body cutout for exact player');
+              if (!halfUrl) throw new Error('no half-body render for exact player');
               async function saveArtwork(url, suffix) {
                 if (!url) return null;
                 const imageResponse = await fetch(url);
