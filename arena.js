@@ -61,12 +61,21 @@ function artworkPathForView(artwork){
   return expected.test(url) ? url : null;
 }
 
+let artworkRenderVersion=0;
+
 async function renderStaticPlayerPhotos(){
   if(!staticPitch) return;
+  const renderVersion=++artworkRenderVersion;
+  const requestedView=playerView;
   staticPitch.querySelectorAll(".arena-player-hit").forEach(el=>el.remove());
   const manifest=await loadArtworkManifest();
 
+  // A previous Full Body render must never be allowed to finish after a
+  // Half Body selection and put stale Full Body images back on the pitch.
+  if(renderVersion!==artworkRenderVersion || requestedView!==playerView) return;
+
   for(const p of DATA.starters){
+    if(renderVersion!==artworkRenderVersion || requestedView!==playerView) return;
     const artwork=manifest[normalizeArtworkName(p.name)];
     const url=artworkPathForView(artwork);
     if(!url) continue;
