@@ -71,6 +71,8 @@ async function loadArtworkManifest(){
   }catch(e){ return {}; }
 }
 
+loadStaticArtworkFromManifest();
+
 function artworkPathForView(artwork){
   if(!artwork || typeof artwork!=="object") return null;
   // Authoritative mapping: Full Body = dedicated full asset; Half Body = restored dedicated half-body asset.
