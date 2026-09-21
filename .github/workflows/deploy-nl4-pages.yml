@@ -113,9 +113,9 @@ jobs:
 
           for (const [name, id] of Object.entries(players)) {
             const key = normalize(name);
-            const halfFile = fs.readdirSync(dir).find(file =>
-              file.toLowerCase().startsWith(key + '-half.')
-            );
+            const halfFile = ['png','jpg','jpeg','webp']
+              .map(ext => key + '-half.' + ext)
+              .find(file => fs.existsSync(path.join(dir, file)));
             manifest[key] = {
               half: halfFile ? './player-assets/' + halfFile : null,
               playerId: id,
