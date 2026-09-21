@@ -112,7 +112,8 @@ async function renderStaticPlayerPhotos(){
       fallback.dataset.for=key;
       fallback.style.left=img.style.left;
       fallback.style.top=img.style.top;
-      fallback.innerHTML='<b>'+playerView.toUpperCase()+'</b><strong>'+key.replace(/([a-z])([0-9])/i,'$1 $2')+'</strong>';
+      const player=DATA.starters.find(p=>normalizeArtworkName(p.name)===key);
+      fallback.innerHTML='<b>#'+(player?player.number:"")+'</b><strong>'+(player?player.name:key)+'</strong>';
       img.parentElement.appendChild(fallback);
     };
 
