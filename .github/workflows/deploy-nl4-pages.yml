@@ -16,7 +16,7 @@ permissions:
 
 concurrency:
   group: nl4-pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
