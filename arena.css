@@ -898,7 +898,7 @@
   }
 }
 
-/* MOBILE: restore actual pitch markings; remove only decorative grass stripes */
+/* MOBILE: keep real pitch markings; remove player-representation graphics only */
 @media(max-width:700px){
   #staticArena .static-pitch{
     background:#0b5b31!important;
@@ -906,11 +906,17 @@
   #staticArena .static-pitch > .pitch-line,
   #staticArena .static-pitch > .pitch-circle,
   #staticArena .static-pitch > .pitch-box,
-  #staticArena .static-pitch > .pitch-spot{
-    display:block!important;
-  }
+  #staticArena .static-pitch > .pitch-spot,
   #staticArena .static-pitch::before,
   #staticArena .static-pitch::after{
     display:block!important;
+  }
+  /* No player marker/placeholder graphics; real player artwork remains in the artwork layer. */
+  #staticArena .static-pitch > .pitch-player,
+  #staticArena .static-pitch > .arena-player-hit,
+  #staticArena .static-pitch > .player-marker,
+  #staticArena .static-pitch > .player-dot,
+  #staticArena .static-pitch > .player-label{
+    display:none!important;
   }
 }
