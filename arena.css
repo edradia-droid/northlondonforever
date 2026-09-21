@@ -244,3 +244,44 @@
     max-width:76px!important;
   }
 }
+
+
+/* FIREFOX ARENA PLAYER VISIBILITY FIX v2026-09-21
+   Keep player artwork in a flat 2D paint layer inside the transformed pitch.
+   Firefox can otherwise omit nested transformed image layers while the
+   surrounding CSS 3D pitch remains visible. */
+.arena-player-hit{
+  transform:translate(-50%,-100%)!important;
+  transform-style:flat!important;
+  backface-visibility:visible!important;
+  -moz-backface-visibility:visible!important;
+  will-change:auto!important;
+}
+.arena-player-hit .arena-photo-player{
+  transform:translate(-50%,-100%)!important;
+  transform-style:flat!important;
+  backface-visibility:visible!important;
+  -moz-backface-visibility:visible!important;
+  -moz-transform-style:flat!important;
+  opacity:1!important;
+  visibility:visible!important;
+  display:block!important;
+}
+/* Firefox-specific: remove 3D transforms from the artwork itself. */
+@-moz-document url-prefix(){
+  .arena-player-hit,
+  .static-pitch.view-full .arena-player-hit,
+  .static-pitch.view-half .arena-player-hit{
+    transform:translate(-50%,-100%)!important;
+    transform-style:flat!important;
+  }
+  .arena-player-hit .arena-photo-player,
+  .static-pitch.view-full .arena-player-hit .arena-photo-player,
+  .static-pitch.view-half .arena-player-hit .arena-photo-player{
+    transform:translate(-50%,-100%)!important;
+    transform-style:flat!important;
+    backface-visibility:visible!important;
+    opacity:1!important;
+    visibility:visible!important;
+  }
+}
