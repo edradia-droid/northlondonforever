@@ -920,3 +920,23 @@
     display:none!important;
   }
 }
+
+
+/* FINAL PLAYER VIEW RULE: the Full Body button shows ONLY full-body artwork;
+   the Half Body button shows ONLY half-body artwork. */
+#staticArena .static-art-layer .static-art[data-art-mode="full"],
+#staticArena .static-art-layer .static-art[data-art-mode="half"]{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+}
+#staticArena .static-pitch.view-full ~ .static-art-layer .static-art[data-art-mode="full"]{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+#staticArena .static-pitch.view-half ~ .static-art-layer .static-art[data-art-mode="half"]{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
