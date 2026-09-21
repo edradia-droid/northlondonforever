@@ -101,19 +101,35 @@ jobs:
             'Max Dowman':'34432407'
           };
 
-          const normalize = value => String(value || '')
-            .replace(/[Øø]/g, 'o')
-            .normalize('NFD')
-            .replace(/[\\u0300-\\u036f]/g, '')
-            .replace(/[^a-z0-9]+/gi, '')
-            .toLowerCase();
+          const keys = {
+            'David Raya':'davidraya',
+            'Jurriën Timber':'jurrientimber',
+            'Ezri Konsa':'ezrikonsa',
+            'Gabriel':'gabriel',
+            'Riccardo Calafiori':'riccardocalafiori',
+            'Declan Rice':'declanrice',
+            'Bruno Guimarães':'brunoguimaraes',
+            'Martin Ødegaard':'martinodegaard',
+            'Bukayo Saka':'bukayosaka',
+            'Christos Tzolis':'christostzolis',
+            'Kai Havertz':'kaihavertz',
+            'Kepa Arrizabalaga':'kepaarrizabalaga',
+            'Piero Hincapié':'pierohincapie',
+            'Eberechi Eze':'eberechieze',
+            'Viktor Gyökeres':'viktorgyokeres',
+            'Noni Madueke':'nonimadueke',
+            'Mikel Merino':'mikelmerino',
+            'Martín Zubimendi':'martinzubimendi',
+            'Myles Lewis-Skelly':'myleslewisskelly',
+            'Max Dowman':'maxdowman'
+          };
 
           const dir = '_site/3d-arena/player-assets';
           const manifestPath = path.join(dir, 'manifest.json');
           const manifest = {};
 
           for (const [name, id] of Object.entries(players)) {
-            const key = normalize(name);
+            const key = keys[name];
             const halfFile = ['png','jpg','jpeg','webp']
               .map(ext => key + '-half.' + ext)
               .find(file => fs.existsSync(path.join(dir, file)));
