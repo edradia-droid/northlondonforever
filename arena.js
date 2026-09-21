@@ -44,7 +44,7 @@ function fillLists(){
 
 async function loadArtworkManifest(){
   try{
-    const res=await fetch("./player-assets/manifest.json?v=20260921-25",{cache:"no-store"});
+    const res=await fetch("./player-assets/manifest.json?v=20260921-26",{cache:"no-store"});
     if(!res.ok) return {};
     return await res.json();
   }catch(e){ return {}; }
