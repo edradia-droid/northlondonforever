@@ -69,54 +69,14 @@ function artworkPathForView(artwork){
 
 let artworkRenderVersion=0;
 
-async function renderStaticPlayerPhotos(){
+function renderStaticPlayerPhotos(){
+  // The HTML static-art layer is the single authoritative artwork layer.
+  // Never create a second set of player images here; doing so duplicates players
+  // and also puts artwork inside the transformed pitch on mobile browsers.
   if(!staticPitch) return;
-  const renderVersion=++artworkRenderVersion;
-  const requestedView=playerView;
-  staticPitch.querySelectorAll(".arena-player-hit").forEach(el=>el.remove());
-  let manifest=await loadArtworkManifest();
-  // Never leave the pitch empty if the manifest script is unavailable.
-  // The deployment always packages these canonical local filenames.
-  if(!manifest || typeof manifest!=="object" || Object.keys(manifest).length===0){
-    manifest={};
-    for(const p of [...DATA.starters,...DATA.bench]){
-      const key=normalizeArtworkName(p.name);
-      manifest[key]={
-        full:"./player-assets/"+key+"-full.png",
-        half:"./player-assets/"+key+"-half.png"
-      };
-    }
-  }
-
-  // A previous Full Body render must never be allowed to finish after a
-  // Half Body selection and put stale Full Body images back on the pitch.
-  if(renderVersion!==artworkRenderVersion || requestedView!==playerView) return;
-
-  for(const p of DATA.starters){
-    if(renderVersion!==artworkRenderVersion || requestedView!==playerView) return;
-    const artwork=manifest[normalizeArtworkName(p.name)];
-    const url=artworkPathForView(artwork);
-    if(!url) continue;
-
-    const hit=document.createElement("button");
-    hit.type="button"; hit.className="arena-player-hit";
-    hit.setAttribute("aria-label","Select "+p.name); hit.title=p.name; hit.dataset.player=p.name;
-    hit.style.left=(50+(p.x/48)*44)+"%";
-    hit.style.top=(50-(p.y/58)*42)+"%";
-
-    const photo=document.createElement("img");
-    photo.className="arena-photo-player"; photo.alt=""; photo.draggable=false;
-    photo.loading="eager"; photo.src=url + (url.includes("?") ? "&" : "?") + "v=20260921-33";
-    photo.style.height=playerView==="full"?"250px":"145px";
-    photo.style.left="50%"; photo.style.top="100%"; photo.style.pointerEvents="none";
-
-    hit.appendChild(photo);
-    hit.style.pointerEvents="auto";
-    hit.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();selectPlayer(p);});
-    staticPitch.appendChild(hit);
-  }
+  staticPitch.classList.toggle("view-full",playerView==="full");
+  staticPitch.classList.toggle("view-half",playerView==="half");
 }
-
 function applyCamera(){
   if(!staticPitch) return;
   staticPitch.classList.remove("camera-broadcast","camera-top","camera-tactical");
