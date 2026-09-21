@@ -201,16 +201,24 @@ jobs:
           const re = /<img class="static-art static-art-(full|half)" alt=""(?: src="[^"]*")? data-art-key="([^"]+)" data-art-mode="(full|half)"([^>]*)>/g;
           let count = 0;
           html = html.replace(re, (tag, clsMode, key, mode, rest) => {
+            const asset = manifest[key] && manifest[key][mode];
+            if (!asset) throw new Error('Missing generated artwork for ' + key + ' ' + mode);
+            const remote = manifest[key] && manifest[key]['remote' + (mode === 'full' ? 'Full' : 'Half')];
+            if (!remote) throw new Error('Missing remote artwork for ' + key + ' ' + mode);
+            const local = asset;
+            const sourceMatch = tag.match(/ src="([^"]*)"/);
+            const suppliedTestSrc = key === 'bukayosaka' && mode === 'half' && /data-test-art="saka-postimg"/.test(tag)
+              ? (sourceMatch ? sourceMatch[1] : remote)
+              : remote;
             count++;
-              const asset = manifest[key] && manifest[key][mode];
-              if (!asset) throw new Error('Missing generated artwork for ' + key + ' ' + mode);
-              return '<img class="static-art static-art-' + mode + '" alt="" src="' + asset + '?v=20260921-53" data-art-key="' + key + '" data-art-mode="' + mode + '"' + rest + '>';
-            }
-          );
+            return '<img class="static-art static-art-' + mode + '" alt="" src="' + suppliedTestSrc + '" data-local-src="' + local + '" data-art-key="' + key + '" data-art-mode="' + mode + '" onerror="this.onerror=null;this.src=this.dataset.localSrc;"' + rest + '>';
+          });
           if (count !== 22) throw new Error('Expected 22 starting-player artwork images to bind, found ' + count);
           fs.writeFileSync(htmlPath, html);
-          console.log('Bound generated artwork URLs directly into Arena HTML.');
+          console.log('Bound ' + count + ' generated artwork URLs directly into deployed Arena HTML.');
           NODE
+          test "$(grep -o 'class="static-art static-art-full"' _site/3d-arena/index.html | wc -l)" -eq 11
+          test "$(grep -o 'class="static-art static-art-half"' _site/3d-arena/index.html | wc -l)" -eq 11
           grep -q 'src="./player-assets/davidraya-full' _site/3d-arena/index.html
           grep -q 'src="./player-assets/ricardocalafiori-full' _site/3d-arena/index.html
           grep -q 'src="./player-assets/davidraya-half' _site/3d-arena/index.html
