@@ -53,26 +53,10 @@ jobs:
           echo "Arena:"
           ls -lah _site/3d-arena/
 
-      - name: Restore known-good Half Body artwork and build Full Body renders
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Build dedicated Full Body and Half Body artwork
         run: |
-          rm -rf _site/3d-arena/player-assets /tmp/arena-assets
-          mkdir -p _site/3d-arena/player-assets /tmp/arena-assets
-
-          # Half Body comes from the last known-good Pages artifact, including the
-          # JPG assets that the earlier release packaging accidentally omitted.
-          curl -fL \
-            -H "Authorization: Bearer $GH_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/10617978569/zip" \
-            -o /tmp/arena-assets/known-good-pages.zip
-          unzip -q /tmp/arena-assets/known-good-pages.zip -d /tmp/arena-assets/pages
-          mkdir -p /tmp/arena-assets/extracted
-          tar -xf /tmp/arena-assets/pages/artifact.tar -C /tmp/arena-assets/extracted
-          cp -a /tmp/arena-assets/extracted/3d-arena/player-assets/. _site/3d-arena/player-assets/
-          echo "Restored Arena asset directory:"
-          ls -lah _site/3d-arena/player-assets | head -60
+          rm -rf _site/3d-arena/player-assets
+          mkdir -p _site/3d-arena/player-assets
 
           node <<'NODE'
           const fs = require('fs');
@@ -106,7 +90,7 @@ jobs:
             'Jurriën Timber':'jurrientimber',
             'Ezri Konsa':'ezrikonsa',
             'Gabriel':'gabriel',
-            'Riccardo Calafiori':'riccardocalafiori',
+            'Riccardo Calafiori':'ricardocalafiori',
             'Declan Rice':'declanrice',
             'Bruno Guimarães':'brunoguimaraes',
             'Martin Ødegaard':'martinodegaard',
@@ -125,20 +109,7 @@ jobs:
           };
 
           const dir = '_site/3d-arena/player-assets';
-          const manifestPath = path.join(dir, 'manifest.json');
           const manifest = {};
-
-          for (const [name, id] of Object.entries(players)) {
-            const key = keys[name];
-            const halfFile = ['png','jpg','jpeg','webp']
-              .map(ext => key + '-half.' + ext)
-              .find(file => fs.existsSync(path.join(dir, file)));
-            manifest[key] = {
-              half: halfFile ? './player-assets/' + halfFile : null,
-              playerId: id,
-              sourceName: name
-            };
-          }
 
           async function getPlayer(id) {
             const response = await fetch(
@@ -152,7 +123,7 @@ jobs:
 
           async function download(url, filename) {
             const response = await fetch(url);
-            if (!response.ok) throw new Error('image ' + response.status);
+            if (!response.ok) throw new Error('image ' + response.status + ' for ' + filename);
             fs.writeFileSync(path.join(dir, filename), Buffer.from(await response.arrayBuffer()));
           }
 
@@ -162,24 +133,39 @@ jobs:
               const player = await getPlayer(id);
               if (!player) throw new Error('No player data for ' + name);
 
-              // Full Body = TheSportsDB Full Body Render. Never use the thumbnail field.
-              const url = player.strRender || null;
-              if (!url) throw new Error('No Full Body Render for ' + name);
+              // Full Body is the dedicated cutout.
+              const fullUrl = player.strCutout || null;
+              // Half Body is the dedicated Player Render.
+              const halfUrl = player.strRender || null;
 
-              const ext = (path.extname(new URL(url).pathname) || '.png').toLowerCase();
-              const filename = key + '-full' + ext;
-              await download(url, filename);
-              manifest[key].full = './player-assets/' + filename;
+              if (!fullUrl) throw new Error('Missing Full Body cutout for ' + name);
+              if (!halfUrl) throw new Error('Missing Half Body Player Render for ' + name);
 
-              if (!manifest[key].half) {
-                throw new Error('Missing restored Half Body artwork for ' + name);
-              }
+              const fullExt = (path.extname(new URL(fullUrl).pathname) || '.png').toLowerCase();
+              const halfExt = (path.extname(new URL(halfUrl).pathname) || '.png').toLowerCase();
+
+              const fullFile = key + '-full' + fullExt;
+              const halfFile = key + '-half' + halfExt;
+
+              await download(fullUrl, fullFile);
+              await download(halfUrl, halfFile);
+
+              manifest[key] = {
+                full: './player-assets/' + fullFile,
+                half: './player-assets/' + halfFile,
+                playerId: id,
+                sourceName: name
+              };
 
               console.log('Arena artwork ready: ' + name);
             }
 
-            fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
-            console.log('Verified 20 players with dedicated Full Body Render + restored Half Body artwork.');
+            fs.writeFileSync(
+              path.join(dir, 'manifest.json'),
+              JSON.stringify(manifest, null, 2)
+            );
+
+            console.log('Verified 20 players with dedicated Full Body cutouts and dedicated Half Body Player Renders.');
           })().catch(error => {
             console.error(error);
             process.exit(1);
@@ -187,6 +173,12 @@ jobs:
           NODE
 
           test "$(node -e "const m=require('./_site/3d-arena/player-assets/manifest.json'); console.log(Object.keys(m).length)")" -eq 20
+          test "$(find _site/3d-arena/player-assets -type f -name '*-full.*' | wc -l)" -eq 20
+          test "$(find _site/3d-arena/player-assets -type f -name '*-half.*' | wc -l)" -eq 20
+          if find _site/3d-arena/player-assets -type f | grep -Ei 'thumb|thumbnail'; then
+            echo "Unexpected artwork filename detected"
+            exit 1
+          fi
 
       - name: Verify Arena artwork package
         run: |
