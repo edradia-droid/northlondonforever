@@ -740,3 +740,47 @@
     -webkit-backface-visibility:visible!important;
   }
 }
+
+/* FINAL MOBILE XI CAMERA COMPOSITION v2026-09-21-53
+   Mobile camera modes transform the complete pitch + real-player artwork
+   together. This prevents the pitch from covering defenders/GK and keeps
+   all eleven players in the same camera frame. */
+@media(max-width:700px){
+  #staticArena.camera-broadcast,
+  #staticArena.camera-top,
+  #staticArena.camera-tactical{
+    transform-origin:50% 50%!important;
+    transform-style:flat!important;
+    perspective:none!important;
+  }
+  #staticArena.camera-broadcast{transform:scale(1)!important;}
+  #staticArena.camera-top{transform:scale(.94)!important;}
+  #staticArena.camera-tactical{transform:scale(.96)!important;}
+
+  #staticArena .static-pitch{
+    transform:none!important;
+    transform-style:flat!important;
+    z-index:0!important;
+  }
+  #staticArena .static-art-layer{
+    z-index:1000!important;
+    transform:translate3d(-50%,-50%,0)!important;
+  }
+  #staticArena .static-art-layer .static-art{
+    z-index:1100!important;
+    display:none!important;
+    visibility:visible!important;
+    opacity:1!important;
+  }
+  #staticArena .static-pitch.view-full ~ .static-art-layer .static-art-full{
+    display:block!important;
+  }
+  #staticArena .static-pitch.view-half ~ .static-art-layer .static-art-half{
+    display:block!important;
+  }
+}
+@media(max-width:420px){
+  #staticArena.camera-broadcast{transform:scale(.98)!important;}
+  #staticArena.camera-top{transform:scale(.90)!important;}
+  #staticArena.camera-tactical{transform:scale(.92)!important;}
+}
