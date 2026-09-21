@@ -188,7 +188,7 @@ jobs:
 
           for (const name of players) {
             const key = normalize(name);
-            const candidates = fs.readdirSync(dir).filter(f => new RegExp('^'+key+'-full\\\\.(png|jpe?g|webp)$','i').test(f));
+            const candidates = fs.readdirSync(dir).filter(f => { const lower=f.toLowerCase(); return ['.png','.jpg','.jpeg','.webp'].some(ext => lower === key+'-full'+ext); });
             if (candidates.length !== 1) {
               throw new Error('Expected exactly one FULL artwork file for '+name+' ('+key+'), found '+candidates.length);
             }
