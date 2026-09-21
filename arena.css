@@ -357,68 +357,52 @@
 }
 
 
-/* MOBILE PLAYER VISIBILITY — FLAT ARTWORK PLANE v2026-09-21-42
-   The pitch and artwork must never share a CSS-3D transform on small screens.
-   The artwork plane is independent, flat, and above the pitch. */
+/* ISOLATED MOBILE ARTWORK SYSTEM v2026-09-21-43
+   Mobile uses its own artwork layer. Desktop artwork CSS is untouched.
+   This layer is never transformed with the pitch and is rebuilt only on mobile. */
 @media (max-width:700px){
-  #staticArena{
+  #mobileArenaArtwork{
+    position:absolute!important;
+    left:50%!important;
+    top:50%!important;
+    width:min(72%,360px)!important;
+    height:70%!important;
+    min-height:360px!important;
+    transform:translate(-50%,-50%)!important;
+    z-index:200!important;
+    display:block!important;
+    pointer-events:none!important;
     overflow:visible!important;
     isolation:isolate!important;
   }
-  #staticArena .static-pitch{
+  #mobileArenaArtwork .mobile-art{
     position:absolute!important;
-    left:50%!important;
-    top:50%!important;
-    width:min(72%,360px)!important;
-    height:70%!important;
-    min-height:360px!important;
-    transform:none!important;
-    transform-style:flat!important;
-    z-index:1!important;
-  }
-  #staticArena .static-art-layer{
-    position:absolute!important;
-    left:50%!important;
-    top:50%!important;
-    width:min(72%,360px)!important;
-    height:70%!important;
-    min-height:360px!important;
-    margin:0!important;
-    transform:translate(-50%,-50%)!important;
-    transform-style:flat!important;
-    perspective:none!important;
-    z-index:50!important;
-    overflow:visible!important;
-    pointer-events:none!important;
-  }
-  #staticArena .static-art{
-    position:absolute!important;
-    display:block!important;
+    display:none!important;
     visibility:visible!important;
     opacity:1!important;
     width:auto!important;
     height:175px!important;
     max-width:78px!important;
+    left:var(--art-left)!important;
+    top:var(--art-top)!important;
     transform:translate(-50%,-100%)!important;
-    transform-style:flat!important;
-    backface-visibility:visible!important;
-    -webkit-backface-visibility:visible!important;
     object-fit:contain!important;
     object-position:center bottom!important;
     pointer-events:none!important;
+    filter:drop-shadow(0 8px 5px rgba(0,0,0,.42))!important;
   }
-  #staticArena .static-art-half{display:none!important;}
-  #staticArena .static-art-layer .static-art-full{display:block!important;}
-  #staticArena .static-art-layer img[src=""]{display:none!important;}
+  #mobileArenaArtwork[data-view="full"] .mobile-art-full,
+  #mobileArenaArtwork[data-view="half"] .mobile-art-half{
+    display:block!important;
+  }
 }
 @media (max-width:420px){
-  #staticArena .static-pitch,
-  #staticArena .static-art-layer{
+  #mobileArenaArtwork{
     width:min(82%,320px)!important;
     height:70%!important;
     min-height:320px!important;
   }
-  #staticArena .static-art{
+  #mobileArenaArtwork .mobile-art{
     height:145px!important;
     max-width:66px!important;
   }
