@@ -1,5 +1,5 @@
 name: Deploy NL4 Arsenal Website + 3D Arena
-# Arena deployment refresh: 2026-09-21 full-body standing fix 15
+# Arena deployment refresh: 2026-09-21 full-body standing fix 16
 
 on:
   push:
@@ -79,9 +79,9 @@ jobs:
           let fullCount = 0;
           let halfCount = 0;
 
-          const searchAliases = {
-            'Gabriel': 'Gabriel Magalhães',
-            'Max Dowman': 'Max Dowman'
+          const playerIds = {
+            'Gabriel': '34172252',
+            'Max Dowman': '34432407'
           };
 
           const acceptedTeams = {
@@ -89,16 +89,26 @@ jobs:
           };
 
           async function getExactArsenalPlayer(name) {
-            const queryName = searchAliases[name] || name;
-            const api = 'https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p=' + encodeURIComponent(queryName.replace(/\s+/g, '_'));
-            const response = await fetch(api);
-            if (!response.ok) throw new Error('API ' + response.status);
-            const json = await response.json();
-            const list = Array.isArray(json.player) ? json.player : [];
-            const key = normalize(queryName);
             const allowedTeams = acceptedTeams[name] || new Set(['arsenal']);
+            let list = [];
+
+            if (playerIds[name]) {
+              const api = 'https://www.thesportsdb.com/api/v1/json/123/lookupplayer.php?id=' + playerIds[name];
+              const response = await fetch(api);
+              if (!response.ok) throw new Error('API ' + response.status);
+              const json = await response.json();
+              list = Array.isArray(json.players) ? json.players : [];
+            } else {
+              const api = 'https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p=' + encodeURIComponent(name.replace(/\s+/g, '_'));
+              const response = await fetch(api);
+              if (!response.ok) throw new Error('API ' + response.status);
+              const json = await response.json();
+              list = Array.isArray(json.player) ? json.player : [];
+            }
+
+            const key = normalize(name);
             return list.find(x =>
-              normalize(x.strPlayer) === key &&
+              (normalize(x.strPlayer) === key || playerIds[name]) &&
               allowedTeams.has(String(x.strTeam || '').trim().toLowerCase())
             ) || null;
           }
