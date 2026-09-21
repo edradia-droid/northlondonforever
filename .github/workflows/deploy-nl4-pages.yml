@@ -35,7 +35,7 @@ jobs:
       - name: Fetch latest 3D Arena branch
         run: |
           git fetch origin 3d-arena-publish --depth=1
-          git archive origin/3d-arena-publish index.html arena.css arena.js README.md player-assets/bukayosaka-half.png | tar -x
+          git archive origin/3d-arena-publish index.html arena.css arena.js README.md player-assets/bukayosaka-half.png player-assets/bukayo-saka-supplied.webp | tar -x
           mkdir -p _arena_source
           cp index.html arena.css arena.js README.md _arena_source/
 
@@ -60,6 +60,7 @@ jobs:
           rm -rf _site/3d-arena/player-assets
           mkdir -p _site/3d-arena/player-assets
           cp player-assets/bukayosaka-half.png _site/3d-arena/player-assets/bukayosaka-half.png
+          cp player-assets/bukayo-saka-supplied.webp _site/3d-arena/player-assets/bukayo-saka-supplied.webp
           python3 -m pip install --disable-pip-version-check -q opencv-python-headless pillow
 
           node <<'NODE'
@@ -171,8 +172,8 @@ jobs:
 
             // Saka Full remains locked to the Player Render above.
             // Saka Half is isolated to the dedicated supplied half-body artwork.
-            manifest.bukayosaka.half = './player-assets/bukayosaka-half.png';
-            manifest.bukayosaka.remoteHalf = './player-assets/bukayosaka-half.png';
+            manifest.bukayosaka.half = './player-assets/bukayo-saka-supplied.webp';
+            manifest.bukayosaka.remoteHalf = './player-assets/bukayo-saka-supplied.webp';
 
             fs.writeFileSync(
               path.join(dir, 'manifest.json'),
@@ -198,6 +199,7 @@ jobs:
           # Saka must use different assets for the two view modes: Full Body above, Half Body below.
           test -s _site/3d-arena/player-assets/bukayosaka-full.png
           test -s _site/3d-arena/player-assets/bukayosaka-half.png
+          test -s _site/3d-arena/player-assets/bukayo-saka-supplied.webp
           test "$(find _site/3d-arena/player-assets -type f -name '*-full.*' | wc -l)" -eq 20
           test "$(find _site/3d-arena/player-assets -type f -name '*-half.*' | wc -l)" -eq 20
           if find _site/3d-arena/player-assets -type f | grep -Ei 'thumb|thumbnail'; then
