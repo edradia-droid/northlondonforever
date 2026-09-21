@@ -34,7 +34,7 @@ let artworkManifestPromise=null;
 let playerView="full";
 async function loadArtworkManifest(){
   if(artworkManifestPromise) return artworkManifestPromise;
-  artworkManifestPromise=fetch("./player-assets/manifest.json?v=20260921-8",{cache:"no-store"})
+  artworkManifestPromise=fetch("./player-assets/manifest.json?v=20260921-9",{cache:"no-store"})
     .then(res=>res.ok?res.json():{})
     .catch(()=>({}));
   return artworkManifestPromise;
