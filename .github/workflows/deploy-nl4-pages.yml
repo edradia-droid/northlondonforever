@@ -60,14 +60,18 @@ jobs:
           rm -rf _site/3d-arena/player-assets /tmp/arena-assets
           mkdir -p _site/3d-arena/player-assets /tmp/arena-assets
 
-          # Half Body is the exact known-good player render set recovered earlier.
-          gh release download "arena-player-assets-v1" \
-            --repo "$GITHUB_REPOSITORY" \
-            --pattern "arena-half-body-assets.zip" \
-            --dir /tmp/arena-assets \
-            --clobber
-
-          unzip -q /tmp/arena-assets/arena-half-body-assets.zip -d _site/3d-arena/player-assets
+          # Half Body comes from the last known-good Pages artifact, including the
+          # JPG assets that the earlier release packaging accidentally omitted.
+          curl -fL \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/10617978569/zip" \
+            -o /tmp/arena-assets/known-good-pages.zip
+          unzip -q /tmp/arena-assets/known-good-pages.zip -d /tmp/arena-assets/pages
+          mkdir -p /tmp/arena-assets/extracted
+          tar -xf /tmp/arena-assets/pages/artifact.tar -C /tmp/arena-assets/extracted
+          cp /tmp/arena-assets/extracted/3d-arena/player-assets/*-half.* _site/3d-arena/player-assets/
+          cp /tmp/arena-assets/extracted/3d-arena/player-assets/manifest.json _site/3d-arena/player-assets/manifest.json
 
           node <<'NODE'
           const fs = require('fs');
