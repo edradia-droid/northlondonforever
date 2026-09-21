@@ -94,7 +94,7 @@ async function renderStaticPlayerPhotos(){
     img.style.position="absolute";
     img.style.pointerEvents="none";
     const playerForLayer=DATA.starters.find(p=>normalizeArtworkName(p.name)===key);
-    img.style.zIndex=(playerForLayer && ["GK","RB","CB","LB"].includes(playerForLayer.pos)) ? "10000" : "900";
+    img.style.zIndex="10000";
 
     if(asset && img.getAttribute("src")!==asset){
       img.setAttribute("src",asset);
@@ -121,7 +121,7 @@ async function renderStaticPlayerPhotos(){
       img.parentElement.appendChild(fallback);
     };
 
-    img.onerror=showFallback;
+    img.onerror=()=>{\n      const current=img.getAttribute("src")||"";\n      if(!img.dataset.cacheRetry && current){\n        img.dataset.cacheRetry="1";\n        img.setAttribute("src",current+(current.includes("?")?"&":"?")+"retry=20260921-50");\n        return;\n      }\n      showFallback();\n    };
     img.onload=()=>{
       const f=img.parentElement && img.parentElement.querySelector('.mobile-art-fallback[data-for="'+key+'"]');
       if(f) f.remove();
