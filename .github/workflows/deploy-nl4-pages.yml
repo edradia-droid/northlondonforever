@@ -129,11 +129,9 @@ jobs:
               if (!player) throw new Error('exact Arsenal player not found');
 
               // Full Body MUST use the dedicated full-body cutout.
-              // Do not fall back to render/thumbnail here: those can be portrait/half-body
-              // images and are exactly what causes missing legs/boots in Full Body mode.
               const fullUrl = player.strCutout || null;
 
-              // Half Body: Player Render first. Cutout/thumbnail are fallbacks.
+              // Half Body uses only the dedicated Player Render. No thumbnails, ever.
               const halfUrl = player.strRender || null;
 
               if (!fullUrl) throw new Error('no dedicated full-body cutout');
