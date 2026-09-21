@@ -890,3 +890,10 @@
     max-width:98px!important;
   }
 }
+
+/* MOBILE: restore pitch markings; remove only the decorative grass graphic stripes */
+@media(max-width:700px){
+  #staticArena .static-pitch{
+    background:#0b5b31!important;
+  }
+}
