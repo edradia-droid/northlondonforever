@@ -121,7 +121,15 @@ async function renderStaticPlayerPhotos(){
       img.parentElement.appendChild(fallback);
     };
 
-    img.onerror=()=>{\n      const current=img.getAttribute("src")||"";\n      if(!img.dataset.cacheRetry && current){\n        img.dataset.cacheRetry="1";\n        img.setAttribute("src",current+(current.includes("?")?"&":"?")+"retry=20260921-50");\n        return;\n      }\n      showFallback();\n    };
+    img.onerror=()=>{
+      const current=img.getAttribute("src")||"";
+      if(!img.dataset.cacheRetry && current){
+        img.dataset.cacheRetry="1";
+        img.setAttribute("src",current+(current.includes("?")?"&":"?")+"retry=20260921-50");
+        return;
+      }
+      showFallback();
+    };
     img.onload=()=>{
       const f=img.parentElement && img.parentElement.querySelector('.mobile-art-fallback[data-for="'+key+'"]');
       if(f) f.remove();
