@@ -391,16 +391,42 @@ function rebuildLineupLists(){
 
 async function loadBenchArtwork(player,mode){
   const key=substitutionArtworkKey(player.name);
-  const query=encodeURIComponent(player.name);
+
+  // Ben White: only use a player result identified as Arsenal, so an old/non-Arsenal
+  // club image can never replace his Arsenal shirt in the Arena.
+  // Marli Salmon: use the verified Bundesliga player portrait if TheSportsDB has
+  // no artwork yet.
+  const specialPortraits={
+    "marli salmon":"https://assets.bundesliga.com/player/dfl-obj-j024ws-dfl-clu-j0006v-dfl-sea-0001ka.png?fit=256%2C256"
+  };
+
   try{
-    const res=await fetch("https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p="+query,{cache:"no-store"});
-    if(!res.ok) return null;
-    const data=await res.json();
-    const found=(data.player||[])[0];
-    if(!found) return null;
-    return mode==="full" ? (found.strRender || found.strCutout || found.strThumb || null)
-                          : (found.strCutout || found.strRender || found.strThumb || null);
-  }catch(e){ return null; }
+    const queries=[player.name];
+    if(key==="benwhite") queries.unshift("Ben White Arsenal");
+
+    let found=null;
+    for(const queryText of queries){
+      const res=await fetch("https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p="+encodeURIComponent(queryText),{cache:"no-store"});
+      if(!res.ok) continue;
+      const data=await res.json();
+      const candidates=Array.isArray(data.player)?data.player:[];
+      const arsenal=candidates.find(p=>String(p?.strTeam||"").toLowerCase().includes("arsenal"));
+      found=arsenal || candidates[0] || null;
+      if(found && (key!=="benwhite" || arsenal)) break;
+    }
+
+    if(found){
+      // For Ben White, the Arsenal-tagged result is authoritative.
+      const artwork=mode==="full"
+        ? (found.strRender || found.strCutout || found.strThumb || null)
+        : (found.strCutout || found.strRender || found.strThumb || null);
+      if(artwork) return artwork;
+    }
+
+    return specialPortraits[String(player.name||"").toLowerCase()] || null;
+  }catch(e){
+    return specialPortraits[String(player.name||"").toLowerCase()] || null;
+  }
 }
 
 async function substituteBenchPlayer(benchName,x,y){
