@@ -37,7 +37,7 @@
       e.className="player-row";
       e.dataset.player=p[0];
       e.innerHTML='<div class="player-main"><span class="num">'+p[1]+'</span><div><div class="name">'+p[0]+'</div><div class="pos">'+p[2]+'</div></div></div>'+(isBench?'<span class="badge">BENCH</span>':"");
-      e.addEventListener("click",function(){
+      e.addEventListener("pointerup",function(){
         document.querySelectorAll(".player-row").forEach(function(r){r.classList.toggle("selected",r===e);});
       },{passive:true});
             return e;
@@ -50,6 +50,25 @@
     fill("lineupList",starters,false);
     fill("benchList",bench,true);
 
+    /* Mobile artwork hard-bind: never depend on arena.js artwork rendering. */
+    var artworkManifest=window.ARENA_ARTWORK_MANIFEST||{};
+    document.querySelectorAll("#staticArena .static-art[data-art-key][data-art-mode]").forEach(function(img){
+      var key=img.dataset.artKey, mode=img.dataset.artMode;
+      var asset=artworkManifest[key] && artworkManifest[key][mode];
+      if(asset) {
+        img.setAttribute("src",asset);
+        img.style.setProperty("display",mode==="full"?"block":"none","important");
+        img.style.setProperty("visibility","visible","important");
+        img.style.setProperty("opacity","1","important");
+      }
+    });
+    var artLayer=document.querySelector("#staticArena .static-art-layer");
+    if(artLayer){
+      artLayer.style.setProperty("display","block","important");
+      artLayer.style.setProperty("z-index","200","important");
+      artLayer.style.setProperty("pointer-events","none","important");
+    }
+
     var pitch=document.querySelector(".static-pitch");
     function view(v){
       if(!pitch) return;
@@ -60,7 +79,7 @@
       });
     }
     document.querySelectorAll("[data-player-view]").forEach(function(b){
-      b.addEventListener("click",function(){view(b.dataset.playerView);},{passive:true});
+      b.addEventListener("pointerup",function(){view(b.dataset.playerView);},{passive:true});
     });
 
     var scale=1;
@@ -70,20 +89,20 @@
       pitch.classList.add("camera-"+mode);
     }
     document.querySelectorAll("[data-camera]").forEach(function(b){
-      b.addEventListener("click",function(){camera(b.dataset.camera);},{passive:true});
+      b.addEventListener("pointerup",function(){camera(b.dataset.camera);},{passive:true});
     });
     function applyZoom(){
       if(pitch) pitch.style.setProperty("--arena-scale",String(scale));
     }
     var plus=document.getElementById("zoomIn"), minus=document.getElementById("zoomOut"), reset=document.getElementById("resetCamera");
     if(plus){
-      plus.addEventListener("click",function(){scale=Math.min(1.22,scale+.08);applyZoom();},{passive:true});
+      plus.addEventListener("pointerup",function(){scale=Math.min(1.22,scale+.08);applyZoom();},{passive:true});
     }
     if(minus){
-      minus.addEventListener("click",function(){scale=Math.max(.82,scale-.08);applyZoom();},{passive:true});
+      minus.addEventListener("pointerup",function(){scale=Math.max(.82,scale-.08);applyZoom();},{passive:true});
     }
     if(reset){
-      reset.addEventListener("click",function(){scale=1;camera("broadcast");applyZoom();},{passive:true});
+      reset.addEventListener("pointerup",function(){scale=1;camera("broadcast");applyZoom();},{passive:true});
     }
     view("full");
     camera("broadcast");
