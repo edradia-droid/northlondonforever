@@ -973,3 +973,14 @@
   left:27%!important;
   top:29%!important;
 }
+
+
+/* HALF BODY ONLY: align Saka and Tzolis horizontally without changing Full Body. */
+#staticArena .static-art-layer .static-art-half[data-art-key="bukayosaka"]{
+  left:73%!important;
+  top:29%!important;
+}
+#staticArena .static-art-layer .static-art-half[data-art-key="christostzolis"]{
+  left:27%!important;
+  top:29%!important;
+}
