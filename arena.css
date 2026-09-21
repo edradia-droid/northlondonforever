@@ -285,3 +285,20 @@
     visibility:visible!important;
   }
 }
+
+/* UNIVERSAL STATIC ARENA ARTWORK v2026-09-21
+   Player artwork is present directly in HTML, so visibility does not depend on
+   JavaScript, manifest timing, browser fetch behavior, or CSS 3D image layers. */
+.static-art-layer{position:absolute;inset:0;z-index:70;pointer-events:none;overflow:visible}
+.static-art{position:absolute;width:auto;height:220px;max-width:96px;object-fit:contain;object-position:center bottom;transform:translate(-50%,-100%);transform-origin:50% 100%;display:block!important;visibility:visible!important;opacity:1!important;pointer-events:none;filter:drop-shadow(0 8px 5px rgba(0,0,0,.42))}
+.static-art-half{display:none!important}
+.static-pitch.view-full .static-art-full{display:block!important}
+.static-pitch.view-full .static-art-half{display:none!important}
+.static-pitch.view-half .static-art-full{display:none!important}
+.static-pitch.view-half .static-art-half{display:block!important}
+@media(max-width:700px){
+  .static-art{height:155px;max-width:72px}
+}
+@media(max-width:420px){
+  .static-art{height:135px;max-width:62px}
+}
