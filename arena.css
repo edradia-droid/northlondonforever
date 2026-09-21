@@ -110,3 +110,34 @@
 .static-pitch.view-half.camera-top .arena-player-hit .arena-photo-player{
   transform:translate(-50%,-100%) rotateX(0deg)!important;
 }
+
+/* DEFINITIVE CAMERA LAYER
+   The visible Arena is the CSS pitch. Do not rely on the hidden Three.js camera. */
+.static-pitch.view-full.camera-broadcast{
+  transform:perspective(1000px) rotateX(18deg) scale(1)!important;
+}
+.static-pitch.view-full.camera-top{
+  transform:perspective(1000px) rotateX(0deg) scale(.94)!important;
+}
+.static-pitch.view-full.camera-tactical{
+  transform:perspective(1000px) rotateX(38deg) scale(1.04)!important;
+}
+.static-pitch.view-half.camera-broadcast{
+  transform:perspective(1000px) rotateX(52deg) scale(1)!important;
+}
+.static-pitch.view-half.camera-top{
+  transform:perspective(1000px) rotateX(0deg) scale(.94)!important;
+}
+.static-pitch.view-half.camera-tactical{
+  transform:perspective(1000px) rotateX(38deg) scale(1.04)!important;
+}
+/* Keep full-body silhouettes upright in every camera mode. */
+.static-pitch.view-full.camera-broadcast .arena-player-hit .arena-photo-player,
+.static-pitch.view-full.camera-top .arena-player-hit .arena-photo-player,
+.static-pitch.view-full.camera-tactical .arena-player-hit .arena-photo-player{
+  transform:translate(-50%,-100%) rotateX(0deg)!important;
+}
+/* Wider formation spacing. */
+.static-pitch .arena-player-hit:nth-of-type(7){left:50%!important}
+.static-pitch .arena-player-hit:nth-of-type(8){left:77%!important}
+.static-pitch .arena-player-hit:nth-of-type(9){left:23%!important}
