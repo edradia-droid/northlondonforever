@@ -31,7 +31,7 @@ const normalizeArtworkName=value=>String(value||"")
   .toLowerCase();
 
 let artworkManifestPromise=null;
-let playerView="full";
+let playerView="half";
 async function loadArtworkManifest(){
   if(artworkManifestPromise) return artworkManifestPromise;
   artworkManifestPromise=fetch("./player-assets/manifest.json?v=20260921-9",{cache:"no-store"})
@@ -46,8 +46,11 @@ async function renderStaticPlayerPhotos(){
   staticPitch.querySelectorAll(".arena-player-hit,.arena-photo-player").forEach(el=>el.remove());
 
   DATA.starters.forEach(p=>{
+    // Full Body artwork has not been built yet. Keep that view intentionally empty.
+    if(playerView==="full") return;
+
     const artwork=manifest[normalizeArtworkName(p.name)];
-    const url=typeof artwork==="string" ? artwork : artwork?.[playerView];
+    const url=typeof artwork==="string" ? artwork : artwork?.half;
     if(!url) return;
 
     const hit=document.createElement("button");
@@ -104,7 +107,7 @@ function setPlayerView(view){
 }
 
 document.querySelectorAll("[data-player-view]").forEach(b=>b.addEventListener("click",()=>setPlayerView(b.dataset.playerView)));
-setPlayerView("full");
+setPlayerView("half");
 
 function initCssFallback(){
   if(staticArena) staticArena.style.display="grid";
