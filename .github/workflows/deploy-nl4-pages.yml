@@ -104,19 +104,28 @@ jobs:
                 arsenalPlayers[0] ||
                 list.find(x => normalize(x.strPlayer) === key) ||
                 list[0];
-              const imageUrl = player && (player.strRender || player.strCutout || player.strThumb);
-              if (!imageUrl) throw new Error('no artwork');
-              const imageResponse = await fetch(imageUrl);
-              if (!imageResponse.ok) throw new Error('image ' + imageResponse.status);
-              const buffer = Buffer.from(await imageResponse.arrayBuffer());
-              const extMatch = new URL(imageUrl).pathname.match(/\.[a-z0-9]+$/i);
-              const contentType = String(imageResponse.headers.get('content-type') || '').toLowerCase();
-              const extFromType = contentType.includes('webp') ? 'webp' : contentType.includes('jpeg') || contentType.includes('jpg') ? 'jpg' : contentType.includes('gif') ? 'gif' : 'png';
-              const ext = extMatch ? extMatch[0].slice(1).toLowerCase() : extFromType;
-              const filename = key + '.' + ext;
-              fs.writeFileSync(path.join('_site/3d-arena/player-assets', filename), buffer);
-              manifest[key] = './player-assets/' + filename;
-              console.log('Downloaded ' + name);
+              const fullUrl = player && (player.strCutout || player.strRender || player.strThumb);
+              const halfUrl = player && (player.strRender || player.strThumb || player.strCutout);
+              if (!fullUrl && !halfUrl) throw new Error('no artwork');
+
+              async function saveArtwork(url, suffix) {
+                if (!url) return null;
+                const imageResponse = await fetch(url);
+                if (!imageResponse.ok) throw new Error('image ' + imageResponse.status);
+                const buffer = Buffer.from(await imageResponse.arrayBuffer());
+                const extMatch = new URL(url).pathname.match(/\.[a-z0-9]+$/i);
+                const contentType = String(imageResponse.headers.get('content-type') || '').toLowerCase();
+                const extFromType = contentType.includes('webp') ? 'webp' : contentType.includes('jpeg') || contentType.includes('jpg') ? 'jpg' : contentType.includes('gif') ? 'gif' : 'png';
+                const ext = extMatch ? extMatch[0].slice(1).toLowerCase() : extFromType;
+                const filename = key + '-' + suffix + '.' + ext;
+                fs.writeFileSync(path.join('_site/3d-arena/player-assets', filename), buffer);
+                return './player-assets/' + filename;
+              }
+
+              const full = await saveArtwork(fullUrl, 'full');
+              const half = await saveArtwork(halfUrl, 'half');
+              manifest[key] = {full, half};
+              console.log('Downloaded ' + name + ' (full + half)');
             } catch (error) {
               console.log('Artwork unavailable for ' + name + ': ' + error.message);
             }
