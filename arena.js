@@ -105,7 +105,6 @@ function setPlayerView(view){
   }
   document.querySelectorAll("[data-player-view]").forEach(b=>b.classList.toggle("active",b.dataset.playerView===playerView));
   renderStaticPlayerPhotos();
-  syncMobileArtworkLayer();
 }
 
 fillLists();
