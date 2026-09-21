@@ -158,7 +158,7 @@ jobs:
 
           (async () => {
             for (const [name, id] of Object.entries(players)) {
-              const key = normalize(name);
+              const key = keys[name];
               const player = await getPlayer(id);
               if (!player) throw new Error('No player data for ' + name);
 
