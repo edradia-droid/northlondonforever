@@ -93,6 +93,8 @@ async function renderStaticPlayerPhotos(){
     img.style.opacity=active && asset ? "1" : "0";
     img.style.position="absolute";
     img.style.pointerEvents="none";
+    const playerForLayer=DATA.starters.find(p=>normalizeArtworkName(p.name)===key);
+    img.style.zIndex=(playerForLayer && ["GK","RB","CB","LB"].includes(playerForLayer.pos)) ? "10000" : "900";
 
     if(asset && img.getAttribute("src")!==asset){
       img.setAttribute("src",asset);
