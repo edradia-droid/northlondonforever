@@ -75,8 +75,20 @@ async function renderStaticPlayerPhotos(){
   staticPitch.classList.toggle("view-full",playerView==="full");
   staticPitch.classList.toggle("view-half",playerView==="half");
 
-  const manifest=await loadArtworkManifest();
+  // Paint the HTML-bound image URLs immediately. Do NOT wait for manifest.json;
+  // a slow/missing manifest must never leave the Arena blank.
   const images=document.querySelectorAll("#staticArena .static-art");
+  images.forEach(img=>{
+    const active=img.dataset.artMode===playerView;
+    img.style.display=active ? "block" : "none";
+    img.style.visibility=active ? "visible" : "hidden";
+    img.style.opacity=active ? "1" : "0";
+    img.loading="eager";
+    img.decoding="async";
+  });
+
+  let manifest={};
+  try { manifest=await loadArtworkManifest(); } catch(e) { manifest={}; }
 
   images.forEach(img=>{
     const key=img.dataset.artKey;
@@ -86,7 +98,7 @@ async function renderStaticPlayerPhotos(){
     const localAsset=img.dataset.localSrc || (manifestEntry ? manifestEntry[mode] : "") || "";
     const manifestAsset=manifestEntry ? manifestEntry[mode] : "";
     const remoteAsset=manifestEntry ? manifestEntry["remote"+(mode==="full"?"Full":"Half")] : "";
-    const asset=boundAsset || manifestAsset;
+    const asset=boundAsset || manifestAsset || remoteAsset;
     const active=mode===playerView;
 
     // Never create fake player boxes. The real PNG is the only player visual.
