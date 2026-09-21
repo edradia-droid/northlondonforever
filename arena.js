@@ -3,19 +3,19 @@ const DATA={formation:"4-3-3",starters:[{name:"David Raya",number:1,pos:"GK",x:0
 const staticPitch=document.querySelector(".static-pitch");
 const staticArena=document.querySelector("#staticArena");
 
-async function loadStaticArtworkFromManifest(){
-  const manifest=await loadArtworkManifest();
+function loadStaticArtworkFromManifest(){
   document.querySelectorAll(".static-art[data-art-key][data-art-mode]").forEach(img=>{
+    if(img.getAttribute("src")) return;
     const key=img.dataset.artKey;
     const mode=img.dataset.artMode;
+    const manifest=window.ARENA_ARTWORK_MANIFEST||{};
     const artwork=manifest[key];
     if(!artwork || typeof artwork[mode]!=="string") return;
-    const url=artwork[mode];
-    img.src=url + (url.includes("?")?"":"?v=20260921-39");
+    img.src=artwork[mode];
     img.style.display="block";
-    img.onerror=()=>{ img.style.display="none"; };
   });
 }
+loadStaticArtworkFromManifest();
 
 let playerView="full";
 let cameraMode="broadcast";
