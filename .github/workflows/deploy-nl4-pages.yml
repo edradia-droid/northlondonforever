@@ -1,5 +1,5 @@
 name: Deploy NL4 Arsenal Website + 3D Arena
-# Arena deployment refresh: 2026-09-21 static renderer recovery
+# Arena deployment refresh: 2026-09-21 real full-body + dedicated half-body render
 
 on:
   push:
@@ -134,10 +134,10 @@ jobs:
               const fullUrl = player.strCutout || null;
 
               // Half Body: Player Render first. Cutout/thumbnail are fallbacks.
-              const halfUrl = player.strRender || player.strThumb || player.strCutout || null;
+              const halfUrl = player.strRender || null;
 
               if (!fullUrl) throw new Error('no dedicated full-body cutout');
-              if (!halfUrl) throw new Error('no half-body artwork');
+              if (!halfUrl) throw new Error('no dedicated half-body render');
 
               const fullExt = (new URL(fullUrl).pathname.match(/\.[a-z0-9]+$/i) || ['.png'])[0].slice(1).toLowerCase();
               const halfExt = (new URL(halfUrl).pathname.match(/\.[a-z0-9]+$/i) || ['.png'])[0].slice(1).toLowerCase();
