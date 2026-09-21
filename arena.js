@@ -70,9 +70,6 @@ function artworkPathForView(artwork){
 let artworkRenderVersion=0;
 
 async function renderStaticPlayerPhotos(){
-  // The HTML static-art layer is the single authoritative artwork layer.
-  // Bind the generated manifest directly to the existing 22 image elements.
-  // This deliberately does not create another player layer.
   if(!staticPitch) return;
 
   staticPitch.classList.toggle("view-full",playerView==="full");
@@ -80,28 +77,24 @@ async function renderStaticPlayerPhotos(){
 
   const manifest=await loadArtworkManifest();
   const images=document.querySelectorAll("#staticArena .static-art");
+
   images.forEach(img=>{
     const key=img.dataset.artKey;
     const mode=img.dataset.artMode;
-    const boundAsset=img.getAttribute("src");
-    if(boundAsset) img.dataset.boundAsset=boundAsset;
-    const manifestAsset=manifest && manifest[key] ? manifest[key][mode] : null;
-    // Never replace a known-good HTML asset with a stale/bad manifest entry.
-    const asset=(typeof boundAsset==="string" && boundAsset) ? boundAsset : manifestAsset;
+    const boundAsset=img.dataset.boundAsset || img.getAttribute("src") || "";
+    const manifestAsset=manifest && manifest[key] ? manifest[key][mode] : "";
+    const asset=boundAsset || manifestAsset;
     const active=mode===playerView;
 
-    img.style.display=active && asset ? "block" : "none";
-    if(active && asset && img.getAttribute("src")!==asset) img.setAttribute("src",asset);
-    img.style.visibility=active && asset ? "visible" : "hidden";
-    img.style.opacity=active && asset ? "1" : "0";
+    // Never create fake player boxes. The real PNG is the only player visual.
     img.style.position="absolute";
     img.style.pointerEvents="none";
-    const playerForLayer=DATA.starters.find(p=>normalizeArtworkName(p.name)===key);
     img.style.zIndex="10000";
+    img.style.visibility=active && asset ? "visible" : "hidden";
+    img.style.opacity=active && asset ? "1" : "0";
+    img.style.display=active && asset ? "block" : "none";
 
-    if(asset && img.getAttribute("src")!==asset){
-      img.setAttribute("src",asset);
-    }
+    if(asset && img.getAttribute("src")!==asset) img.setAttribute("src",asset);
 
     img.loading="eager";
     img.decoding="sync";
@@ -110,69 +103,44 @@ async function renderStaticPlayerPhotos(){
     const oldFallback=img.parentElement && img.parentElement.querySelector('.mobile-art-fallback[data-for="'+key+'"]');
     if(oldFallback) oldFallback.remove();
 
-    const showFallback=()=>{
-      if(img.dataset.artMode!==playerView || !window.matchMedia("(max-width:700px)").matches) return;
-      img.style.visibility="hidden";
-      img.style.opacity="0";
-      const fallback=document.createElement("div");
-      fallback.className="mobile-art-fallback";
-      fallback.dataset.for=key;
-      fallback.style.left=img.style.left;
-      fallback.style.top=img.style.top;
-      const player=DATA.starters.find(p=>normalizeArtworkName(p.name)===key);
-      fallback.innerHTML='<b>#'+(player?player.number:"")+'</b><strong>'+(player?player.name:key)+'</strong>';
-      img.parentElement.appendChild(fallback);
-    };
-
     img.onerror=()=>{
       const current=img.getAttribute("src")||"";
       const bound=img.dataset.boundAsset || "";
-      if(!img.dataset.boundRetry && bound && current!==bound){
+      if(bound && current!==bound && !img.dataset.boundRetry){
         img.dataset.boundRetry="1";
         img.setAttribute("src",bound);
         return;
       }
-      if(!img.dataset.cacheRetry && current){
+      if(current && !img.dataset.cacheRetry){
         img.dataset.cacheRetry="1";
-        img.setAttribute("src",current+(current.includes("?")?"&":"?")+"retry=20260921-52");
+        img.setAttribute("src",current+(current.includes("?")?"&":"?")+"retry=20260921-54");
         return;
       }
-      showFallback();
+      // Do not replace a failed real image with a tag/number box.
+      img.style.display="none";
+      img.style.visibility="hidden";
+      img.style.opacity="0";
     };
+
     img.onload=()=>{
-      const f=img.parentElement && img.parentElement.querySelector('.mobile-art-fallback[data-for="'+key+'"]');
-      if(f) f.remove();
       if(img.dataset.artMode===playerView){
         img.style.display="block";
         img.style.visibility="visible";
         img.style.opacity="1";
       }
     };
-    if(img.complete && img.naturalWidth===0) showFallback();
-    if(active && asset && window.matchMedia("(max-width:700px)").matches){
+
+    if(active && asset){
       img.style.display="block";
       img.style.visibility="visible";
       img.style.opacity="1";
     }
 
-    // Mobile presentation labels: real artwork remains the visual player,
-    // labels are a separate flat layer positioned from the same artwork anchor.
-    if(img.dataset.artMode===playerView){
-      const oldLabel=img.parentElement && img.parentElement.querySelector('.mobile-player-label[data-for="'+key+'"]');
-      if(oldLabel) oldLabel.remove();
-      const player=DATA.starters.find(p=>normalizeArtworkName(p.name)===key);
-      if(player && window.matchMedia("(max-width:700px)").matches){
-        const label=document.createElement("div");
-        label.className="mobile-player-label";
-        label.dataset.for=key;
-        label.style.left=img.style.left;
-        label.style.top=img.style.top;
-        label.innerHTML='<small>#'+player.number+' · '+player.pos+'</small><strong>'+player.name.split(" ").pop()+'</strong>';
-        img.parentElement.appendChild(label);
-      }
-    }
+    const oldLabel=img.parentElement && img.parentElement.querySelector('.mobile-player-label[data-for="'+key+'"]');
+    if(oldLabel) oldLabel.remove();
   });
 }
+
 function applyCamera(){
   if(!staticPitch) return;
   staticPitch.classList.remove("camera-broadcast","camera-top","camera-tactical");
