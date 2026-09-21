@@ -1,6 +1,7 @@
 name: Deploy NL4 Arsenal Website + 3D Arena
 # Arena deployment refresh: 2026-09-21 Arena artwork manifest recovery
 # Calafiori cache refresh: 2026-09-21
+# Force Arena rebuild: dedicated Full Body cutout + dedicated Half Body Player Render
 
 on:
   push:
