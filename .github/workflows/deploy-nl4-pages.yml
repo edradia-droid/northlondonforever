@@ -137,10 +137,9 @@ jobs:
               const player = await getPlayer(id);
               if (!player) throw new Error('No player data for ' + name);
 
-              // Full Body is the dedicated cutout.
-              const fullUrl = player.strCutout || null;
-              // Half Body is the dedicated Player Render.
-              const halfUrl = name === 'Bukayo Saka' ? './player-assets/bukayosaka-half.png' : (player.strRender || null);
+              // Saka uses the standing Player Render with the ball at his feet for both views.
+              const fullUrl = name === 'Bukayo Saka' ? (player.strRender || null) : (player.strCutout || null);
+              const halfUrl = name === 'Bukayo Saka' ? (player.strRender || null) : (player.strRender || null);
 
               if (!fullUrl) throw new Error('Missing Full Body cutout for ' + name);
               if (!halfUrl) throw new Error('Missing Half Body Player Render for ' + name);
@@ -166,8 +165,9 @@ jobs:
               console.log('Arena artwork ready: ' + name);
             }
 
-            manifest.bukayosaka.half = './player-assets/bukayosaka-half.png';
-            manifest.bukayosaka.remoteHalf = './player-assets/bukayosaka-half.png';
+            // Saka Full and Half must use the exact same standing Player Render.
+            manifest.bukayosaka.half = manifest.bukayosaka.full;
+            manifest.bukayosaka.remoteHalf = manifest.bukayosaka.remoteFull;
 
             fs.writeFileSync(
               path.join(dir, 'manifest.json'),
@@ -218,9 +218,11 @@ jobs:
             if (!remote) throw new Error('Missing remote artwork for ' + key + ' ' + mode);
             const local = asset;
             const sourceMatch = rest.match(/\bsrc="([^"]*)"/);
-            const suppliedTestSrc = key === 'bukayosaka' && sourceMatch && sourceMatch[1].startsWith('./player-assets/')
-              ? sourceMatch[1]
-              : remote;
+            const suppliedTestSrc = key === 'bukayosaka'
+              ? local
+              : (sourceMatch && sourceMatch[1].startsWith('./player-assets/')
+                ? sourceMatch[1]
+                : remote);
             count++;
             const cleanedRest = rest
               .replace(/\sdata-art-key="[^"]*"/, '')
