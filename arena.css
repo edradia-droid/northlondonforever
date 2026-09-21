@@ -137,7 +137,3 @@
 .static-pitch.view-full.camera-tactical .arena-player-hit .arena-photo-player{
   transform:translate(-50%,-100%) rotateX(0deg)!important;
 }
-/* Wider formation spacing. */
-.static-pitch .arena-player-hit:nth-of-type(7){left:50%!important}
-.static-pitch .arena-player-hit:nth-of-type(8){left:77%!important}
-.static-pitch .arena-player-hit:nth-of-type(9){left:23%!important}
