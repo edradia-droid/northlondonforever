@@ -44,10 +44,24 @@ function fillLists(){
 
 async function loadArtworkManifest(){
   try{
-    const res=await fetch("./player-assets/manifest.json?v=20260921-19",{cache:"no-store"});
+    const res=await fetch("./player-assets/manifest.json?v=20260921-22",{cache:"no-store"});
     if(!res.ok) return {};
     return await res.json();
   }catch(e){ return {}; }
+}
+
+async function loadLiveArtwork(player){
+  try{
+    const q=encodeURIComponent(player.name.replace(/\\s+/g,"_"));
+    const res=await fetch("https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p="+q,{cache:"no-store"});
+    if(!res.ok) return null;
+    const json=await res.json();
+    const key=normalizeArtworkName(player.name);
+    const list=Array.isArray(json.player)?json.player:[];
+    const found=list.find(x=>normalizeArtworkName(x.strPlayer)===key && String(x.strTeam||"").trim().toLowerCase()==="arsenal");
+    if(!found) return null;
+    return {full:found.strCutout||null,half:found.strRender||null};
+  }catch(e){ return null; }
 }
 
 async function renderStaticPlayerPhotos(){
@@ -55,10 +69,11 @@ async function renderStaticPlayerPhotos(){
   staticPitch.querySelectorAll(".arena-player-hit").forEach(el=>el.remove());
   const manifest=await loadArtworkManifest();
 
-  DATA.starters.forEach(p=>{
-    const artwork=manifest[normalizeArtworkName(p.name)];
+  for(const p of DATA.starters){
+    let artwork=manifest[normalizeArtworkName(p.name)];
+    if(!artwork || typeof artwork!=="object" || !artwork[playerView]) artwork=await loadLiveArtwork(p);
     const url=artwork && typeof artwork==="object" ? artwork[playerView] : null;
-    if(!url) return;
+    if(!url) continue;
 
     const hit=document.createElement("button");
     hit.type="button"; hit.className="arena-player-hit";
@@ -76,7 +91,7 @@ async function renderStaticPlayerPhotos(){
     hit.style.pointerEvents="auto";
     hit.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();selectPlayer(p);});
     staticPitch.appendChild(hit);
-  });
+  }
 }
 
 function applyCamera(){
