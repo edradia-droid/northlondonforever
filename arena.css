@@ -42,5 +42,6 @@
 .arena-player-hit .arena-photo-player{transform:translate(-50%,-100%) rotateX(-52deg)!important;transform-origin:50% 100%}.arena-player-hit{transform:translate(-50%,-100%)!important;transform-style:preserve-3d!important}.arena-player-hit .arena-photo-player{object-fit:contain;object-position:center bottom}
 @media(max-width:700px){.player-view-toggle span{display:none}.player-view-toggle button{padding:6px 7px;font-size:8px}}
 
-/* Full-body mode: artwork remains vertical while the pitch supplies perspective. */
-.arena-player-hit .arena-photo-player{transform:translate(-50%,-100%)!important;transform-origin:50% 100%!important;}
+/* Keep the two artwork modes visually distinct. Full-body players stand upright; half-body keeps the existing pitch-perspective treatment. */
+.static-pitch.view-full .arena-player-hit .arena-photo-player{transform:translate(-50%,-100%)!important;transform-origin:50% 100%!important;}
+.static-pitch.view-half .arena-player-hit .arena-photo-player{transform:translate(-50%,-100%) rotateX(-52deg)!important;transform-origin:50% 100%!important;}
