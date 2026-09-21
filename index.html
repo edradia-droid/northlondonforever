@@ -40,8 +40,7 @@
       e.addEventListener("click",function(){
         document.querySelectorAll(".player-row").forEach(function(r){r.classList.toggle("selected",r===e);});
       },{passive:true});
-      e.addEventListener("touchend",function(){e.click();},{passive:true});
-      return e;
+            return e;
     }
     function fill(id,data,isBench){
       var el=document.getElementById(id);
@@ -62,7 +61,6 @@
     }
     document.querySelectorAll("[data-player-view]").forEach(function(b){
       b.addEventListener("click",function(){view(b.dataset.playerView);},{passive:true});
-      b.addEventListener("touchend",function(){view(b.dataset.playerView);},{passive:true});
     });
 
     var scale=1;
@@ -73,7 +71,6 @@
     }
     document.querySelectorAll("[data-camera]").forEach(function(b){
       b.addEventListener("click",function(){camera(b.dataset.camera);},{passive:true});
-      b.addEventListener("touchend",function(){camera(b.dataset.camera);},{passive:true});
     });
     function applyZoom(){
       if(pitch) pitch.style.setProperty("--arena-scale",String(scale));
@@ -81,15 +78,12 @@
     var plus=document.getElementById("zoomIn"), minus=document.getElementById("zoomOut"), reset=document.getElementById("resetCamera");
     if(plus){
       plus.addEventListener("click",function(){scale=Math.min(1.22,scale+.08);applyZoom();},{passive:true});
-      plus.addEventListener("touchend",function(){scale=Math.min(1.22,scale+.08);applyZoom();},{passive:true});
     }
     if(minus){
       minus.addEventListener("click",function(){scale=Math.max(.82,scale-.08);applyZoom();},{passive:true});
-      minus.addEventListener("touchend",function(){scale=Math.max(.82,scale-.08);applyZoom();},{passive:true});
     }
     if(reset){
       reset.addEventListener("click",function(){scale=1;camera("broadcast");applyZoom();},{passive:true});
-      reset.addEventListener("touchend",function(){scale=1;camera("broadcast");applyZoom();},{passive:true});
     }
     view("full");
     camera("broadcast");
