@@ -286,19 +286,46 @@
   }
 }
 
-/* UNIVERSAL STATIC ARENA ARTWORK v2026-09-21
-   Player artwork is present directly in HTML, so visibility does not depend on
-   JavaScript, manifest timing, browser fetch behavior, or CSS 3D image layers. */
-.static-art-layer{position:absolute;inset:0;z-index:70;pointer-events:none;overflow:visible}
-.static-art{position:absolute;width:auto;height:220px;max-width:96px;object-fit:contain;object-position:center bottom;transform:translate(-50%,-100%);transform-origin:50% 100%;display:block!important;visibility:visible!important;opacity:1!important;pointer-events:none;filter:drop-shadow(0 8px 5px rgba(0,0,0,.42))}
+/* UNIVERSAL STATIC ARENA ARTWORK v2026-09-21-34
+   One authoritative flat overlay. It is a sibling of the transformed pitch,
+   so mobile browsers never have to paint artwork inside a CSS-3D ancestor. */
+#staticArena{position:absolute!important;inset:0!important;display:grid!important;place-items:center!important;overflow:hidden!important;}
+.static-art-layer{
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
+  width:min(62%,520px)!important;
+  height:min(82%,650px)!important;
+  transform:translate(-50%,-50%)!important;
+  z-index:70!important;
+  pointer-events:none!important;
+  overflow:visible!important;
+}
+.static-art{
+  position:absolute!important;
+  width:auto!important;
+  height:220px!important;
+  max-width:96px!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  transform:translate(-50%,-100%)!important;
+  transform-origin:50% 100%!important;
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:none!important;
+  filter:drop-shadow(0 8px 5px rgba(0,0,0,.42))!important;
+}
 .static-art-half{display:none!important}
-.static-pitch.view-full .static-art-full{display:block!important}
-.static-pitch.view-full .static-art-half{display:none!important}
-.static-pitch.view-half .static-art-full{display:none!important}
-.static-pitch.view-half .static-art-half{display:block!important}
+.static-pitch.view-full~.static-art-layer .static-art-full{display:block!important}
+.static-pitch.view-full~.static-art-layer .static-art-half{display:none!important}
+.static-pitch.view-half~.static-art-layer .static-art-full{display:none!important}
+.static-pitch.view-half~.static-art-layer .static-art-half{display:block!important}
 @media(max-width:700px){
-  .static-art{height:155px;max-width:72px}
+  .static-art-layer{width:min(72%,360px)!important;height:70%!important;}
+  .static-art{height:175px!important;max-width:78px!important;}
 }
 @media(max-width:420px){
-  .static-art{height:135px;max-width:62px}
+  .static-art-layer{width:min(82%,320px)!important;height:70%!important;}
+  .static-art{height:145px!important;max-width:66px!important;}
 }
