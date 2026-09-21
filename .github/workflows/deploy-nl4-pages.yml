@@ -1,4 +1,7 @@
 name: Deploy NL4 Arsenal Website + 3D Arena
+# Arena deployment refresh: 2026-09-21 Arena artwork manifest recovery
+# Calafiori cache refresh: 2026-09-21
+# Force Arena rebuild: dedicated Full Body cutout + dedicated Half Body Player Render
 
 on:
   push:
@@ -8,14 +11,13 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  actions: read
+  contents: read
   pages: write
   id-token: write
 
 concurrency:
   group: nl4-pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -53,168 +55,161 @@ jobs:
           echo "Arena:"
           ls -lah _site/3d-arena/
 
-      - name: Restore Arena half-body artwork
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Build dedicated Full Body and Half Body artwork
         run: |
-          rm -rf _site/3d-arena/player-assets /tmp/arena-assets /tmp/arena-half-body-assets.zip /tmp/old-arena-pages.zip
-          mkdir -p _site/3d-arena/player-assets /tmp/arena-assets
+          rm -rf _site/3d-arena/player-assets
+          mkdir -p _site/3d-arena/player-assets
 
-          # The exact half-body artwork that was already working in the Arena is
-          # stored as a small release asset. This prevents the browser/deployment
-          # from depending on TheSportsDB artwork fields changing underneath us.
-          RELEASE_TAG="arena-player-assets-v1"
-          ASSET_NAME="arena-half-body-assets.zip"
-
-          if gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern "$ASSET_NAME" --dir /tmp/arena-assets --clobber; then
-            echo "Restored Arena half-body artwork from GitHub release asset."
-          else
-            echo "Release asset not found yet; restoring it from the last known-good Pages artifact."
-            curl -fL \
-              -H "Authorization: Bearer $GH_TOKEN" \
-              -H "Accept: application/vnd.github+json" \
-              "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/10615383842/zip" \
-              -o /tmp/old-arena-pages.zip
-            unzip -q /tmp/old-arena-pages.zip -d /tmp/arena-assets
-            mkdir -p /tmp/arena-assets/extracted
-            tar -xf /tmp/arena-assets/artifact.tar -C /tmp/arena-assets/extracted
-            cp /tmp/arena-assets/extracted/3d-arena/player-assets/*.png _site/3d-arena/player-assets/
-            cp /tmp/arena-assets/extracted/3d-arena/player-assets/manifest.json _site/3d-arena/player-assets/manifest.json
-
-            cd _site/3d-arena/player-assets
-            zip -q /tmp/arena-half-body-assets.zip *.png manifest.json
-            cd -
-
-            gh release create "$RELEASE_TAG" /tmp/arena-half-body-assets.zip \
-              --repo "$GITHUB_REPOSITORY" \
-              --title "NL4 Arena Half-Body Player Artwork" \
-              --notes "Exact half-body player artwork recovered from the last known-good Arena deployment."
-            cp /tmp/arena-half-body-assets.zip /tmp/arena-assets/$ASSET_NAME
-            echo "Created persistent Arena artwork release asset."
-          fi
-
-          if [ ! -f /tmp/arena-assets/$ASSET_NAME ]; then
-            echo "ERROR: Arena artwork archive was not restored."
-            exit 1
-          fi
-
-          rm -rf /tmp/arena-assets/extracted
-          mkdir -p /tmp/arena-assets/extracted
-          unzip -q /tmp/arena-assets/$ASSET_NAME -d /tmp/arena-assets/extracted
-          cp /tmp/arena-assets/extracted/*.png _site/3d-arena/player-assets/
-          cp /tmp/arena-assets/extracted/manifest.json _site/3d-arena/player-assets/manifest.json
-
-      - name: Build Arena full-body artwork
-        run: |
           node <<'NODE'
           const fs = require('fs');
           const path = require('path');
-          const players = [
-            'David Raya','Jurriën Timber','Ezri Konsa','Gabriel','Riccardo Calafiori',
-            'Declan Rice','Bruno Guimarães','Martin Ødegaard','Bukayo Saka','Christos Tzolis',
-            'Kai Havertz','Kepa Arrizabalaga','Piero Hincapié','Eberechi Eze','Viktor Gyökeres',
-            'Noni Madueke','Mikel Merino','Martín Zubimendi','Myles Lewis-Skelly','Max Dowman'
-          ];
-          const normalize = value => String(value || '')
-            .replace(/[Øø]/g, 'o').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9]+/gi, '').toLowerCase();
-          const manifestPath = '_site/3d-arena/player-assets/manifest.json';
-          const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 
-          // The restored Half Body package may use legacy keys. Re-key those
-          // entries by their stored player/source name before adding Full Body.
-          const canonicalManifest = {};
-          for (const [rawKey, value] of Object.entries(manifest)) {
-            const candidates = [rawKey, value && value.sourceName, value && value.playerName, value && value.name];
-            const canonicalKey = candidates.map(normalize).find(Boolean) || rawKey;
-            canonicalManifest[canonicalKey] = value;
+          const players = {
+            'David Raya':'34148681',
+            'Jurriën Timber':'34172505',
+            'Ezri Konsa':'34161727',
+            'Gabriel':'34172252',
+            'Riccardo Calafiori':'34175834',
+            'Declan Rice':'34161584',
+            'Bruno Guimarães':'34172187',
+            'Martin Ødegaard':'34159218',
+            'Bukayo Saka':'34169884',
+            'Christos Tzolis':'34193337',
+            'Kai Havertz':'34169226',
+            'Kepa Arrizabalaga':'34160650',
+            'Piero Hincapié':'34182526',
+            'Eberechi Eze':'34172278',
+            'Viktor Gyökeres':'34173576',
+            'Noni Madueke':'34170520',
+            'Mikel Merino':'34161591',
+            'Martín Zubimendi':'34172850',
+            'Myles Lewis-Skelly':'34244630',
+            'Max Dowman':'34432407'
+          };
+
+          const keys = {
+            'David Raya':'davidraya',
+            'Jurriën Timber':'jurrientimber',
+            'Ezri Konsa':'ezrikonsa',
+            'Gabriel':'gabriel',
+            'Riccardo Calafiori':'ricardocalafiori',
+            'Declan Rice':'declanrice',
+            'Bruno Guimarães':'brunoguimaraes',
+            'Martin Ødegaard':'martinodegaard',
+            'Bukayo Saka':'bukayosaka',
+            'Christos Tzolis':'christostzolis',
+            'Kai Havertz':'kaihavertz',
+            'Kepa Arrizabalaga':'kepaarrizabalaga',
+            'Piero Hincapié':'pierohincapie',
+            'Eberechi Eze':'eberechieze',
+            'Viktor Gyökeres':'viktorgyokeres',
+            'Noni Madueke':'nonimadueke',
+            'Mikel Merino':'mikelmerino',
+            'Martín Zubimendi':'martinzubimendi',
+            'Myles Lewis-Skelly':'myleslewisskelly',
+            'Max Dowman':'maxdowman'
+          };
+
+          const dir = '_site/3d-arena/player-assets';
+          const manifest = {};
+
+          async function getPlayer(id) {
+            const response = await fetch(
+              'https://www.thesportsdb.com/api/v1/json/123/lookupplayer.php?id=' + id
+            );
+            if (!response.ok) throw new Error('API ' + response.status + ' for ' + id);
+            const json = await response.json();
+            const list = Array.isArray(json.players) ? json.players : [];
+            return list[0] || null;
           }
-          for (const key of Object.keys(manifest)) delete manifest[key];
-          Object.assign(manifest, canonicalManifest);
-          const sleep = ms => new Promise(r => setTimeout(r, ms));
-          async function getPlayer(name){
-            const aliases = name === 'Gabriel'
-              ? ['Gabriel_Magalhaes','Gabriel_Magalhães','Gabriel']
-              : [name.replace(/\s+/g, '_')];
-            let list=[];
-            for(const alias of aliases){
-              const res=await fetch('https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p='+encodeURIComponent(alias));
-              if(!res.ok) continue;
-              const json=await res.json();
-              if(Array.isArray(json.player)) list.push(...json.player);
-            }
-            const seen=new Set();
-            list=list.filter(x=>{const id=String(x.idPlayer||x.strPlayer||''); if(seen.has(id)) return false; seen.add(id); return true;});
-            const arsenal=list.filter(x=>String(x.strTeam||'').toLowerCase().includes('arsenal'));
-            const key=normalize(name);
-            return arsenal.find(x=>normalize(x.strPlayer)===key) || (name==='Gabriel' ? arsenal.find(x=>/gabriel.*magalh/i.test(String(x.strPlayer||''))) : null);
+
+          async function download(url, filename) {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('image ' + response.status + ' for ' + filename);
+            fs.writeFileSync(path.join(dir, filename), Buffer.from(await response.arrayBuffer()));
           }
-          (async()=>{
-            for(const name of players){
-              const player=await getPlayer(name);
-              if(!player) throw new Error('No exact Arsenal player match for full body: '+name);
-              const url=player.strCutout || null;
-              if(!url) throw new Error('No Player Cutout artwork for full body: '+name);
-              const ext=path.extname(new URL(url).pathname) || '.png';
-              const key=normalize(name);
-              const out='_site/3d-arena/player-assets/'+key+'-full'+ext;
-              const res=await fetch(url);
-              if(!res.ok) throw new Error('Failed to download full-body cutout for '+name+' ('+res.status+')');
-              fs.writeFileSync(out, Buffer.from(await res.arrayBuffer()));
-              manifest[key]=manifest[key] || {};
-              manifest[key].full='./player-assets/'+path.basename(out);
-              manifest[key].playerId=String(player.idPlayer||'');
-              manifest[key].sourceName=String(player.strPlayer||'');
-              console.log('Downloaded full body '+name+' -> '+player.strPlayer+' ['+player.idPlayer+']');
-              await sleep(250);
+
+          (async () => {
+            for (const [name, id] of Object.entries(players)) {
+              const key = keys[name];
+              const player = await getPlayer(id);
+              if (!player) throw new Error('No player data for ' + name);
+
+              // Full Body is the dedicated cutout.
+              const fullUrl = player.strCutout || null;
+              // Half Body is the dedicated Player Render.
+              const halfUrl = player.strRender || null;
+
+              if (!fullUrl) throw new Error('Missing Full Body cutout for ' + name);
+              if (!halfUrl) throw new Error('Missing Half Body Player Render for ' + name);
+
+              const fullExt = (path.extname(new URL(fullUrl).pathname) || '.png').toLowerCase();
+              const halfExt = (path.extname(new URL(halfUrl).pathname) || '.png').toLowerCase();
+
+              const fullFile = key + '-full' + fullExt;
+              const halfFile = key + '-half' + halfExt;
+
+              await download(fullUrl, fullFile);
+              await download(halfUrl, halfFile);
+
+              manifest[key] = {
+                full: './player-assets/' + fullFile,
+                half: './player-assets/' + halfFile,
+                playerId: id,
+                sourceName: name
+              };
+
+              console.log('Arena artwork ready: ' + name);
             }
-            fs.writeFileSync(manifestPath, JSON.stringify(manifest,null,2));
-          })().catch(err=>{console.error(err);process.exit(1)});
+
+            fs.writeFileSync(
+              path.join(dir, 'manifest.json'),
+              JSON.stringify(manifest, null, 2)
+            );
+            fs.writeFileSync(
+              path.join(dir, 'manifest.js'),
+              'window.ARENA_ARTWORK_MANIFEST=' + JSON.stringify(manifest) + ';'
+            );
+
+            console.log('Verified 20 players with dedicated Full Body cutouts and dedicated Half Body Player Renders.');
+          })().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
           NODE
-          test "$(find _site/3d-arena/player-assets -name '*-full.*' | wc -l)" -eq 20
-          echo "Full-body artwork built for all 20 Arena players."
 
-      - name: Embed Arena artwork manifest
+          test "$(node -e "const m=require('./_site/3d-arena/player-assets/manifest.json'); console.log(Object.keys(m).length)")" -eq 20
+          node -e "const m=require('./_site/3d-arena/player-assets/manifest.json'); if(!m.ricardocalafiori || !m.ricardocalafiori.full || !m.ricardocalafiori.half) process.exit(1); console.log('Calafiori manifest verified:',m.ricardocalafiori.full,m.ricardocalafiori.half)"
+          test -s _site/3d-arena/player-assets/ricardocalafiori-full.png || test -s _site/3d-arena/player-assets/ricardocalafiori-full.jpg || test -s _site/3d-arena/player-assets/ricardocalafiori-full.webp
+          test -s _site/3d-arena/player-assets/ricardocalafiori-half.png || test -s _site/3d-arena/player-assets/ricardocalafiori-half.jpg || test -s _site/3d-arena/player-assets/ricardocalafiori-half.webp
+          test "$(find _site/3d-arena/player-assets -type f -name '*-full.*' | wc -l)" -eq 20
+          test "$(find _site/3d-arena/player-assets -type f -name '*-half.*' | wc -l)" -eq 20
+          if find _site/3d-arena/player-assets -type f | grep -Ei 'thumb|thumbnail'; then
+            echo "Unexpected artwork filename detected"
+            exit 1
+          fi
+
+      - name: Verify Arena artwork package
         run: |
+          test -s _site/3d-arena/player-assets/manifest.json
           node <<'NODE'
           const fs = require('fs');
           const path = require('path');
           const dir = '_site/3d-arena/player-assets';
-          const normalize = value => String(value || '')
-            .replace(/[Øø]/g, 'o').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9]+/gi, '').toLowerCase();
-
-          // Keep the restored Half Body mappings exactly as supplied by the
-          // known-good artwork package. Only rebuild the Full Body mappings,
-          // because those files were downloaded in the immediately preceding step.
-          const manifestPath = path.join(dir, 'manifest.json');
-          const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-
-          const players = [
-            'David Raya','Jurriën Timber','Ezri Konsa','Gabriel','Riccardo Calafiori',
-            'Declan Rice','Bruno Guimarães','Martin Ødegaard','Bukayo Saka','Christos Tzolis',
-            'Kai Havertz','Kepa Arrizabalaga','Piero Hincapié','Eberechi Eze','Viktor Gyökeres',
-            'Noni Madueke','Mikel Merino','Martín Zubimendi','Myles Lewis-Skelly','Max Dowman'
-          ];
-
-          for (const name of players) {
-            const key = normalize(name);
-            const candidates = fs.readdirSync(dir).filter(f => { const lower=f.toLowerCase(); return ['.png','.jpg','.jpeg','.webp'].some(ext => lower === key+'-full'+ext); });
-            if (candidates.length !== 1) {
-              throw new Error('Expected exactly one FULL artwork file for '+name+' ('+key+'), found '+candidates.length);
-            }
-            manifest[key] = manifest[key] || {};
-            manifest[key].full = './player-assets/' + candidates[0];
-            if (typeof manifest[key].half !== 'string' || !manifest[key].half) {
-              throw new Error('Missing restored HALF artwork mapping for '+name+' ('+key+')');
+          const manifest = JSON.parse(fs.readFileSync(path.join(dir, 'manifest.json'), 'utf8'));
+          const keys = Object.keys(manifest);
+          if (keys.length !== 20) throw new Error('Expected 20 players, found ' + keys.length);
+          for (const [key, value] of Object.entries(manifest)) {
+            if (!value || !value.full || !value.half) throw new Error('Missing full/half asset for ' + key);
+            for (const mode of ['full', 'half']) {
+              const rel = value[mode].replace(/^\.\//, '');
+              if (!fs.existsSync(path.join('_site/3d-arena', rel))) {
+                throw new Error('Missing file for ' + key + ' ' + mode + ': ' + rel);
+              }
             }
           }
-
-          fs.writeFileSync(manifestPath, JSON.stringify(manifest,null,2)+'\n');
-          fs.writeFileSync(path.join(dir,'manifest.js'), 'window.ARENA_ARTWORK_MANIFEST='+JSON.stringify(manifest)+';\n');
-          console.log('Embedded '+players.length+' verified Arena player mappings using restored Half Body + freshly built Full Body artwork.');
+          console.log('Verified 20 players × 2 artwork modes.');
           NODE
-          test -s _site/3d-arena/player-assets/manifest.js
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
@@ -224,5 +219,3 @@ jobs:
       - name: Deploy NL4 and Arena to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-# Arena deployment verification trigger 2026-09-21
