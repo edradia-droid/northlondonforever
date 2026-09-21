@@ -8,7 +8,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+  actions: read
   pages: write
   id-token: write
 
@@ -52,106 +53,61 @@ jobs:
           echo "Arena:"
           ls -lah _site/3d-arena/
 
-      - name: Download Arsenal player artwork for Arena
+      - name: Restore Arena half-body artwork
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          rm -rf _site/3d-arena/player-assets
-          mkdir -p _site/3d-arena/player-assets
-          node <<'NODE'
-          const fs = require('fs');
-          const path = require('path');
+          rm -rf _site/3d-arena/player-assets /tmp/arena-assets /tmp/arena-half-body-assets.zip /tmp/old-arena-pages.zip
+          mkdir -p _site/3d-arena/player-assets /tmp/arena-assets
 
-          const players = [
-            'David Raya','Jurriën Timber','Ezri Konsa','Gabriel','Riccardo Calafiori',
-            'Declan Rice','Bruno Guimarães','Martin Ødegaard','Bukayo Saka','Christos Tzolis',
-            'Kai Havertz','Kepa Arrizabalaga','Piero Hincapié','Eberechi Eze','Viktor Gyökeres',
-            'Noni Madueke','Mikel Merino','Martín Zubimendi','Myles Lewis-Skelly','Max Dowman'
-          ];
+          # The exact half-body artwork that was already working in the Arena is
+          # stored as a small release asset. This prevents the browser/deployment
+          # from depending on TheSportsDB artwork fields changing underneath us.
+          RELEASE_TAG="arena-player-assets-v1"
+          ASSET_NAME="arena-half-body-assets.zip"
 
-          const normalize = value => String(value || '')
-            .replace(/[Øø]/g, 'o')
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9]+/gi, '')
-            .toLowerCase();
+          if gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern "$ASSET_NAME" --dir /tmp/arena-assets --clobber; then
+            echo "Restored Arena half-body artwork from GitHub release asset."
+          else
+            echo "Release asset not found yet; restoring it from the last known-good Pages artifact."
+            curl -fL \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/10615383842/zip" \
+              -o /tmp/old-arena-pages.zip
+            unzip -q /tmp/old-arena-pages.zip -d /tmp/arena-assets
+            mkdir -p /tmp/arena-assets/extracted
+            tar -xf /tmp/arena-assets/artifact.tar -C /tmp/arena-assets/extracted
+            cp /tmp/arena-assets/extracted/3d-arena/player-assets/*.png _site/3d-arena/player-assets/
+            cp /tmp/arena-assets/extracted/3d-arena/player-assets/manifest.json _site/3d-arena/player-assets/manifest.json
 
-          const manifest = {};
+            cd _site/3d-arena/player-assets
+            zip -q /tmp/arena-half-body-assets.zip *.png manifest.json
+            cd -
 
-          async function downloadPlayer(name) {
-            const key = normalize(name);
-            const aliases = name === 'Gabriel'
-              ? ['Gabriel_Magalhaes', 'Gabriel_Magalhães', 'Gabriel']
-              : [name.replace(/\s+/g, '_')];
-            try {
-              let list = [];
-              for (const alias of aliases) {
-                const api = 'https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p=' + encodeURIComponent(alias);
-                const response = await fetch(api);
-                if (!response.ok) continue;
-                const json = await response.json();
-                if (Array.isArray(json.player)) list.push(...json.player);
-              }
-              const seen = new Set();
-              list = list.filter(x => {
-                const id = String(x.idPlayer || x.strPlayer || '');
-                if (seen.has(id)) return false;
-                seen.add(id);
-                return true;
-              });
-              const arsenalPlayers = list.filter(x => String(x.strTeam || '').toLowerCase().includes('arsenal'));
+            gh release create "$RELEASE_TAG" /tmp/arena-half-body-assets.zip \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "NL4 Arena Half-Body Player Artwork" \
+              --notes "Exact half-body player artwork recovered from the last known-good Arena deployment."
+            cp /tmp/arena-half-body-assets.zip /tmp/arena-assets/$ASSET_NAME
+            echo "Created persistent Arena artwork release asset."
+          fi
 
-              // Never fall back to an arbitrary search result. A fallback is what can
-              // make one player's half-body artwork appear to belong to another player.
-              const exactArsenal =
-                arsenalPlayers.find(x => normalize(x.strPlayer) === key) ||
-                (name === 'Gabriel'
-                  ? arsenalPlayers.find(x => /gabriel.*magalh/i.test(String(x.strPlayer || '')))
-                  : null);
+          if [ ! -f /tmp/arena-assets/$ASSET_NAME ]; then
+            echo "ERROR: Arena artwork archive was not restored."
+            exit 1
+          fi
 
-              const player = exactArsenal;
+          rm -rf /tmp/arena-assets/extracted
+          mkdir -p /tmp/arena-assets/extracted
+          unzip -q /tmp/arena-assets/$ASSET_NAME -d /tmp/arena-assets/extracted
+          cp /tmp/arena-assets/extracted/*.png _site/3d-arena/player-assets/
+          cp /tmp/arena-assets/extracted/manifest.json _site/3d-arena/player-assets/manifest.json
 
-              if (!player) {
-                throw new Error('no exact Arsenal player match for ' + name);
-              }
-
-              console.log('Matched ' + name + ' -> ' + player.strPlayer + ' [' + player.idPlayer + ']');
-              // Use artwork only from the exact matched player. Prefer the intended
-              // cutout/render, but keep a same-player thumbnail fallback so a missing
-              // artwork field cannot make the entire player disappear.
-              // Full Body is intentionally not downloaded yet.
-              // Restore the same player-render artwork that was previously
-              // used successfully for the Arena's Half Body view.
-              // Keep all fallbacks on the exact matched player only.
-              const halfUrl = player.strRender || null;
-              if (!halfUrl) throw new Error('exact player has no half-body render artwork');
-              async function saveArtwork(url, suffix) {
-                if (!url) return null;
-                const imageResponse = await fetch(url);
-                if (!imageResponse.ok) throw new Error('image ' + imageResponse.status);
-                const buffer = Buffer.from(await imageResponse.arrayBuffer());
-                const extMatch = new URL(url).pathname.match(/\.[a-z0-9]+$/i);
-                const contentType = String(imageResponse.headers.get('content-type') || '').toLowerCase();
-                const extFromType = contentType.includes('webp') ? 'webp' : contentType.includes('jpeg') || contentType.includes('jpg') ? 'jpg' : contentType.includes('gif') ? 'gif' : 'png';
-                const ext = extMatch ? extMatch[0].slice(1).toLowerCase() : extFromType;
-                const filename = key + '-' + suffix + '.' + ext;
-                fs.writeFileSync(path.join('_site/3d-arena/player-assets', filename), buffer);
-                return './player-assets/' + filename;
-              }
-
-              const half = await saveArtwork(halfUrl, 'half');
-              manifest[key] = {full: null, half, playerId: String(player.idPlayer || ''), sourceName: String(player.strPlayer || '')};
-              console.log('Downloaded ' + name + ' (half body only)');
-            } catch (error) {
-              console.log('Artwork unavailable for ' + name + ': ' + error.message);
-            }
-          }
-
-          (async () => {
-            for (const name of players) await downloadPlayer(name);
-            fs.writeFileSync('_site/3d-arena/player-assets/manifest.json', JSON.stringify(manifest, null, 2));
-            console.log('Arena artwork count:', Object.keys(manifest).length);
-            if (Object.keys(manifest).length === 0) console.log('No remote artwork was downloaded; Arena fallback player rendering will be used.');
-          })().catch(error => { console.error(error); process.exit(1); });
-          NODE
+          echo "Arena artwork files:"
+          ls -lah _site/3d-arena/player-assets
+          test -s _site/3d-arena/player-assets/manifest.json
+          test "$(find _site/3d-arena/player-assets -maxdepth 1 -name '*.png' | wc -l)" -eq 20
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
