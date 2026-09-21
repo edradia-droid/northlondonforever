@@ -214,3 +214,5 @@ jobs:
       - name: Deploy NL4 and Arena to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+# Arena deployment verification trigger 2026-09-21
