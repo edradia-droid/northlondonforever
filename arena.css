@@ -43,5 +43,5 @@
 @media(max-width:700px){.player-view-toggle span{display:none}.player-view-toggle button{padding:6px 7px;font-size:8px}}
 
 /* Keep the two artwork modes visually distinct. Full-body players stand upright; half-body keeps the existing pitch-perspective treatment. */
-.static-pitch.view-full .arena-player-hit .arena-photo-player{transform:translate(-50%,-100%)!important;transform-origin:50% 100%!important;}
+.static-pitch.view-full .arena-player-hit .arena-photo-player{transform:translate(-50%,-100%) rotateX(-52deg)!important;transform-origin:50% 100%!important;}
 .static-pitch.view-half .arena-player-hit .arena-photo-player{transform:translate(-50%,-100%) rotateX(-52deg)!important;transform-origin:50% 100%!important;}
