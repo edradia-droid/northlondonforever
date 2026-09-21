@@ -842,13 +842,15 @@
 
 /* SAKA SUPPLIED TRANSPARENT ARTWORK — keep the complete supplied figure visible */
 #staticArena .static-art-layer .static-art-half[data-art-key="bukayosaka"]{
+  /* Saka Half Body: show the complete supplied half-body figure without clipping. */
   width:auto!important;
-  height:220px!important;
-  max-width:110px!important;
+  height:250px!important;
+  max-width:140px!important;
   max-height:none!important;
   object-fit:contain!important;
-  object-position:center bottom!important;
-  transform:translate3d(-50%,-100%,0)!important;
+  object-position:center center!important;
+  top:33%!important;
+  transform:translate3d(-50%,-50%,0)!important;
 }
 @media(max-width:420px){
   #staticArena .static-art-layer .static-art-half[data-art-key="bukayosaka"]{
