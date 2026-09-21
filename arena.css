@@ -984,3 +984,16 @@
   left:27%!important;
   top:29%!important;
 }
+
+
+/* DRAGGABLE ARENA PLAYERS */
+#staticArena .static-art-layer .static-art{
+  pointer-events:auto!important;
+  cursor:grab!important;
+  touch-action:none!important;
+  user-select:none!important;
+  -webkit-user-drag:none!important;
+}
+#staticArena .static-art-layer .static-art:active{
+  cursor:grabbing!important;
+}
