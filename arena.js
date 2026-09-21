@@ -44,24 +44,21 @@ function fillLists(){
 
 async function loadArtworkManifest(){
   try{
-    const res=await fetch("./player-assets/manifest.json?v=20260921-22",{cache:"no-store"});
+    const res=await fetch("./player-assets/manifest.json?v=20260921-25",{cache:"no-store"});
     if(!res.ok) return {};
     return await res.json();
   }catch(e){ return {}; }
 }
 
-async function loadLiveArtwork(player){
-  try{
-    const q=encodeURIComponent(player.name.replace(/\s+/g,"_"));
-    const res=await fetch("https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p="+q,{cache:"no-store"});
-    if(!res.ok) return null;
-    const json=await res.json();
-    const key=normalizeArtworkName(player.name);
-    const list=Array.isArray(json.player)?json.player:[];
-    const found=list.find(x=>normalizeArtworkName(x.strPlayer)===key && String(x.strTeam||"").trim().toLowerCase()==="arsenal");
-    if(!found) return null;
-    return {full:found.strCutout||null,half:found.strRender||null};
-  }catch(e){ return null; }
+function artworkPathForView(artwork){
+  if(!artwork || typeof artwork!=="object") return null;
+  const url=artwork[playerView];
+  if(typeof url!=="string") return null;
+
+  // Full Body can only load a file explicitly packaged as -full.
+  // Half Body can only load a file explicitly packaged as -half.
+  const expected=playerView==="full"?/-full\\.(png|jpe?g|webp)$/i:/-half\\.(png|jpe?g|webp)$/i;
+  return expected.test(url) ? url : null;
 }
 
 async function renderStaticPlayerPhotos(){
@@ -70,30 +67,8 @@ async function renderStaticPlayerPhotos(){
   const manifest=await loadArtworkManifest();
 
   for(const p of DATA.starters){
-    let artwork=manifest[normalizeArtworkName(p.name)];
-
-    // Accept the legacy half-body manifest entries that are plain image paths.
-    // They are the dedicated Player Render assets, not thumbnails.
-    if(playerView==="half" && typeof artwork==="string"){
-      artwork={half:artwork};
-    }
-
-    // Older full-body manifests used generated keys, so also resolve by sourceName.
-    if((!artwork || typeof artwork!=="object" || !artwork[playerView]) && playerView==="full"){
-      const wanted=normalizeArtworkName(p.name);
-      const match=Object.values(manifest).find(value =>
-        value && typeof value==="object" &&
-        normalizeArtworkName(value.sourceName)===wanted &&
-        value.full
-      );
-      if(match) artwork=match;
-    }
-
-    if(!artwork || typeof artwork!=="object" || !artwork[playerView]){
-      artwork=await loadLiveArtwork(p);
-    }
-
-    const url=artwork && typeof artwork==="object" ? artwork[playerView] : null;
+    const artwork=manifest[normalizeArtworkName(p.name)];
+    const url=artworkPathForView(artwork);
     if(!url) continue;
 
     const hit=document.createElement("button");
