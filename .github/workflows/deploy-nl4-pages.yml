@@ -196,14 +196,16 @@ jobs:
           const htmlPath = '_site/3d-arena/index.html';
           const manifest = JSON.parse(fs.readFileSync('_site/3d-arena/player-assets/manifest.json', 'utf8'));
           let html = fs.readFileSync(htmlPath, 'utf8');
-          html = html.replace(
-            /<img class="static-art static-art-(full|half)" alt="" data-art-key="([^"]+)" data-art-mode="(full|half)"([^>]*)>/g,
-            (tag, clsMode, key, mode, rest) => {
+          const re = /<img class="static-art static-art-(full|half)" alt=""(?: src="[^"]*")? data-art-key="([^"]+)" data-art-mode="(full|half)"([^>]*)>/g;
+          let count = 0;
+          html = html.replace(re, (tag, clsMode, key, mode, rest) => {
+            count++;
               const asset = manifest[key] && manifest[key][mode];
               if (!asset) throw new Error('Missing generated artwork for ' + key + ' ' + mode);
               return '<img class="static-art static-art-' + mode + '" alt="" src="' + asset + '?v=20260921-40" data-art-key="' + key + '" data-art-mode="' + mode + '"' + rest + '>';
             }
           );
+          if (count !== 22) throw new Error('Expected 22 starting-player artwork images to bind, found ' + count);
           fs.writeFileSync(htmlPath, html);
           console.log('Bound generated artwork URLs directly into Arena HTML.');
           NODE
