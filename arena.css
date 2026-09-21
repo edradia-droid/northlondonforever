@@ -355,3 +355,75 @@
   }
   .static-art{height:145px!important;max-width:66px!important;}
 }
+
+/* MOBILE PLAYER ARTWORK — ISOLATED 2D PAINT LAYER v2026-09-21
+   Desktop is untouched. Mobile artwork is painted above the pitch as a
+   completely flat sibling layer using the already-bound local assets. */
+@media(max-width:700px){
+  #staticArena{
+    z-index:50!important;
+    overflow:visible!important;
+    isolation:isolate!important;
+  }
+  #staticArena .static-art-layer{
+    position:absolute!important;
+    left:50%!important;
+    top:50%!important;
+    width:min(72%,360px)!important;
+    height:70%!important;
+    min-height:360px!important;
+    margin:0!important;
+    padding:0!important;
+    transform:translate3d(-50%,-50%,0)!important;
+    transform-style:flat!important;
+    perspective:none!important;
+    z-index:500!important;
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    overflow:visible!important;
+    pointer-events:none!important;
+  }
+  #staticArena .static-art-layer .static-art{
+    position:absolute!important;
+    left:auto;
+    top:auto;
+    width:auto!important;
+    height:175px!important;
+    max-width:78px!important;
+    min-width:1px!important;
+    display:none!important;
+    visibility:visible!important;
+    opacity:1!important;
+    z-index:501!important;
+    transform:translate3d(-50%,-100%,0)!important;
+    transform-style:flat!important;
+    backface-visibility:visible!important;
+    -webkit-backface-visibility:visible!important;
+    object-fit:contain!important;
+    object-position:center bottom!important;
+    filter:drop-shadow(0 8px 5px rgba(0,0,0,.42))!important;
+    pointer-events:none!important;
+  }
+  #staticArena .static-pitch.view-full ~ .static-art-layer .static-art-full{
+    display:block!important;
+  }
+  #staticArena .static-pitch.view-half ~ .static-art-layer .static-art-half{
+    display:block!important;
+  }
+  #staticArena .static-pitch.view-full ~ .static-art-layer .static-art-half,
+  #staticArena .static-pitch.view-half ~ .static-art-layer .static-art-full{
+    display:none!important;
+  }
+}
+@media(max-width:420px){
+  #staticArena .static-art-layer{
+    width:min(82%,320px)!important;
+    height:70%!important;
+    min-height:320px!important;
+  }
+  #staticArena .static-art-layer .static-art{
+    height:145px!important;
+    max-width:66px!important;
+  }
+}
