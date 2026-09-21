@@ -12,4 +12,90 @@
   <div class="static-art-layer"><img class="static-art static-art-full" alt="" data-art-key="davidraya" data-art-mode="full" style="left:50%;top:84%"><img class="static-art static-art-half" alt="" data-art-key="davidraya" data-art-mode="half" style="left:50%;top:84%"><img class="static-art static-art-full" alt="" data-art-key="jurrientimber" data-art-mode="full" style="left:73%;top:69%"><img class="static-art static-art-half" alt="" data-art-key="jurrientimber" data-art-mode="half" style="left:73%;top:69%"><img class="static-art static-art-full" alt="" data-art-key="ezrikonsa" data-art-mode="full" style="left:58%;top:72%"><img class="static-art static-art-half" alt="" data-art-key="ezrikonsa" data-art-mode="half" style="left:58%;top:72%"><img class="static-art static-art-full" alt="" data-art-key="gabriel" data-art-mode="full" style="left:42%;top:72%"><img class="static-art static-art-half" alt="" data-art-key="gabriel" data-art-mode="half" style="left:42%;top:72%"><img class="static-art static-art-full" alt="" data-art-key="ricardocalafiori" data-art-mode="full" style="left:27%;top:69%"><img class="static-art static-art-half" alt="" data-art-key="ricardocalafiori" data-art-mode="half" style="left:27%;top:69%"><img class="static-art static-art-full" alt="" data-art-key="declanrice" data-art-mode="full" style="left:68%;top:50%"><img class="static-art static-art-half" alt="" data-art-key="declanrice" data-art-mode="half" style="left:68%;top:50%"><img class="static-art static-art-full" alt="" data-art-key="brunoguimaraes" data-art-mode="full" style="left:50%;top:54%"><img class="static-art static-art-half" alt="" data-art-key="brunoguimaraes" data-art-mode="half" style="left:50%;top:54%"><img class="static-art static-art-full" alt="" data-art-key="martinodegaard" data-art-mode="full" style="left:32%;top:50%"><img class="static-art static-art-half" alt="" data-art-key="martinodegaard" data-art-mode="half" style="left:32%;top:50%"><img class="static-art static-art-full" alt="" data-art-key="bukayosaka" data-art-mode="full" style="left:73%;top:29%"><img class="static-art static-art-half" alt="" data-art-key="bukayosaka" data-art-mode="half" style="left:73%;top:29%"><img class="static-art static-art-full" alt="" data-art-key="christostzolis" data-art-mode="full" style="left:27%;top:29%"><img class="static-art static-art-half" alt="" data-art-key="christostzolis" data-art-mode="half" style="left:27%;top:29%"><img class="static-art static-art-full" alt="" data-art-key="kaihavertz" data-art-mode="full" style="left:50%;top:22%"><img class="static-art static-art-half" alt="" data-art-key="kaihavertz" data-art-mode="half" style="left:50%;top:22%"></div>
 </div><div class="hud"><div class="formation-card"><span>FORMATION</span><strong id="formation">4-3-3</strong></div><div class="mode-card"><span>MATCHDAY</span><strong>LINEUP PREVIEW</strong></div></div><div class="pitch-controls"><button id="resetCamera">↻</button><button id="zoomOut">−</button><button id="zoomIn">+</button></div></section>
 <aside class="sidebar"><div class="panel-head"><span>ARSENAL XI</span><small>STARTING LINEUP</small></div><div id="lineupList" class="lineup-list"></div><div class="panel-head bench-head"><span>SUBSTITUTES</span><small>BENCH</small></div><div id="benchList" class="bench-list"></div><div class="legend"><div><i class="dot in"></i> On</div><div><i class="dot out"></i> Off</div><div><i class="dot live"></i> Selected</div></div></aside></main>
-<footer><span>Prototype renderer — data adapter isolated from Match Details.</span><span>NL4 3D Arena</span></footer></div><script src="./player-assets/manifest.js?v=20260921-45"></script><script src="./arena.js?v=20260921-45"></script></body></html>
+<footer><span>Prototype renderer — data adapter isolated from Match Details.</span><span>NL4 3D Arena</span></footer></div><script src="./player-assets/manifest.js?v=20260921-45"></script><script src="./arena.js?v=20260921-45"></script>
+<script>
+/* MOBILE ARENA RESCUE v2026-09-21-46
+   Deliberately independent from arena.js state. It only runs on touch/mobile
+   layouts and guarantees the controls, lineup, bench, camera and zoom remain
+   usable even if a cached mobile runtime fails to initialize. */
+(function(){
+  if(!window.matchMedia || !window.matchMedia("(max-width:700px)").matches) return;
+  function ready(){
+    var starters=[
+      ["David Raya",1,"GK"],["Jurriën Timber",12,"RB"],["Ezri Konsa",15,"CB"],
+      ["Gabriel",6,"CB"],["Riccardo Calafiori",33,"LB"],["Declan Rice",41,"DM"],
+      ["Bruno Guimarães",39,"CM"],["Martin Ødegaard",8,"CM"],["Bukayo Saka",7,"RW"],
+      ["Christos Tzolis",17,"LW"],["Kai Havertz",29,"ST"]
+    ];
+    var bench=[
+      ["Kepa Arrizabalaga",13,"GK"],["Piero Hincapié",5,"DEF"],["Eberechi Eze",10,"MID"],
+      ["Viktor Gyökeres",14,"FWD"],["Noni Madueke",20,"FWD"],["Mikel Merino",23,"MID"],
+      ["Martín Zubimendi",36,"MID"],["Myles Lewis-Skelly",49,"DEF"],["Max Dowman",56,"FWD"]
+    ];
+    function makeRow(p,isBench){
+      var e=document.createElement("div");
+      e.className="player-row";
+      e.dataset.player=p[0];
+      e.innerHTML='<div class="player-main"><span class="num">'+p[1]+'</span><div><div class="name">'+p[0]+'</div><div class="pos">'+p[2]+'</div></div></div>'+(isBench?'<span class="badge">BENCH</span>':"");
+      e.addEventListener("click",function(){
+        document.querySelectorAll(".player-row").forEach(function(r){r.classList.toggle("selected",r===e);});
+      },{passive:true});
+      e.addEventListener("touchend",function(){e.click();},{passive:true});
+      return e;
+    }
+    function fill(id,data,isBench){
+      var el=document.getElementById(id);
+      if(!el || el.children.length) return;
+      data.forEach(function(p){el.appendChild(makeRow(p,isBench));});
+    }
+    fill("lineupList",starters,false);
+    fill("benchList",bench,true);
+
+    var pitch=document.querySelector(".static-pitch");
+    function view(v){
+      if(!pitch) return;
+      pitch.classList.toggle("view-full",v==="full");
+      pitch.classList.toggle("view-half",v==="half");
+      document.querySelectorAll("[data-player-view]").forEach(function(b){
+        b.classList.toggle("active",b.dataset.playerView===v);
+      });
+    }
+    document.querySelectorAll("[data-player-view]").forEach(function(b){
+      b.addEventListener("click",function(){view(b.dataset.playerView);},{passive:true});
+      b.addEventListener("touchend",function(){view(b.dataset.playerView);},{passive:true});
+    });
+
+    var scale=1;
+    function camera(mode){
+      if(!pitch) return;
+      pitch.classList.remove("camera-broadcast","camera-top","camera-tactical");
+      pitch.classList.add("camera-"+mode);
+    }
+    document.querySelectorAll("[data-camera]").forEach(function(b){
+      b.addEventListener("click",function(){camera(b.dataset.camera);},{passive:true});
+      b.addEventListener("touchend",function(){camera(b.dataset.camera);},{passive:true});
+    });
+    function applyZoom(){
+      if(pitch) pitch.style.setProperty("--arena-scale",String(scale));
+    }
+    var plus=document.getElementById("zoomIn"), minus=document.getElementById("zoomOut"), reset=document.getElementById("resetCamera");
+    if(plus){
+      plus.addEventListener("click",function(){scale=Math.min(1.22,scale+.08);applyZoom();},{passive:true});
+      plus.addEventListener("touchend",function(){scale=Math.min(1.22,scale+.08);applyZoom();},{passive:true});
+    }
+    if(minus){
+      minus.addEventListener("click",function(){scale=Math.max(.82,scale-.08);applyZoom();},{passive:true});
+      minus.addEventListener("touchend",function(){scale=Math.max(.82,scale-.08);applyZoom();},{passive:true});
+    }
+    if(reset){
+      reset.addEventListener("click",function(){scale=1;camera("broadcast");applyZoom();},{passive:true});
+      reset.addEventListener("touchend",function(){scale=1;camera("broadcast");applyZoom();},{passive:true});
+    }
+    view("full");
+    camera("broadcast");
+    applyZoom();
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",ready,{once:true});
+  else ready();
+})();
+</script></body></html>
