@@ -82,8 +82,8 @@ async function renderStaticPlayerPhotos(){
     const key=img.dataset.artKey;
     const mode=img.dataset.artMode;
     const boundAsset=img.dataset.boundAsset || img.getAttribute("src") || "";
-    const localAsset=img.dataset.localSrc || manifestEntry?.[mode] || "";
     const manifestEntry=manifest && manifest[key] ? manifest[key] : null;
+    const localAsset=img.dataset.localSrc || (manifestEntry ? manifestEntry[mode] : "") || "";
     const manifestAsset=manifestEntry ? manifestEntry[mode] : "";
     const remoteAsset=manifestEntry ? manifestEntry["remote"+(mode==="full"?"Full":"Half")] : "";
     const asset=boundAsset || manifestAsset;
