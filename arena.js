@@ -44,7 +44,7 @@ function fillLists(){
 
 async function loadArtworkManifest(){
   try{
-    const res=await fetch("./player-assets/manifest.json?v=20260921-26",{cache:"no-store"});
+    const res=await fetch("./player-assets/manifest.json?v=20260921-29",{cache:"no-store"});
     if(!res.ok) return {};
     return await res.json();
   }catch(e){ return {}; }
@@ -52,12 +52,12 @@ async function loadArtworkManifest(){
 
 function artworkPathForView(artwork){
   if(!artwork || typeof artwork!=="object") return null;
-  // Authoritative mapping: Full Body = TheSportsDB cutout; Half Body = Player Render.
-  const url=playerView==="full"?artwork.cutout:artwork.render;
+  // Authoritative mapping: Full Body = dedicated full asset; Half Body = restored dedicated half-body asset.
+  const url=playerView==="full"?artwork.full:artwork.half;
   if(typeof url!=="string") return null;
 
-  // Full Body can only load the cutout package; Half Body can only load the render package.
-  const expected=playerView==="full"?/-cutout\.(png|jpe?g|webp)$/i:/-render\.(png|jpe?g|webp)$/i;
+  // Full Body can only load the full package; Half Body can only load the dedicated half-body package.
+  const expected=playerView==="full"?/-full\.(png|jpe?g|webp)$/i:/-half\.(png|jpe?g|webp)$/i;
   return expected.test(url) ? url : null;
 }
 
