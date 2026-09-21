@@ -7,55 +7,6 @@ let playerView="full";
 let cameraMode="broadcast";
 let zoom=1;
 
-// ISOLATED MOBILE ARTWORK SYSTEM v2026-09-21-43
-// Desktop keeps the existing static-art layer. Mobile gets a completely separate
-// flat layer so mobile fixes cannot alter desktop rendering.
-function ensureMobileArtworkLayer(){
-  if(!window.matchMedia || !window.matchMedia("(max-width:700px)").matches) return;
-  if(document.querySelector("#mobileArenaArtwork")) return;
-  const source=document.querySelector(".static-art-layer");
-  if(!source) return;
-  const layer=document.createElement("div");
-  layer.id="mobileArenaArtwork";
-  layer.dataset.view=playerView;
-  source.querySelectorAll(".static-art[data-art-key][data-art-mode]").forEach((img)=>{
-    const clone=img.cloneNode(true);
-    clone.className="mobile-art mobile-art-"+img.dataset.artMode;
-    clone.style.setProperty("--art-left",img.style.left||"50%");
-    clone.style.setProperty("--art-top",img.style.top||"50%");
-    clone.removeAttribute("style");
-    clone.style.setProperty("--art-left",img.style.left||"50%");
-    clone.style.setProperty("--art-top",img.style.top||"50%");
-    if(!clone.getAttribute("src")){
-      const artwork=(window.ARENA_ARTWORK_MANIFEST||{})[img.dataset.artKey];
-      if(artwork && typeof artwork[img.dataset.artMode]==="string") clone.src=artwork[img.dataset.artMode];
-    }
-    layer.appendChild(clone);
-  });
-  staticArena.appendChild(layer);
-  syncMobileArtworkLayer();
-}
-function syncMobileArtworkLayer(){
-  const layer=document.querySelector("#mobileArenaArtwork");
-  if(!layer) return;
-  layer.dataset.view=playerView;
-}
-function loadStaticArtworkFromManifest(){
-  document.querySelectorAll(".static-art[data-art-key][data-art-mode]").forEach(img=>{
-    if(img.getAttribute("src")) return;
-    const key=img.dataset.artKey;
-    const mode=img.dataset.artMode;
-    const manifest=window.ARENA_ARTWORK_MANIFEST||{};
-    const artwork=manifest[key];
-    if(!artwork || typeof artwork[mode]!=="string") return;
-    img.src=artwork[mode];
-    img.style.display="block";
-  });
-}
-loadStaticArtworkFromManifest();
-
-ensureMobileArtworkLayer();
-
 const normalizeArtworkName=value=>String(value||"")
   .replace(/[Øø]/g,"o")
   .normalize("NFD")
