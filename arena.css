@@ -661,3 +661,55 @@
   .formation-card,.mode-card{padding:11px 12px!important}
   .formation-card strong,.mode-card strong{font-size:13px!important}
 }
+
+/* FINAL MOBILE CAMERA + XI VISIBILITY FIX v2026-09-21
+   Camera buttons always win over the presentation defaults. Keep all eleven
+   real artwork images visible in the selected player mode on mobile. */
+.static-pitch.view-full.camera-broadcast{transform:perspective(1200px) rotateX(17deg) scale(1)!important;}
+.static-pitch.view-full.camera-top{transform:perspective(1200px) rotateX(0deg) scale(.94)!important;}
+.static-pitch.view-full.camera-tactical{transform:perspective(1200px) rotateX(38deg) scale(1.04)!important;}
+.static-pitch.view-half.camera-broadcast{transform:perspective(1200px) rotateX(52deg) scale(1)!important;}
+.static-pitch.view-half.camera-top{transform:perspective(1200px) rotateX(0deg) scale(.94)!important;}
+.static-pitch.view-half.camera-tactical{transform:perspective(1200px) rotateX(38deg) scale(1.04)!important;}
+
+@media(max-width:700px){
+  #staticArena .static-art-layer .static-art{
+    display:none!important;
+    visibility:visible!important;
+    opacity:1!important;
+    z-index:500!important;
+  }
+  #staticArena .static-pitch.view-full ~ .static-art-layer .static-art-full{
+    display:block!important;
+  }
+  #staticArena .static-pitch.view-half ~ .static-art-layer .static-art-half{
+    display:block!important;
+  }
+  #staticArena .static-pitch.view-full.camera-broadcast{
+    transform:perspective(1200px) rotateX(17deg) scale(1)!important;
+  }
+  #staticArena .static-pitch.view-full.camera-top{
+    transform:perspective(1200px) rotateX(0deg) scale(.94)!important;
+  }
+  #staticArena .static-pitch.view-full.camera-tactical{
+    transform:perspective(1200px) rotateX(38deg) scale(1.04)!important;
+  }
+  #staticArena .static-pitch.view-half.camera-broadcast{
+    transform:perspective(1200px) rotateX(52deg) scale(1)!important;
+  }
+  #staticArena .static-pitch.view-half.camera-top{
+    transform:perspective(1200px) rotateX(0deg) scale(.94)!important;
+  }
+  #staticArena .static-pitch.view-half.camera-tactical{
+    transform:perspective(1200px) rotateX(38deg) scale(1.04)!important;
+  }
+}
+
+@media(max-width:420px){
+  #staticArena .static-pitch.view-full.camera-broadcast{transform:perspective(1200px) rotateX(17deg) scale(1)!important;}
+  #staticArena .static-pitch.view-full.camera-top{transform:perspective(1200px) rotateX(0deg) scale(.94)!important;}
+  #staticArena .static-pitch.view-full.camera-tactical{transform:perspective(1200px) rotateX(38deg) scale(1.04)!important;}
+  #staticArena .static-pitch.view-half.camera-broadcast{transform:perspective(1200px) rotateX(52deg) scale(1)!important;}
+  #staticArena .static-pitch.view-half.camera-top{transform:perspective(1200px) rotateX(0deg) scale(.94)!important;}
+  #staticArena .static-pitch.view-half.camera-tactical{transform:perspective(1200px) rotateX(38deg) scale(1.04)!important;}
+}
