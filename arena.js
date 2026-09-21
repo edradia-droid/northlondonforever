@@ -69,13 +69,41 @@ function artworkPathForView(artwork){
 
 let artworkRenderVersion=0;
 
-function renderStaticPlayerPhotos(){
+async function renderStaticPlayerPhotos(){
   // The HTML static-art layer is the single authoritative artwork layer.
-  // Never create a second set of player images here; doing so duplicates players
-  // and also puts artwork inside the transformed pitch on mobile browsers.
+  // Bind the generated manifest directly to the existing 22 image elements.
+  // This deliberately does not create another player layer.
   if(!staticPitch) return;
+
   staticPitch.classList.toggle("view-full",playerView==="full");
   staticPitch.classList.toggle("view-half",playerView==="half");
+
+  const manifest=await loadArtworkManifest();
+  const images=document.querySelectorAll("#staticArena .static-art");
+  images.forEach(img=>{
+    const key=img.dataset.artKey;
+    const mode=img.dataset.artMode;
+    const asset=manifest && manifest[key] ? manifest[key][mode] : null;
+    const active=mode===playerView;
+
+    img.style.display=active && asset ? "block" : "none";
+    img.style.visibility=active && asset ? "visible" : "hidden";
+    img.style.opacity=active && asset ? "1" : "0";
+    img.style.position="absolute";
+    img.style.pointerEvents="none";
+
+    if(asset && img.getAttribute("src")!==asset){
+      img.setAttribute("src",asset);
+    }
+
+    img.onload=()=>{ 
+      if(img.dataset.artMode===playerView){
+        img.style.display="block";
+        img.style.visibility="visible";
+        img.style.opacity="1";
+      }
+    };
+  });
 }
 function applyCamera(){
   if(!staticPitch) return;
@@ -116,3 +144,4 @@ const zoomOut=document.querySelector("#zoomOut"); if(zoomOut) zoomOut.onclick=()
 
 setCamera("broadcast");
 setPlayerView("full");
+renderStaticPlayerPhotos();
