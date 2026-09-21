@@ -145,15 +145,15 @@ jobs:
               const fullExt = (path.extname(new URL(fullUrl).pathname) || '.png').toLowerCase();
               const halfExt = (path.extname(new URL(halfUrl).pathname) || '.png').toLowerCase();
 
-              const fullFile = key + '-full' + fullExt;
-              const halfFile = key + '-half' + halfExt;
+              const fullFile = key + '-cutout' + fullExt;
+              const halfFile = key + '-render' + halfExt;
 
               await download(fullUrl, fullFile);
               await download(halfUrl, halfFile);
 
               manifest[key] = {
-                full: './player-assets/' + fullFile,
-                half: './player-assets/' + halfFile,
+                cutout: './player-assets/' + fullFile,
+                render: './player-assets/' + halfFile,
                 playerId: id,
                 sourceName: name
               };
@@ -174,8 +174,8 @@ jobs:
           NODE
 
           test "$(node -e "const m=require('./_site/3d-arena/player-assets/manifest.json'); console.log(Object.keys(m).length)")" -eq 20
-          test "$(find _site/3d-arena/player-assets -type f -name '*-full.*' | wc -l)" -eq 20
-          test "$(find _site/3d-arena/player-assets -type f -name '*-half.*' | wc -l)" -eq 20
+          test "$(find _site/3d-arena/player-assets -type f -name '*-cutout.*' | wc -l)" -eq 20
+          test "$(find _site/3d-arena/player-assets -type f -name '*-render.*' | wc -l)" -eq 20
       - name: Verify Arena artwork package
         run: |
           test -s _site/3d-arena/player-assets/manifest.json
@@ -187,8 +187,8 @@ jobs:
           const keys = Object.keys(manifest);
           if (keys.length !== 20) throw new Error('Expected 20 players, found ' + keys.length);
           for (const [key, value] of Object.entries(manifest)) {
-            if (!value || !value.full || !value.half) throw new Error('Missing full/half asset for ' + key);
-            for (const mode of ['full', 'half']) {
+            if (!value || !value.cutout || !value.render) throw new Error('Missing cutout/render asset for ' + key);
+            for (const mode of ['cutout', 'render']) {
               const rel = value[mode].replace(/^\.\//, '');
               if (!fs.existsSync(path.join('_site/3d-arena', rel))) {
                 throw new Error('Missing file for ' + key + ' ' + mode + ': ' + rel);
