@@ -31,6 +31,7 @@ const normalizeArtworkName=value=>String(value||"")
   .toLowerCase();
 
 let artworkManifestPromise=null;
+let playerView="full";
 async function loadArtworkManifest(){
   if(artworkManifestPromise) return artworkManifestPromise;
   artworkManifestPromise=fetch("./player-assets/manifest.json?v=20260920",{cache:"no-store"})
@@ -45,7 +46,8 @@ async function renderStaticPlayerPhotos(){
   staticPitch.querySelectorAll(".arena-player-hit,.arena-photo-player").forEach(el=>el.remove());
 
   DATA.starters.forEach(p=>{
-    const url=manifest[normalizeArtworkName(p.name)];
+    const artwork=manifest[normalizeArtworkName(p.name)];
+    const url=typeof artwork==="string" ? artwork : artwork?.[playerView];
     if(!url) return;
 
     const hit=document.createElement("button");
@@ -67,10 +69,10 @@ async function renderStaticPlayerPhotos(){
     photo.draggable=false;
     photo.loading="eager";
     photo.src=url;
-    photo.style.height=(p.pos==="GK"?"145px":"155px");
+    photo.style.height=playerView==="full" ? (p.pos==="GK"?"175px":"185px") : (p.pos==="GK"?"125px":"135px");
     photo.style.left="50%";
     photo.style.top="100%";
-    photo.style.transform="translate(-50%,-100%) rotateX(-52deg)";
+    photo.style.transform="translate(-50%,-100%)";
     photo.style.pointerEvents="none";
 
     hit.appendChild(photo);
@@ -91,6 +93,13 @@ async function renderStaticPlayerPhotos(){
     staticPitch.appendChild(hit);
   });
 }
+function setPlayerView(view){
+  playerView=view==="half" ? "half" : "full";
+  document.querySelectorAll("[data-player-view]").forEach(b=>b.classList.toggle("active",b.dataset.playerView===playerView));
+  renderStaticPlayerPhotos();
+}
+
+document.querySelectorAll("[data-player-view]").forEach(b=>b.addEventListener("click",()=>setPlayerView(b.dataset.playerView)));
 renderStaticPlayerPhotos();
 
 function initCssFallback(){
@@ -170,7 +179,8 @@ if(typeof THREE==="undefined"){
 
     async function resolvePlayerRender(p){
       const manifest=await loadArtworkManifest();
-      return manifest[normalizeArtworkName(p.name)] || null;
+      const artwork=manifest[normalizeArtworkName(p.name)];
+      return typeof artwork==="string" ? artwork : artwork?.[playerView] || null;
     }
 
     async function createPlayer(p){
