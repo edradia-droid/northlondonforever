@@ -56,3 +56,41 @@
 /* Final Full Body correction: counter the pitch's 3D tilt so the complete cutout remains upright. */
 .static-pitch.view-full .arena-player-hit .arena-photo-player{transform:translate(-50%,-100%) rotateX(-52deg)!important;transform-origin:50% 100%!important;object-fit:contain!important;object-position:center bottom!important;overflow:visible!important;}
 .static-pitch.view-full .arena-player-hit{overflow:visible!important;}
+
+
+/* FINAL FULL-BODY DISPLAY FIX v2026-09-21-14
+   Full Body uses a shallow pitch tilt and an equal/opposite player tilt.
+   This keeps the cutout standing upright while preserving the 3D field presentation. */
+.static-pitch.view-full{
+  transform:perspective(1000px) rotateX(18deg) rotateZ(0deg)!important;
+  transform-style:preserve-3d!important;
+  overflow:visible!important;
+}
+.static-pitch.view-full .arena-player-hit{
+  height:250px!important;
+  overflow:visible!important;
+  transform:translate(-50%,-100%)!important;
+  transform-origin:50% 100%!important;
+  transform-style:preserve-3d!important;
+}
+.static-pitch.view-full .arena-player-hit .arena-photo-player{
+  height:250px!important;
+  max-width:110px!important;
+  width:auto!important;
+  transform:translate(-50%,-100%) rotateX(-18deg)!important;
+  transform-origin:50% 100%!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  overflow:visible!important;
+  filter:drop-shadow(0 10px 6px rgba(0,0,0,.48))!important;
+}
+@media(max-width:700px){
+  .static-pitch.view-full .arena-player-hit{
+    height:190px!important;
+  }
+  .static-pitch.view-full .arena-player-hit .arena-photo-player{
+    height:190px!important;
+    max-width:84px!important;
+    transform:translate(-50%,-100%) rotateX(-18deg)!important;
+  }
+}
