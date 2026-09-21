@@ -59,6 +59,7 @@ jobs:
         run: |
           rm -rf _site/3d-arena/player-assets
           mkdir -p _site/3d-arena/player-assets
+          cp player-assets/bukayosaka-half.png _site/3d-arena/player-assets/bukayosaka-half.png
           python3 -m pip install --disable-pip-version-check -q opencv-python-headless pillow
 
           node <<'NODE'
