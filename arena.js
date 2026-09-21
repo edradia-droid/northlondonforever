@@ -55,6 +55,7 @@ loadStaticArtworkFromManifest();
 let playerView="full";
 let cameraMode="broadcast";
 let zoom=1;
+ensureMobileArtworkLayer();
 
 const normalizeArtworkName=value=>String(value||"")
   .replace(/[Øø]/g,"o")
