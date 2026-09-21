@@ -82,6 +82,7 @@ async function renderStaticPlayerPhotos(){
     const key=img.dataset.artKey;
     const mode=img.dataset.artMode;
     const boundAsset=img.dataset.boundAsset || img.getAttribute("src") || "";
+    const localAsset=img.dataset.localSrc || manifestEntry?.[mode] || "";
     const manifestEntry=manifest && manifest[key] ? manifest[key] : null;
     const manifestAsset=manifestEntry ? manifestEntry[mode] : "";
     const remoteAsset=manifestEntry ? manifestEntry["remote"+(mode==="full"?"Full":"Half")] : "";
@@ -108,6 +109,11 @@ async function renderStaticPlayerPhotos(){
     img.onerror=()=>{
       const current=img.getAttribute("src")||"";
       const bound=img.dataset.boundAsset || "";
+      if(localAsset && current!==localAsset && !img.dataset.localRetry){
+        img.dataset.localRetry="1";
+        img.setAttribute("src",localAsset);
+        return;
+      }
       if(bound && current!==bound && !img.dataset.boundRetry){
         img.dataset.boundRetry="1";
         img.setAttribute("src",bound);
