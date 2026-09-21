@@ -35,7 +35,7 @@ jobs:
       - name: Fetch latest 3D Arena branch
         run: |
           git fetch origin 3d-arena-publish --depth=1
-          git archive origin/3d-arena-publish index.html arena.css arena.js README.md | tar -x
+          git archive origin/3d-arena-publish index.html arena.css arena.js README.md player-assets/bukayosaka-half.png | tar -x
           mkdir -p _arena_source
           cp index.html arena.css arena.js README.md _arena_source/
 
@@ -145,13 +145,13 @@ jobs:
               if (!halfUrl) throw new Error('Missing Half Body Player Render for ' + name);
 
               const fullExt = (path.extname(new URL(fullUrl).pathname) || '.png').toLowerCase();
-              const halfExt = (path.extname(new URL(halfUrl).pathname) || '.png').toLowerCase();
+              const halfExt = name === 'Bukayo Saka' ? '.png' : (path.extname(new URL(halfUrl).pathname) || '.png').toLowerCase();
 
               const fullFile = key + '-full' + fullExt;
               const halfFile = key + '-half' + halfExt;
 
               await download(fullUrl, fullFile);
-              await download(halfUrl, halfFile);
+              if (name !== 'Bukayo Saka') await download(halfUrl, halfFile);
 
               manifest[key] = {
                 full: './player-assets/' + fullFile,
@@ -166,7 +166,7 @@ jobs:
             }
 
             manifest.bukayosaka.half = './player-assets/bukayosaka-half.png';
-            manifest.bukayosaka.remoteHalf = 'https://i.postimg.cc/9Q9mHqjv/image-c170763d.jpg';
+            manifest.bukayosaka.remoteHalf = '';
 
             fs.writeFileSync(
               path.join(dir, 'manifest.json'),
@@ -195,45 +195,6 @@ jobs:
             echo "Unexpected artwork filename detected"
             exit 1
           fi
-
-      - name: Make supplied Saka artwork transparent
-        run: |
-          python3 - <<'PY'
-          import cv2
-          import numpy as np
-          from PIL import Image
-
-          src = '_site/3d-arena/player-assets/bukayosaka-half.jpg'
-          out = '_site/3d-arena/player-assets/bukayosaka-half.png'
-          img = cv2.imread(src, cv2.IMREAD_COLOR)
-          if img is None:
-              raise SystemExit('Could not read supplied Saka image')
-
-          mask = np.zeros(img.shape[:2], np.uint8)
-          bgd = np.zeros((1, 65), np.float64)
-          fgd = np.zeros((1, 65), np.float64)
-          cv2.grabCut(img, mask, (95, 5, 820, 1019), bgd, fgd, 8, cv2.GC_INIT_WITH_RECT)
-
-          alpha = np.where((mask == 2) | (mask == 0), 0, 255).astype(np.uint8)
-          rgba = cv2.cvtColor(img, cv2.COLOR_BGR2RGBA)
-          rgba[:, :, 3] = alpha
-          Image.fromarray(rgba).save(out)
-          PY
-
-          rm -f _site/3d-arena/player-assets/bukayosaka-half.jpg
-
-          node <<'NODE'
-          const fs = require('fs');
-          const path = './_site/3d-arena/player-assets';
-          const manifestPath = path + '/manifest.json';
-          const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-          manifest.bukayosaka.half = './player-assets/bukayosaka-half.png';
-          manifest.bukayosaka.remoteHalf = 'https://i.postimg.cc/9Q9mHqjv/image-c170763d.jpg';
-          fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
-          fs.writeFileSync(path + '/manifest.js', 'window.ARENA_ARTWORK_MANIFEST=' + JSON.stringify(manifest) + ';');
-          NODE
-
-          test -s _site/3d-arena/player-assets/bukayosaka-half.png
 
       - name: Bind generated artwork directly into Arena HTML
         run: |
