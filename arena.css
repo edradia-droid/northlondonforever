@@ -204,3 +204,43 @@
   .static-pitch.view-half .arena-player-hit{width:68px!important;height:135px!important;}
   .static-pitch.view-half .arena-player-hit .arena-photo-player{height:120px!important;max-width:68px!important;}
 }
+
+
+/* FINAL HALF-BODY RESTORE v2026-09-21
+   Half Body is the real Player Render asset only.
+   Never use thumbnail artwork and never flatten the render. */
+.static-pitch.view-half .arena-player-hit{
+  width:92px!important;
+  height:175px!important;
+  overflow:visible!important;
+  transform:translate(-50%,-100%)!important;
+  transform-origin:50% 100%!important;
+}
+.static-pitch.view-half .arena-player-hit .arena-photo-player{
+  width:auto!important;
+  height:160px!important;
+  max-width:92px!important;
+  left:50%!important;
+  top:100%!important;
+  transform:translate(-50%,-100%)!important;
+  transform-origin:50% 100%!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  overflow:visible!important;
+  filter:drop-shadow(0 7px 5px rgba(0,0,0,.38))!important;
+}
+.static-pitch.view-half.camera-broadcast .arena-player-hit .arena-photo-player,
+.static-pitch.view-half.camera-top .arena-player-hit .arena-photo-player,
+.static-pitch.view-half.camera-tactical .arena-player-hit .arena-photo-player{
+  transform:translate(-50%,-100%)!important;
+}
+@media(max-width:700px){
+  .static-pitch.view-half .arena-player-hit{
+    width:76px!important;
+    height:145px!important;
+  }
+  .static-pitch.view-half .arena-player-hit .arena-photo-player{
+    height:132px!important;
+    max-width:76px!important;
+  }
+}
