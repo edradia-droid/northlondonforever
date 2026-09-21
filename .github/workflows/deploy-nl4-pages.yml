@@ -54,128 +54,97 @@ jobs:
           echo "Arena:"
           ls -lah _site/3d-arena/
 
-      - name: Build dedicated Full Body and Half Body artwork
+      - name: Build true Full Body and restore dedicated Half Body artwork
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          rm -rf _site/3d-arena/player-assets
-          mkdir -p _site/3d-arena/player-assets
+          rm -rf _site/3d-arena/player-assets /tmp/arena-assets
+          mkdir -p _site/3d-arena/player-assets /tmp/arena-assets
+
+          # Restore the known-good dedicated Half Body package. These are the
+          # actual half-body assets used before the renderer was rebuilt.
+          curl -fL \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/10617978569/zip" \
+            -o /tmp/arena-assets/known-good-pages.zip
+          unzip -q /tmp/arena-assets/known-good-pages.zip -d /tmp/arena-assets/pages
+          mkdir -p /tmp/arena-assets/extracted
+          tar -xf /tmp/arena-assets/pages/artifact.tar -C /tmp/arena-assets/extracted
+          cp -a /tmp/arena-assets/extracted/3d-arena/player-assets/. _site/3d-arena/player-assets/
 
           node <<'NODE'
           const fs = require('fs');
           const path = require('path');
 
           const players = {
-            'David Raya':'34148681',
-            'Jurriën Timber':'34172505',
-            'Ezri Konsa':'34161727',
-            'Gabriel':'34172252',
-            'Riccardo Calafiori':'34175834',
-            'Declan Rice':'34161584',
-            'Bruno Guimarães':'34172187',
-            'Martin Ødegaard':'34159218',
-            'Bukayo Saka':'34169884',
-            'Christos Tzolis':'34193337',
-            'Kai Havertz':'34169226',
-            'Kepa Arrizabalaga':'34160650',
-            'Piero Hincapié':'34182526',
-            'Eberechi Eze':'34172278',
-            'Viktor Gyökeres':'34173576',
-            'Noni Madueke':'34170520',
-            'Mikel Merino':'34161591',
-            'Martín Zubimendi':'34172850',
-            'Myles Lewis-Skelly':'34244630',
-            'Max Dowman':'34432407'
+            'David Raya':'34148681','Jurriën Timber':'34172505','Ezri Konsa':'34161727',
+            'Gabriel':'34172252','Riccardo Calafiori':'34175834','Declan Rice':'34161584',
+            'Bruno Guimarães':'34172187','Martin Ødegaard':'34159218','Bukayo Saka':'34169884',
+            'Christos Tzolis':'34193337','Kai Havertz':'34169226','Kepa Arrizabalaga':'34160650',
+            'Piero Hincapié':'34182526','Eberechi Eze':'34172278','Viktor Gyökeres':'34173576',
+            'Noni Madueke':'34170520','Mikel Merino':'34161591','Martín Zubimendi':'34172850',
+            'Myles Lewis-Skelly':'34244630','Max Dowman':'34432407'
           };
 
           const keys = {
-            'David Raya':'davidraya',
-            'Jurriën Timber':'jurrientimber',
-            'Ezri Konsa':'ezrikonsa',
-            'Gabriel':'gabriel',
-            'Riccardo Calafiori':'ricardocalafiori',
-            'Declan Rice':'declanrice',
-            'Bruno Guimarães':'brunoguimaraes',
-            'Martin Ødegaard':'martinodegaard',
-            'Bukayo Saka':'bukayosaka',
-            'Christos Tzolis':'christostzolis',
-            'Kai Havertz':'kaihavertz',
-            'Kepa Arrizabalaga':'kepaarrizabalaga',
-            'Piero Hincapié':'pierohincapie',
-            'Eberechi Eze':'eberechieze',
-            'Viktor Gyökeres':'viktorgyokeres',
-            'Noni Madueke':'nonimadueke',
-            'Mikel Merino':'mikelmerino',
-            'Martín Zubimendi':'martinzubimendi',
-            'Myles Lewis-Skelly':'myleslewisskelly',
-            'Max Dowman':'maxdowman'
+            'David Raya':'davidraya','Jurriën Timber':'jurrientimber','Ezri Konsa':'ezrikonsa',
+            'Gabriel':'gabriel','Riccardo Calafiori':'ricardocalafiori','Declan Rice':'declanrice',
+            'Bruno Guimarães':'brunoguimaraes','Martin Ødegaard':'martinodegaard','Bukayo Saka':'bukayosaka',
+            'Christos Tzolis':'christostzolis','Kai Havertz':'kaihavertz','Kepa Arrizabalaga':'kepaarrizabalaga',
+            'Piero Hincapié':'pierohincapie','Eberechi Eze':'eberechieze','Viktor Gyökeres':'viktorgyokeres',
+            'Noni Madueke':'nonimadueke','Mikel Merino':'mikelmerino','Martín Zubimendi':'martinzubimendi',
+            'Myles Lewis-Skelly':'myleslewisskelly','Max Dowman':'maxdowman'
           };
 
           const dir = '_site/3d-arena/player-assets';
           const manifest = {};
-
           async function getPlayer(id) {
-            const response = await fetch(
-              'https://www.thesportsdb.com/api/v1/json/123/lookupplayer.php?id=' + id
-            );
-            if (!response.ok) throw new Error('API ' + response.status + ' for ' + id);
-            const json = await response.json();
-            const list = Array.isArray(json.players) ? json.players : [];
-            return list[0] || null;
+            const r = await fetch('https://www.thesportsdb.com/api/v1/json/123/lookupplayer.php?id=' + id);
+            if (!r.ok) throw new Error('API ' + r.status + ' for ' + id);
+            const j = await r.json();
+            return Array.isArray(j.players) ? j.players[0] : null;
           }
-
           async function download(url, filename) {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error('image ' + response.status + ' for ' + filename);
-            fs.writeFileSync(path.join(dir, filename), Buffer.from(await response.arrayBuffer()));
+            const r = await fetch(url);
+            if (!r.ok) throw new Error('image ' + r.status + ' for ' + filename);
+            fs.writeFileSync(path.join(dir, filename), Buffer.from(await r.arrayBuffer()));
           }
 
           (async () => {
-            for (const [name, id] of Object.entries(players)) {
-              const key = keys[name];
+            for (const [name,id] of Object.entries(players)) {
               const player = await getPlayer(id);
-              if (!player) throw new Error('No player data for ' + name);
-
-              // Full Body is the dedicated cutout.
-              const fullUrl = player.strCutout || null;
-              // Half Body is the dedicated Player Render.
-              const halfUrl = player.strRender || null;
-
-              if (!fullUrl) throw new Error('Missing Full Body cutout for ' + name);
-              if (!halfUrl) throw new Error('Missing Half Body Player Render for ' + name);
-
-              const fullExt = (path.extname(new URL(fullUrl).pathname) || '.png').toLowerCase();
-              const halfExt = (path.extname(new URL(halfUrl).pathname) || '.png').toLowerCase();
-
-              const fullFile = key + '-cutout' + fullExt;
-              const halfFile = key + '-render' + halfExt;
-
+              if (!player || !player.strCutout) throw new Error('Missing Full Body cutout for ' + name);
+              const key = keys[name];
+              const fullUrl = player.strCutout;
+              const ext = (path.extname(new URL(fullUrl).pathname) || '.png').toLowerCase();
+              const fullFile = key + '-full' + ext;
               await download(fullUrl, fullFile);
-              await download(halfUrl, halfFile);
+
+              const halfFile = ['png','jpg','jpeg','webp']
+                .map(e => key + '-half.' + e)
+                .find(file => fs.existsSync(path.join(dir,file)));
+              if (!halfFile) throw new Error('Missing restored Half Body for ' + name);
 
               manifest[key] = {
-                cutout: './player-assets/' + fullFile,
-                render: './player-assets/' + halfFile,
+                full: './player-assets/' + fullFile,
+                half: './player-assets/' + halfFile,
                 playerId: id,
                 sourceName: name
               };
-
-              console.log('Arena artwork ready: ' + name);
             }
-
-            fs.writeFileSync(
-              path.join(dir, 'manifest.json'),
-              JSON.stringify(manifest, null, 2)
-            );
-
-            console.log('Verified 20 players with dedicated Full Body cutouts and dedicated Half Body Player Renders.');
-          })().catch(error => {
-            console.error(error);
-            process.exit(1);
-          });
+            fs.writeFileSync(path.join(dir,'manifest.json'), JSON.stringify(manifest,null,2));
+            console.log('Verified 20 true Full Body cutouts + 20 restored dedicated Half Body assets.');
+          })().catch(e => { console.error(e); process.exit(1); });
           NODE
 
           test "$(node -e "const m=require('./_site/3d-arena/player-assets/manifest.json'); console.log(Object.keys(m).length)")" -eq 20
-          test "$(find _site/3d-arena/player-assets -type f -name '*-cutout.*' | wc -l)" -eq 20
-          test "$(find _site/3d-arena/player-assets -type f -name '*-render.*' | wc -l)" -eq 20
+          test "$(find _site/3d-arena/player-assets -type f -name '*-full.*' | wc -l)" -eq 20
+          test "$(find _site/3d-arena/player-assets -type f -name '*-half.*' | wc -l)" -eq 20
+          if find _site/3d-arena/player-assets -type f | grep -Ei 'thumb|thumbnail'; then
+            echo "Unexpected thumbnail artwork detected"
+            exit 1
+          fi
       - name: Verify Arena artwork package
         run: |
           test -s _site/3d-arena/player-assets/manifest.json
