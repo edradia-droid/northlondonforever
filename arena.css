@@ -171,7 +171,7 @@
   filter:drop-shadow(0 10px 6px rgba(0,0,0,.48))!important;
 }
 
-/* Half Body: use the dedicated render only; never display a thumbnail as a substitute. */
+/* Half Body: dedicated Player Render only. */
 .static-pitch.view-half .arena-player-hit{
   width:80px!important;
   height:160px!important;
@@ -208,7 +208,7 @@
 
 /* FINAL HALF-BODY RESTORE v2026-09-21
    Half Body is the real Player Render asset only.
-   Never use thumbnail artwork and never flatten the render. */
+   Dedicated Player Render only. */
 .static-pitch.view-half .arena-player-hit{
   width:92px!important;
   height:175px!important;
