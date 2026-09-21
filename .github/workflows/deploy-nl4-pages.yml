@@ -98,17 +98,22 @@ jobs:
                 return true;
               });
               const arsenalPlayers = list.filter(x => String(x.strTeam || '').toLowerCase().includes('arsenal'));
-              const player =
-                arsenalPlayers.find(x => normalize(x.strPlayer) === key) ||
-                arsenalPlayers.find(x => name === 'Gabriel' && /gabriel.*magalh/i.test(String(x.strPlayer || ''))) ||
-                arsenalPlayers[0] ||
-                list.find(x => normalize(x.strPlayer) === key) ||
-                list[0];
-              // TheSportsDB cutouts are the standing/full-body artwork; rendered images are used for the half-body view.
-              const fullUrl = player && (player.strCutout || player.strRender || player.strThumb);
-              const halfUrl = player && (player.strRender || player.strThumb || player.strCutout);
-              if (!fullUrl && !halfUrl) throw new Error('no artwork');
 
+              // Never fall back to an arbitrary search result. A fallback is what can
+              // make one player's half-body artwork appear to belong to another player.
+              const exactArsenal =
+                arsenalPlayers.find(x => normalize(x.strPlayer) === key) ||
+                (name === 'Gabriel'
+                  ? arsenalPlayers.find(x => /gabriel.*magalh/i.test(String(x.strPlayer || '')))
+                  : null);
+
+              const player = exactArsenal;
+
+              if (!player) {
+                throw new Error('no exact Arsenal player match for ' + name);
+              }
+
+              console.log('Matched ' + name + ' -> ' + player.strPlayer + ' [' + player.idPlayer + ']');
               async function saveArtwork(url, suffix) {
                 if (!url) return null;
                 const imageResponse = await fetch(url);
@@ -125,7 +130,7 @@ jobs:
 
               const full = await saveArtwork(fullUrl, 'full');
               const half = await saveArtwork(halfUrl, 'half');
-              manifest[key] = {full, half};
+              manifest[key] = {full, half, playerId: String(player.idPlayer || ''), sourceName: String(player.strPlayer || '')};
               console.log('Downloaded ' + name + ' (full + half)');
             } catch (error) {
               console.log('Artwork unavailable for ' + name + ': ' + error.message);
