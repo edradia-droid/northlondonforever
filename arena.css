@@ -856,3 +856,37 @@
     max-width:98px!important;
   }
 }
+
+
+/* MOBILE: remove all pitch marking lines/boxes/circle while keeping the grass surface */
+@media(max-width:700px){
+  #staticArena .static-pitch > .pitch-line,
+  #staticArena .static-pitch > .pitch-circle,
+  #staticArena .static-pitch > .pitch-box,
+  #staticArena .static-pitch > .pitch-spot{
+    display:none!important;
+  }
+}
+
+/* SAKA: restore the supplied local artwork in the full-body view too */
+#staticArena .static-art-layer .static-art-full[data-art-key="bukayosaka"]{
+  width:auto!important;
+  height:220px!important;
+  max-width:110px!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  transform:translate3d(-50%,-100%,0)!important;
+}
+@media(max-width:700px){
+  #staticArena .static-art-layer .static-art-full[data-art-key="bukayosaka"]{
+    height:190px!important;
+    max-width:98px!important;
+  }
+}
+@media(max-width:420px){
+  #staticArena .static-art-layer .static-art-full[data-art-key="bukayosaka"]{
+    height:195px!important;
+    max-width:98px!important;
+  }
+}
