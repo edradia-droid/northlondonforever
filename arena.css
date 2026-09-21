@@ -137,3 +137,70 @@
 .static-pitch.view-full.camera-tactical .arena-player-hit .arena-photo-player{
   transform:translate(-50%,-100%) rotateX(0deg)!important;
 }
+/* ARENA AUTHORITATIVE PLAYER ARTWORK MODES v2026-09-21 */
+.static-pitch.view-full{
+  transform:perspective(1000px) rotateX(18deg) rotateZ(0deg)!important;
+  transform-style:preserve-3d!important;
+  overflow:visible!important;
+}
+.static-pitch.view-half{
+  transform:perspective(1000px) rotateX(52deg) rotateZ(0deg)!important;
+  transform-style:preserve-3d!important;
+  overflow:visible!important;
+}
+
+/* Full Body: the dedicated cutout is shown at its natural upright orientation. */
+.static-pitch.view-full .arena-player-hit{
+  width:110px!important;
+  height:260px!important;
+  overflow:visible!important;
+  transform:translate(-50%,-100%)!important;
+  transform-origin:50% 100%!important;
+}
+.static-pitch.view-full .arena-player-hit .arena-photo-player{
+  width:auto!important;
+  height:250px!important;
+  max-width:110px!important;
+  left:50%!important;
+  top:100%!important;
+  transform:translate(-50%,-100%)!important;
+  transform-origin:50% 100%!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  overflow:visible!important;
+  filter:drop-shadow(0 10px 6px rgba(0,0,0,.48))!important;
+}
+
+/* Half Body: use the dedicated render only; never display a thumbnail as a substitute. */
+.static-pitch.view-half .arena-player-hit{
+  width:80px!important;
+  height:160px!important;
+  overflow:visible!important;
+  transform:translate(-50%,-100%)!important;
+}
+.static-pitch.view-half .arena-player-hit .arena-photo-player{
+  width:auto!important;
+  height:145px!important;
+  max-width:80px!important;
+  left:50%!important;
+  top:100%!important;
+  transform:translate(-50%,-100%) rotateX(-52deg)!important;
+  transform-origin:50% 100%!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  overflow:visible!important;
+}
+
+.static-pitch.view-full.camera-broadcast{transform:perspective(1000px) rotateX(18deg) scale(1)!important;}
+.static-pitch.view-full.camera-top{transform:perspective(1000px) rotateX(0deg) scale(.94)!important;}
+.static-pitch.view-full.camera-tactical{transform:perspective(1000px) rotateX(38deg) scale(1.04)!important;}
+.static-pitch.view-half.camera-broadcast{transform:perspective(1000px) rotateX(52deg) scale(1)!important;}
+.static-pitch.view-half.camera-top{transform:perspective(1000px) rotateX(0deg) scale(.94)!important;}
+.static-pitch.view-half.camera-tactical{transform:perspective(1000px) rotateX(38deg) scale(1.04)!important;}
+
+@media(max-width:700px){
+  .static-pitch.view-full .arena-player-hit{width:82px!important;height:205px!important;}
+  .static-pitch.view-full .arena-player-hit .arena-photo-player{height:195px!important;max-width:82px!important;}
+  .static-pitch.view-half .arena-player-hit{width:68px!important;height:135px!important;}
+  .static-pitch.view-half .arena-player-hit .arena-photo-player{height:120px!important;max-width:68px!important;}
+}
