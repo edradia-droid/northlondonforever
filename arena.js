@@ -57,7 +57,7 @@ async function renderStaticPlayerPhotos(){
 
   DATA.starters.forEach(p=>{
     const artwork=manifest[normalizeArtworkName(p.name)];
-    const url=typeof artwork==="string" ? artwork : artwork?.[playerView];
+    const url=artwork && typeof artwork==="object" ? artwork[playerView] : null;
     if(!url) return;
 
     const hit=document.createElement("button");
