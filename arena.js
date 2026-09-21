@@ -128,6 +128,23 @@ async function renderStaticPlayerPhotos(){
       }
     };
     if(img.complete && img.naturalWidth===0) showFallback();
+
+    // Mobile presentation labels: real artwork remains the visual player,
+    // labels are a separate flat layer positioned from the same artwork anchor.
+    if(img.dataset.artMode===playerView){
+      const oldLabel=img.parentElement && img.parentElement.querySelector('.mobile-player-label[data-for="'+key+'"]');
+      if(oldLabel) oldLabel.remove();
+      const player=DATA.starters.find(p=>normalizeArtworkName(p.name)===key);
+      if(player && window.matchMedia("(max-width:700px)").matches){
+        const label=document.createElement("div");
+        label.className="mobile-player-label";
+        label.dataset.for=key;
+        label.style.left=img.style.left;
+        label.style.top=img.style.top;
+        label.innerHTML='<small>#'+player.number+' · '+player.pos+'</small><strong>'+player.name.split(" ").pop()+'</strong>';
+        img.parentElement.appendChild(label);
+      }
+    }
   });
 }
 function applyCamera(){
