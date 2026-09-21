@@ -34,7 +34,7 @@ let artworkManifestPromise=null;
 let playerView="full";
 async function loadArtworkManifest(){
   if(artworkManifestPromise) return artworkManifestPromise;
-  artworkManifestPromise=fetch("./player-assets/manifest.json?v=20260920",{cache:"no-store"})
+  artworkManifestPromise=fetch("./player-assets/manifest.json?v=20260921-8",{cache:"no-store"})
     .then(res=>res.ok?res.json():{})
     .catch(()=>({}));
   return artworkManifestPromise;
@@ -95,12 +95,16 @@ async function renderStaticPlayerPhotos(){
 }
 function setPlayerView(view){
   playerView=view==="half" ? "half" : "full";
+  if(staticPitch){
+    staticPitch.classList.toggle("view-full",playerView==="full");
+    staticPitch.classList.toggle("view-half",playerView==="half");
+  }
   document.querySelectorAll("[data-player-view]").forEach(b=>b.classList.toggle("active",b.dataset.playerView===playerView));
   renderStaticPlayerPhotos();
 }
 
 document.querySelectorAll("[data-player-view]").forEach(b=>b.addEventListener("click",()=>setPlayerView(b.dataset.playerView)));
-renderStaticPlayerPhotos();
+setPlayerView("full");
 
 function initCssFallback(){
   if(staticArena) staticArena.style.display="grid";
