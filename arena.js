@@ -74,7 +74,19 @@ async function renderStaticPlayerPhotos(){
   const renderVersion=++artworkRenderVersion;
   const requestedView=playerView;
   staticPitch.querySelectorAll(".arena-player-hit").forEach(el=>el.remove());
-  const manifest=await loadArtworkManifest();
+  let manifest=await loadArtworkManifest();
+  // Never leave the pitch empty if the manifest script is unavailable.
+  // The deployment always packages these canonical local filenames.
+  if(!manifest || typeof manifest!=="object" || Object.keys(manifest).length===0){
+    manifest={};
+    for(const p of [...DATA.starters,...DATA.bench]){
+      const key=normalizeArtworkName(p.name);
+      manifest[key]={
+        full:"./player-assets/"+key+"-full.png",
+        half:"./player-assets/"+key+"-half.png"
+      };
+    }
+  }
 
   // A previous Full Body render must never be allowed to finish after a
   // Half Body selection and put stale Full Body images back on the pitch.
@@ -94,7 +106,7 @@ async function renderStaticPlayerPhotos(){
 
     const photo=document.createElement("img");
     photo.className="arena-photo-player"; photo.alt=""; photo.draggable=false;
-    photo.loading="eager"; photo.src=url;
+    photo.loading="eager"; photo.src=url + (url.includes("?") ? "&" : "?") + "v=20260921-33";
     photo.style.height=playerView==="full"?"250px":"145px";
     photo.style.left="50%"; photo.style.top="100%"; photo.style.pointerEvents="none";
 
