@@ -41,3 +41,6 @@
 .player-view-toggle{display:flex;align-items:center;gap:4px;padding:4px;border:1px solid var(--line);background:rgba(255,255,255,.05);border-radius:12px}.player-view-toggle span{font-size:8px;color:var(--muted);font-weight:900;letter-spacing:.08em;padding:0 4px}.player-view-toggle button{border:0;background:transparent;padding:6px 8px;border-radius:8px;font-size:9px;font-weight:900;cursor:pointer}.player-view-toggle button.active{background:var(--red);color:#fff}.player-view-toggle button:hover{background:rgba(255,255,255,.12)}
 .arena-player-hit .arena-photo-player{transform:translate(-50%,-100%) rotateX(-52deg)!important;transform-origin:50% 100%}.arena-player-hit{transform:translate(-50%,-100%)!important;transform-style:preserve-3d!important}.arena-player-hit .arena-photo-player{object-fit:contain;object-position:center bottom}
 @media(max-width:700px){.player-view-toggle span{display:none}.player-view-toggle button{padding:6px 7px;font-size:8px}}
+
+/* Full-body mode: artwork remains vertical while the pitch supplies perspective. */
+.arena-player-hit .arena-photo-player{transform:translate(-50%,-100%)!important;transform-origin:50% 100%!important;}
