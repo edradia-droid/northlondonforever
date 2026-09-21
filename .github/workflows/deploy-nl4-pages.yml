@@ -218,7 +218,7 @@ jobs:
             if (!remote) throw new Error('Missing remote artwork for ' + key + ' ' + mode);
             const local = asset;
             const sourceMatch = rest.match(/\bsrc="([^"]*)"/);
-            const suppliedTestSrc = key === 'bukayosaka' && mode === 'half' && sourceMatch && sourceMatch[1].startsWith('./player-assets/')
+            const suppliedTestSrc = key === 'bukayosaka' && sourceMatch && sourceMatch[1].startsWith('./player-assets/')
               ? sourceMatch[1]
               : remote;
             count++;
