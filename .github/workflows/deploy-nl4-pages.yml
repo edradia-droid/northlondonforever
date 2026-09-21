@@ -106,59 +106,62 @@ jobs:
 
       - name: Build Arena full-body artwork
         run: |
-          python3 - <<'PY'
-          import json, os, re, time, urllib.request
-          manifest_path = '_site/3d-arena/player-assets/manifest.json'
-          with open(manifest_path, 'r', encoding='utf-8') as f:
-              manifest = json.load(f)
-
-          players = [
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const players = [
             'David Raya','Jurriën Timber','Ezri Konsa','Gabriel','Riccardo Calafiori',
-            'Declan Rice','Bruno Guimarães','Martin Ødegaard','Bukayo Saka','Christos Tzolis','Kai Havertz',
-            'Kepa Arrizabalaga','Piero Hincapié','Eberechi Eze','Viktor Gyökeres','Noni Madueke',
-            'Mikel Merino','Martín Zubimendi','Myles Lewis-Skelly','Max Dowman'
-          ]
-          aliases = {
-            'Gabriel':['Gabriel_Magalhaes','Gabriel_Magalhães','Gabriel'],
+            'Declan Rice','Bruno Guimarães','Martin Ødegaard','Bukayo Saka','Christos Tzolis',
+            'Kai Havertz','Kepa Arrizabalaga','Piero Hincapié','Eberechi Eze','Viktor Gyökeres',
+            'Noni Madueke','Mikel Merino','Martín Zubimendi','Myles Lewis-Skelly','Max Dowman'
+          ];
+          const normalize = value => String(value || '')
+            .replace(/[Øø]/g, 'o').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')
+            .replace(/[^a-z0-9]+/gi, '').toLowerCase();
+          const manifestPath = '_site/3d-arena/player-assets/manifest.json';
+          const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+          const sleep = ms => new Promise(r => setTimeout(r, ms));
+          async function getPlayer(name){
+            const aliases = name === 'Gabriel'
+              ? ['Gabriel_Magalhaes','Gabriel_Magalhães','Gabriel']
+              : [name.replace(/\\s+/g, '_')];
+            let list=[];
+            for(const alias of aliases){
+              const res=await fetch('https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p='+encodeURIComponent(alias));
+              if(!res.ok) continue;
+              const json=await res.json();
+              if(Array.isArray(json.player)) list.push(...json.player);
+            }
+            const seen=new Set();
+            list=list.filter(x=>{const id=String(x.idPlayer||x.strPlayer||''); if(seen.has(id)) return false; seen.add(id); return true;});
+            const arsenal=list.filter(x=>String(x.strTeam||'').toLowerCase().includes('arsenal'));
+            const key=normalize(name);
+            return arsenal.find(x=>normalize(x.strPlayer)===key) || (name==='Gabriel' ? arsenal.find(x=>/gabriel.*magalh/i.test(String(x.strPlayer||''))) : null);
           }
-          def norm(s):
-            import unicodedata
-            s = unicodedata.normalize('NFD', str(s or ''))
-            s = ''.join(ch for ch in s if unicodedata.category(ch) != 'Mn')
-            return re.sub(r'[^a-z0-9]+','',s.lower())
-
-          data = json.load(urllib.request.urlopen('https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p=Arsenal', timeout=30))
-          arsenal = data.get('player') or data.get('players') or []
-          arsenal = [p for p in arsenal if str(p.get('strTeam') or '').lower() == 'arsenal' or str(p.get('strTeam2') or '').lower() == 'arsenal'] or arsenal
-          for name in players:
-              key = norm(name)
-              player = next((p for p in arsenal if norm(p.get('strPlayer')) == key), None)
-              if not player and name in aliases:
-                  player = next((p for p in arsenal if norm(p.get('strPlayer')) in [norm(x) for x in aliases[name]]), None)
-              if not player:
-                  raise RuntimeError('No exact Arsenal player match for full body: '+name)
-              url = player.get('strCutout')
-              if not url:
-                  raise RuntimeError('No Player Cutout artwork for full body: '+name)
-              ext = os.path.splitext(url.split('?')[0])[1] or '.png'
-              key = norm(name)
-              out = f'_site/3d-arena/player-assets/{key}-full{ext}'
-              urllib.request.urlretrieve(url, out)
-              manifest.setdefault(key, {})['full'] = './player-assets/' + os.path.basename(out)
-              manifest[key]['playerId'] = str(player.get('idPlayer') or '')
-              manifest[key]['sourceName'] = str(player.get('strPlayer') or '')
-              print('Downloaded full body '+name+' -> '+player.get('strPlayer','')+' ['+str(player.get('idPlayer',''))+']')
-              time.sleep(0.25)
-          with open(manifest_path, 'w', encoding='utf-8') as f:
-              json.dump(manifest, f, indent=2, ensure_ascii=False)
-          PY
+          (async()=>{
+            for(const name of players){
+              const player=await getPlayer(name);
+              if(!player) throw new Error('No exact Arsenal player match for full body: '+name);
+              const url=player.strCutout || null;
+              if(!url) throw new Error('No Player Cutout artwork for full body: '+name);
+              const ext=path.extname(new URL(url).pathname) || '.png';
+              const key=normalize(name);
+              const out='_site/3d-arena/player-assets/'+key+'-full'+ext;
+              const res=await fetch(url);
+              if(!res.ok) throw new Error('Failed to download full-body cutout for '+name+' ('+res.status+')');
+              fs.writeFileSync(out, Buffer.from(await res.arrayBuffer()));
+              manifest[key]=manifest[key] || {};
+              manifest[key].full='./player-assets/'+path.basename(out);
+              manifest[key].playerId=String(player.idPlayer||'');
+              manifest[key].sourceName=String(player.strPlayer||'');
+              console.log('Downloaded full body '+name+' -> '+player.strPlayer+' ['+player.idPlayer+']');
+              await sleep(250);
+            }
+            fs.writeFileSync(manifestPath, JSON.stringify(manifest,null,2));
+          })().catch(err=>{console.error(err);process.exit(1)});
+          NODE
           test "$(find _site/3d-arena/player-assets -name '*-full.*' | wc -l)" -eq 20
           echo "Full-body artwork built for all 20 Arena players."
-
-          echo "Arena artwork files:"
-          ls -lah _site/3d-arena/player-assets
-          test -s _site/3d-arena/player-assets/manifest.json
-          test "$(find _site/3d-arena/player-assets -maxdepth 1 -name '*.png' | wc -l)" -eq 20
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
