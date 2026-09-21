@@ -361,9 +361,9 @@
    completely flat sibling layer using the already-bound local assets. */
 @media(max-width:700px){
   #staticArena{
-    z-index:50!important;
+    z-index:5!important;
     overflow:visible!important;
-    isolation:isolate!important;
+    isolation:auto!important;
   }
   #staticArena .static-art-layer{
     position:absolute!important;
@@ -377,7 +377,7 @@
     transform:translate3d(-50%,-50%,0)!important;
     transform-style:flat!important;
     perspective:none!important;
-    z-index:500!important;
+    z-index:20!important;
     display:block!important;
     visibility:visible!important;
     opacity:1!important;
@@ -425,5 +425,26 @@
   #staticArena .static-art-layer .static-art{
     height:145px!important;
     max-width:66px!important;
+  }
+}
+
+
+/* MOBILE ARTWORK COMPOSITOR STABILITY v2026-09-21-2
+   Keep the existing local-art sibling layer out of the pitch's 3D compositor.
+   Desktop rules are unchanged. */
+@media(max-width:700px){
+  #staticArena .static-art-layer{
+    -webkit-transform:translate3d(-50%,-50%,0)!important;
+    transform:translate3d(-50%,-50%,0)!important;
+    -webkit-perspective:none!important;
+    perspective:none!important;
+    contain:paint!important;
+  }
+  #staticArena .static-art-layer .static-art{
+    -webkit-transform:translate3d(-50%,-100%,0)!important;
+    transform:translate3d(-50%,-100%,0)!important;
+    -webkit-backface-visibility:visible!important;
+    backface-visibility:visible!important;
+    filter:none!important;
   }
 }
