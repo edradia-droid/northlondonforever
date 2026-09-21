@@ -83,10 +83,12 @@ async function renderStaticPlayerPhotos(){
   images.forEach(img=>{
     const key=img.dataset.artKey;
     const mode=img.dataset.artMode;
-    const asset=manifest && manifest[key] ? manifest[key][mode] : null;
+    const boundAsset=img.getAttribute("src");
+    const asset=manifest && manifest[key] ? manifest[key][mode] : boundAsset;
     const active=mode===playerView;
 
     img.style.display=active && asset ? "block" : "none";
+    if(active && asset && img.getAttribute("src")!==asset) img.setAttribute("src",asset);
     img.style.visibility=active && asset ? "visible" : "hidden";
     img.style.opacity=active && asset ? "1" : "0";
     img.style.position="absolute";
@@ -128,6 +130,11 @@ async function renderStaticPlayerPhotos(){
       }
     };
     if(img.complete && img.naturalWidth===0) showFallback();
+    if(active && asset && window.matchMedia("(max-width:700px)").matches){
+      img.style.display="block";
+      img.style.visibility="visible";
+      img.style.opacity="1";
+    }
 
     // Mobile presentation labels: real artwork remains the visual player,
     // labels are a separate flat layer positioned from the same artwork anchor.
