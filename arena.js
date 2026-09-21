@@ -82,7 +82,9 @@ async function renderStaticPlayerPhotos(){
     const key=img.dataset.artKey;
     const mode=img.dataset.artMode;
     const boundAsset=img.dataset.boundAsset || img.getAttribute("src") || "";
-    const manifestAsset=manifest && manifest[key] ? manifest[key][mode] : "";
+    const manifestEntry=manifest && manifest[key] ? manifest[key] : null;
+    const manifestAsset=manifestEntry ? manifestEntry[mode] : "";
+    const remoteAsset=manifestEntry ? manifestEntry["remote"+(mode==="full"?"Full":"Half")] : "";
     const asset=boundAsset || manifestAsset;
     const active=mode===playerView;
 
@@ -111,14 +113,19 @@ async function renderStaticPlayerPhotos(){
         img.setAttribute("src",bound);
         return;
       }
-      if(current && !img.dataset.cacheRetry){
-        img.dataset.cacheRetry="1";
-        img.setAttribute("src",current+(current.includes("?")?"&":"?")+"retry=20260921-54");
+      if(remoteAsset && current!==remoteAsset && !img.dataset.remoteRetry){
+        img.dataset.remoteRetry="1";
+        img.setAttribute("src",remoteAsset);
         return;
       }
-      // Do not replace a failed real image with a tag/number box.
-      img.style.display="none";
-      img.style.visibility="hidden";
+      if(current && !img.dataset.cacheRetry){
+        img.dataset.cacheRetry="1";
+        img.setAttribute("src",current+(current.includes("?")?"&":"?")+"retry=20260921-55");
+        return;
+      }
+      // Keep the real-image element present; never replace it with a fake tag/number box.
+      img.style.display="block";
+      img.style.visibility="visible";
       img.style.opacity="0";
     };
 
