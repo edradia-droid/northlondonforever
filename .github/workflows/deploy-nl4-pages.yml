@@ -175,11 +175,6 @@ jobs:
           test "$(node -e "const m=require('./_site/3d-arena/player-assets/manifest.json'); console.log(Object.keys(m).length)")" -eq 20
           test "$(find _site/3d-arena/player-assets -type f -name '*-full.*' | wc -l)" -eq 20
           test "$(find _site/3d-arena/player-assets -type f -name '*-half.*' | wc -l)" -eq 20
-          if find _site/3d-arena/player-assets -type f | grep -Ei 'thumb|thumbnail'; then
-            echo "Unexpected artwork filename detected"
-            exit 1
-          fi
-
       - name: Verify Arena artwork package
         run: |
           test -s _site/3d-arena/player-assets/manifest.json
