@@ -109,14 +109,15 @@ jobs:
 
           const dir = '_site/3d-arena/player-assets';
           const manifestPath = path.join(dir, 'manifest.json');
-          const raw = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
           const manifest = {};
 
           for (const [name, id] of Object.entries(players)) {
             const key = normalize(name);
-            const existing = raw[key];
+            const halfFile = fs.readdirSync(dir).find(file =>
+              file.toLowerCase().startsWith(key + '-half.')
+            );
             manifest[key] = {
-              half: typeof existing === 'string' ? existing : (existing && existing.half) || null,
+              half: halfFile ? './player-assets/' + halfFile : null,
               playerId: id,
               sourceName: name
             };
