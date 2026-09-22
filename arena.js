@@ -783,7 +783,7 @@ function fieldA(p,pos,slot){
   if(slot) q.fieldSlot=slot;
   return q;
 }
-function fieldPosA(p){return {x:clampA(Number(p.displayX)||50),y:clampA(Number(p.displayY)||50)}}
+function fieldPosA(p){return {x:clampA(Number.isFinite(Number(p.displayX))?Number(p.displayX):50),y:clampA(Number.isFinite(Number(p.displayY))?Number(p.displayY):50)}}
 function saveA(){
   try{localStorage.setItem(ARENA_STATE_V2,JSON.stringify({field:arenaField,lineup:arenaLineup,substitute:arenaBench}))}catch(e){}
 }
@@ -931,7 +931,12 @@ function replaceA(name,type,i){
   rebuildA();
 }
 function syncIncomingA(p,url){
-  const key=akey(p.name);document.querySelectorAll('#staticArena .static-art[data-field-slot="'+CSS.escape(p.fieldSlot)+'"]').forEach(img=>{img.dataset.artKey=key;img.dataset.playerName=p.name;if(url&&img.dataset.artMode===playerView)img.src=url});syncFieldA()
+  const key=akey(p.name),cache=arenaArtCache[key]||{};
+  document.querySelectorAll('#staticArena .static-art[data-field-slot="'+CSS.escape(p.fieldSlot)+'"]').forEach(img=>{
+    img.dataset.artKey=key;img.dataset.playerName=p.name;
+    const u=cache[img.dataset.artMode]||url;
+    if(u)img.src=u;
+  });syncFieldA()
 }
 function returnA(name,to){
   const i=arenaField.findIndex(p=>p.name===name);if(i<0)return;const p=arenaField.splice(i,1)[0];poolA(to).push({...p,displayX:undefined,displayY:undefined});rebuildA()
