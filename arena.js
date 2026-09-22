@@ -375,6 +375,61 @@ function rebuildLineupLists(){
         document.querySelector("#staticArena")?.classList.add("lineup-move-ready");
       });
       e.addEventListener("dragend",()=>document.querySelector("#staticArena")?.classList.remove("lineup-move-ready"));
+
+      // Pointer dragging fallback: works reliably on desktop/mobile even when
+      // the browser's native HTML5 drag handling is blocked by the arena UI.
+      let pointerDrag=null;
+      e.addEventListener("pointerdown",event=>{
+        if(event.button!==undefined && event.button!==0) return;
+        pointerDrag={id:event.pointerId,moved:false};
+        e.setPointerCapture?.(event.pointerId);
+        e.style.cursor="grabbing";
+      });
+      e.addEventListener("pointermove",event=>{
+        if(!pointerDrag || event.pointerId!==pointerDrag.id) return;
+        if(!pointerDrag.moved){
+          const dx=Math.abs(event.movementX||0), dy=Math.abs(event.movementY||0);
+          if(dx+dy<3) return;
+          pointerDrag.moved=true;
+          document.querySelector("#staticArena")?.classList.add("lineup-move-ready");
+        }
+        event.preventDefault();
+        const arena=document.querySelector("#staticArena");
+        const layer=document.querySelector("#staticArena .static-art-layer");
+        if(!arena||!layer) return;
+        const rect=layer.getBoundingClientRect();
+        const inside=event.clientX>=rect.left&&event.clientX<=rect.right&&event.clientY>=rect.top&&event.clientY<=rect.bottom;
+        arena.classList.toggle("lineup-move-hover",inside);
+      });
+      const finishLineupPointerDrag=event=>{
+        if(!pointerDrag || event.pointerId!==pointerDrag.id) return;
+        const wasMoved=pointerDrag.moved;
+        pointerDrag=null;
+        e.style.cursor="";
+        const arena=document.querySelector("#staticArena");
+        const layer=document.querySelector("#staticArena .static-art-layer");
+        if(arena) arena.classList.remove("lineup-move-ready","lineup-move-hover");
+        if(!wasMoved||!layer) return;
+        const rect=layer.getBoundingClientRect();
+        if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom) return;
+        const x=clampPercent(((event.clientX-rect.left)/rect.width)*100,0,100);
+        const y=clampPercent(((event.clientY-rect.top)/rect.height)*100,0,100);
+        const idx=arenaLineup.findIndex(item=>item.name===p.name);
+        if(idx<0) return;
+        arenaLineup[idx].x=(x-50)*2;
+        arenaLineup[idx].y=(y-50)*-2;
+        saveSubstitutionState();
+        document.querySelectorAll('#staticArena .static-art[data-art-key="'+substitutionArtworkKey(p.name)+'"]').forEach(img=>{
+          img.style.setProperty("left",x+"%","important");
+          img.style.setProperty("top",y+"%","important");
+          const positions=readPlayerPositions();
+          positions[playerPositionKey(img)]={x,y};
+          writePlayerPositions(positions);
+        });
+      };
+      e.addEventListener("pointerup",finishLineupPointerDrag);
+      e.addEventListener("pointercancel",finishLineupPointerDrag);
+
       list.appendChild(e);
     });
   }
