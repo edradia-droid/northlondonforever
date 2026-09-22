@@ -225,8 +225,7 @@ function defaultApos(name){
   const parent=el.offsetParent||document.querySelector("#staticArena .static-art-layer");
   if(parent&&cs.left.endsWith("px")&&cs.top.endsWith("px")){
     const pr=parent.getBoundingClientRect();
-    const er=el.getBoundingClientRect();
-    if(pr.width&&pr.height)return {x:clampA(((er.left-pr.left)/pr.width)*100),y:clampA(((er.top-pr.top)/pr.height)*100)};
+    if(pr.width&&pr.height)return {x:clampA((parseFloat(cs.left)/pr.width)*100),y:clampA((parseFloat(cs.top)/pr.height)*100)};
   }
   return {x:clampA(Number.isFinite(x)?x:50),y:clampA(Number.isFinite(y)?y:50)};
 }
