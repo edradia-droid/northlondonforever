@@ -1005,3 +1005,11 @@
 #staticArena.substitution-ready{outline:2px dashed rgba(25,216,121,.55);outline-offset:-5px;}
 #staticArena.substitution-hover{outline:3px solid rgba(25,216,121,.8);outline-offset:-7px;}
 .bench-draggable .badge{color:var(--green);}
+
+
+/* LINEUP LIST DRAGGING */
+#staticArena.lineup-move-ready{outline:2px dashed rgba(25,216,121,.75);outline-offset:-5px;}
+#staticArena.lineup-move-hover{outline:3px solid rgba(25,216,121,.95);outline-offset:-7px;}
+#lineupList .lineup-draggable{cursor:grab!important;touch-action:none!important;user-select:none!important;}
+#lineupList .lineup-draggable:active{cursor:grabbing!important;}
+#lineupList .lineup-draggable .badge{color:var(--green);}
