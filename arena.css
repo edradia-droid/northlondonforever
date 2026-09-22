@@ -1084,3 +1084,33 @@
   .pool-player-image{width:30px!important;height:38px!important;flex-basis:30px;}
   .pool-player-row .name{max-width:120px;}
 }
+
+
+/* ARENA V2 — field players can be repositioned; pool-to-pool is locked. */
+#staticArena .static-art-layer .static-art{
+  cursor:grab!important;
+  touch-action:none!important;
+  pointer-events:auto!important;
+  user-select:none!important;
+  -webkit-user-drag:none!important;
+}
+#staticArena .static-art-layer .static-art:active{
+  cursor:grabbing!important;
+}
+#lineupList.pool-locked{
+  opacity:.55!important;
+  pointer-events:none!important;
+}
+#lineupList.pool-locked .pool-empty{
+  border-style:solid!important;
+}
+#lineupList.pool-locked::after{
+  content:"LOCKED — XI ON PITCH";
+  display:block;
+  margin-top:6px;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.08em;
+  color:var(--muted);
+  text-align:center;
+}
