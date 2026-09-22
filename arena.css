@@ -1037,3 +1037,50 @@
   .pool-player-image{width:30px;height:38px;flex-basis:30px;}
   .pool-player-row .name{max-width:120px;}
 }
+
+
+/* ===== ARENA V2 FINAL INTERACTION RULES ===== */
+#staticArena .static-art-layer .static-art{
+  cursor:default!important;
+  touch-action:auto!important;
+  user-select:none!important;
+  -webkit-user-drag:none!important;
+}
+#staticArena .static-art-layer .static-art.drop-target{
+  cursor:default!important;
+  filter:drop-shadow(0 0 10px rgba(25,216,121,.95))!important;
+}
+.pool-player-row{cursor:grab!important;touch-action:none!important;user-select:none!important;}
+.pool-player-row:active,.pool-player-row.dragging{cursor:grabbing!important;}
+.pool-player-image{
+  width:34px!important;height:44px!important;object-fit:contain!important;
+  object-position:center bottom!important;display:block;flex:0 0 34px;
+  pointer-events:none!important;-webkit-user-drag:none!important;
+}
+.pool-player-row .player-main{min-width:0;}
+.pool-player-row .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;}
+.pool-player-row .badge{color:var(--green);}
+.pool-empty{padding:12px;border:1px dashed var(--line);border-radius:11px;color:var(--muted);font-size:10px;text-align:center;}
+#lineupList,#benchList{min-height:42px;}
+#lineupList.pool-drop-hover,#benchList.pool-drop-hover{
+  outline:2px dashed rgba(25,216,121,.8);outline-offset:2px;background:rgba(25,216,121,.06);
+}
+#staticArena.pool-drag-ready{outline:2px dashed rgba(25,216,121,.75);outline-offset:-5px;}
+#staticArena.pool-drag-hover{outline:3px solid rgba(25,216,121,.9);outline-offset:-7px;}
+.arena-drag-ghost{
+  position:fixed;z-index:999999;pointer-events:none;object-fit:contain;
+  object-position:center bottom;max-height:150px;filter:drop-shadow(0 10px 16px rgba(0,0,0,.45));
+  transform:translate3d(0,0,0);will-change:left,top;
+}
+.field-player-focus .field-return-actions{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap;}
+.field-player-focus .field-return-actions button{
+  border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);
+  border-radius:8px;padding:6px 8px;font-size:9px;font-weight:800;cursor:pointer;
+}
+.field-player-focus .field-return-actions button:hover{
+  background:rgba(25,216,121,.12);border-color:rgba(25,216,121,.4);
+}
+@media(max-width:700px){
+  .pool-player-image{width:30px!important;height:38px!important;flex-basis:30px;}
+  .pool-player-row .name{max-width:120px;}
+}
