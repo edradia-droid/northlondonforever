@@ -367,8 +367,21 @@ function poolRowA(p,type){
 }
 function rebuildA(){
   const l=document.querySelector("#lineupList"),b=document.querySelector("#benchList");
-  if(l){l.innerHTML="";if(!arenaLineup.length){l.innerHTML='<div class="pool-empty">No players in lineup</div>'}else arenaLineup.forEach(p=>l.appendChild(poolRowA(p,"lineup")));dropA(l,"lineup")}
-  if(b){b.innerHTML="";arenaBench.forEach(p=>b.appendChild(poolRowA(p,"substitute")));if(!arenaBench.length)b.innerHTML='<div class="pool-empty">No substitutes</div>';dropA(b,"substitute")}
+  const lineupLocked=arenaField.length>=11;
+  if(l){
+    l.innerHTML="";
+    l.classList.toggle("pool-locked",lineupLocked);
+    l.setAttribute("aria-disabled",lineupLocked?"true":"false");
+    if(!arenaLineup.length)l.innerHTML='<div class="pool-empty">'+(lineupLocked?"Lineup locked — 11 players on pitch":"No players in lineup")+"</div>";
+    else arenaLineup.forEach(p=>l.appendChild(poolRowA(p,"lineup")));
+    dropA(l,"lineup");
+  }
+  if(b){
+    b.innerHTML="";
+    arenaBench.forEach(p=>b.appendChild(poolRowA(p,"substitute")));
+    if(!arenaBench.length)b.innerHTML='<div class="pool-empty">No substitutes</div>';
+    dropA(b,"substitute");
+  }
   syncFieldA();saveA();
 }
 function ghostA(e,p,x,y){
