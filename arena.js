@@ -218,7 +218,16 @@ const poolA=t=>t==="lineup"?arenaLineup:arenaBench;
 
 function defaultApos(name){
   const el=document.querySelector('#staticArena .static-art-full[data-art-key="'+akey(name)+'"]');
-  const x=el?parseFloat(el.style.left):50,y=el?parseFloat(el.style.top):50;
+  if(!el)return {x:50,y:50};
+  const cs=getComputedStyle(el);
+  const x=parseFloat(el.style.left)||parseFloat(cs.left);
+  const y=parseFloat(el.style.top)||parseFloat(cs.top);
+  const parent=el.offsetParent||document.querySelector("#staticArena .static-art-layer");
+  if(parent&&cs.left.endsWith("px")&&cs.top.endsWith("px")){
+    const pr=parent.getBoundingClientRect();
+    const er=el.getBoundingClientRect();
+    if(pr.width&&pr.height)return {x:clampA(((er.left-pr.left)/pr.width)*100),y:clampA(((er.top-pr.top)/pr.height)*100)};
+  }
   return {x:clampA(Number.isFinite(x)?x:50),y:clampA(Number.isFinite(y)?y:50)};
 }
 function fieldA(p,pos,slot){
