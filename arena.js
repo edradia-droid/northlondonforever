@@ -327,8 +327,7 @@ function poolRowA(p,type){
   e.addEventListener("pointerdown",ev=>startA(e,p,type,ev));
   e.addEventListener("pointermove",ev=>moveA(e,ev));
   e.addEventListener("pointerup",ev=>endA(e,ev));e.addEventListener("pointercancel",ev=>endA(e,ev));
-  e.draggable=true;
-  e.addEventListener("dragstart",ev=>{ev.dataTransfer.effectAllowed="move";ev.dataTransfer.setData("application/x-nl4-pool-type",type);ev.dataTransfer.setData("text/plain",p.name);const s=e.dataset.dragSrc||im.src;if(s){const g=new Image();g.src=s;try{ev.dataTransfer.setDragImage(g,32,32)}catch(x){}}});
+  e.draggable=false;
   return e;
 }
 function rebuildA(){
@@ -395,3 +394,6 @@ function enableArenaPlayerDragging(){/* Field players are intentionally locked. 
 function applySavedPlayerPositions(){/* V2 owns field positions. */ }
 
 loadA();assignSlotsA();rebuildA();renderStaticPlayerPhotos().then(()=>syncFieldA());
+
+const arenaSetPlayerView=setPlayerView;
+setPlayerView=function(view){arenaSetPlayerView(view);setTimeout(()=>syncFieldA(),0)};
