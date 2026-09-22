@@ -244,6 +244,8 @@ function loadA(){
       s.substitute.forEach(p=>{if(!all.has(p.name)||seen.has(p.name))return;seen.add(p.name);b.push({...all.get(p.name),...p})});
       all.forEach((p,n)=>{if(!seen.has(n))b.push({...p})});
       arenaField=f;arenaLineup=l;arenaBench=b;
+      // A full XI means Lineup is empty. Any stale lineup entries are moved to Substitute.
+      if(arenaField.length>=11&&arenaLineup.length){arenaBench.push(...arenaLineup);arenaLineup=[];}
     }
   }catch(e){}
   saveA();
@@ -302,16 +304,49 @@ function syncFieldA(){
   });
   bindFieldA();
 }
+let fieldDragA=null,fieldClickBlockA=0;
+function fieldPointerDownA(img,ev){
+  if(ev.button!==undefined&&ev.button!==0)return;
+  const p=arenaField.find(x=>x.name===img.dataset.playerName);if(!p||img.dataset.artMode!==playerView)return;
+  fieldDragA={name:p.name,id:ev.pointerId,startX:ev.clientX,startY:ev.clientY,moved:false};
+  img.setPointerCapture?.(ev.pointerId);
+  ev.preventDefault();ev.stopPropagation();
+}
+function fieldPointerMoveA(img,ev){
+  if(!fieldDragA||fieldDragA.id!==ev.pointerId)return;
+  const dx=Math.abs(ev.clientX-fieldDragA.startX),dy=Math.abs(ev.clientY-fieldDragA.startY);
+  if(!fieldDragA.moved&&dx+dy<5)return;
+  fieldDragA.moved=true;ev.preventDefault();ev.stopPropagation();
+  const layer=document.querySelector("#staticArena .static-art-layer"),r=layer?.getBoundingClientRect();if(!r)return;
+  const p=arenaField.find(x=>x.name===fieldDragA.name);if(!p)return;
+  const x=clampA(((ev.clientX-r.left)/r.width)*100),y=clampA(((ev.clientY-r.top)/r.height)*100);
+  p.displayX=x;p.displayY=y;p.x=(x-50)*2;p.y=(y-50)*-2;
+  document.querySelectorAll('#staticArena .static-art[data-field-slot="'+CSS.escape(p.fieldSlot)+'"]').forEach(el=>{
+    el.style.setProperty("left",x+"%","important");el.style.setProperty("top",y+"%","important");
+  });
+}
+function fieldPointerUpA(img,ev){
+  if(!fieldDragA||fieldDragA.id!==ev.pointerId)return;
+  const d={...fieldDragA};fieldDragA=null;
+  try{img.releasePointerCapture?.(ev.pointerId)}catch(e){}
+  if(d.moved){fieldClickBlockA=Date.now()+180;saveA();ev.preventDefault();ev.stopPropagation();}
+}
 function bindFieldA(){
   document.querySelectorAll("#staticArena .static-art").forEach(img=>{
-    if(img.dataset.fieldBound==="1")return;img.dataset.fieldBound="1";
+    if(img.dataset.fieldBound==="1")return;
+    img.dataset.fieldBound="1";
+    img.addEventListener("pointerdown",e=>fieldPointerDownA(img,e));
+    img.addEventListener("pointermove",e=>fieldPointerMoveA(img,e));
+    img.addEventListener("pointerup",e=>fieldPointerUpA(img,e));
+    img.addEventListener("pointercancel",e=>fieldPointerUpA(img,e));
     img.addEventListener("click",e=>{
       e.preventDefault();e.stopPropagation();
+      if(Date.now()<fieldClickBlockA)return;
       if(img.dataset.artMode!==playerView)return;
       const p=arenaField.find(x=>x.name===img.dataset.playerName);if(!p)return;
       const old=document.querySelector("#playerFocus");if(old)old.remove();
       const c=document.createElement("div");c.id="playerFocus";c.className="player-focus field-player-focus";
-      c.innerHTML="<span>#"+p.number+" · "+p.pos+"</span><strong>"+p.name+"</strong><small>ON FIELD · POSITION LOCKED</small><div class=\"field-return-actions\"><button data-ret=\"lineup\">Return to Lineup</button><button data-ret=\"substitute\">Send to Substitute</button></div>";
+      c.innerHTML="<span>#"+p.number+" · "+p.pos+"</span><strong>"+p.name+"</strong><small>ON FIELD · DRAG TO REPOSITION</small><div class=\"field-return-actions\"><button data-ret=\"lineup\">Return to Lineup</button><button data-ret=\"substitute\">Send to Substitute</button></div>";
       document.querySelector(".arena-shell")?.appendChild(c);
       c.querySelectorAll("[data-ret]").forEach(b=>b.onclick=()=>returnA(p.name,b.dataset.ret));
     });
@@ -352,7 +387,6 @@ function moveA(e,ev){
   document.querySelectorAll(".drop-target").forEach(x=>x.classList.remove("drop-target"));
   if(inside){const i=nearestA(ev.clientX,ev.clientY);if(i>=0){const p=arenaField[i];document.querySelectorAll('#staticArena .static-art[data-player-name="'+CSS.escape(p.name)+'"]').forEach(x=>x.classList.add("drop-target"))}}
   document.querySelectorAll("#lineupList,#benchList").forEach(x=>x.classList.remove("pool-drop-hover"));
-  if(!inside){const z=document.elementFromPoint(ev.clientX,ev.clientY)?.closest("#lineupList,#benchList");if(z)z.classList.add("pool-drop-hover")}
 }
 function nearestA(x,y){
   const r=document.querySelector("#staticArena .static-art-layer")?.getBoundingClientRect();if(!r)return-1;let bi=-1,bd=1e99;
@@ -363,13 +397,16 @@ function endA(e,ev){
   if(!d.moved)return;
   const r=document.querySelector("#staticArena .static-art-layer")?.getBoundingClientRect();
   if(r&&ev.clientX>=r.left&&ev.clientX<=r.right&&ev.clientY>=r.top&&ev.clientY<=r.bottom){const i=nearestA(ev.clientX,ev.clientY);if(i>=0)replaceA(d.name,d.type,i);return}
-  const z=document.elementFromPoint(ev.clientX,ev.clientY)?.closest("#lineupList,#benchList");if(z)movePoolA(d.name,d.type,z.id==="lineupList"?"lineup":"substitute");
+  // Pool-to-pool dragging is intentionally disabled. Lineup and Substitute are separate pools.
 }
-function movePoolA(name,from,to){if(from===to)return;const p=poolA(from).findIndex(x=>x.name===name);if(p<0)return;const q=poolA(from).splice(p,1)[0];poolA(to).push(q);rebuildA()}
+function movePoolA(name,from,to){/* Intentionally locked: players cannot be dragged directly between Lineup and Substitute. */}
 function replaceA(name,type,i){
   const pi=poolA(type).findIndex(x=>x.name===name);if(pi<0||!arenaField[i])return;
-  const incoming=poolA(type).splice(pi,1)[0],out=arenaField[i],pos=fieldPosA(out),slot=out.fieldSlot;
-  arenaField[i]=fieldA(incoming,pos,slot);poolA(type).push({...out,displayX:undefined,displayY:undefined});
+  const incoming=poolA(type)[pi],out=arenaField[i],pos=fieldPosA(out),slot=out.fieldSlot;
+  // The outgoing pitch player takes the exact list position of the incoming player.
+  poolA(type).splice(pi,1);
+  poolA(type).splice(pi,0,{...out,displayX:undefined,displayY:undefined});
+  arenaField[i]=fieldA(incoming,pos,slot);
   const art=artworkA(incoming);if(art)syncIncomingA(incoming,art);else fetchArtA(incoming).then(u=>syncIncomingA(incoming,u));
   rebuildA();
 }
@@ -386,9 +423,10 @@ function returnA(name,to){
 }
 function dropA(box,type){
   if(box.dataset.dropReady==="1")return;box.dataset.dropReady="1";
-  box.addEventListener("dragover",e=>{e.preventDefault();box.classList.add("pool-drop-hover")});
-  box.addEventListener("dragleave",e=>{if(!box.contains(e.relatedTarget))box.classList.remove("pool-drop-hover")});
-  box.addEventListener("drop",e=>{e.preventDefault();box.classList.remove("pool-drop-hover");const from=e.dataTransfer.getData("application/x-nl4-pool-type"),name=e.dataTransfer.getData("text/plain");if(from&&name)movePoolA(name,from,type)});
+  // Lineup <-> Substitute is locked. These lists are not drop targets.
+  box.addEventListener("dragover",e=>{e.preventDefault();box.classList.remove("pool-drop-hover")});
+  box.addEventListener("dragleave",e=>box.classList.remove("pool-drop-hover"));
+  box.addEventListener("drop",e=>{e.preventDefault();box.classList.remove("pool-drop-hover")});
 }
 function enableArenaPlayerDragging(){/* Field players are intentionally locked. */ }
 function applySavedPlayerPositions(){/* V2 owns field positions. */ }
