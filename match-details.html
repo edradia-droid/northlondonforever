@@ -1300,11 +1300,11 @@
           <div class="kit-player" aria-label="${esc(displayName)} Arsenal home shirt number ${esc(safeShirtNumber)}">
             ${media.image
               ? '<img class="kit-player-photo" src="' + esc(media.image) + '" alt="' + esc(displayName) + '" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden=true">'
-              : \`<span class="kit-shirt${slot === 'GK' ? ' goalkeeper-kit' : ''}" data-number="${esc(safeShirtNumber)}">
+              : `<span class="kit-shirt${slot === 'GK' ? ' goalkeeper-kit' : ''}" data-number="${esc(safeShirtNumber)}">
                   <span class="kit-collar"></span>
                   <span class="kit-front-number" aria-hidden="true">${esc(safeShirtNumber)}</span>
                   <span class="kit-back-number">${esc(safeShirtNumber)}</span>
-                </span>\`}
+                </span>`}
           </div>
           <span class="player-name">${esc(displayName)}${outgoingBadge}</span>
         </div>`;
