@@ -35,9 +35,9 @@ jobs:
       - name: Fetch latest 3D Arena branch
         run: |
           git fetch origin 3d-arena-publish --depth=1
-          git archive origin/3d-arena-publish index.html arena.css arena.js README.md | tar -x
+          rm -rf _arena_source
           mkdir -p _arena_source
-          cp index.html arena.css arena.js README.md _arena_source/
+          git archive origin/3d-arena-publish index.html arena.css arena.js README.md | tar -x -C _arena_source
 
       - name: Prepare NL4 Pages site
         run: |
