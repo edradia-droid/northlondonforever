@@ -113,6 +113,9 @@
     .broadcast-subs{display:grid;padding:5px 0}.broadcast-sub{display:block;padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.08)}.broadcast-sub:last-child{border-bottom:0}
     .sub-photo,.sub-num,.sub-time{display:none!important}.sub-name{display:block;min-width:0;font-size:10px;font-weight:900;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .broadcast-side .empty{padding:25px 13px}
+    .sub-bench-player{display:flex;align-items:center;gap:8px;min-width:0}
+    .sub-bench-photo{width:34px;height:40px;object-fit:cover;object-position:center 18%;border:0;border-radius:7px;background:transparent;box-shadow:0 4px 8px rgba(0,0,0,.35);flex:0 0 auto}
+    .sub-bench-row .sub-name{min-width:0}
     @media(max-width:980px){.broadcast-grid{grid-template-columns:minmax(0,1fr) 125px;gap:7px;padding-left:8px;padding-right:8px}.broadcast-side{margin-top:18px}.broadcast-subs{grid-template-columns:1fr}.pitch-stage{min-height:560px}.football-pitch{width:min(760px,96%)}}
     @media(max-width:700px){
     .kit-player-photo{width:43px!important;height:49px!important}
@@ -1314,38 +1317,17 @@
     }
 
     const ARSENAL_SQUAD_IMAGE_URLS = {
-      "david raya":"https://assets.arsenal.com//prod/images/large_landscape/5a548482772b-arsenalmenssquad26271david-raya.jpg",
-      "kepa arrizabalaga":"https://assets.arsenal.com//prod/images/large_landscape/ad0f18b8d7ef-arsenalmenssquad262713kepa-arrizabalaga.jpg",
-      "illan meslier":"https://assets.arsenal.com//prod/images/large_landscape/12624e813b99-arsenalmenssquad262730illan-meslier.jpg",
-      "tommy setford":"https://assets.arsenal.com//prod/images/large_landscape/7832ccd7b5ba-arsenalmenssquad262735tommy-setford.jpg",
-      "william saliba":"https://assets.arsenal.com//prod/images/large_landscape/acb476e282e8-2-william-saliba.jpg",
-      "cristhian mosquera":"https://assets.arsenal.com//prod/images/large_landscape/c1658641317c-arsenalmenssquad26273cristhian-mosquera.jpg",
-      "ben white":"https://assets.arsenal.com//prod/images/large_landscape/c83cc5eae5b9-4-ben-white.jpg",
-      "piero hincapie":"https://assets.arsenal.com//prod/images/large_landscape/6fa955383c36-arsenalmenssquad26275piero-hincapie.jpg",
-      "gabriel magalhaes":"https://assets.arsenal.com//prod/images/large_landscape/6123e9cc3496-arsenalmenssquad26276gabriel-magalhaes.jpg",
-      "jurrien timber":"https://assets.arsenal.com//prod/images/large_landscape/aec7b56314c4-arsenalmenssquad262712jurrien-timber.jpg",
-      "ezri konsa":"https://assets.arsenal.com//prod/images/large_landscape/21d0c9b0debd-arsenalmenssquad262715enzri-konsa.jpg",
-      "riccardo calafiori":"https://assets.arsenal.com//prod/images/large_landscape/7e33fd9a4107-33-riccardo-calafiori.jpg",
-      "declan rice":"https://assets.arsenal.com//prod/images/large_landscape/ba8ef1095384-arsenalmenssquad262741declan-rice.jpg",
-      "bruno guimaraes":"https://assets.arsenal.com//prod/images/large_landscape/41f0e146d909-arsenalmenssquad262739bruno-guimaraes.jpg",
-      "martin ødegaard":"https://assets.arsenal.com//prod/images/large_landscape/dd168c02d4e3-arsenalmenssquad26278martin-odegaard.jpg",
-      "martin odegaard":"https://assets.arsenal.com//prod/images/large_landscape/dd168c02d4e3-arsenalmenssquad26278martin-odegaard.jpg",
-      "martín zubimendi":"https://assets.arsenal.com//prod/images/large_landscape/27193ebff6e1-arsenalmenssquad262736martin-zubimendi.jpg",
-      "martin zubimendi":"https://assets.arsenal.com//prod/images/large_landscape/27193ebff6e1-arsenalmenssquad262736martin-zubimendi.jpg",
-      "mikel merino":"https://assets.arsenal.com//prod/images/large_landscape/a6a130950b81-arsenalmenssquad262723mikel-merino.jpg",
-      "myles lewis-skelly":"https://assets.arsenal.com//prod/images/large_landscape/9cc3c7715139-arsenalmenssquad262749myles-lewis-skelly.jpg",
-      "eberechi eze":"https://assets.arsenal.com//prod/images/large_landscape/9dd24026490e-arsenalmenssquad262710eberechi-eze.jpg",
-      "ethan nwaneri":"https://assets.arsenal.com//prod/images/large_landscape/81f9d2df3088-arsenalmenssquad262722ethan-nwaneri.jpg",
-      "max dowman":"https://assets.arsenal.com//prod/images/large_landscape/6e39ec50e3ae-56-max-dowman.jpg",
-      "christos tzolis":"https://assets.arsenal.com//prod/images/large_landscape/e1fb697fbe1b-arsenalmenssquad262717christos-tzolis.jpg",
-      "bukayo saka":"https://assets.arsenal.com//prod/images/large_landscape/87fab49199d9-arsenalmenssquad26277bukayo-saka.jpg",
-      "noni madueke":"https://assets.arsenal.com//prod/images/large_landscape/444bf3ad4723-arsenalmenssquad262720noni-madueke.jpg",
-      "kai havertz":"https://assets.arsenal.com//prod/images/large_landscape/7765ab9a29eb-arsenalmenssquad262729kai-havertz.jpg",
-      "viktor gyökeres":"https://assets.arsenal.com//prod/images/large_landscape/42b4d7ae8778-arsenalmenssquad262714viktor-gyokeres.jpg",
-      "viktor gyokeres":"https://assets.arsenal.com//prod/images/large_landscape/42b4d7ae8778-arsenalmenssquad262714viktor-gyokeres.jpg"
+      "david raya":"assets/player-cutouts/player-01.png","kepa arrizabalaga":"assets/player-cutouts/player-02.png","illan meslier":"assets/player-cutouts/player-03.png","tommy setford":"assets/player-cutouts/player-04.png",
+      "william saliba":"assets/player-cutouts/player-05.png","cristhian mosquera":"assets/player-cutouts/player-06.png","ben white":"assets/player-cutouts/player-07.png","piero hincapie":"assets/player-cutouts/player-08.png",
+      "gabriel magalhaes":"assets/player-cutouts/player-09.png","jurrien timber":"assets/player-cutouts/player-10.png","ezri konsa":"assets/player-cutouts/player-11.png","riccardo calafiori":"assets/player-cutouts/player-12.png",
+      "declan rice":"assets/player-cutouts/player-13.png","bruno guimaraes":"assets/player-cutouts/player-14.png","martin ødegaard":"assets/player-cutouts/player-15.png","martin odegaard":"assets/player-cutouts/player-15.png",
+      "martín zubimendi":"assets/player-cutouts/player-16.png","martin zubimendi":"assets/player-cutouts/player-16.png","mikel merino":"assets/player-cutouts/player-17.png",
+      "myles lewis-skelly":"assets/player-cutouts/player-18.png","miles lewis-skelly":"assets/player-cutouts/player-18.png","eberechi eze":"assets/player-cutouts/player-19.png","ethan nwaneri":"assets/player-cutouts/player-20.png",
+      "max dowman":"assets/player-cutouts/player-21.png","christos tzolis":"assets/player-cutouts/player-22.png","bukayo saka":"assets/player-cutouts/player-23.png","noni madueke":"assets/player-cutouts/player-24.png",
+      "kai havertz":"assets/player-cutouts/player-25.png","viktor gyökeres":"assets/player-cutouts/player-26.png","viktor gyokeres":"assets/player-cutouts/player-26.png"
     };
 
-    async function loadPlayerMedia(rows){
+        async function loadPlayerMedia(rows){
       const names = [...new Set(rows.map(r => String(r.player_name || '').trim()).filter(Boolean))];
       const map = new Map();
       if (!names.length) return map;
@@ -1397,7 +1379,8 @@
         const source = ARSENAL_SQUAD_IMAGE_URLS[key];
         if (!source) return;
         const current = map.get(key) || { image:'', shirt:'' };
-        if (!current.image) current.image = source;
+        // Always use the local transparent cutout for Arsenal players.
+        current.image = source;
         map.set(key, current);
       });
 
@@ -1702,7 +1685,8 @@
           </div>`;
       }).join("");
 
-      const playerMedia = await loadPlayerMedia(lineup || []);
+      const mediaRows = [...(lineup || []), ...(recordRoomBench || [])];
+      const playerMedia = await loadPlayerMedia(mediaRows);
       render3DPitch(starters, playerMedia, fixture.lineup_formation, substitutionRows);
 
       const usedNames = new Map(
@@ -1721,7 +1705,15 @@
               : '<span class="sub-bench-unused">UNUSED</span>';
             return `
               <div class="broadcast-sub sub-bench-row">
-                <span class="sub-name">${esc(row.player_name)}</span>
+                <span class="sub-bench-player">
+                  ${(() => {
+                    const benchMedia = playerMedia.get(normalizePlayerKey(row.player_name)) || {};
+                    return benchMedia.image
+                      ? '<img class="sub-bench-photo" src="' + esc(benchMedia.image) + '" alt="' + esc(row.player_name) + '" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden=true">'
+                      : '';
+                  })()}
+                  <span class="sub-name">${esc(row.player_name)}</span>
+                </span>
                 ${state}
               </div>`;
           }).join("")
