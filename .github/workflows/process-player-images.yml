@@ -68,8 +68,16 @@ jobs:
               dest = f"assets/player-cutouts/player-{idx:02d}.png"
               print(f"\nProcessing player {idx}/{len(urls)}")
               subprocess.run([
-                  "curl", "-L", "--fail", "--retry", "4", "--retry-delay", "2",
-                  "-A", "Mozilla/5.0", "-e", "https://www.arsenal.com/",
+                  "curl", "-L", "--fail", "--retry", "5", "--retry-delay", "3",
+                  "--http1.1",
+                  "-A", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/142.0 Safari/537.36",
+                  "-e", "https://www.arsenal.com/",
+                  "-H", "Origin: https://www.arsenal.com",
+                  "-H", "Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                  "-H", "Accept-Language: en-US,en;q=0.9",
+                  "-H", "Sec-Fetch-Dest: image",
+                  "-H", "Sec-Fetch-Mode: no-cors",
+                  "-H", "Sec-Fetch-Site: same-site",
                   "-o", raw, url
               ], check=True)
               with Image.open(raw) as src:
