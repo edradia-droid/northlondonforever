@@ -6,6 +6,35 @@
 <meta name="description" content="Arsenal latest fixtures, competitions, lineup and news dashboard.">
 <title>Arsenal Hub | Latest Club Information</title>
 <link rel="stylesheet" href="styles.css">
+<style id="nl4-fixture-two-column-fix">
+/* NL4 FIXTURE CALENDAR — DEFINITIVE TWO-COLUMN LAYOUT */
+#calendar .calendar-grid{
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:12px !important;
+  width:100% !important;
+}
+#calendar .calendar-card{
+  box-sizing:border-box !important;
+  width:100% !important;
+  min-width:0 !important;
+}
+@media (max-width:700px){
+  #calendar .calendar-grid{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:8px !important;
+  }
+  #calendar .calendar-card{
+    min-width:0 !important;
+    padding:12px 8px !important;
+  }
+}
+@media (max-width:380px){
+  #calendar .calendar-grid{gap:6px !important;}
+  #calendar .calendar-card{padding:10px 6px !important;}
+}
+</style>
 </head>
 <body>
 <div class="app-shell">
