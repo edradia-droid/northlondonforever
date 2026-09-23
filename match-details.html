@@ -1312,6 +1312,38 @@
       els.starters.innerHTML = markings + figures;
     }
 
+    const ARSENAL_SQUAD_IMAGE_URLS = {
+      "david raya":"https://assets.arsenal.com//prod/images/large_landscape/5a548482772b-arsenalmenssquad26271david-raya.jpg",
+      "kepa arrizabalaga":"https://assets.arsenal.com//prod/images/large_landscape/ad0f18b8d7ef-arsenalmenssquad262713kepa-arrizabalaga.jpg",
+      "illan meslier":"https://assets.arsenal.com//prod/images/large_landscape/12624e813b99-arsenalmenssquad262730illan-meslier.jpg",
+      "tommy setford":"https://assets.arsenal.com//prod/images/large_landscape/7832ccd7b5ba-arsenalmenssquad262735tommy-setford.jpg",
+      "william saliba":"https://assets.arsenal.com//prod/images/large_landscape/acb476e282e8-2-william-saliba.jpg",
+      "cristhian mosquera":"https://assets.arsenal.com//prod/images/large_landscape/c1658641317c-arsenalmenssquad26273cristhian-mosquera.jpg",
+      "ben white":"https://assets.arsenal.com//prod/images/large_landscape/c83cc5eae5b9-4-ben-white.jpg",
+      "piero hincapie":"https://assets.arsenal.com//prod/images/large_landscape/6fa955383c36-arsenalmenssquad26275piero-hincapie.jpg",
+      "gabriel magalhaes":"https://assets.arsenal.com//prod/images/large_landscape/6123e9cc3496-arsenalmenssquad26276gabriel-magalhaes.jpg",
+      "jurrien timber":"https://assets.arsenal.com//prod/images/large_landscape/aec7b56314c4-arsenalmenssquad262712jurrien-timber.jpg",
+      "ezri konsa":"https://assets.arsenal.com//prod/images/large_landscape/21d0c9b0debd-arsenalmenssquad262715enzri-konsa.jpg",
+      "riccardo calafiori":"https://assets.arsenal.com//prod/images/large_landscape/7e33fd9a4107-33-riccardo-calafiori.jpg",
+      "declan rice":"https://assets.arsenal.com//prod/images/large_landscape/ba8ef1095384-arsenalmenssquad262741declan-rice.jpg",
+      "bruno guimaraes":"https://assets.arsenal.com//prod/images/large_landscape/41f0e146d909-arsenalmenssquad262739bruno-guimaraes.jpg",
+      "martin ødegaard":"https://assets.arsenal.com//prod/images/large_landscape/dd168c02d4e3-arsenalmenssquad26278martin-odegaard.jpg",
+      "martin odegaard":"https://assets.arsenal.com//prod/images/large_landscape/dd168c02d4e3-arsenalmenssquad26278martin-odegaard.jpg",
+      "martín zubimendi":"https://assets.arsenal.com//prod/images/large_landscape/27193ebff6e1-arsenalmenssquad262736martin-zubimendi.jpg",
+      "martin zubimendi":"https://assets.arsenal.com//prod/images/large_landscape/27193ebff6e1-arsenalmenssquad262736martin-zubimendi.jpg",
+      "mikel merino":"https://assets.arsenal.com//prod/images/large_landscape/a6a130950b81-arsenalmenssquad262723mikel-merino.jpg",
+      "myles lewis-skelly":"https://assets.arsenal.com//prod/images/large_landscape/9cc3c7715139-arsenalmenssquad262749myles-lewis-skelly.jpg",
+      "eberechi eze":"https://assets.arsenal.com//prod/images/large_landscape/9dd24026490e-arsenalmenssquad262710eberechi-eze.jpg",
+      "ethan nwaneri":"https://assets.arsenal.com//prod/images/large_landscape/81f9d2df3088-arsenalmenssquad262722ethan-nwaneri.jpg",
+      "max dowman":"https://assets.arsenal.com//prod/images/large_landscape/6e39ec50e3ae-56-max-dowman.jpg",
+      "christos tzolis":"https://assets.arsenal.com//prod/images/large_landscape/e1fb697fbe1b-arsenalmenssquad262717christos-tzolis.jpg",
+      "bukayo saka":"https://assets.arsenal.com//prod/images/large_landscape/87fab49199d9-arsenalmenssquad26277bukayo-saka.jpg",
+      "noni madueke":"https://assets.arsenal.com//prod/images/large_landscape/444bf3ad4723-arsenalmenssquad262720noni-madueke.jpg",
+      "kai havertz":"https://assets.arsenal.com//prod/images/large_landscape/7765ab9a29eb-arsenalmenssquad262729kai-havertz.jpg",
+      "viktor gyökeres":"https://assets.arsenal.com//prod/images/large_landscape/42b4d7ae8778-arsenalmenssquad262714viktor-gyokeres.jpg",
+      "viktor gyokeres":"https://assets.arsenal.com//prod/images/large_landscape/42b4d7ae8778-arsenalmenssquad262714viktor-gyokeres.jpg"
+    };
+
     async function loadPlayerMedia(rows){
       const names = [...new Set(rows.map(r => String(r.player_name || '').trim()).filter(Boolean))];
       const map = new Map();
@@ -1357,6 +1389,16 @@
       } catch (error) {
         console.warn('NL4 legacy player media unavailable:', error.message);
       }
+
+      // Official Arsenal image fallback when Supabase has no image URL.
+      names.forEach(name => {
+        const key = String(name).trim().toLowerCase();
+        const source = ARSENAL_SQUAD_IMAGE_URLS[key];
+        if (!source) return;
+        const current = map.get(key) || { image:'', shirt:'' };
+        if (!current.image) current.image = source;
+        map.set(key, current);
+      });
 
       const aliases = {
         'ezri konsa ngoyo':'ezri konsa',
