@@ -876,6 +876,21 @@ document.addEventListener("DOMContentLoaded", function () {
     }[ch]));
   }
 
+  // Local processed cutouts prevent Admin image URLs from restoring opaque backgrounds.
+  const processedCutouts = {
+    "david raya":"player-01.png","kepa arrizabalaga":"player-02.png","illan meslier":"player-03.png","tommy setford":"player-04.png",
+    "william saliba":"player-05.png","cristhian mosquera":"player-06.png","ben white":"player-07.png","piero hincapie":"player-08.png",
+    "gabriel magalhaes":"player-09.png","jurrien timber":"player-10.png","ezri konsa":"player-11.png","riccardo calafiori":"player-12.png",
+    "declan rice":"player-13.png","bruno guimaraes":"player-14.png","martin odegaard":"player-15.png","martin zubimendi":"player-16.png",
+    "mikel merino":"player-17.png","myles lewis skelly":"player-18.png","eberechi eze":"player-19.png","ethan nwaneri":"player-20.png",
+    "max dowman":"player-21.png","christos tzolis":"player-22.png","bukayo saka":"player-23.png","noni madueke":"player-24.png",
+    "kai havertz":"player-25.png","viktor gyokeres":"player-26.png"
+  };
+
+  function processedImageFor(name){
+    const file = processedCutouts[normalize(name)];
+    return file ? "assets/player-cutouts/" + file : "";
+  }
   function genericCard(row, index){
     const article = document.createElement("article");
     article.className = "player-card";
@@ -916,7 +931,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const img = card.querySelector(".player-img img");
     if (img) {
-      if (row.image_url) img.src = row.image_url;
+      const processedImage = processedImageFor(name);
+      if (processedImage) img.src = processedImage;
+      else if (row.image_url) img.src = row.image_url;
       img.alt = name;
     }
 
