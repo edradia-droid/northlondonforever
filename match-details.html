@@ -66,6 +66,15 @@
     .player-marker:hover{z-index:35;transform:translate(-50%,-53%) scale(calc(var(--depth,1) * 1.08));filter:drop-shadow(0 20px 16px rgba(0,0,0,.8))}
     .player-ground-shadow{position:absolute;left:50%;bottom:22px;width:58px;height:13px;border-radius:50%;background:rgba(0,0,0,.58);filter:blur(6px);transform:translateX(-50%) rotateX(70deg);z-index:0}
     .kit-player{position:relative;width:88px;height:82px;margin:0 auto;z-index:3;animation:kitFloat 3.5s ease-in-out infinite}
+    .kit-player-photo{
+      position:absolute!important;left:50%!important;top:0!important;
+      width:58px!important;height:66px!important;transform:translateX(-50%)!important;
+      object-fit:cover!important;object-position:center 18%!important;
+      border-radius:10px 10px 12px 12px!important;
+      border:2px solid rgba(255,255,255,.3)!important;
+      box-shadow:0 10px 14px rgba(0,0,0,.42)!important;
+      z-index:6!important;pointer-events:none!important;background:#111!important;
+    }
     .kit-shirt{position:absolute;left:50%;top:0;width:58px;height:66px;transform:translateX(-50%) perspective(220px) rotateX(-2deg);clip-path:polygon(17% 0,83% 0,94% 14%,87% 100%,13% 100%,6% 14%);border-radius:10px 10px 12px 12px;background:linear-gradient(90deg,#940018 0,#c90025 20%,#e3062c 50%,#c90025 80%,#8d0017 100%);border:2px solid rgba(255,255,255,.3);box-shadow:inset 0 7px 8px rgba(255,255,255,.08),inset 0 -12px 18px rgba(70,0,12,.28),0 10px 14px rgba(0,0,0,.42);overflow:hidden}
     .kit-shirt::before,.kit-shirt::after{
   content:"";
@@ -104,7 +113,9 @@
     .sub-photo,.sub-num,.sub-time{display:none!important}.sub-name{display:block;min-width:0;font-size:10px;font-weight:900;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .broadcast-side .empty{padding:25px 13px}
     @media(max-width:980px){.broadcast-grid{grid-template-columns:minmax(0,1fr) 125px;gap:7px;padding-left:8px;padding-right:8px}.broadcast-side{margin-top:18px}.broadcast-subs{grid-template-columns:1fr}.pitch-stage{min-height:560px}.football-pitch{width:min(760px,96%)}}
-    @media(max-width:700px){.broadcast-lineup{min-height:0}.broadcast-top{padding:20px 12px 8px}.broadcast-kicker{font-size:24px}.formation-badge{font-size:12px;min-width:68px;padding:8px 10px}.broadcast-grid{grid-template-columns:minmax(0,1fr) 132px;gap:6px;padding:0 5px 14px}.pitch-stage{min-height:500px;padding:26px 0 18px}.football-pitch{width:96%;aspect-ratio:72/104;transform:none}.player-marker{width:68px;height:92px;transform:translate(-50%,-50%) scale(var(--depth,1))}.kit-player{width:62px;height:60px}.kit-shirt{width:43px;height:49px}.kit-back-name{display:none!important}.kit-front-number,.kit-back-number{top:13px;font-size:24px}.kit-collar{width:15px;height:6px;border-width:2px}.player-pos{right:0;top:36px;font-size:5px;min-width:20px;padding:3px}.player-name{bottom:0;width:68px;min-height:23px;font-size:6.2px;padding:4px 3px;letter-spacing:.1px}.player-ground-shadow{bottom:17px;width:40px;height:9px}.broadcast-side{margin-top:14px;margin-bottom:14px}.broadcast-side-head{padding:9px 8px;font-size:10px}.broadcast-subs{grid-template-columns:1fr;padding:3px 0}.broadcast-sub{grid-template-columns:24px 25px minmax(0,1fr);gap:4px;padding:5px 5px}.sub-photo{width:22px;height:27px}.sub-num{height:21px;font-size:8px}.sub-name{font-size:7px}.sub-time{display:none}}
+    @media(max-width:700px){
+    .kit-player-photo{width:43px!important;height:49px!important}
+    .broadcast-lineup{min-height:0}.broadcast-top{padding:20px 12px 8px}.broadcast-kicker{font-size:24px}.formation-badge{font-size:12px;min-width:68px;padding:8px 10px}.broadcast-grid{grid-template-columns:minmax(0,1fr) 132px;gap:6px;padding:0 5px 14px}.pitch-stage{min-height:500px;padding:26px 0 18px}.football-pitch{width:96%;aspect-ratio:72/104;transform:none}.player-marker{width:68px;height:92px;transform:translate(-50%,-50%) scale(var(--depth,1))}.kit-player{width:62px;height:60px}.kit-shirt{width:43px;height:49px}.kit-back-name{display:none!important}.kit-front-number,.kit-back-number{top:13px;font-size:24px}.kit-collar{width:15px;height:6px;border-width:2px}.player-pos{right:0;top:36px;font-size:5px;min-width:20px;padding:3px}.player-name{bottom:0;width:68px;min-height:23px;font-size:6.2px;padding:4px 3px;letter-spacing:.1px}.player-ground-shadow{bottom:17px;width:40px;height:9px}.broadcast-side{margin-top:14px;margin-bottom:14px}.broadcast-side-head{padding:9px 8px;font-size:10px}.broadcast-subs{grid-template-columns:1fr;padding:3px 0}.broadcast-sub{grid-template-columns:24px 25px minmax(0,1fr);gap:4px;padding:5px 5px}.sub-photo{width:22px;height:27px}.sub-num{height:21px;font-size:8px}.sub-name{font-size:7px}.sub-time{display:none}}
     .pre-lineup-subs-panel{margin-bottom:22px;border-color:rgba(216,173,69,.22);background:linear-gradient(145deg,rgba(216,173,69,.07),rgba(16,16,16,.96) 32%)}
     .pre-lineup-subs-panel .pre-lineup-subs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:18px;overflow:visible}
     .pre-lineup-subs-panel .broadcast-sub{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px;border:1px solid rgba(255,255,255,.07);border-radius:12px;background:#111}
@@ -1292,6 +1303,7 @@
               <span class="kit-front-number" aria-hidden="true">${esc(safeShirtNumber)}</span>
               <span class="kit-back-number">${esc(safeShirtNumber)}</span>
             </span>
+            ${media.image ? '<img class="kit-player-photo" src="' + esc(media.image) + '" alt="' + esc(displayName) + '" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden=true">' : ''}
           </div>
           <span class="player-name">${esc(displayName)}${outgoingBadge}</span>
         </div>`;
@@ -1303,26 +1315,58 @@
       const names = [...new Set(rows.map(r => String(r.player_name || '').trim()).filter(Boolean))];
       const map = new Map();
       if (!names.length) return map;
+
+      // 2026/27 squad images are stored in premier_league_player_stats.
+      // Keep this query independent from the legacy players table.
       try {
-        const [{ data: players, error: playersError }, { data: statsPlayers, error: statsError }] = await Promise.all([
-          db.from('players').select('name,image_url,shirt_number').in('name', names),
-          db.from('premier_league_player_stats').select('player_name,image_url').in('player_name', names)
-        ]);
-        if (playersError) throw playersError;
-        (players || []).forEach(row => {
-          if (!row.name) return;
-          map.set(String(row.name).trim().toLowerCase(), { image: row.image_url || '', shirt: row.shirt_number ?? '' });
-        });
-        if (!statsError) (statsPlayers || []).forEach(row => {
-          const key = String(row.player_name || '').trim().toLowerCase();
-          if (!key) return;
-          const current = map.get(key) || {};
-          if (!current.image && row.image_url) current.image = row.image_url;
-          map.set(key,current);
-        });
+        const { data: statsPlayers, error: statsError } = await db
+          .from('premier_league_player_stats')
+          .select('player_name,image_url')
+          .in('player_name', names);
+
+        if (!statsError) {
+          (statsPlayers || []).forEach(row => {
+            const key = String(row.player_name || '').trim().toLowerCase();
+            if (!key) return;
+            map.set(key, { image: row.image_url || '', shirt: '' });
+          });
+        } else {
+          console.warn('NL4 squad image lookup unavailable:', statsError.message);
+        }
       } catch (error) {
-        console.warn('NL4 lineup player media unavailable:', error.message);
+        console.warn('NL4 squad image lookup unavailable:', error.message);
       }
+
+      try {
+        const { data: players, error: playersError } = await db
+          .from('players')
+          .select('name,image_url,shirt_number')
+          .in('name', names);
+
+        if (!playersError) {
+          (players || []).forEach(row => {
+            if (!row.name) return;
+            const key = String(row.name).trim().toLowerCase();
+            const current = map.get(key) || { image: '', shirt: '' };
+            if (!current.image && row.image_url) current.image = row.image_url;
+            if (row.shirt_number !== null && row.shirt_number !== undefined) current.shirt = row.shirt_number;
+            map.set(key, current);
+          });
+        }
+      } catch (error) {
+        console.warn('NL4 legacy player media unavailable:', error.message);
+      }
+
+      const aliases = {
+        'ezri konsa ngoyo':'ezri konsa',
+        'martín zubimendi ibáñez':'martín zubimendi',
+        'martin zubimendi ibanez':'martin zubimendi'
+      };
+      Object.entries(aliases).forEach(([from,to]) => {
+        const source = map.get(to);
+        if (source && !map.has(from)) map.set(from, {...source});
+      });
+
       return map;
     }
 
