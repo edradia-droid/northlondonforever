@@ -80,6 +80,26 @@ jobs:
                                   alpha_matting_erode_size=10)
                   result.save(dest, "PNG", optimize=True)
                   print(f"Saved {dest} ({src.size[0]}x{src.size[1]})")
+
+          # Gabriel's official portrait has a particularly difficult dark backdrop.
+          # Re-run only Gabriel with IS-Net, which separates dark backgrounds more
+          # cleanly than the generic U2Net pass on this specific source.
+          gabriel_raw = "/tmp/player-09.jpg"
+          gabriel_dest = "assets/player-cutouts/player-09.png"
+          gabriel_session = new_session("isnet-general-use")
+          with Image.open(gabriel_raw) as src:
+              src = src.convert("RGB")
+              result = remove(
+                  src,
+                  session=gabriel_session,
+                  alpha_matting=True,
+                  alpha_matting_foreground_threshold=245,
+                  alpha_matting_background_threshold=5,
+                  alpha_matting_erode_size=12,
+              )
+              result.save(gabriel_dest, "PNG", optimize=True)
+              print("Reprocessed Gabriel Magalhaes with IS-Net")
+
           print(f"\nDONE: generated {len(urls)} transparent player images.")
           PY
 
@@ -94,5 +114,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add assets/player-cutouts
-          git commit -m "Create clean transparent cutouts for all players"
+          git commit -m "Improve Gabriel Magalhaes transparent cutout"
           git push
