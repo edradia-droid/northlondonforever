@@ -63,8 +63,25 @@ jobs:
           os.makedirs("assets/player-cutouts", exist_ok=True)
           session = new_session("u2net")
 
+          def border_alpha_mean(image, width=12):
+              rgba = image.convert("RGBA")
+              alpha = rgba.getchannel("A")
+              w, h = alpha.size
+              px = alpha.load()
+              values = []
+              for y in range(min(width, h)):
+                  for x in range(w):
+                      values.append(px[x, y])
+                      values.append(px[x, h - 1 - y])
+              for x in range(min(width, w)):
+                  for y in range(width, h - width):
+                      values.append(px[x, y])
+                      values.append(px[w - 1 - x, y])
+              return sum(values) / max(1, len(values))
+
           for idx, url in enumerate(urls, 1):
               raw = f"/tmp/player-{idx:02d}.jpg"
+              candidate = f"/tmp/player-{idx:02d}-candidate.png"
               dest = f"assets/player-cutouts/player-{idx:02d}.png"
               print(f"\nProcessing player {idx}/{len(urls)}")
               subprocess.run([
@@ -86,26 +103,43 @@ jobs:
                                   alpha_matting_foreground_threshold=240,
                                   alpha_matting_background_threshold=10,
                                   alpha_matting_erode_size=10)
-                  result.save(dest, "PNG", optimize=True)
-                  print(f"Saved {dest} ({src.size[0]}x{src.size[1]})")
+                  result.save(candidate, "PNG", optimize=True)
 
-          # Use IS-Net for the two portraits that need stronger separation.
-          for idx, label in ((9, "Gabriel Magalhaes"), (15, "Martin Odegaard")):
-              raw = f"/tmp/player-{idx:02d}.jpg"
-              dest = f"assets/player-cutouts/player-{idx:02d}.png"
-              special_session = new_session("isnet-general-use")
-              with Image.open(raw) as src:
-                  src = src.convert("RGB")
-                  result = remove(
-                      src,
-                      session=special_session,
-                      alpha_matting=True,
-                      alpha_matting_foreground_threshold=250,
-                      alpha_matting_background_threshold=3,
-                      alpha_matting_erode_size=15,
-                  )
-                  result.save(dest, "PNG", optimize=True)
-                  print(f"Reprocessed {label} with IS-Net")
+              # Safety rule: never replace an already-clean transparent cutout just
+              # because a new model produced a different result. Only replace images
+              # whose existing edge is still opaque. Gabriel is explicitly reprocessed.
+              replace = idx == 9
+              if os.path.exists(dest) and not replace:
+                  with Image.open(dest) as existing:
+                      existing_edge = border_alpha_mean(existing)
+                  replace = existing_edge > 24
+                  print(f"Existing {dest} edge alpha mean={existing_edge:.1f}; " +
+                        ("will replace" if replace else "keeping existing clean cutout"))
+              elif not os.path.exists(dest):
+                  replace = True
+
+              if replace:
+                  os.replace(candidate, dest)
+                  print(f"Saved clean cutout {dest}")
+              else:
+                  os.remove(candidate)
+
+          # Gabriel gets the stronger IS-Net pass, regardless of the safety check.
+          raw = "/tmp/player-09.jpg"
+          dest = "assets/player-cutouts/player-09.png"
+          special_session = new_session("isnet-general-use")
+          with Image.open(raw) as src:
+              src = src.convert("RGB")
+              result = remove(
+                  src,
+                  session=special_session,
+                  alpha_matting=True,
+                  alpha_matting_foreground_threshold=250,
+                  alpha_matting_background_threshold=3,
+                  alpha_matting_erode_size=15,
+              )
+              result.save(dest, "PNG", optimize=True)
+              print("Reprocessed Gabriel Magalhaes with IS-Net")
 
           print(f"\nDONE: generated {len(urls)} transparent player images.")
           PY
