@@ -284,6 +284,36 @@ body.fixtures-sidebar-page #sidebar .sidebar-bottom{
 @media(max-width:600px){.unified-card-bottom .fixture-card-actions{gap:5px}.unified-card-bottom .predict-lineup-link{font-size:8px;padding:7px 8px}}
 </style>
 
+
+<style id="fixtures-two-per-row-fix">
+/* FIXTURES PAGE — TWO FIXTURES PER ROW */
+.unified-match-grid{
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:18px !important;
+  width:100% !important;
+}
+.unified-match-card{
+  width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+}
+@media(max-width:700px){
+  .unified-match-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:10px !important;
+  }
+  .unified-match-card{
+    min-width:0 !important;
+    padding:12px 9px !important;
+  }
+}
+@media(max-width:390px){
+  .unified-match-grid{gap:7px !important;}
+  .unified-match-card{padding:10px 7px !important;}
+}
+</style>
+
 </head>
 <body class="nl4-unified-sidebar fixtures-sidebar-page"><button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button>
 <div class="app-shell">
