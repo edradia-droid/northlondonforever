@@ -28,6 +28,7 @@ jobs:
         run: |
           python - <<'PY'
           import os, subprocess
+          from collections import deque
           from PIL import Image
           from rembg import remove, new_session
 
@@ -61,28 +62,53 @@ jobs:
           ]
 
           os.makedirs("assets/player-cutouts", exist_ok=True)
-          session = new_session("u2net")
 
-          def border_alpha_mean(image, width=12):
-              rgba = image.convert("RGBA")
-              alpha = rgba.getchannel("A")
-              w, h = alpha.size
-              px = alpha.load()
-              values = []
-              for y in range(min(width, h)):
-                  for x in range(w):
-                      values.append(px[x, y])
-                      values.append(px[x, h - 1 - y])
-              for x in range(min(width, w)):
-                  for y in range(width, h - width):
-                      values.append(px[x, y])
-                      values.append(px[w - 1 - x, y])
-              return sum(values) / max(1, len(values))
+          # IS-Net is used for every player. This avoids preserving any old
+          # opaque/black-background PNG just because it happened to exist.
+          session = new_session("isnet-general-use")
+
+          def remove_border_black(img, threshold=95):
+              """Remove dark pixels connected to the image border only.
+              This catches black/near-black backdrops left behind by segmentation
+              without deleting disconnected dark hair, boots, or kit details.
+              """
+              rgba = img.convert("RGBA")
+              px = rgba.load()
+              w, h = rgba.size
+              seen = bytearray(w * h)
+              q = deque()
+
+              def add(x, y):
+                  i = y * w + x
+                  if seen[i]:
+                      return
+                  r, g, b, a = px[x, y]
+                  if a == 0:
+                      seen[i] = 1
+                      return
+                  if max(r, g, b) <= threshold:
+                      seen[i] = 1
+                      q.append((x, y))
+
+              for x in range(w):
+                  add(x, 0); add(x, h - 1)
+              for y in range(h):
+                  add(0, y); add(w - 1, y)
+
+              while q:
+                  x, y = q.popleft()
+                  px[x, y] = (px[x, y][0], px[x, y][1], px[x, y][2], 0)
+                  if x > 0: add(x - 1, y)
+                  if x + 1 < w: add(x + 1, y)
+                  if y > 0: add(x, y - 1)
+                  if y + 1 < h: add(x, y + 1)
+
+              return rgba
 
           for idx, url in enumerate(urls, 1):
               raw = f"/tmp/player-{idx:02d}.jpg"
-              candidate = f"/tmp/player-{idx:02d}-candidate.png"
               dest = f"assets/player-cutouts/player-{idx:02d}.png"
+
               print(f"\nProcessing player {idx}/{len(urls)}")
               subprocess.run([
                   "curl", "-L", "--fail", "--retry", "5", "--retry-delay", "3",
@@ -97,59 +123,62 @@ jobs:
                   "-H", "Sec-Fetch-Site: same-site",
                   "-o", raw, url
               ], check=True)
+
               with Image.open(raw) as src:
                   src = src.convert("RGB")
-                  result = remove(src, session=session, alpha_matting=True,
-                                  alpha_matting_foreground_threshold=240,
-                                  alpha_matting_background_threshold=10,
-                                  alpha_matting_erode_size=10)
-                  result.save(candidate, "PNG", optimize=True)
+                  result = remove(
+                      src,
+                      session=session,
+                      alpha_matting=True,
+                      alpha_matting_foreground_threshold=250,
+                      alpha_matting_background_threshold=5,
+                      alpha_matting_erode_size=15,
+                  )
+                  # Second pass specifically removes any black/near-black
+                  # background still connected to the outside edge.
+                  result = remove_border_black(result, threshold=95)
+                  result.save(dest, "PNG", optimize=True)
 
-              # Safety rule: never replace an already-clean transparent cutout just
-              # because a new model produced a different result. Only replace images
-              # whose existing edge is still opaque. Gabriel is explicitly reprocessed.
-              replace = idx == 9
-              if os.path.exists(dest) and not replace:
-                  with Image.open(dest) as existing:
-                      existing_edge = border_alpha_mean(existing)
-                  replace = existing_edge > 24
-                  print(f"Existing {dest} edge alpha mean={existing_edge:.1f}; " +
-                        ("will replace" if replace else "keeping existing clean cutout"))
-              elif not os.path.exists(dest):
-                  replace = True
+              print(f"Saved rebuilt cutout {dest}")
 
-              if replace:
-                  os.replace(candidate, dest)
-                  print(f"Saved clean cutout {dest}")
-              else:
-                  os.remove(candidate)
-
-          # Gabriel gets the stronger IS-Net pass, regardless of the safety check.
-          raw = "/tmp/player-09.jpg"
-          dest = "assets/player-cutouts/player-09.png"
-          special_session = new_session("isnet-general-use")
-          with Image.open(raw) as src:
-              src = src.convert("RGB")
-              result = remove(
-                  src,
-                  session=special_session,
-                  alpha_matting=True,
-                  alpha_matting_foreground_threshold=250,
-                  alpha_matting_background_threshold=3,
-                  alpha_matting_erode_size=15,
-              )
-              result.save(dest, "PNG", optimize=True)
-              print("Reprocessed Gabriel Magalhaes with IS-Net")
-
-          print(f"\nDONE: generated {len(urls)} transparent player images.")
+          print(f"\nDONE: rebuilt all {len(urls)} player images.")
           PY
 
       - name: Verify every player image
         run: |
-          count=$(find assets/player-cutouts -maxdepth 1 -name 'player-*.png' | wc -l)
-          echo "Generated $count player cutouts"
-          test "$count" -eq 26
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
 
+          files = sorted(Path("assets/player-cutouts").glob("player-*.png"))
+          print(f"Generated {len(files)} player cutouts")
+          assert len(files) == 26, "Expected exactly 26 player cutouts"
+
+          for f in files:
+              with Image.open(f) as im:
+                  assert im.mode == "RGBA", f"{f} is not RGBA"
+                  alpha = im.getchannel("A")
+                  lo, hi = alpha.getextrema()
+                  assert lo < 250, f"{f} has no transparent pixels"
+                  # Check all four corners are transparent. A black rectangle
+                  # reaching a corner means the backdrop was not removed.
+                  corners = [
+                      alpha.getpixel((0, 0)),
+                      alpha.getpixel((im.width - 1, 0)),
+                      alpha.getpixel((0, im.height - 1)),
+                      alpha.getpixel((im.width - 1, im.height - 1)),
+                  ]
+                  assert max(corners) == 0, f"{f} still has an opaque corner: {corners}"
+                  print(f"{f}: alpha range {lo}-{hi}, corners {corners}")
+          PY
+
+      - name: Commit all clean cutouts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/player-cutouts
+          git diff --cached --quiet || git commit -m "Rebuild all player cutouts with transparent backgrounds"
+          git push
       - name: Commit all clean cutouts
         run: |
           git config user.name "github-actions[bot]"
