@@ -18,7 +18,7 @@ jobs:
 
       - name: Install image tools
         run: |
-          python -m pip install --disable-pip-version-check pillow rembg
+          python -m pip install --disable-pip-version-check "rembg[cpu]" pillow
           sudo apt-get update
           sudo apt-get install -y libgl1
 
@@ -69,24 +69,17 @@ jobs:
               print(f"\nProcessing player {idx}/{len(urls)}")
               subprocess.run([
                   "curl", "-L", "--fail", "--retry", "4", "--retry-delay", "2",
-                  "-A", "Mozilla/5.0",
-                  "-e", "https://www.arsenal.com/",
+                  "-A", "Mozilla/5.0", "-e", "https://www.arsenal.com/",
                   "-o", raw, url
               ], check=True)
-
               with Image.open(raw) as src:
                   src = src.convert("RGB")
-                  result = remove(
-                      src,
-                      session=session,
-                      alpha_matting=True,
-                      alpha_matting_foreground_threshold=240,
-                      alpha_matting_background_threshold=10,
-                      alpha_matting_erode_size=10
-                  )
+                  result = remove(src, session=session, alpha_matting=True,
+                                  alpha_matting_foreground_threshold=240,
+                                  alpha_matting_background_threshold=10,
+                                  alpha_matting_erode_size=10)
                   result.save(dest, "PNG", optimize=True)
                   print(f"Saved {dest} ({src.size[0]}x{src.size[1]})")
-
           print(f"\nDONE: generated {len(urls)} transparent player images.")
           PY
 
