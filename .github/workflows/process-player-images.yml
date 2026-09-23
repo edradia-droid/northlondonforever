@@ -46,7 +46,7 @@ jobs:
             "https://assets.arsenal.com//prod/images/large_landscape/7e33fd9a4107-33-riccardo-calafiori.jpg",
             "https://assets.arsenal.com//prod/images/large_landscape/ba8ef1095384-arsenalmenssquad262741declan-rice.jpg",
             "https://assets.arsenal.com//prod/images/large_landscape/41f0e146d909-arsenalmenssquad262739bruno-guimaraes.jpg",
-            "https://upload.wikimedia.org/wikipedia/commons/1/16/Arsenal_v_Everton_%281%29_%28cropped%29.jpg",
+            "https://assets.arsenal.com//prod/images/large_landscape/dd168c02d4e3-arsenalmenssquad26278martin-odegaard.jpg",
             "https://assets.arsenal.com//prod/images/large_landscape/27193ebff6e1-arsenalmenssquad262736martin-zubimendi.jpg",
             "https://assets.arsenal.com//prod/images/large_landscape/a6a130950b81-arsenalmenssquad262723mikel-merino.jpg",
             "https://assets.arsenal.com//prod/images/large_landscape/9cc3c7715139-arsenalmenssquad262749myles-lewis-skelly.jpg",
@@ -81,24 +81,23 @@ jobs:
                   result.save(dest, "PNG", optimize=True)
                   print(f"Saved {dest} ({src.size[0]}x{src.size[1]})")
 
-          # Gabriel's official portrait has a particularly difficult dark backdrop.
-          # Re-run only Gabriel with IS-Net, which separates dark backgrounds more
-          # cleanly than the generic U2Net pass on this specific source.
-          gabriel_raw = "/tmp/player-09.jpg"
-          gabriel_dest = "assets/player-cutouts/player-09.png"
-          gabriel_session = new_session("isnet-general-use")
-          with Image.open(gabriel_raw) as src:
-              src = src.convert("RGB")
-              result = remove(
-                  src,
-                  session=gabriel_session,
-                  alpha_matting=True,
-                  alpha_matting_foreground_threshold=245,
-                  alpha_matting_background_threshold=5,
-                  alpha_matting_erode_size=12,
-              )
-              result.save(gabriel_dest, "PNG", optimize=True)
-              print("Reprocessed Gabriel Magalhaes with IS-Net")
+          # Use IS-Net for the two portraits that need stronger separation.
+          for idx, label in ((9, "Gabriel Magalhaes"), (15, "Martin Odegaard")):
+              raw = f"/tmp/player-{idx:02d}.jpg"
+              dest = f"assets/player-cutouts/player-{idx:02d}.png"
+              special_session = new_session("isnet-general-use")
+              with Image.open(raw) as src:
+                  src = src.convert("RGB")
+                  result = remove(
+                      src,
+                      session=special_session,
+                      alpha_matting=True,
+                      alpha_matting_foreground_threshold=250,
+                      alpha_matting_background_threshold=3,
+                      alpha_matting_erode_size=15,
+                  )
+                  result.save(dest, "PNG", optimize=True)
+                  print(f"Reprocessed {label} with IS-Net")
 
           print(f"\nDONE: generated {len(urls)} transparent player images.")
           PY
@@ -114,5 +113,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add assets/player-cutouts
-          git commit -m "Improve Gabriel Magalhaes transparent cutout"
+          git commit -m "Replace Odegaard and improve transparent player cutouts"
           git push
