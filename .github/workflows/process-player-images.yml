@@ -155,5 +155,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add assets/player-cutouts
-          git commit -m "Replace Odegaard and improve transparent player cutouts"
+          git diff --cached --quiet || git commit -m "Rebuild all player cutouts with transparent backgrounds"
           git push
