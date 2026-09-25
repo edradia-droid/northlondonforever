@@ -72,6 +72,47 @@
 .cl-pl-empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:30px;color:rgba(255,255,255,.8);font-weight:900;z-index:10}
 @media(max-width:980px){.cl-pl-grid{display:block;padding-left:8px;padding-right:8px}.cl-pl-pitch-stage{min-height:600px}.cl-pl-side{margin-top:8px}}
 @media(max-width:700px){.cl-pl-broadcast{min-height:0}.cl-pl-top{padding:20px 12px 8px}.cl-pl-kicker{font-size:24px}.cl-pl-formation{font-size:12px;min-width:68px;padding:8px 10px}.cl-pl-grid{display:block;padding:0 5px 14px}.cl-pl-pitch-stage{min-height:520px;padding:26px 0 26px}.cl-pl-pitch{width:96%;aspect-ratio:72/104}.cl-pl-player{width:68px;height:92px}.cl-pl-kit{width:62px;height:60px}.cl-pl-photo{width:43px!important;height:49px!important}.cl-pl-name{width:68px;min-height:23px;font-size:6.2px;padding:4px 3px}.cl-pl-ground{bottom:17px;width:40px;height:9px}.cl-pl-side{margin-top:6px;margin-bottom:14px}.cl-pl-side-head{padding:9px 8px;font-size:10px}.cl-pl-sub{padding:7px}.cl-pl-sub img{width:28px;height:34px}.cl-pl-sub strong{font-size:8px}.cl-pl-sub small{font-size:7px}}
+</style><style id="nl4-ucl-exact-pl-player-renderer">
+/* UCL lineup uses the same player-photo renderer as Premier League Match Details. */
+.cl-pl-pitch .player-marker{
+  position:absolute;left:var(--x);top:var(--y);width:96px;height:122px;
+  transform:translate(-50%,-50%) scale(var(--depth,1));
+  transform-origin:center center;text-align:center;z-index:8;
+  filter:drop-shadow(0 13px 10px rgba(0,0,0,.62));
+}
+.cl-pl-pitch .player-ground-shadow{
+  position:absolute;left:50%;bottom:22px;width:58px;height:13px;border-radius:50%;
+  background:rgba(0,0,0,.58);filter:blur(6px);
+  transform:translateX(-50%) rotateX(70deg);z-index:0;
+}
+.cl-pl-pitch .kit-player{
+  position:relative;width:88px;height:82px;margin:0 auto;z-index:3;
+}
+.cl-pl-pitch .kit-player-photo{
+  position:absolute!important;left:50%!important;top:0!important;
+  width:58px!important;height:66px!important;
+  transform:translateX(-50%)!important;
+  object-fit:cover!important;object-position:center 18%!important;
+  border-radius:10px 10px 12px 12px!important;border:0!important;
+  box-shadow:0 10px 14px rgba(0,0,0,.42)!important;
+  z-index:6!important;pointer-events:none!important;
+  background:transparent!important;mix-blend-mode:normal!important;
+  display:block!important;visibility:visible!important;opacity:1!important;
+}
+.cl-pl-pitch .player-name{
+  position:absolute;left:50%;top:70px!important;bottom:auto!important;
+  transform:translateX(-50%);display:flex;align-items:center;justify-content:center;
+  width:96px;min-height:30px;padding:5px 6px;color:#fff;
+  font-size:9px;font-weight:1000;line-height:1.05;text-transform:uppercase;
+  text-shadow:0 2px 4px #000;z-index:9;
+}
+@media(max-width:700px){
+  .cl-pl-pitch .player-marker{width:68px;height:92px}
+  .cl-pl-pitch .kit-player{width:62px;height:60px}
+  .cl-pl-pitch .kit-player-photo{width:43px!important;height:49px!important}
+  .cl-pl-pitch .player-name{top:55px!important;width:68px;min-height:23px;font-size:6.2px;padding:4px 3px}
+  .cl-pl-pitch .player-ground-shadow{bottom:17px;width:40px;height:9px}
+}
 </style></head>
 <body>
 <main class="main"><div class="shell">
@@ -88,6 +129,6 @@
 <script>const q=new URLSearchParams(location.search);let i=Number(q.get('match'));if(!Number.isInteger(i)||i<0||i>7)i=0;predictionLink.href='champions-league-prediction.html?match='+i;const logos={'Arsenal':42,'Napoli':492,'Lille':79,'Bayern München':157,'Slavia Praha':560,'Borussia Dortmund':165,'Real Madrid':541,'Real Betis':543,'Sabah':563};window.addEventListener('DOMContentLoaded',()=>{const obs=new MutationObserver(()=>{[homeTeam,awayTeam].forEach((e,j)=>{const img=j?awayLogo:homeLogo,id=logos[e.textContent];if(id&&!img.src){img.src='https://media.api-sports.io/football/teams/'+id+'.png';img.alt=e.textContent+' crest'}})});obs.observe(document.body,{subtree:true,childList:true,characterData:true})});</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
 <script src="supabase-client.js"></script>
-<script src="ucl-match-details-sync.js?v=20260925-photos4"></script>
+<script src="ucl-match-details-sync.js?v=20260926-plphotos"></script>
 <script src="ucl-match-comparison-live.js?v=20260912-5"></script>
 </body></html>
