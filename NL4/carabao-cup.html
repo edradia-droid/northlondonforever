@@ -73,17 +73,12 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
 /* MATCH CENTRE + ARSENAL ROUTE */
 .bracket-wrap{position:relative}
 .bracket{position:relative;z-index:1}
+.arsenal-bracket-logo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:430px;height:430px;object-fit:contain;opacity:.055;filter:grayscale(1) brightness(1.8);pointer-events:none;z-index:0}
 .arsenal-route-svg{position:absolute;left:4px;top:20px;width:1420px;height:100%;min-height:100%;z-index:0;pointer-events:none;overflow:visible}
 .arsenal-route-glow{fill:none;stroke:rgba(232,245,239,.22);stroke-width:10;stroke-linecap:round;stroke-linejoin:round;filter:blur(7px)}
 .arsenal-route{fill:none;stroke:var(--green);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:9 8;filter:drop-shadow(0 0 6px rgba(0,143,94,.8));animation:routeFlow 2.2s linear infinite}
 @keyframes routeFlow{to{stroke-dashoffset:-34}}
 .arsenal-route-point{fill:#e8f5ef;stroke:var(--green);stroke-width:3;filter:drop-shadow(0 0 7px rgba(0,143,94,.9))}
-.tie.arsenal-current,.tie.arsenal-upcoming{border-color:rgba(0,143,94,.45)!important;border-left:3px solid var(--green)!important;box-shadow:0 0 30px rgba(0,143,94,.22),inset 0 0 24px rgba(0,143,94,.07)!important;isolation:isolate;overflow:visible}
-.tie.arsenal-current .arsenal-perimeter,.tie.arsenal-upcoming .arsenal-perimeter{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;overflow:visible}
-.tie.arsenal-current .arsenal-perimeter path,.tie.arsenal-upcoming .arsenal-perimeter path{fill:none;stroke:var(--green);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:18 82;stroke-dashoffset:0;filter:drop-shadow(0 0 5px rgba(0,143,94,.9));animation:arsenalPerimeterTravel 2.8s linear infinite}
-.tie.arsenal-current:after,.tie.arsenal-upcoming:after{right:-24px;top:50%;width:24px;border-top:1px solid rgba(0,143,94,.55)}
-@keyframes arsenalPerimeterTravel{to{stroke-dashoffset:-100}}
-.tie.arsenal-dim{opacity:.42}
 .bracket-match-centre{width:min(680px,100%);margin:0 auto 0 4px;border:1px solid rgba(0,143,94,.42);border-radius:24px;background:linear-gradient(145deg,rgba(7,24,17,.97),rgba(7,9,12,.98));box-shadow:0 22px 65px rgba(0,0,0,.42),0 0 45px rgba(0,143,94,.08);overflow:hidden;scroll-margin-top:110px;position:relative}
 .bracket-match-centre:before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:linear-gradient(var(--green),var(--gold));box-shadow:0 0 22px rgba(0,143,94,.35)}
 .match-centre-head{padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;gap:15px}
@@ -271,20 +266,15 @@ const ROUND_ORDER=["round3","round4","round5","semifinal","final"];
 
 function stateText(state){return state==="completed"?"RESULTS":state==="upcoming"?"UPCOMING":state==="eliminated"?"ELIMINATED":"NOT REACHED";}
 
-function addArsenalPerimeter(tie){
-  if(!tie||tie.querySelector(".arsenal-perimeter"))return;
-  const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
-  svg.setAttribute("class","arsenal-perimeter");
-  svg.setAttribute("viewBox","0 0 100 100");
-  svg.setAttribute("preserveAspectRatio","none");
-  const path=document.createElementNS("http://www.w3.org/2000/svg","path");
-  path.setAttribute("pathLength","100");
-  path.setAttribute("d","M 0 50 L 0 8 Q 0 0 8 0 L 92 0 Q 100 0 100 8 L 100 92 Q 100 100 92 100 L 8 100 Q 0 100 0 92 Z");
-  svg.appendChild(path);
-  tie.appendChild(svg);
-}
-function renderArsenalPerimeters(){
-  document.querySelectorAll(".tie.arsenal-current,.tie.arsenal-upcoming").forEach(addArsenalPerimeter);
+function addArsenalBracketLogo(){
+  const wrap=document.querySelector(".bracket-wrap");
+  if(!wrap||wrap.querySelector(".arsenal-bracket-logo"))return;
+  const img=document.createElement("img");
+  img.className="arsenal-bracket-logo";
+  img.src="https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg";
+  img.alt="";
+  img.setAttribute("aria-hidden","true");
+  wrap.appendChild(img);
 }
 
 function renderRoundTracker(){
@@ -302,7 +292,7 @@ function renderRoundTracker(){
   }).join("");
   document.querySelectorAll("#round3 .tie").forEach((el,i)=>el.classList.toggle("arsenal-current",i===8));
   document.querySelectorAll("#round4 .tie").forEach((el,i)=>el.classList.toggle("arsenal-upcoming",i===1));
-  renderArsenalPerimeters();
+  addArsenalBracketLogo();
   buildRoute();
   selectRound("round3",false);
 }
@@ -348,7 +338,6 @@ function selectRound(key,focusPanel=true){
   const target=document.getElementById(data.target);
   if(target)target.scrollIntoView({behavior:"smooth",block:"center"});
   updateMatchCentre(key);
-  renderArsenalPerimeters();
   buildRoute();
   if(focusPanel)setTimeout(()=>document.getElementById("matchDetails")?.scrollIntoView({behavior:"smooth",block:"nearest"}),220);
 }
