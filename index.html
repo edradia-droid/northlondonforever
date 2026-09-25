@@ -7,7 +7,12 @@
 <meta content="Arsenal latest fixtures, competitions, lineup and news dashboard." name="description"/>
 <title>Arsenal Hub | Latest Club Information</title>
 <link href="styles.css" rel="stylesheet"/>
-<link href="shared-sidebar.css" rel="stylesheet"/><link href="sidebar-toggle-fix.css" rel="stylesheet"/></head>
+<link href="shared-sidebar.css" rel="stylesheet"/><link href="sidebar-toggle-fix.css" rel="stylesheet"/><style>
+.competition-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.competition-grid .form-card{grid-column:1/-1}
+@media(max-width:720px){.competition-grid{grid-template-columns:1fr 1fr}.competition-grid .form-card{grid-column:1/-1}}
+@media(max-width:480px){.competition-grid{grid-template-columns:1fr}.competition-grid .form-card{grid-column:1}}
+</style></head>
 <body class="nl4-unified-sidebar"><button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button>
 <div class="app-shell">
 <aside class="sidebar" id="sidebar">
@@ -83,7 +88,7 @@
 <div class="stat-card"><small>ARSENAL</small><strong>2</strong><span>Position</span></div>
 <div class="stat-card"><small>PLAYED</small><strong>5</strong><span>Matches</span></div>
 <div class="stat-card"><small>POINTS</small><strong>12</strong><span>Points</span></div>
-<div class="stat-card"><small>FORM</small><strong>W W W W L</strong><span>Latest form</span></div>
+<div class="stat-card form-card"><small>FORM</small><strong>W W W W L</strong><span>Last five matches</span></div>
 </div>
 <p class="lineup-note">Arsenal are 2nd after five league matches. Latest result: Brighton 3–0 Arsenal, 19 September 2026. Form shows the last five completed Premier League matches.</p>
 </section>
@@ -93,7 +98,7 @@
 <div class="stat-card"><small>ARSENAL</small><strong>16</strong><span>Position</span></div>
 <div class="stat-card"><small>PLAYED</small><strong>1</strong><span>Matches</span></div>
 <div class="stat-card"><small>POINTS</small><strong>3</strong><span>League-phase points</span></div>
-<div class="stat-card"><small>FORM</small><strong>W</strong><span>Latest form</span></div>
+<div class="stat-card form-card"><small>FORM</small><strong>W</strong><span>Last five matches</span></div>
 </div>
 <p class="lineup-note">Arsenal are 16th after one league-phase match. Latest result: Napoli 0–1 Arsenal, 9 September 2026. Form shows only completed Champions League matches, up to the last five.</p>
 </section>
