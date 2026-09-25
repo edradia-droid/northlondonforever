@@ -71,13 +71,13 @@ async function load(){
     };
     const imageAliases={'odegaard':'martin odegaard','martin ødegaard':'martin odegaard','martin odegaard':'martin odegaard'};
     const images={
-      'david raya':'assets/player-cutouts/player-01.png','kepa arrizabalaga':'assets/player-cutouts/player-02.png','illan meslier':'assets/player-cutouts/player-03.png','tommy setford':'assets/player-cutouts/player-04.png',
-      'william saliba':'assets/player-cutouts/player-05.png','cristhian mosquera':'assets/player-cutouts/player-06.png','ben white':'assets/player-cutouts/player-07.png','piero hincapie':'assets/player-cutouts/player-08.png',
-      'gabriel magalhaes':'assets/player-cutouts/player-09.png','jurrien timber':'assets/player-cutouts/player-10.png','ezri konsa':'assets/player-cutouts/player-11.png','riccardo calafiori':'assets/player-cutouts/player-12.png',
-      'declan rice':'assets/player-cutouts/player-13.png','bruno guimaraes':'assets/player-cutouts/player-14.png','martin odegaard':'assets/player-cutouts/player-15.png','martin zubimendi':'assets/player-cutouts/player-16.png',
-      'mikel merino':'assets/player-cutouts/player-17.png','myles lewis-skelly':'assets/player-cutouts/player-18.png','eberechi eze':'assets/player-cutouts/player-19.png','ethan nwaneri':'assets/player-cutouts/player-20.png',
-      'max dowman':'assets/player-cutouts/player-21.png','christos tzolis':'assets/player-cutouts/player-22.png','bukayo saka':'assets/player-cutouts/player-23.png','noni madueke':'assets/player-cutouts/player-24.png',
-      'kai havertz':'assets/player-cutouts/player-25.png','viktor gyokeres':'assets/player-cutouts/player-26.png'
+      'david raya':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-01.png','kepa arrizabalaga':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-02.png','illan meslier':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-03.png','tommy setford':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-04.png',
+      'william saliba':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-05.png','cristhian mosquera':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-06.png','ben white':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-07.png','piero hincapie':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-08.png',
+      'gabriel magalhaes':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-09.png','jurrien timber':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-10.png','ezri konsa':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-11.png','riccardo calafiori':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-12.png',
+      'declan rice':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-13.png','bruno guimaraes':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-14.png','martin odegaard':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-15.png','martin zubimendi':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-16.png',
+      'mikel merino':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-17.png','myles lewis-skelly':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-18.png','eberechi eze':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-19.png','ethan nwaneri':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-20.png',
+      'max dowman':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-21.png','christos tzolis':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-22.png','bukayo saka':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-23.png','noni madueke':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-24.png',
+      'kai havertz':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-25.png','viktor gyokeres':'https://raw.githubusercontent.com/edradia-droid/northlondonforever/main/assets/player-cutouts/player-26.png'
     };
     const slots={
       'GK':[50,89],'LB':[13,72],'LCB':[36,74],'CB':[50,74],'RCB':[64,74],'RB':[87,72],
@@ -121,7 +121,7 @@ async function load(){
     const subBox=document.getElementById('clSubstitutes');
     if(subBox)subBox.innerHTML=subs.length?subs.map(row=>{
       const rawKey=normalizeName(row.player_name),key=imageAliases[rawKey]||rawKey,img=images[key],on=row.minute_on!=null?`ON ${row.minute_on}'`:'SUB',off=row.minute_off!=null?` • OFF ${row.minute_off}'`:'';
-      return `<div class="cl-pl-sub">${img?`<img src="${esc(img)}" alt="${esc(row.player_name)}">`:''}<div><strong>${esc(row.player_name)}</strong><small>${esc(on+off)}</small></div></div>`;
+      return `<div class="cl-pl-sub">${img?`<img src="${esc(img)}" alt="${esc(row.player_name)}" loading="eager">`:''}<div><strong>${esc(row.player_name)}</strong><small>${esc(on+off)}</small></div></div>`;
     }).join(''):'<div class="empty">No substitutions recorded.</div>';
   }
 
