@@ -149,7 +149,12 @@
 <div class="player-marker" style="--x:15%;--y:25%;--depth:.82"><span class="player-ground-shadow"></span><div class="kit-player"><img class="kit-player-photo" src="assets/player-cutouts/player-19.png" alt="Eberechi Eze"></div><span class="player-name">EBERECHI EZE</span></div>
 <div class="player-marker" style="--x:50%;--y:18%;--depth:.80"><span class="player-ground-shadow"></span><div class="kit-player"><img class="kit-player-photo" src="assets/player-cutouts/player-26.png" alt="Viktor Gyökeres"></div><span class="player-name">VIKTOR GYÖKERES</span></div>
 </div></div><div class="cl-pl-side"><div class="cl-pl-side-head">SUBSTITUTES</div><div id="clSubstitutes">
-<div class="cl-pl-sub"><img src="assets/player-cutouts/player-14.png" alt="Bruno Guimarães" loading="eager"><div><strong>BRUNO GUIMARÃES</strong><small>ON 65'</small></div></div><div class="cl-pl-sub"><img src="assets/player-cutouts/player-02.png" alt="Kepa Arrizabalaga" loading="eager"><div><strong>KEPA ARRIZABALAGA</strong><small>UNUSED</small></div></div>
+<div class="cl-pl-sub"><img src="assets/player-cutouts/player-14.png" alt="Bruno Guimarães" loading="eager"><div><strong>BRUNO GUIMARÃES</strong><small>ON 65'</small></div></div>
+<div class="cl-pl-sub"><img src="assets/player-cutouts/player-22.png" alt="Christos Tzolis" loading="eager"><div><strong>CHRISTOS TZOLIS</strong><small>ON 66'</small></div></div>
+<div class="cl-pl-sub"><img src="assets/player-cutouts/player-24.png" alt="Noni Madueke" loading="eager"><div><strong>NONI MADUEKE</strong><small>ON 73'</small></div></div>
+<div class="cl-pl-sub"><img src="assets/player-cutouts/player-25.png" alt="Kai Havertz" loading="eager"><div><strong>KAI HAVERTZ</strong><small>ON 73'</small></div></div>
+<div class="cl-pl-sub"><img src="assets/player-cutouts/player-16.png" alt="Martín Zubimendi" loading="eager"><div><strong>MARTÍN ZUBIMENDI</strong><small>ON 82'</small></div></div>
+<div class="cl-pl-sub"><img src="assets/player-cutouts/player-02.png" alt="Kepa Arrizabalaga" loading="eager"><div><strong>KEPA ARRIZABALAGA</strong><small>UNUSED</small></div></div>
 <div class="cl-pl-sub"><img src="assets/player-cutouts/player-03.png" alt="Illan Meslier" loading="eager"><div><strong>ILLAN MESLIER</strong><small>UNUSED</small></div></div>
 <div class="cl-pl-sub"><img src="assets/player-cutouts/player-04.png" alt="Tommy Setford" loading="eager"><div><strong>TOMMY SETFORD</strong><small>UNUSED</small></div></div>
 <div class="cl-pl-sub"><img src="assets/player-cutouts/player-05.png" alt="William Saliba" loading="eager"><div><strong>WILLIAM SALIBA</strong><small>UNUSED</small></div></div>
@@ -159,13 +164,8 @@
 <div class="cl-pl-sub"><img src="assets/player-cutouts/player-18.png" alt="Myles Lewis-Skelly" loading="eager"><div><strong>MYLES LEWIS-SKELLY</strong><small>UNUSED</small></div></div>
 <div class="cl-pl-sub"><img src="assets/player-cutouts/player-20.png" alt="Ethan Nwaneri" loading="eager"><div><strong>ETHAN NWANERI</strong><small>UNUSED</small></div></div>
 <div class="cl-pl-sub"><img src="assets/player-cutouts/player-21.png" alt="Max Dowman" loading="eager"><div><strong>MAX DOWMAN</strong><small>UNUSED</small></div></div>
-</div></div>
-<div class="cl-pl-sub"><img src="assets/player-cutouts/player-22.png" alt="Christos Tzolis" loading="eager"><div><strong>CHRISTOS TZOLIS</strong><small>ON 66'</small></div></div>
-<div class="cl-pl-sub"><img src="assets/player-cutouts/player-24.png" alt="Noni Madueke" loading="eager"><div><strong>NONI MADUEKE</strong><small>ON 73'</small></div></div>
-<div class="cl-pl-sub"><img src="assets/player-cutouts/player-25.png" alt="Kai Havertz" loading="eager"><div><strong>KAI HAVERTZ</strong><small>ON 73'</small></div></div>
-<div class="cl-pl-sub"><img src="assets/player-cutouts/player-16.png" alt="Martín Zubimendi" loading="eager"><div><strong>MARTÍN ZUBIMENDI</strong><small>ON 82'</small></div></div>
 </div></div></div></div></section>
-<section class="panel full"><h2>UCL Team Comparison &amp; Win Probability</h2><div id="teamTotalsBox" class="empty">Loading live Champions League comparison…</div></section>
+ &amp; Win Probability</h2><div id="teamTotalsBox" class="empty">Loading live Champions League comparison…</div></section>
 </div></div></main>
 <script>const q=new URLSearchParams(location.search);let i=Number(q.get('match'));if(!Number.isInteger(i)||i<0||i>7)i=0;predictionLink.href='champions-league-prediction.html?match='+i;const logos={'Arsenal':42,'Napoli':492,'Lille':79,'Bayern München':157,'Slavia Praha':560,'Borussia Dortmund':165,'Real Madrid':541,'Real Betis':543,'Sabah':563};window.addEventListener('DOMContentLoaded',()=>{const obs=new MutationObserver(()=>{[homeTeam,awayTeam].forEach((e,j)=>{const img=j?awayLogo:homeLogo,id=logos[e.textContent];if(id&&!img.src){img.src='https://media.api-sports.io/football/teams/'+id+'.png';img.alt=e.textContent+' crest'}})});obs.observe(document.body,{subtree:true,childList:true,characterData:true})});</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
