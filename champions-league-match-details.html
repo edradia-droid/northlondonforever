@@ -113,6 +113,18 @@
   .cl-pl-pitch .player-name{top:55px!important;width:68px;min-height:23px;font-size:6.2px;padding:4px 3px}
   .cl-pl-pitch .player-ground-shadow{bottom:17px;width:40px;height:9px}
 }
+</style><style id="ucl-lineup-final-fix">
+/* Final UCL Matchday 1 lineup layout — fixed 4-3-3 and visible inline substitutes */
+.cl-pl-pitch .player-marker{width:96px!important;height:122px!important;z-index:20!important}
+.cl-pl-pitch .kit-player-photo{display:block!important;visibility:visible!important;opacity:1!important;position:absolute!important;z-index:30!important}
+#clSubstitutes{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px!important;padding:10px!important}
+#clSubstitutes .cl-pl-sub{display:flex!important;flex:1 1 150px!important;min-width:140px!important;max-width:220px!important;align-items:center!important;gap:9px!important;padding:8px 10px!important}
+#clSubstitutes .cl-pl-sub img{display:block!important;visibility:visible!important;opacity:1!important;width:38px!important;height:44px!important;flex:0 0 38px!important;object-fit:cover!important;object-position:center 18%!important}
+@media(max-width:700px){
+ .cl-pl-pitch .player-marker{width:68px!important;height:92px!important}
+ #clSubstitutes .cl-pl-sub{flex:1 1 135px!important;min-width:125px!important}
+ #clSubstitutes .cl-pl-sub img{width:32px!important;height:37px!important;flex-basis:32px!important}
+}
 </style></head>
 <body>
 <main class="main"><div class="shell">
@@ -136,7 +148,13 @@
 <div class="player-marker" style="--x:50%;--y:33%;--depth:.86"><span class="player-ground-shadow"></span><div class="kit-player"><img class="kit-player-photo" src="assets/player-cutouts/player-15.png" alt="Martin Ødegaard"></div><span class="player-name">MARTIN ØDEGAARD</span></div>
 <div class="player-marker" style="--x:27%;--y:34%;--depth:.86"><span class="player-ground-shadow"></span><div class="kit-player"><img class="kit-player-photo" src="assets/player-cutouts/player-19.png" alt="Eberechi Eze"></div><span class="player-name">EBERECHI EZE</span></div>
 <div class="player-marker" style="--x:50%;--y:15%;--depth:.82"><span class="player-ground-shadow"></span><div class="kit-player"><img class="kit-player-photo" src="assets/player-cutouts/player-26.png" alt="Viktor Gyökeres"></div><span class="player-name">VIKTOR GYÖKERES</span></div>
-</div></div><div class="cl-pl-side"><div class="cl-pl-side-head">SUBSTITUTES</div><div id="clSubstitutes"><div class="empty">Loading substitutes…</div></div></div></div></div></section>
+</div></div><div class="cl-pl-side"><div class="cl-pl-side-head">SUBSTITUTES</div><div id="clSubstitutes">
+<div class="cl-pl-sub"><img src="assets/player-cutouts/player-14.png" alt="Bruno Guimarães" loading="eager"><div><strong>BRUNO GUIMARÃES</strong><small>ON 65'</small></div></div>
+<div class="cl-pl-sub"><img src="assets/player-cutouts/player-22.png" alt="Christos Tzolis" loading="eager"><div><strong>CHRISTOS TZOLIS</strong><small>ON 66'</small></div></div>
+<div class="cl-pl-sub"><img src="assets/player-cutouts/player-24.png" alt="Noni Madueke" loading="eager"><div><strong>NONI MADUEKE</strong><small>ON 73'</small></div></div>
+<div class="cl-pl-sub"><img src="assets/player-cutouts/player-25.png" alt="Kai Havertz" loading="eager"><div><strong>KAI HAVERTZ</strong><small>ON 73'</small></div></div>
+<div class="cl-pl-sub"><img src="assets/player-cutouts/player-16.png" alt="Martín Zubimendi" loading="eager"><div><strong>MARTÍN ZUBIMENDI</strong><small>ON 82'</small></div></div>
+</div></div></div></div></section>
 <section class="panel full"><h2>UCL Team Comparison &amp; Win Probability</h2><div id="teamTotalsBox" class="empty">Loading live Champions League comparison…</div></section>
 </div></div></main>
 <script>const q=new URLSearchParams(location.search);let i=Number(q.get('match'));if(!Number.isInteger(i)||i<0||i>7)i=0;predictionLink.href='champions-league-prediction.html?match='+i;const logos={'Arsenal':42,'Napoli':492,'Lille':79,'Bayern München':157,'Slavia Praha':560,'Borussia Dortmund':165,'Real Madrid':541,'Real Betis':543,'Sabah':563};window.addEventListener('DOMContentLoaded',()=>{const obs=new MutationObserver(()=>{[homeTeam,awayTeam].forEach((e,j)=>{const img=j?awayLogo:homeLogo,id=logos[e.textContent];if(id&&!img.src){img.src='https://media.api-sports.io/football/teams/'+id+'.png';img.alt=e.textContent+' crest'}})});obs.observe(document.body,{subtree:true,childList:true,characterData:true})});</script>
