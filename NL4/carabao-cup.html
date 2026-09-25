@@ -69,6 +69,42 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
 .round-anchor{scroll-margin-top:110px}
 @media(max-width:650px){.round-status{align-items:flex-start;flex-direction:column}.round-status-badge{align-self:flex-start}.journey-step{min-width:110px}}
 
+
+/* MATCH CENTRE + ARSENAL ROUTE */
+.bracket-wrap{position:relative}
+.bracket{position:relative}
+.arsenal-route-svg{position:absolute;left:4px;top:20px;width:1420px;height:100%;min-height:100%;z-index:3;pointer-events:none;overflow:visible}
+.arsenal-route-glow{fill:none;stroke:rgba(232,245,239,.22);stroke-width:10;stroke-linecap:round;stroke-linejoin:round;filter:blur(7px)}
+.arsenal-route{fill:none;stroke:var(--green);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:9 8;filter:drop-shadow(0 0 6px rgba(0,143,94,.8));animation:routeFlow 2.2s linear infinite}
+@keyframes routeFlow{to{stroke-dashoffset:-34}}
+.arsenal-route-point{fill:#e8f5ef;stroke:var(--green);stroke-width:3;filter:drop-shadow(0 0 7px rgba(0,143,94,.9))}
+.tie.arsenal-current{border-color:rgba(232,245,239,.7)!important;border-left-color:var(--green)!important;box-shadow:0 0 32px rgba(0,143,94,.25),inset 0 0 24px rgba(0,143,94,.07)!important}
+.tie.arsenal-upcoming{border-color:rgba(232,245,239,.55)!important;border-left-color:var(--gold)!important;box-shadow:0 0 34px rgba(244,197,66,.18),inset 0 0 24px rgba(244,197,66,.05)!important}
+.tie.arsenal-dim{opacity:.42}
+.bracket-match-centre{width:min(680px,100%);margin:0 auto 0 4px;border:1px solid rgba(0,143,94,.42);border-radius:24px;background:linear-gradient(145deg,rgba(7,24,17,.97),rgba(7,9,12,.98));box-shadow:0 22px 65px rgba(0,0,0,.42),0 0 45px rgba(0,143,94,.08);overflow:hidden;scroll-margin-top:110px;position:relative}
+.bracket-match-centre:before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:linear-gradient(var(--green),var(--gold));box-shadow:0 0 22px rgba(0,143,94,.35)}
+.match-centre-head{padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;gap:15px}
+.match-kicker{color:#8de2bd;font-size:9px;font-weight:900;letter-spacing:2px}
+.match-centre-title{margin-top:5px;font:900 25px/1 Georgia,serif}
+.match-centre-badge{border:1px solid rgba(0,143,94,.5);color:#8de2bd;border-radius:999px;padding:7px 10px;font-size:8px;font-weight:900;letter-spacing:1px;white-space:nowrap}
+.match-centre-badge.upcoming{border-color:rgba(232,245,239,.4);color:var(--gold)}
+.match-centre-badge.locked{border-color:rgba(255,255,255,.12);color:#777}
+.match-scoreline{padding:22px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;background:radial-gradient(circle at 50% 0,rgba(0,143,94,.14),transparent 55%)}
+.match-team{text-align:center}.match-team small{display:block;color:#7e8882;font-size:8px;font-weight:900;letter-spacing:1.5px;margin-bottom:7px}.match-team strong{font-size:14px}
+.match-score{font:900 36px/1 Georgia,serif;color:#fff;white-space:nowrap}.match-meta{text-align:center;color:#929a96;font-size:9px;letter-spacing:.7px;margin-top:5px}
+.match-centre-body{padding:0 22px 22px}
+.match-tabs{display:flex;gap:7px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:17px;overflow:auto}
+.match-tab{border:0;background:transparent;color:#737b77;padding:11px 7px 10px;font-size:8px;font-weight:900;letter-spacing:1px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent}
+.match-tab.active{color:#fff;border-bottom-color:var(--green)}
+.match-pane{min-height:120px}
+.match-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.match-summary-item{border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:11px;background:rgba(255,255,255,.025)}
+.match-summary-item span{display:block;color:#707a75;font-size:8px;font-weight:800;letter-spacing:.8px}.match-summary-item b{display:block;margin-top:5px;font-size:11px}
+.match-empty{border:1px dashed rgba(255,255,255,.1);border-radius:14px;padding:18px;color:#808985;font-size:10px;line-height:1.6}
+.match-next{margin-top:14px;border-top:1px solid rgba(255,255,255,.07);padding-top:14px;display:flex;justify-content:space-between;gap:15px;align-items:center}
+.match-next small{display:block;color:#6f7974;font-size:8px;letter-spacing:1.3px;font-weight:900}.match-next strong{display:block;margin-top:4px;font-size:11px}.match-next button{border:1px solid rgba(0,143,94,.45);background:#0c1712;color:#8de2bd;border-radius:10px;padding:8px 10px;font-size:8px;font-weight:900;letter-spacing:.8px;cursor:pointer}
+@media(max-width:700px){.bracket-match-centre{margin-left:0}.match-centre-head{align-items:flex-start;flex-direction:column}.match-scoreline{padding:18px 10px}.match-score{font-size:29px}.match-team strong{font-size:11px}.match-summary-grid{grid-template-columns:1fr}.arsenal-route-svg{left:4px}}
+
 </style>
 </head>
 <body>
@@ -158,109 +194,141 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
 </main>
 <footer class="footer"><b>ARSENAL HUB • CARABAO CUP</b><span>North London Forever • 2026/27</span></footer>
 
+
 <script>
-/* Carabao Cup round navigation + Arsenal progression tracker.
-   Update ROUND_DATA as results become official. */
+/* Carabao Cup interactive round + match centre. */
 const ROUND_DATA = {
-  round3: {
-    label: "ROUND 3",
-    state: "completed",
-    status: "QUALIFIED",
-    summary: "Arsenal beat Ipswich Town 4–2 and advanced to Round 4.",
-    target: "round3"
+  round3:{label:"ROUND 3",state:"completed",status:"QUALIFIED",summary:"Arsenal beat Ipswich Town 4–2 and advanced to Round 4.",target:"round3"},
+  round4:{label:"ROUND 4",state:"upcoming",status:"UPCOMING",summary:"Fleetwood Town vs Arsenal • 27 October 2026 • 20:00.",target:"round4"},
+  round5:{label:"ROUND 5",state:"not-reached",status:"NOT REACHED YET",summary:"Round 5 will become active after the previous round is completed.",target:"round5"},
+  semifinal:{label:"SEMI-FINAL",state:"not-reached",status:"NOT REACHED YET",summary:"The semi-final is not yet part of Arsenal's confirmed route.",target:"semifinal"},
+  final:{label:"FINAL",state:"not-reached",status:"NOT REACHED YET",summary:"The Wembley final is not yet part of Arsenal's confirmed route.",target:"final"}
+};
+const MATCH_DETAILS = {
+  round3:{
+    kicker:"ROUND 3 • RESULT",title:"Ipswich Town vs Arsenal",badge:"ARSENAL QUALIFIED",badgeClass:"",
+    home:"IPSWICH TOWN",away:"ARSENAL",score:"2 — 4",meta:"15 SEP 2026 • PORTMAN ROAD",
+    overview:[["Competition","Carabao Cup"],["Round","Third Round"],["Result","Arsenal won 4–2"],["Progression","Qualified for Round 4"]],
+    events:"Verified match events can be added here as the match-centre data source is connected.",lineups:"Lineup data is ready for this panel and will appear here when connected to the match data feed.",subs:"Substitution data is ready for this panel and will appear here when connected to the match data feed.",
+    next:"ROUND 4 • FLEETWOOD TOWN vs ARSENAL",nextLabel:"NEXT STOP",nextButton:"VIEW ROUND 4",nextRound:"round4"
   },
-  round4: {
-    label: "ROUND 4",
-    state: "upcoming",
-    status: "UPCOMING",
-    summary: "Fleetwood Town vs Arsenal • 27 October 2026 • 20:00.",
-    target: "round4"
+  round4:{
+    kicker:"ROUND 4 • UPCOMING",title:"Fleetwood Town vs Arsenal",badge:"UPCOMING",badgeClass:"upcoming",
+    home:"FLEETWOOD TOWN",away:"ARSENAL",score:"—",meta:"27 OCT 2026 • 20:00 • HIGHBURY STADIUM",
+    overview:[["Competition","Carabao Cup"],["Round","Fourth Round"],["Status","Fixture confirmed"],["Venue","Highbury Stadium"]],
+    events:"No match events yet — this fixture has not been played.",lineups:"Lineups will appear here once officially confirmed.",subs:"Substitutes will appear here once officially confirmed.",
+    next:"ROUND 5 • NOT REACHED YET",nextLabel:"ROAD AHEAD",nextButton:"VIEW ROUND 5",nextRound:"round5"
   },
-  round5: {
-    label: "ROUND 5",
-    state: "not-reached",
-    status: "NOT REACHED YET",
-    summary: "Round 5 will become active after the previous round is completed.",
-    target: "round5"
+  round5:{
+    kicker:"ROUND 5 • LOCKED",title:"Arsenal's Round 5 Route",badge:"NOT REACHED YET",badgeClass:"locked",
+    home:"TBC",away:"TBC",score:"—",meta:"DRAW / QUALIFICATION PENDING",
+    overview:[["Competition","Carabao Cup"],["Round","Round 5"],["Arsenal status","Not reached yet"],["Route","Depends on Round 4 result"]],
+    events:"Round 5 cannot have Arsenal match events until Arsenal qualifies from Round 4.",lineups:"No Arsenal lineup is confirmed for this round.",subs:"No Arsenal substitutes are confirmed for this round.",
+    next:"SEMI-FINAL • NOT REACHED YET",nextLabel:"ROAD AHEAD",nextButton:"VIEW SEMI-FINAL",nextRound:"semifinal"
   },
-  semifinal: {
-    label: "SEMI-FINAL",
-    state: "not-reached",
-    status: "NOT REACHED YET",
-    summary: "The semi-final is not yet part of Arsenal's confirmed route.",
-    target: "semifinal"
+  semifinal:{
+    kicker:"SEMI-FINAL • LOCKED",title:"Arsenal's Semi-Final Route",badge:"NOT REACHED YET",badgeClass:"locked",
+    home:"TBC",away:"TBC",score:"—",meta:"QUALIFICATION PENDING",
+    overview:[["Competition","Carabao Cup"],["Round","Semi-Final"],["Arsenal status","Not reached yet"],["Route","Depends on earlier results"]],
+    events:"No Arsenal semi-final events exist yet because Arsenal have not reached this round.",lineups:"No Arsenal semi-final lineup is confirmed.",subs:"No Arsenal semi-final substitutes are confirmed.",
+    next:"FINAL • NOT REACHED YET",nextLabel:"ROAD AHEAD",nextButton:"VIEW FINAL",nextRound:"final"
   },
-  final: {
-    label: "FINAL",
-    state: "not-reached",
-    status: "NOT REACHED YET",
-    summary: "The Wembley final is not yet part of Arsenal's confirmed route.",
-    target: "final"
+  final:{
+    kicker:"THE PRIZE • LOCKED",title:"Wembley Final",badge:"NOT REACHED YET",badgeClass:"locked",
+    home:"TBC",away:"TBC",score:"—",meta:"21 MAR 2027 • WEMBLEY",
+    overview:[["Competition","Carabao Cup"],["Round","Final"],["Arsenal status","Not reached yet"],["Venue","Wembley Stadium"]],
+    events:"No Arsenal final events exist yet because the final route is not confirmed.",lineups:"No final lineup is confirmed.",subs:"No final substitutes are confirmed.",
+    next:"",nextLabel:"",nextButton:"",nextRound:""
   }
 };
+const ROUND_ORDER=["round3","round4","round5","semifinal","final"];
 
-const ROUND_ORDER = ["round3","round4","round5","semifinal","final"];
-
-function stateText(state){
-  return state === "completed" ? "RESULTS" :
-         state === "upcoming" ? "UPCOMING" :
-         state === "eliminated" ? "ELIMINATED" : "NOT REACHED";
-}
+function stateText(state){return state==="completed"?"RESULTS":state==="upcoming"?"UPCOMING":state==="eliminated"?"ELIMINATED":"NOT REACHED";}
 
 function renderRoundTracker(){
-  const nav = document.querySelector(".round-nav");
-  if(!nav) return;
-
+  const nav=document.querySelector(".round-nav"); if(!nav)return;
   nav.querySelectorAll("button").forEach((button,index)=>{
-    const key = ROUND_ORDER[index];
-    const data = ROUND_DATA[key];
-    if(!data) return;
-    button.dataset.round = key;
-    button.dataset.state = data.state;
-    button.type = "button";
-    button.innerHTML = data.label + " <span>• " + stateText(data.state) + "</span>";
-    button.title = data.summary;
-    button.addEventListener("click",()=>selectRound(key));
+    const key=ROUND_ORDER[index],data=ROUND_DATA[key]; if(!data)return;
+    button.dataset.round=key;button.dataset.state=data.state;button.type="button";
+    button.innerHTML=data.label+" <span>• "+stateText(data.state)+"</span>";
+    button.title=data.summary;button.onclick=()=>selectRound(key);
   });
-
-  const journey = document.querySelector("#arsenalJourney");
-  if(journey){
-    journey.innerHTML = ROUND_ORDER.map((key,index)=>{
-      const data = ROUND_DATA[key];
-      const arrow = index < ROUND_ORDER.length-1 ? '<i class="journey-arrow">→</i>' : '';
-      return '<div class="journey-step '+data.state+'"><b>'+data.label+'</b><span>'+data.status+'</span></div>'+arrow;
-    }).join("");
-  }
-
-  selectRound("round3");
+  const journey=document.querySelector("#arsenalJourney");
+  if(journey)journey.innerHTML=ROUND_ORDER.map((key,index)=>{
+    const d=ROUND_DATA[key],arrow=index<ROUND_ORDER.length-1?'<i class="journey-arrow">→</i>':"";
+    return '<div class="journey-step '+d.state+'"><b>'+d.label+'</b><span>'+d.status+'</span></div>'+arrow;
+  }).join("");
+  document.querySelectorAll("#round3 .tie").forEach((el,i)=>el.classList.toggle("arsenal-current",i===8));
+  document.querySelectorAll("#round4 .tie").forEach((el,i)=>el.classList.toggle("arsenal-upcoming",i===1));
+  buildRoute();
+  selectRound("round3",false);
 }
 
-function selectRound(key){
-  const data = ROUND_DATA[key];
-  if(!data) return;
-
-  document.querySelectorAll(".round-nav button").forEach(button=>{
-    button.classList.toggle("active",button.dataset.round===key);
-  });
-
-  const target = document.getElementById(data.target);
-  if(target) target.scrollIntoView({behavior:"smooth",block:"center"});
-
-  const title = document.querySelector("#roundStatusTitle");
-  const copy = document.querySelector("#roundStatusCopy");
-  const badge = document.querySelector("#roundStatusBadge");
-  const dot = document.querySelector("#roundStatusDot");
-
-  if(title) title.textContent = data.label;
-  if(copy) copy.textContent = data.summary;
-  if(badge){
-    badge.textContent = data.status;
-    badge.className = "round-status-badge "+data.state;
+function renderPane(key,pane){
+  const d=MATCH_DETAILS[key],box=document.querySelector("#matchPane"); if(!d||!box)return;
+  if(pane==="overview")box.innerHTML='<div class="match-summary-grid">'+d.overview.map(x=>'<div class="match-summary-item"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join("")+'</div>';
+  else {
+    const copy=pane==="events"?d.events:pane==="lineups"?d.lineups:d.subs;
+    box.innerHTML='<div class="match-empty">'+copy+'</div>';
   }
-  if(dot) dot.className = "round-status-dot "+data.state;
 }
 
-document.addEventListener("DOMContentLoaded",renderRoundTracker);
+function updateMatchCentre(key){
+  const d=MATCH_DETAILS[key]; if(!d)return;
+  document.querySelector("#matchCentreTitle").textContent=d.title;
+  document.querySelector("#matchCentreBadge").textContent=d.badge;
+  document.querySelector("#matchCentreBadge").className="match-centre-badge "+d.badgeClass;
+  document.querySelector("#matchHome").textContent=d.home;
+  document.querySelector("#matchAway").textContent=d.away;
+  document.querySelector("#matchScore").textContent=d.score;
+  document.querySelector("#matchMeta").textContent=d.meta;
+  document.querySelector("#matchNextLabel").textContent=d.nextLabel;
+  document.querySelector("#matchNextText").textContent=d.next;
+  const nb=document.querySelector("#matchNextButton");
+  nb.textContent=d.nextButton;nb.style.display=d.nextRound?"inline-block":"none";nb.onclick=()=>d.nextRound&&selectRound(d.nextRound,true);
+  document.querySelectorAll(".match-tab").forEach(t=>t.classList.toggle("active",t.dataset.pane==="overview"));
+  renderPane(key,"overview");
+  document.querySelectorAll(".tie").forEach(t=>t.classList.remove("arsenal-dim"));
+  const current=document.getElementById(key);
+  if(current)current.querySelectorAll(".tie").forEach((t,i)=>{
+    if((key==="round3"&&i!==8)||(key==="round4"&&i!==1))t.classList.add("arsenal-dim");
+  });
+}
+
+function selectRound(key,focusPanel=true){
+  const data=ROUND_DATA[key];if(!data)return;
+  document.querySelectorAll(".round-nav button").forEach(b=>b.classList.toggle("active",b.dataset.round===key));
+  const title=document.querySelector("#roundStatusTitle"),copy=document.querySelector("#roundStatusCopy"),badge=document.querySelector("#roundStatusBadge"),dot=document.querySelector("#roundStatusDot");
+  if(title)title.textContent=data.label;if(copy)copy.textContent=data.summary;
+  if(badge){badge.textContent=data.status;badge.className="round-status-badge "+data.state}
+  if(dot)dot.className="round-status-dot "+data.state;
+  const target=document.getElementById(data.target);
+  if(target)target.scrollIntoView({behavior:"smooth",block:"center"});
+  updateMatchCentre(key);
+  buildRoute();
+  if(focusPanel)setTimeout(()=>document.getElementById("matchDetails")?.scrollIntoView({behavior:"smooth",block:"nearest"}),220);
+}
+
+function buildRoute(){
+  const bracket=document.querySelector(".bracket"),wrap=document.querySelector(".bracket-wrap");if(!bracket||!wrap)return;
+  let svg=wrap.querySelector(".arsenal-route-svg");
+  if(!svg){svg=document.createElementNS("http://www.w3.org/2000/svg","svg");svg.classList.add("arsenal-route-svg");wrap.appendChild(svg);}
+  const wrapRect=wrap.getBoundingClientRect(),points=[];
+  [["round3",8],["round4",1]].forEach(([id,index])=>{
+    const tie=document.querySelector("#"+id+" .tie:nth-of-type("+(index+2)+")");
+    if(tie){const r=tie.getBoundingClientRect();points.push([r.left-wrapRect.left+r.width/2,r.top-wrapRect.top+r.height/2]);}
+  });
+  if(points.length<2){svg.innerHTML="";return}
+  const w=Math.max(wrap.scrollWidth,1420),h=Math.max(wrap.scrollHeight,700);
+  svg.setAttribute("viewBox","0 0 "+w+" "+h);svg.setAttribute("width",w);svg.setAttribute("height",h);
+  const p=points.map(x=>x.join(",")).join(" ");
+  svg.innerHTML='<polyline class="arsenal-route-glow" points="'+p+'"/><polyline class="arsenal-route" points="'+p+'"/>'+points.map(x=>'<circle class="arsenal-route-point" cx="'+x[0]+'" cy="'+x[1]+'" r="5"/>').join("");
+}
+document.addEventListener("DOMContentLoaded",()=>{
+  document.querySelectorAll(".match-tab").forEach(tab=>tab.addEventListener("click",()=>{document.querySelectorAll(".match-tab").forEach(t=>t.classList.remove("active"));tab.classList.add("active");renderPane(document.querySelector(".round-nav button.active")?.dataset.round||"round3",tab.dataset.pane)}));
+  renderRoundTracker();
+  window.addEventListener("resize",()=>setTimeout(buildRoute,50));
+});
 </script>
 
 </body>
