@@ -78,10 +78,11 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
 .arsenal-route{fill:none;stroke:var(--green);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:9 8;filter:drop-shadow(0 0 6px rgba(0,143,94,.8));animation:routeFlow 2.2s linear infinite}
 @keyframes routeFlow{to{stroke-dashoffset:-34}}
 .arsenal-route-point{fill:#e8f5ef;stroke:var(--green);stroke-width:3;filter:drop-shadow(0 0 7px rgba(0,143,94,.9))}
-.tie.arsenal-current,.tie.arsenal-upcoming{border-color:rgba(0,143,94,.45)!important;border-left:3px solid var(--green)!important;box-shadow:0 0 30px rgba(0,143,94,.22),inset 0 0 24px rgba(0,143,94,.07)!important;isolation:isolate}
-.tie.arsenal-current:before,.tie.arsenal-upcoming:before{content:"";position:absolute;inset:0;border-radius:14px;background:linear-gradient(90deg,transparent 0%,transparent 38%,rgba(0,143,94,.08) 48%,var(--green) 50%,rgba(0,143,94,.08) 52%,transparent 62%,transparent 100%);background-size:300% 100%;pointer-events:none;z-index:2;animation:arsenalColorTravel 2.1s linear infinite}
+.tie.arsenal-current,.tie.arsenal-upcoming{border-color:rgba(0,143,94,.45)!important;border-left:3px solid var(--green)!important;box-shadow:0 0 30px rgba(0,143,94,.22),inset 0 0 24px rgba(0,143,94,.07)!important;isolation:isolate;overflow:visible}
+.tie.arsenal-current .arsenal-perimeter,.tie.arsenal-upcoming .arsenal-perimeter{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;overflow:visible}
+.tie.arsenal-current .arsenal-perimeter path,.tie.arsenal-upcoming .arsenal-perimeter path{fill:none;stroke:var(--green);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:18 82;stroke-dashoffset:0;filter:drop-shadow(0 0 5px rgba(0,143,94,.9));animation:arsenalPerimeterTravel 2.8s linear infinite}
 .tie.arsenal-current:after,.tie.arsenal-upcoming:after{right:-24px;top:50%;width:24px;border-top:1px solid rgba(0,143,94,.55)}
-@keyframes arsenalColorTravel{0%{background-position:100% 0}100%{background-position:-100% 0}}
+@keyframes arsenalPerimeterTravel{to{stroke-dashoffset:-100}}
 .tie.arsenal-dim{opacity:.42}
 .bracket-match-centre{width:min(680px,100%);margin:0 auto 0 4px;border:1px solid rgba(0,143,94,.42);border-radius:24px;background:linear-gradient(145deg,rgba(7,24,17,.97),rgba(7,9,12,.98));box-shadow:0 22px 65px rgba(0,0,0,.42),0 0 45px rgba(0,143,94,.08);overflow:hidden;scroll-margin-top:110px;position:relative}
 .bracket-match-centre:before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:linear-gradient(var(--green),var(--gold));box-shadow:0 0 22px rgba(0,143,94,.35)}
@@ -270,6 +271,22 @@ const ROUND_ORDER=["round3","round4","round5","semifinal","final"];
 
 function stateText(state){return state==="completed"?"RESULTS":state==="upcoming"?"UPCOMING":state==="eliminated"?"ELIMINATED":"NOT REACHED";}
 
+function addArsenalPerimeter(tie){
+  if(!tie||tie.querySelector(".arsenal-perimeter"))return;
+  const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  svg.setAttribute("class","arsenal-perimeter");
+  svg.setAttribute("viewBox","0 0 100 100");
+  svg.setAttribute("preserveAspectRatio","none");
+  const path=document.createElementNS("http://www.w3.org/2000/svg","path");
+  path.setAttribute("pathLength","100");
+  path.setAttribute("d","M 0 50 L 0 8 Q 0 0 8 0 L 92 0 Q 100 0 100 8 L 100 92 Q 100 100 92 100 L 8 100 Q 0 100 0 92 Z");
+  svg.appendChild(path);
+  tie.appendChild(svg);
+}
+function renderArsenalPerimeters(){
+  document.querySelectorAll(".tie.arsenal-current,.tie.arsenal-upcoming").forEach(addArsenalPerimeter);
+}
+
 function renderRoundTracker(){
   const nav=document.querySelector(".round-nav"); if(!nav)return;
   nav.querySelectorAll("button").forEach((button,index)=>{
@@ -285,6 +302,7 @@ function renderRoundTracker(){
   }).join("");
   document.querySelectorAll("#round3 .tie").forEach((el,i)=>el.classList.toggle("arsenal-current",i===8));
   document.querySelectorAll("#round4 .tie").forEach((el,i)=>el.classList.toggle("arsenal-upcoming",i===1));
+  renderArsenalPerimeters();
   buildRoute();
   selectRound("round3",false);
 }
@@ -330,6 +348,7 @@ function selectRound(key,focusPanel=true){
   const target=document.getElementById(data.target);
   if(target)target.scrollIntoView({behavior:"smooth",block:"center"});
   updateMatchCentre(key);
+  renderArsenalPerimeters();
   buildRoute();
   if(focusPanel)setTimeout(()=>document.getElementById("matchDetails")?.scrollIntoView({behavior:"smooth",block:"nearest"}),220);
 }
