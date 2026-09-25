@@ -55,6 +55,13 @@ async function load(){
   const [{data:events,error:eventsError},{data:lineups,error:lineupsError},{data:teamTotals,error:teamTotalsError},{data:comparison,error:comparisonError}]=await Promise.all([client.from('match_events').select('*').eq('fixture_id',f.id).order('minute',{ascending:true,nullsFirst:false}).order('stoppage_minute',{ascending:true,nullsFirst:false}),client.from('match_lineups').select('*').eq('fixture_id',f.id).order('is_starter',{ascending:false}).order('minute_on'),client.from('ucl_team_stats').select('*').eq('season','2026/27').in('team_name',[home,away]),client.from('ucl_match_comparisons').select('home_stats,away_stats').eq('fixture_id',f.id).maybeSingle()]);
   if(eventsError){console.warn('NL4 UCL match events:',eventsError);const box=document.getElementById('eventsBox');if(box){box.className='empty';box.textContent='Match events could not be loaded.';}}else renderEvents(events||[],home,away);
   const lineupBox=document.getElementById('clStartingXI');
+  // Matchday 1 uses the permanent HTML lineup. Do not let the async UCL data refresh rewrite it.
+  if(idx===0){
+    const formationEl=document.getElementById('clFormation'); if(formationEl) formationEl.textContent='4-3-3';
+    const matchup=document.getElementById('clLineupMatch'); if(matchup) matchup.textContent=`${home} VS ${away}`;
+    const venueEl=document.getElementById('clLineupVenue'); if(venueEl) venueEl.textContent=f.venue||'VENUE TBC';
+  } else {
+
   const arsenalTeam = /arsenal/i.test(home) ? home : (/arsenal/i.test(away) ? away : 'Arsenal');
   const lineupRows=(lineups||[]).filter(x=>/arsenal/i.test(String(x.team_name||'')) || String(x.team_name||'')===arsenalTeam);
   if(lineupBox){
@@ -139,6 +146,7 @@ async function load(){
       const rawKey=normalizeName(row.player_name),key=imageAliases[rawKey]||rawKey,img=images[key],on=row.minute_on!=null?`ON ${row.minute_on}'`:'SUB',off=row.minute_off!=null?` • OFF ${row.minute_off}'`:'';
       return `<div class="cl-pl-sub">${img?`<img src="${esc(img)}" alt="${esc(row.player_name)}" loading="eager">`:''}<div><strong>${esc(row.player_name)}</strong><small>${esc(on+off)}</small></div></div>`;
     }).join(''):'<div class="empty">No substitutions recorded.</div>';
+  }
   }
 
   const totalsBox=document.getElementById('teamTotalsBox');if(teamTotalsError||comparisonError)totalsBox.textContent='UCL season totals could not be loaded.';else if(!(teamTotals||[]).length){totalsBox.className='empty';totalsBox.textContent='Team totals will appear after a completed match.';}else{const rows=[...(teamTotals||[])],apply=(name,override)=>{if(!override)return;const i=rows.findIndex(x=>x.team_name===name);if(i>=0)rows[i]={...rows[i],...override,team_name:name};else rows.push({...override,team_name:name})};apply(home,comparison?.home_stats);apply(away,comparison?.away_stats);totalsBox.className='';totalsBox.innerHTML=renderComparison(rows,home,away,true);}
