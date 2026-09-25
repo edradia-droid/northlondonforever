@@ -71,13 +71,13 @@ async function load(){
     };
     const imageAliases={'odegaard':'martin odegaard','martin ødegaard':'martin odegaard','martin odegaard':'martin odegaard'};
     const images={
-      'david raya':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-01.png','kepa arrizabalaga':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-02.png','illan meslier':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-03.png','tommy setford':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-04.png',
-      'william saliba':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-05.png','cristhian mosquera':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-06.png','ben white':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-07.png','piero hincapie':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-08.png',
-      'gabriel magalhaes':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-09.png','jurrien timber':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-10.png','ezri konsa':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-11.png','riccardo calafiori':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-12.png',
-      'declan rice':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-13.png','bruno guimaraes':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-14.png','martin odegaard':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-15.png','martin zubimendi':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-16.png',
-      'mikel merino':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-17.png','myles lewis-skelly':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-18.png','eberechi eze':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-19.png','ethan nwaneri':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-20.png',
-      'max dowman':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-21.png','christos tzolis':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-22.png','bukayo saka':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-23.png','noni madueke':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-24.png',
-      'kai havertz':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-25.png','viktor gyokeres':'https://edradia-droid.github.io/northlondonforever/assets/player-cutouts/player-26.png'
+      'david raya':'assets/player-cutouts/player-01.png','kepa arrizabalaga':'assets/player-cutouts/player-02.png','illan meslier':'assets/player-cutouts/player-03.png','tommy setford':'assets/player-cutouts/player-04.png',
+      'william saliba':'assets/player-cutouts/player-05.png','cristhian mosquera':'assets/player-cutouts/player-06.png','ben white':'assets/player-cutouts/player-07.png','piero hincapie':'assets/player-cutouts/player-08.png',
+      'gabriel magalhaes':'assets/player-cutouts/player-09.png','jurrien timber':'assets/player-cutouts/player-10.png','ezri konsa':'assets/player-cutouts/player-11.png','riccardo calafiori':'assets/player-cutouts/player-12.png',
+      'declan rice':'assets/player-cutouts/player-13.png','bruno guimaraes':'assets/player-cutouts/player-14.png','martin odegaard':'assets/player-cutouts/player-15.png','martin zubimendi':'assets/player-cutouts/player-16.png',
+      'mikel merino':'assets/player-cutouts/player-17.png','myles lewis-skelly':'assets/player-cutouts/player-18.png','eberechi eze':'assets/player-cutouts/player-19.png','ethan nwaneri':'assets/player-cutouts/player-20.png',
+      'max dowman':'assets/player-cutouts/player-21.png','christos tzolis':'assets/player-cutouts/player-22.png','bukayo saka':'assets/player-cutouts/player-23.png','noni madueke':'assets/player-cutouts/player-24.png',
+      'kai havertz':'assets/player-cutouts/player-25.png','viktor gyokeres':'assets/player-cutouts/player-26.png'
     };
     const slots={
       'GK':[50,89],'LB':[13,72],'LCB':[36,74],'CB':[50,74],'RCB':[64,74],'RB':[87,72],
@@ -111,8 +111,22 @@ async function load(){
     const outgoing=new Map((lineups||[]).filter(x=>x.is_starter&&x.minute_off!=null).map(x=>[normalizeName(x.player_name),Number(x.minute_off)]));
     const markings='<span class="cl-pl-box top"></span><span class="cl-pl-goal top"></span><span class="cl-pl-box bottom"></span><span class="cl-pl-goal bottom"></span>';
     const figures=starters.length?starters.map((row,index)=>{
-      const slot=resolved[index], xy=slots[slot]||slots.CM, name=String(row.player_name||'Arsenal'), rawKey=normalizeName(name), key=imageAliases[rawKey]||rawKey, image=images[key], shirt=shirts[key]??'', off=outgoing.get(rawKey)||outgoing.get(key);
-      return `<div class="cl-pl-player" style="--x:${xy[0]}%;--y:${xy[1]}%;--depth:${(.78+(xy[1]/100)*.24).toFixed(2)}" title="${esc(name)} • #${esc(shirt)}"><span class="cl-pl-ground"></span><div class="cl-pl-kit">${image?`<img class="cl-pl-photo" src="${esc(image)}" alt="${esc(name)}" loading="eager">`:''}</div><span class="cl-pl-name">${esc(name)}${off!=null?`<span class="cl-pl-out">↓ OFF ${esc(off)}'</span>`:''}</span></div>`;
+      const slot=resolved[index],
+        xy=slots[slot]||slots.CM,
+        name=String(row.player_name||'Arsenal'),
+        rawKey=normalizeName(name),
+        key=imageAliases[rawKey]||rawKey,
+        image=images[key],
+        shirt=shirts[key]??'',
+        off=outgoing.get(rawKey)||outgoing.get(key);
+      const photo=image
+        ? `<img class="kit-player-photo" src="${esc(image)}" alt="${esc(name)}" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='${esc(image)}'">`
+        : '';
+      return `<div class="player-marker" style="--x:${xy[0]}%;--y:${xy[1]}%;--depth:${(.78+(xy[1]/100)*.24).toFixed(2)}" title="${esc(name)} • #${esc(shirt)}">
+        <span class="player-ground-shadow"></span>
+        <div class="kit-player">${photo}</div>
+        <span class="player-name">${esc(name)}${off!=null?`<span class="cl-pl-out">↓ OFF ${esc(off)}'</span>`:''}</span>
+      </div>`;
     }).join(''):'<div class="cl-pl-empty">Starting XI has not been announced yet.</div>';
     lineupBox.innerHTML=markings+figures;
     const formationEl=document.getElementById('clFormation');if(formationEl)formationEl.textContent=starters.length?formation:'TBC';
