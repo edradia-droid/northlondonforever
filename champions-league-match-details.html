@@ -31,7 +31,11 @@
 .nl4-sub-row strong{display:block;color:#fff;font-size:11px}.nl4-sub-row small{display:block;color:#8993aa;margin-top:3px;font-size:9px}.nl4-sub-time{color:#d8ad45;font-size:9px;font-weight:900;white-space:nowrap}
 @media(max-width:850px){.nl4-match-lineup-wrap{grid-template-columns:1fr}.nl4-lineup-pitch{min-height:500px}}
 @media(max-width:520px){.nl4-match-lineup-wrap{padding:10px}.nl4-lineup-pitch{min-height:430px}.nl4-pitch-player{width:64px}.nl4-pitch-player .badge{width:30px;height:30px}.nl4-pitch-player b{font-size:7px}}
-</style></head>
+</style>
+<style>
+.nl4-lineup-empty{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:82%;padding:16px 12px;border:1px solid rgba(255,255,255,.28);border-radius:12px;background:rgba(2,8,23,.82);color:#d8ad45;text-align:center;font-size:11px;font-weight:900;letter-spacing:1.2px;z-index:4}
+</style>
+</head>
 <body>
 <main class="main"><div class="shell">
 <a class="back" href="champions-league-fixtures.html#fixtures">← Back to Champions League Fixtures</a>
@@ -47,6 +51,6 @@
 <script>const q=new URLSearchParams(location.search);let i=Number(q.get('match'));if(!Number.isInteger(i)||i<0||i>7)i=0;predictionLink.href='champions-league-prediction.html?match='+i;const logos={'Arsenal':42,'Napoli':492,'Lille':79,'Bayern München':157,'Slavia Praha':560,'Borussia Dortmund':165,'Real Madrid':541,'Real Betis':543,'Sabah':563};window.addEventListener('DOMContentLoaded',()=>{const obs=new MutationObserver(()=>{[homeTeam,awayTeam].forEach((e,j)=>{const img=j?awayLogo:homeLogo,id=logos[e.textContent];if(id&&!img.src){img.src='https://media.api-sports.io/football/teams/'+id+'.png';img.alt=e.textContent+' crest'}})});obs.observe(document.body,{subtree:true,childList:true,characterData:true})});</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
 <script src="supabase-client.js"></script>
-<script src="ucl-match-details-sync.js?v=20260912-layout2"></script>
+<script src="ucl-match-details-sync.js?v=20260925-lineup"></script>
 <script src="ucl-match-comparison-live.js?v=20260912-5"></script>
 </body></html>
