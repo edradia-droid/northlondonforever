@@ -35,7 +35,41 @@
 <style>
 .nl4-lineup-empty{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:82%;padding:16px 12px;border:1px solid rgba(255,255,255,.28);border-radius:12px;background:rgba(2,8,23,.82);color:#d8ad45;text-align:center;font-size:11px;font-weight:900;letter-spacing:1.2px;z-index:4}
 </style>
-</head>
+<style>
+/* Match Details: Premier League-style broadcast lineup */
+.cl-pl-lineup{grid-column:1/-1!important;overflow:hidden!important;background:#05070a!important;border-color:rgba(255,255,255,.12)!important;box-shadow:0 28px 70px rgba(0,0,0,.6)}
+.cl-pl-broadcast{position:relative;min-height:760px;background:linear-gradient(180deg,#090b0f 0,#050607 100%);overflow:hidden}
+.cl-pl-top{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;padding:28px 30px 12px;background:linear-gradient(180deg,rgba(1,3,8,.88),rgba(1,3,8,.18));text-shadow:0 4px 14px rgba(0,0,0,.85)}
+.cl-pl-kicker{margin:0;color:#fff;font-size:clamp(22px,4vw,42px);font-weight:1000;letter-spacing:.5px;line-height:1;text-transform:uppercase}
+.cl-pl-kicker small{display:block;margin-top:10px;color:#d8ad45;font-size:12px;letter-spacing:1.5px}
+.cl-pl-venue{color:#8f959d;font-size:9px;font-weight:900;letter-spacing:1.5px;margin-right:6px}
+.cl-pl-formation{display:inline-flex;align-items:center;justify-content:center;min-width:92px;padding:11px 16px;border-radius:10px;background:linear-gradient(180deg,#e3062c,#9f001b);color:#fff;border:1px solid rgba(255,255,255,.35);font-size:18px;font-weight:1000;letter-spacing:2px;box-shadow:0 7px 0 #5c0010,0 14px 25px rgba(0,0,0,.45)}
+.cl-pl-actions{display:flex;align-items:center;gap:7px}
+.cl-pl-grid{display:grid;grid-template-columns:1fr 150px;gap:10px;padding:0 18px 26px;align-items:stretch;max-width:1180px;margin:0 auto}
+.cl-pl-pitch-stage{position:relative;display:flex;align-items:flex-end;justify-content:center;min-height:650px;padding:46px 0 34px;min-width:0}
+.cl-pl-pitch{position:relative;width:min(900px,100%);aspect-ratio:76/96;margin:0 auto;border:3px solid rgba(245,255,247,.95);border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,.05),transparent 18%),repeating-linear-gradient(0deg,#30994c 0 10%,#278b43 10% 20%);box-shadow:0 35px 55px rgba(0,0,0,.55),inset 0 0 60px rgba(0,0,0,.12);overflow:visible}
+.cl-pl-pitch:before{content:"";position:absolute;left:0;right:0;top:50%;height:2px;background:#f6fff7}
+.cl-pl-pitch:after{content:"";position:absolute;left:50%;top:50%;width:20%;aspect-ratio:1;border:2px solid #f6fff7;border-radius:50%;transform:translate(-50%,-50%)}
+.cl-pl-box{position:absolute;left:22%;width:56%;height:16%;border:2px solid rgba(244,255,246,.92)}
+.cl-pl-box.top{top:-2px;border-top:0}.cl-pl-box.bottom{bottom:-2px;border-bottom:0}
+.cl-pl-goal{position:absolute;left:36%;width:28%;height:7%;border:2px solid rgba(244,255,246,.92)}
+.cl-pl-goal.top{top:-2px;border-top:0}.cl-pl-goal.bottom{bottom:-2px;border-bottom:0}
+.cl-pl-player{position:absolute;left:var(--x);top:var(--y);width:96px;height:122px;transform:translate(-50%,-50%) scale(var(--depth,1));text-align:center;z-index:8;filter:drop-shadow(0 13px 10px rgba(0,0,0,.62))}
+.cl-pl-ground{position:absolute;left:50%;bottom:22px;width:58px;height:13px;border-radius:50%;background:rgba(0,0,0,.58);filter:blur(6px);transform:translateX(-50%) rotateX(70deg)}
+.cl-pl-kit{position:relative;width:88px;height:82px;margin:0 auto;z-index:3}
+.cl-pl-photo{position:absolute!important;left:50%!important;top:0!important;width:58px!important;height:66px!important;transform:translateX(-50%)!important;object-fit:cover!important;object-position:center 18%!important;border-radius:10px 10px 12px 12px!important;border:0!important;box-shadow:0 10px 14px rgba(0,0,0,.42)!important;z-index:6!important;background:transparent!important}
+.cl-pl-name{position:absolute;left:50%;bottom:0;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;width:96px;min-height:30px;padding:5px 6px;color:#fff;font-size:9px;font-weight:1000;line-height:1.05;text-transform:uppercase;text-shadow:0 2px 4px #000}
+.cl-pl-out{color:#d8ad45;font-size:8px;display:block;margin-top:2px}
+.cl-pl-side{position:relative;align-self:stretch;margin-top:24px;margin-bottom:20px;border:1px solid rgba(255,255,255,.26);border-radius:11px;background:linear-gradient(180deg,rgba(8,18,45,.97),rgba(3,7,20,.98));box-shadow:0 20px 40px rgba(0,0,0,.5);overflow:hidden}
+.cl-pl-side-head{padding:13px 15px;border-bottom:1px solid rgba(255,255,255,.24);font-size:15px;font-style:italic;font-weight:1000;letter-spacing:.8px;text-transform:uppercase}
+.cl-pl-sub{display:flex;align-items:center;gap:8px;padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.08)}
+.cl-pl-sub img{width:34px;height:40px;object-fit:cover;object-position:center 18%;border-radius:7px;background:transparent}
+.cl-pl-sub strong{display:block;min-width:0;font-size:10px;font-weight:900;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl-pl-sub small{display:block;color:#d8ad45;font-size:8px;margin-top:3px}
+.cl-pl-empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:30px;color:rgba(255,255,255,.8);font-weight:900;z-index:10}
+@media(max-width:980px){.cl-pl-grid{grid-template-columns:minmax(0,1fr) 125px;gap:7px;padding-left:8px;padding-right:8px}.cl-pl-pitch-stage{min-height:560px}.cl-pl-side{margin-top:18px}}
+@media(max-width:700px){.cl-pl-broadcast{min-height:0}.cl-pl-top{padding:20px 12px 8px}.cl-pl-kicker{font-size:24px}.cl-pl-formation{font-size:12px;min-width:68px;padding:8px 10px}.cl-pl-grid{grid-template-columns:minmax(0,1fr) 132px;gap:6px;padding:0 5px 14px}.cl-pl-pitch-stage{min-height:500px;padding:26px 0 18px}.cl-pl-pitch{width:96%;aspect-ratio:72/104}.cl-pl-player{width:68px;height:92px}.cl-pl-kit{width:62px;height:60px}.cl-pl-photo{width:43px!important;height:49px!important}.cl-pl-name{width:68px;min-height:23px;font-size:6.2px;padding:4px 3px}.cl-pl-ground{bottom:17px;width:40px;height:9px}.cl-pl-side{margin-top:14px;margin-bottom:14px}.cl-pl-side-head{padding:9px 8px;font-size:10px}.cl-pl-sub{padding:5px}.cl-pl-sub img{width:22px;height:27px}.cl-pl-sub strong{font-size:7px}.cl-pl-sub small{font-size:6px}}
+</style></head>
 <body>
 <main class="main"><div class="shell">
 <a class="back" href="champions-league-fixtures.html#fixtures">← Back to Champions League Fixtures</a>
@@ -45,12 +79,12 @@
 <section class="panel"><h2>Match Centre</h2><div id="matchCentre" class="empty">Match information will appear here when recorded by NL4 Admin.</div></section>
 <section class="panel full" id="statisticsPanel"><h2>Match Statistics</h2><div id="statisticsBox" class="empty">Both teams' match statistics will appear here when recorded.</div></section>
 <section class="panel full" id="eventsPanel"><h2>Match Events</h2><div id="eventsBox" class="empty">Goals, assists, cards and own goals for both teams will appear here when recorded.</div></section>
-<section class="panel full"><h2>Lineups &amp; Substitutions</h2><div id="lineupsBox" class="empty">Both teams' lineups will appear here when recorded.</div></section>
+<section class="panel full cl-pl-lineup"><div class="cl-pl-broadcast"><div class="cl-pl-top"><div><div class="cl-pl-kicker" id="clLineupMatch">ARSENAL VS OPPONENT<small><span class="cl-pl-venue">STADIUM</span><span id="clLineupVenue">VENUE TBC</span></small></div></div><div class="cl-pl-actions"><span class="cl-pl-formation" id="clFormation">TBC</span></div></div><div class="cl-pl-grid"><div class="cl-pl-pitch-stage"><div class="cl-pl-pitch" id="clStartingXI"><div class="cl-pl-empty">Loading starting lineup…</div></div></div><div class="cl-pl-side"><div class="cl-pl-side-head">SUBSTITUTES</div><div id="clSubstitutes"><div class="empty">Loading substitutes…</div></div></div></div></div></section>
 <section class="panel full"><h2>UCL Team Comparison &amp; Win Probability</h2><div id="teamTotalsBox" class="empty">Loading live Champions League comparison…</div></section>
 </div></div></main>
 <script>const q=new URLSearchParams(location.search);let i=Number(q.get('match'));if(!Number.isInteger(i)||i<0||i>7)i=0;predictionLink.href='champions-league-prediction.html?match='+i;const logos={'Arsenal':42,'Napoli':492,'Lille':79,'Bayern München':157,'Slavia Praha':560,'Borussia Dortmund':165,'Real Madrid':541,'Real Betis':543,'Sabah':563};window.addEventListener('DOMContentLoaded',()=>{const obs=new MutationObserver(()=>{[homeTeam,awayTeam].forEach((e,j)=>{const img=j?awayLogo:homeLogo,id=logos[e.textContent];if(id&&!img.src){img.src='https://media.api-sports.io/football/teams/'+id+'.png';img.alt=e.textContent+' crest'}})});obs.observe(document.body,{subtree:true,childList:true,characterData:true})});</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
 <script src="supabase-client.js"></script>
-<script src="ucl-match-details-sync.js?v=20260925-lineup"></script>
+<script src="ucl-match-details-sync.js?v=20260925-plstyle"></script>
 <script src="ucl-match-comparison-live.js?v=20260912-5"></script>
 </body></html>
