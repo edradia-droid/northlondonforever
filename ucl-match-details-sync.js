@@ -60,11 +60,9 @@ async function load(){
     const startersByTeam=team=>rows.filter(x=>(x.team_name||'')===team&&x.is_starter);
     const subsByTeam=team=>rows.filter(x=>(x.team_name||'')===team&&!x.is_starter);
     const escName=v=>esc(v||'');
-    const pos=rows=>String(rows?.position||'').toLowerCase();
+    const pos=row=>String(row?.position||'').toLowerCase();
     const pitchCoords=(row,index,team)=>{
-      const p=pos(row);
-      const side=team===home?'home':'away';
-      const mirror=side==='home';
+      const p=pos(row), side=team===home?'home':'away', mirror=side==='home';
       let x=50,y=50;
       if(/gk|goal/.test(p)){x=50;y=mirror?91:9}
       else if(/def|back|cb|lb|rb/.test(p)){const a=[16,39,61,84];x=a[Math.min(index,3)];y=mirror?73:27}
@@ -73,25 +71,21 @@ async function load(){
       else {const a=[[50,91],[25,72],[50,72],[75,72],[25,52],[50,52],[75,52],[30,28],[50,28],[70,28],[50,15]];[x,y]=a[index]||[50,50];if(!mirror)y=100-y}
       return [x,y];
     };
-    const lineupRows=rows.length?[home,away].map(team=>rows.filter(x=>(x.team_name||'')===team)).flat():[];
-    if(!rows.length){
-      lineupBox.className='empty';
-      lineupBox.textContent="Both teams' lineups will appear here when recorded.";
-    }else{
-      let pitchPlayers='';
-      [home,away].forEach(team=>{
-        startersByTeam(team).forEach((r,k)=>{
-          const [x,y]=pitchCoords(r,k,team);
-          pitchPlayers+=`<div class="nl4-pitch-player ${team===away?'away':''}" style="left:${x}%;top:${y}%"><div class="badge">${team===home?'A':'O'}</div><b>${escName(r.player_name)}</b><small>${escName(r.position||'Player')}</small></div>`;
-        });
+    let pitchPlayers='';
+    [home,away].forEach(team=>{
+      startersByTeam(team).forEach((r,k)=>{
+        const [x,y]=pitchCoords(r,k,team);
+        pitchPlayers+=`<div class="nl4-pitch-player ${team===away?'away':''}" style="left:${x}%;top:${y}%"><div class="badge">${team===home?'A':'O'}</div><b>${escName(r.player_name)}</b><small>${escName(r.position||'Player')}</small></div>`;
       });
-      const subHtml=[home,away].map(team=>{
-        const subs=subsByTeam(team);
-        return `<div class="side-team"><h4>${escName(team)}</h4>${subs.length?subs.map(r=>{let t=r.minute_on!=null?'ON '+r.minute_on+"'":'SUB';if(r.minute_off!=null)t+=' • OFF '+r.minute_off+"'";return `<div class="nl4-sub-row"><div><strong>${escName(r.player_name)}</strong><small>${escName(r.position||'Arsenal player')}</small></div><span class="nl4-sub-time">${escName(t)}</span></div>`}).join(''):'<div class="empty">No substitutions recorded.</div>'}</div>`;
-      }).join('');
-      lineupBox.className='';
-      lineupBox.innerHTML=`<div class="nl4-match-lineup-wrap"><div class="nl4-lineup-pitch"><div class="nl4-pitch-box top"></div><div class="nl4-pitch-box bottom"></div><div class="nl4-pitch-spot top"></div><div class="nl4-pitch-spot bottom"></div><div class="nl4-pitch-half"></div>${pitchPlayers}</div><div class="nl4-lineup-side"><h3>SUBSTITUTIONS</h3>${subHtml}</div></div>`;
-    }
+    });
+    const noLineups=!rows.length;
+    const subHtml=[home,away].map(team=>{
+      const subs=subsByTeam(team);
+      return `<div class="side-team"><h4>${escName(team)}</h4>${subs.length?subs.map(r=>{let t=r.minute_on!=null?'ON '+r.minute_on+"'":'SUB';if(r.minute_off!=null)t+=' • OFF '+r.minute_off+"'";return `<div class="nl4-sub-row"><div><strong>${escName(r.player_name)}</strong><small>${escName(r.position||'Player')}</small></div><span class="nl4-sub-time">${escName(t)}</span></div>`}).join(''):'<div class="empty">No substitutions recorded.</div>'}</div>`;
+    }).join('');
+    lineupBox.className='';
+    lineupBox.innerHTML=`<div class="nl4-match-lineup-wrap"><div class="nl4-lineup-pitch">${pitchPlayers?'<div class="nl4-pitch-box top"></div><div class="nl4-pitch-box bottom"></div><div class="nl4-pitch-spot top"></div><div class="nl4-pitch-spot bottom"></div><div class="nl4-pitch-half"></div>':''}${pitchPlayers}${noLineups?'<div class="nl4-lineup-empty">LINEUPS NOT YET RECORDED</div>':''}</div><div class="nl4-lineup-side"><h3>SUBSTITUTIONS</h3>${noLineups?'<div class="empty">Substitutions will appear here when recorded.</div>':subHtml}</div></div>`;
+  }
 
   const totalsBox=document.getElementById('teamTotalsBox');if(teamTotalsError||comparisonError)totalsBox.textContent='UCL season totals could not be loaded.';else if(!(teamTotals||[]).length){totalsBox.className='empty';totalsBox.textContent='Team totals will appear after a completed match.';}else{const rows=[...(teamTotals||[])],apply=(name,override)=>{if(!override)return;const i=rows.findIndex(x=>x.team_name===name);if(i>=0)rows[i]={...rows[i],...override,team_name:name};else rows.push({...override,team_name:name})};apply(home,comparison?.home_stats);apply(away,comparison?.away_stats);totalsBox.className='';totalsBox.innerHTML=renderComparison(rows,home,away,true);}
 }
