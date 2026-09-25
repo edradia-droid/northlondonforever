@@ -72,9 +72,7 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
 
 /* MATCH CENTRE + ARSENAL ROUTE */
 .bracket-wrap{position:relative}
-.bracket{position:relative;z-index:1}
-.arsenal-bracket-logo{position:absolute;right:28px;bottom:28px;left:auto;top:auto;width:110px;height:110px;object-fit:contain;opacity:.5;filter:none;pointer-events:none;z-index:5;display:block!important;visibility:visible!important}
-.bracket > .arsenal-bracket-logo{position:absolute;right:28px;bottom:28px}
+.bracket{position:relative;z-index:1;padding:18px;border:2px solid var(--green);border-radius:24px;background:linear-gradient(145deg,rgba(0,143,94,.18),rgba(0,88,59,.08));box-shadow:0 0 35px rgba(0,143,94,.18),inset 0 0 35px rgba(0,143,94,.08)}
 .arsenal-route-svg{position:absolute;left:4px;top:20px;width:1420px;height:100%;min-height:100%;z-index:0;pointer-events:none;overflow:visible}
 .arsenal-route-glow{fill:none;stroke:rgba(232,245,239,.22);stroke-width:10;stroke-linecap:round;stroke-linejoin:round;filter:blur(7px)}
 .arsenal-route{fill:none;stroke:var(--green);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:9 8;filter:drop-shadow(0 0 6px rgba(0,143,94,.8));animation:routeFlow 2.2s linear infinite}
@@ -267,19 +265,6 @@ const ROUND_ORDER=["round3","round4","round5","semifinal","final"];
 
 function stateText(state){return state==="completed"?"RESULTS":state==="upcoming"?"UPCOMING":state==="eliminated"?"ELIMINATED":"NOT REACHED";}
 
-function addArsenalBracketLogo(){
-  const bracket=document.querySelector(".bracket");
-  if(!bracket||bracket.querySelector(".arsenal-bracket-logo"))return;
-  const img=document.createElement("img");
-  img.className="arsenal-bracket-logo";
-  img.src="https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg";
-  img.alt="";
-  img.setAttribute("aria-hidden","true");
-  img.style.zIndex="5";
-  img.style.opacity=".5";
-  bracket.appendChild(img);
-}
-
 function renderRoundTracker(){
   const nav=document.querySelector(".round-nav"); if(!nav)return;
   nav.querySelectorAll("button").forEach((button,index)=>{
@@ -295,8 +280,6 @@ function renderRoundTracker(){
   }).join("");
   document.querySelectorAll("#round3 .tie").forEach((el,i)=>el.classList.toggle("arsenal-current",i===8));
   document.querySelectorAll("#round4 .tie").forEach((el,i)=>el.classList.toggle("arsenal-upcoming",i===1));
-  addArsenalBracketLogo();
-  buildRoute();
   selectRound("round3",false);
 }
 
@@ -341,25 +324,9 @@ function selectRound(key,focusPanel=true){
   const target=document.getElementById(data.target);
   if(target)target.scrollIntoView({behavior:"smooth",block:"center"});
   updateMatchCentre(key);
-  buildRoute();
   if(focusPanel)setTimeout(()=>document.getElementById("matchDetails")?.scrollIntoView({behavior:"smooth",block:"nearest"}),220);
 }
 
-function buildRoute(){
-  const bracket=document.querySelector(".bracket"),wrap=document.querySelector(".bracket-wrap");if(!bracket||!wrap)return;
-  let svg=wrap.querySelector(".arsenal-route-svg");
-  if(!svg){svg=document.createElementNS("http://www.w3.org/2000/svg","svg");svg.classList.add("arsenal-route-svg");wrap.appendChild(svg);}
-  const wrapRect=wrap.getBoundingClientRect(),points=[];
-  [["round3",8],["round4",1]].forEach(([id,index])=>{
-    const tie=document.querySelector("#"+id+" .tie:nth-of-type("+(index+2)+")");
-    if(tie){const r=tie.getBoundingClientRect();points.push([r.left-wrapRect.left+r.width/2,r.top-wrapRect.top+r.height/2]);}
-  });
-  if(points.length<2){svg.innerHTML="";return}
-  const w=Math.max(wrap.scrollWidth,1420),h=Math.max(wrap.scrollHeight,700);
-  svg.setAttribute("viewBox","0 0 "+w+" "+h);svg.setAttribute("width",w);svg.setAttribute("height",h);
-  const p=points.map(x=>x.join(",")).join(" ");
-  svg.innerHTML='<polyline class="arsenal-route-glow" points="'+p+'"/><polyline class="arsenal-route" points="'+p+'"/>'+points.map(x=>'<circle class="arsenal-route-point" cx="'+x[0]+'" cy="'+x[1]+'" r="5"/>').join("");
-}
 document.addEventListener("DOMContentLoaded",()=>{
   document.querySelectorAll(".match-tab").forEach(tab=>tab.addEventListener("click",()=>{document.querySelectorAll(".match-tab").forEach(t=>t.classList.remove("active"));tab.classList.add("active");renderPane(document.querySelector(".round-nav button.active")?.dataset.round||"round3",tab.dataset.pane)}));
   renderRoundTracker();
