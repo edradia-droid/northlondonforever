@@ -54,37 +54,74 @@ async function load(){
 
   const [{data:events,error:eventsError},{data:lineups,error:lineupsError},{data:teamTotals,error:teamTotalsError},{data:comparison,error:comparisonError}]=await Promise.all([client.from('match_events').select('*').eq('fixture_id',f.id).order('minute',{ascending:true,nullsFirst:false}).order('stoppage_minute',{ascending:true,nullsFirst:false}),client.from('match_lineups').select('*').eq('fixture_id',f.id).order('is_starter',{ascending:false}).order('minute_on'),client.from('ucl_team_stats').select('*').eq('season','2026/27').in('team_name',[home,away]),client.from('ucl_match_comparisons').select('home_stats,away_stats').eq('fixture_id',f.id).maybeSingle()]);
   if(eventsError){console.warn('NL4 UCL match events:',eventsError);const box=document.getElementById('eventsBox');if(box){box.className='empty';box.textContent='Match events could not be loaded.';}}else renderEvents(events||[],home,away);
-  const lineupBox=document.getElementById('lineupsBox');
+  const lineupBox=document.getElementById('clStartingXI');
+  const arsenalTeam = /arsenal/i.test(home) ? home : (/arsenal/i.test(away) ? away : 'Arsenal');
+  const lineupRows=(lineups||[]).filter(x=>/arsenal/i.test(String(x.team_name||'')) || String(x.team_name||'')===arsenalTeam);
   if(lineupBox){
-    const rows=lineups||[];
-    const startersByTeam=team=>rows.filter(x=>(x.team_name||'')===team&&x.is_starter);
-    const subsByTeam=team=>rows.filter(x=>(x.team_name||'')===team&&!x.is_starter);
-    const escName=v=>esc(v||'');
-    const pos=row=>String(row?.position||'').toLowerCase();
-    const pitchCoords=(row,index,team)=>{
-      const p=pos(row), side=team===home?'home':'away', mirror=side==='home';
-      let x=50,y=50;
-      if(/gk|goal/.test(p)){x=50;y=mirror?91:9}
-      else if(/def|back|cb|lb|rb/.test(p)){const a=[16,39,61,84];x=a[Math.min(index,3)];y=mirror?73:27}
-      else if(/mid|dm|cm|am|wing/.test(p)){const a=[18,40,60,82];x=a[Math.min(index,3)];y=mirror?52:48}
-      else if(/fw|fwd|forward|striker|attack/.test(p)){const a=[30,50,70];x=a[Math.min(index,2)];y=mirror?27:73}
-      else {const a=[[50,91],[25,72],[50,72],[75,72],[25,52],[50,52],[75,52],[30,28],[50,28],[70,28],[50,15]];[x,y]=a[index]||[50,50];if(!mirror)y=100-y}
-      return [x,y];
+    const starters=lineupRows.filter(x=>x.is_starter);
+    const subs=lineupRows.filter(x=>!x.is_starter);
+    const normalizeName=v=>String(v||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().trim();
+    const shirts={
+      'david raya':1,'william saliba':2,'cristhian mosquera':3,'ben white':4,'piero hincapie':5,'gabriel magalhaes':6,
+      'bukayo saka':7,'martin odegaard':8,'gabriel jesus':9,'eberechi eze':10,'gabriel martinelli':11,'jurrien timber':12,
+      'kepa arrizabalaga':13,'viktor gyokeres':14,'christian norgaard':16,'christos tzolis':17,'noni madueke':20,
+      'ethan nwaneri':22,'mikel merino':23,'reiss nelson':24,'kai havertz':29,'illan meslier':30,'riccardo calafiori':33,
+      'tommy setford':35,'martin zubimendi':36,'bruno guimaraes':39,'declan rice':41,'myles lewis-skelly':49,'max dowman':56,
+      'ezri konsa':15
     };
-    let pitchPlayers='';
-    [home,away].forEach(team=>{
-      startersByTeam(team).forEach((r,k)=>{
-        const [x,y]=pitchCoords(r,k,team);
-        pitchPlayers+=`<div class="nl4-pitch-player ${team===away?'away':''}" style="left:${x}%;top:${y}%"><div class="badge">${team===home?'A':'O'}</div><b>${escName(r.player_name)}</b><small>${escName(r.position||'Player')}</small></div>`;
-      });
+    const images={
+      'david raya':'assets/player-cutouts/player-01.png','kepa arrizabalaga':'assets/player-cutouts/player-02.png','illan meslier':'assets/player-cutouts/player-03.png','tommy setford':'assets/player-cutouts/player-04.png',
+      'william saliba':'assets/player-cutouts/player-05.png','cristhian mosquera':'assets/player-cutouts/player-06.png','ben white':'assets/player-cutouts/player-07.png','piero hincapie':'assets/player-cutouts/player-08.png',
+      'gabriel magalhaes':'assets/player-cutouts/player-09.png','jurrien timber':'assets/player-cutouts/player-10.png','ezri konsa':'assets/player-cutouts/player-11.png','riccardo calafiori':'assets/player-cutouts/player-12.png',
+      'declan rice':'assets/player-cutouts/player-13.png','bruno guimaraes':'assets/player-cutouts/player-14.png','martin odegaard':'assets/player-cutouts/player-15.png','martin zubimendi':'assets/player-cutouts/player-16.png',
+      'mikel merino':'assets/player-cutouts/player-17.png','myles lewis-skelly':'assets/player-cutouts/player-18.png','eberechi eze':'assets/player-cutouts/player-19.png','ethan nwaneri':'assets/player-cutouts/player-20.png',
+      'max dowman':'assets/player-cutouts/player-21.png','christos tzolis':'assets/player-cutouts/player-22.png','bukayo saka':'assets/player-cutouts/player-23.png','noni madueke':'assets/player-cutouts/player-24.png',
+      'kai havertz':'assets/player-cutouts/player-25.png','viktor gyokeres':'assets/player-cutouts/player-26.png'
+    };
+    const slots={
+      'GK':[50,89],'LB':[13,72],'LCB':[36,74],'CB':[50,74],'RCB':[64,74],'RB':[87,72],
+      'LWB':[10,57],'RWB':[90,57],'DM':[50,58],'LDM':[35,59],'RDM':[65,59],'LM':[11,45],
+      'LCM':[34,47],'CM':[50,47],'RCM':[66,47],'RM':[89,45],'LAM':[27,34],'CAM':[50,33],
+      'RAM':[73,34],'AM':[50,33],'LW':[12,20],'RW':[88,20],'ST':[50,15],'LST':[35,18],'RST':[65,18]
+    };
+    const formationSlots={
+      '4-3-3':['GK','LB','LCB','RCB','RB','LCM','CM','RCM','LW','ST','RW'],
+      '4-2-3-1':['GK','LB','LCB','RCB','RB','LDM','RDM','LW','CAM','RW','ST'],
+      '4-4-2':['GK','LB','LCB','RCB','RB','LM','LCM','RCM','RM','LST','RST'],
+      '3-4-3':['GK','LCB','CB','RCB','LM','LCM','RCM','RM','LW','ST','RW'],
+      '3-5-2':['GK','LCB','CB','RCB','LWB','LCM','CM','RCM','RWB','LST','RST'],
+      '4-1-4-1':['GK','LB','LCB','RCB','RB','DM','LM','LCM','RCM','RM','ST'],
+      '4-5-1':['GK','LB','LCB','RCB','RB','LDM','RDM','LW','CAM','RW','ST']
+    };
+    const formation=String(starters[0]?.formation||'').trim() && formationSlots[String(starters[0]?.formation).trim()] ? String(starters[0].formation).trim() : '4-3-3';
+    const template=formationSlots[formation];
+    const used=new Set();
+    const roleOverride={'david raya':'GK','ben white':'RB','cristhian mosquera':'RCB','ezri konsa':'RCB','gabriel magalhaes':'LCB','riccardo calafiori':'LB','declan rice':'LDM','myles lewis-skelly':'RDM','martin odegaard':'CAM','bukayo saka':'RW','christos tzolis':'LW','kai havertz':'ST'};
+    const resolved=starters.map((row,index)=>{
+      const key=normalizeName(row.player_name);
+      let requested=String(row.pitch_slot||'').trim().toUpperCase();
+      const position=String(row.position||'').trim().toUpperCase();
+      if(requested==='AM')requested='CAM';if(requested==='LAM')requested='LW';if(requested==='RAM')requested='RW';
+      if(!template.includes(requested))requested=roleOverride[key]||position;
+      if(!template.includes(requested) && Number.isInteger(Number(row.pitch_slot))) requested=template[Number(row.pitch_slot)-1];
+      if(!template.includes(requested)||used.has(requested)) requested=template.find(x=>!used.has(x))||template[index]||'CM';
+      used.add(requested);return requested;
     });
-    const noLineups=!rows.length;
-    const subHtml=[home,away].map(team=>{
-      const subs=subsByTeam(team);
-      return `<div class="side-team"><h4>${escName(team)}</h4>${subs.length?subs.map(r=>{let t=r.minute_on!=null?'ON '+r.minute_on+"'":'SUB';if(r.minute_off!=null)t+=' • OFF '+r.minute_off+"'";return `<div class="nl4-sub-row"><div><strong>${escName(r.player_name)}</strong><small>${escName(r.position||'Player')}</small></div><span class="nl4-sub-time">${escName(t)}</span></div>`}).join(''):'<div class="empty">No substitutions recorded.</div>'}</div>`;
-    }).join('');
-    lineupBox.className='';
-    lineupBox.innerHTML=`<div class="nl4-match-lineup-wrap"><div class="nl4-lineup-pitch">${pitchPlayers?'<div class="nl4-pitch-box top"></div><div class="nl4-pitch-box bottom"></div><div class="nl4-pitch-spot top"></div><div class="nl4-pitch-spot bottom"></div><div class="nl4-pitch-half"></div>':''}${pitchPlayers}${noLineups?'<div class="nl4-lineup-empty">LINEUPS NOT YET RECORDED</div>':''}</div><div class="nl4-lineup-side"><h3>SUBSTITUTIONS</h3>${noLineups?'<div class="empty">Substitutions will appear here when recorded.</div>':subHtml}</div></div>`;
+    const outgoing=new Map((lineups||[]).filter(x=>x.is_starter&&x.minute_off!=null).map(x=>[normalizeName(x.player_name),Number(x.minute_off)]));
+    const markings='<span class="cl-pl-box top"></span><span class="cl-pl-goal top"></span><span class="cl-pl-box bottom"></span><span class="cl-pl-goal bottom"></span>';
+    const figures=starters.length?starters.map((row,index)=>{
+      const slot=resolved[index], xy=slots[slot]||slots.CM, name=String(row.player_name||'Arsenal'), key=normalizeName(name), image=images[key], shirt=shirts[key]??'', off=outgoing.get(key);
+      return `<div class="cl-pl-player" style="--x:${xy[0]}%;--y:${xy[1]}%;--depth:${(.78+(xy[1]/100)*.24).toFixed(2)}" title="${esc(name)} • #${esc(shirt)}"><span class="cl-pl-ground"></span><div class="cl-pl-kit">${image?`<img class="cl-pl-photo" src="${esc(image)}" alt="${esc(name)}" loading="eager">`:''}</div><span class="cl-pl-name">${esc(name)}${off!=null?`<span class="cl-pl-out">↓ OFF ${esc(off)}'</span>`:''}</span></div>`;
+    }).join(''):'<div class="cl-pl-empty">Starting XI has not been announced yet.</div>';
+    lineupBox.innerHTML=markings+figures;
+    const formationEl=document.getElementById('clFormation');if(formationEl)formationEl.textContent=starters.length?formation:'TBC';
+    const matchup=document.getElementById('clLineupMatch');if(matchup)matchup.textContent=`${home} VS ${away}`;
+    const venueEl=document.getElementById('clLineupVenue');if(venueEl)venueEl.textContent=f.venue||'VENUE TBC';
+    const subBox=document.getElementById('clSubstitutes');
+    if(subBox)subBox.innerHTML=subs.length?subs.map(row=>{
+      const key=normalizeName(row.player_name),img=images[key],on=row.minute_on!=null?`ON ${row.minute_on}'`:'SUB',off=row.minute_off!=null?` • OFF ${row.minute_off}'`:'';
+      return `<div class="cl-pl-sub">${img?`<img src="${esc(img)}" alt="${esc(row.player_name)}">`:''}<div><strong>${esc(row.player_name)}</strong><small>${esc(on+off)}</small></div></div>`;
+    }).join(''):'<div class="empty">No substitutions recorded.</div>';
   }
 
   const totalsBox=document.getElementById('teamTotalsBox');if(teamTotalsError||comparisonError)totalsBox.textContent='UCL season totals could not be loaded.';else if(!(teamTotals||[]).length){totalsBox.className='empty';totalsBox.textContent='Team totals will appear after a completed match.';}else{const rows=[...(teamTotals||[])],apply=(name,override)=>{if(!override)return;const i=rows.findIndex(x=>x.team_name===name);if(i>=0)rows[i]={...rows[i],...override,team_name:name};else rows.push({...override,team_name:name})};apply(home,comparison?.home_stats);apply(away,comparison?.away_stats);totalsBox.className='';totalsBox.innerHTML=renderComparison(rows,home,away,true);}
