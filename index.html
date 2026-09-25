@@ -10,8 +10,10 @@
 <link href="shared-sidebar.css" rel="stylesheet"/><link href="sidebar-toggle-fix.css" rel="stylesheet"/><style>
 .competition-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 .competition-grid .form-card{grid-column:1/-1}
-@media(max-width:720px){.competition-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.competition-grid .form-card{grid-column:1/-1}.competition-grid .stat-card{padding:12px 7px}.competition-grid .stat-card strong{font-size:clamp(18px,5vw,28px)}.competition-grid .stat-card small{font-size:9px}.competition-grid .stat-card span{font-size:9px}}
-@media(max-width:480px){.competition-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.competition-grid .form-card{grid-column:1/-1}.competition-grid .stat-card{padding:10px 5px}.competition-grid .stat-card strong{font-size:18px}.competition-grid .stat-card small{font-size:8px}.competition-grid .stat-card span{font-size:8px}}
+.cup-grid-section{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.cup-grid-section .mini-competition{width:100%;min-width:0}
+@media(max-width:720px){.competition-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.competition-grid .form-card{grid-column:1/-1}.competition-grid .stat-card{padding:12px 7px}.competition-grid .stat-card strong{font-size:clamp(18px,5vw,28px)}.competition-grid .stat-card small{font-size:9px}.competition-grid .stat-card span{font-size:9px}.cup-grid-section{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
+@media(max-width:480px){.competition-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.competition-grid .form-card{grid-column:1/-1}.competition-grid .stat-card{padding:10px 5px}.competition-grid .stat-card strong{font-size:18px}.competition-grid .stat-card small{font-size:8px}.competition-grid .stat-card span{font-size:8px}.cup-grid-section{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.cup-grid-section .mini-competition{padding:16px 12px}.cup-grid-section .mini-competition h2{font-size:20px}.cup-grid-section .mini-competition p{font-size:12px}}
 </style></head>
 <body class="nl4-unified-sidebar"><button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button>
 <div class="app-shell">
@@ -154,7 +156,6 @@
     if(n<words.length)return words[n];
     const tens=Math.floor(n/10)*10;
     const ones=n%10;
-    const tensWords={30:'thirtieth',40:'fortieth',50:'fiftieth',60:'sixtieth',70:'seventieth',80:'eightieth',90:'ninetieth'};
     const base={20:'twentieth',30:'thirtieth',40:'fortieth',50:'fiftieth',60:'sixtieth',70:'seventieth',80:'eightieth',90:'ninetieth'};
     if(ones===0)return base[tens]||String(n);
     const onesWords=['','first','second','third','fourth','fifth','sixth','seventh','eighth','ninth'];
