@@ -133,14 +133,20 @@
 }
 <style id="ucl-mobile-fit-final">
 @media(max-width:700px){
- html,body{width:100%!important;max-width:100%!important;overflow-x:hidden!important}
- .main,.shell,.grid,.panel,.hero{width:100%!important;min-width:0!important;max-width:100%!important}
- .cl-pl-broadcast,.cl-pl-top,.cl-pl-grid,.cl-pl-pitch-stage,.cl-pl-side{min-width:0!important;max-width:100%!important}
- .cl-pl-top{gap:8px!important;overflow:hidden!important}
- .cl-pl-kicker{min-width:0!important;max-width:calc(100vw - 100px)!important;overflow:hidden!important}
+ html,body{width:100%!important;min-width:0!important;max-width:100%!important;overflow-x:hidden!important}
+ .main{width:100%!important;min-width:0!important;max-width:none!important;padding:14px 8px 50px!important}
+ .shell{width:100%!important;min-width:0!important;max-width:none!important;margin:0!important}
+ .grid{width:100%!important;min-width:0!important;display:grid!important;grid-template-columns:minmax(0,1fr)!important}
+ .hero,.panel{width:100%!important;min-width:0!important;max-width:none!important}
+ .hero{padding:18px 10px!important}
+ .scoreboard{width:100%!important;min-width:0!important}
+ .cl-pl-broadcast,.cl-pl-top,.cl-pl-grid,.cl-pl-pitch-stage,.cl-pl-side{width:100%!important;min-width:0!important;max-width:none!important}
+ .cl-pl-grid{padding:0 6px 12px!important}
+ .cl-pl-top{gap:6px!important;overflow:hidden!important}
+ .cl-pl-kicker{min-width:0!important;max-width:calc(100% - 76px)!important;overflow:hidden!important;font-size:20px!important}
  .cl-pl-kicker small{white-space:normal!important}
- .cl-pl-pitch-stage{width:100%!important;overflow:hidden!important}
- .cl-pl-pitch{width:100%!important;max-width:100%!important}
+ .cl-pl-pitch-stage{padding:12px 0!important;overflow:hidden!important}
+ .cl-pl-pitch{width:100%!important;max-width:none!important;margin:0!important}
 }
 </style></head>
 <body>
