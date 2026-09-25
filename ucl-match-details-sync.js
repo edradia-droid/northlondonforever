@@ -128,7 +128,9 @@ async function load(){
         <span class="player-name">${esc(name)}${off!=null?`<span class="cl-pl-out">↓ OFF ${esc(off)}'</span>`:''}</span>
       </div>`;
     }).join(''):'<div class="cl-pl-empty">Starting XI has not been announced yet.</div>';
-    lineupBox.innerHTML=markings+figures;
+    // Matchday 1 has a verified local-image fallback in the HTML. Keep it in place so a later async refresh cannot replace the visible player photos.
+    const hasStaticPhotoFallback=idx===0 && lineupBox.querySelector('.kit-player-photo');
+    if(!hasStaticPhotoFallback) lineupBox.innerHTML=markings+figures;
     const formationEl=document.getElementById('clFormation');if(formationEl)formationEl.textContent=starters.length?formation:'TBC';
     const matchup=document.getElementById('clLineupMatch');if(matchup)matchup.textContent=`${home} VS ${away}`;
     const venueEl=document.getElementById('clLineupVenue');if(venueEl)venueEl.textContent=f.venue||'VENUE TBC';
