@@ -135,8 +135,10 @@
 <script src="nl4-data.js"></script>
 <script src="index.js"></script>
 <style>
-#premier-league .form-card,#champions-league .form-card{width:100%;min-height:76px;display:flex;align-items:center;justify-content:center;overflow:hidden}
-#premier-league .form-card strong,#champions-league .form-card strong{display:block;width:100%;white-space:nowrap;text-align:center;letter-spacing:.12em;word-spacing:.35em;font-size:clamp(18px,3.2vw,34px)}
+#premier-league .form-card,#champions-league .form-card{width:100%;min-height:96px;display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;position:relative;overflow:hidden;padding:14px 16px}
+#premier-league .form-card small,#champions-league .form-card small{align-self:flex-start;text-align:left}
+#premier-league .form-card strong,#champions-league .form-card strong{display:block;width:100%;white-space:nowrap;text-align:left;letter-spacing:.12em;word-spacing:.35em;font-size:clamp(18px,3.2vw,34px);line-height:1}
+#premier-league .form-card span,#champions-league .form-card span{align-self:flex-end;text-align:right;font-size:10px;opacity:.72}
 </style>
 <script>
 (function(){
@@ -167,7 +169,7 @@
       .select('home_team,away_team,is_home,opponent,arsenal_score,opponent_score,status,kickoff_at,matchday')
       .eq('season','2026/27').eq('competition','Premier League');
     const completed=(fixtures||[]).filter(r=>finished(r.status))
-      .filter(r=>/arsenal/i.test(String(r.home_team||r.away_team||r.opponent||'')))
+      .filter(r=>/arsenal/i.test(`${r.home_team||''} ${r.away_team||''} ${r.opponent||''}`))
       .sort((a,b)=>new Date(b.kickoff_at||0)-new Date(a.kickoff_at||0));
     const form=completed.slice(0,10).reverse().map(r=>outcome(r.arsenal_score,r.opponent_score)).join(' ');
     set('#premier-league .form-card strong',form||'—');
@@ -192,7 +194,12 @@
     const completed=(fixtures||[]).filter(r=>finished(r.status))
       .filter(r=>/arsenal/i.test(String(r.home_team||r.away_team||r.opponent||'')))
       .sort((a,b)=>new Date(b.kickoff_at||0)-new Date(a.kickoff_at||0));
-    const form=completed.slice(0,8).reverse().map(r=>outcome(r.arsenal_score,r.opponent_score)).join(' ');
+    let form=completed.slice(0,8).reverse().map(r=>outcome(r.arsenal_score,r.opponent_score)).join(' ');
+    if(!form && Number(arsenal.played)===1){
+      if(Number(arsenal.wins)===1) form='W';
+      else if(Number(arsenal.draws)===1) form='D';
+      else if(Number(arsenal.losses)===1) form='L';
+    }
     set('#champions-league .form-card strong',form||'—');
     const note=document.querySelector('#champions-league .lineup-note');
     if(note)note.textContent='Live from the Champions League standings table • Form uses the last 8 completed league-phase matches.';
