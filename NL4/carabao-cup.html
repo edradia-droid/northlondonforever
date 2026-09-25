@@ -72,8 +72,8 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
 
 /* MATCH CENTRE + ARSENAL ROUTE */
 .bracket-wrap{position:relative}
-.bracket{position:relative}
-.arsenal-route-svg{position:absolute;left:4px;top:20px;width:1420px;height:100%;min-height:100%;z-index:3;pointer-events:none;overflow:visible}
+.bracket{position:relative;z-index:1}
+.arsenal-route-svg{position:absolute;left:4px;top:20px;width:1420px;height:100%;min-height:100%;z-index:0;pointer-events:none;overflow:visible}
 .arsenal-route-glow{fill:none;stroke:rgba(232,245,239,.22);stroke-width:10;stroke-linecap:round;stroke-linejoin:round;filter:blur(7px)}
 .arsenal-route{fill:none;stroke:var(--green);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:9 8;filter:drop-shadow(0 0 6px rgba(0,143,94,.8));animation:routeFlow 2.2s linear infinite}
 @keyframes routeFlow{to{stroke-dashoffset:-34}}
@@ -197,8 +197,7 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
     <div class="match-tabs" role="tablist">
       <button class="match-tab active" data-pane="overview" type="button">OVERVIEW</button>
       <button class="match-tab" data-pane="events" type="button">MATCH EVENTS</button>
-      <button class="match-tab" data-pane="lineups" type="button">LINEUPS</button>
-      <button class="match-tab" data-pane="subs" type="button">SUBSTITUTES</button>
+      <button class="match-tab" data-pane="lineups" type="button">LINEUP &amp; SUBSTITUTION</button>
     </div>
     <div id="matchPane" class="match-pane"></div>
     <div class="match-next">
@@ -292,7 +291,7 @@ function renderPane(key,pane){
   const d=MATCH_DETAILS[key],box=document.querySelector("#matchPane"); if(!d||!box)return;
   if(pane==="overview")box.innerHTML='<div class="match-summary-grid">'+d.overview.map(x=>'<div class="match-summary-item"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join("")+'</div>';
   else {
-    const copy=pane==="events"?d.events:pane==="lineups"?d.lineups:d.subs;
+    const copy=pane==="events"?d.events:d.lineups;
     box.innerHTML='<div class="match-empty">'+copy+'</div>';
   }
 }
