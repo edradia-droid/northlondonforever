@@ -29,7 +29,7 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
 .note{color:#8e939b;font-size:11px;line-height:1.6;margin-top:20px}.footer{width:min(1280px,calc(100% - 32px));margin:auto;padding:35px 0 60px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:20px;color:#777;font-size:10px;letter-spacing:1px}.footer b{color:#ddd}
 @media(max-width:800px){.hero-card{padding:35px 25px;min-height:420px}.trophy-mark{opacity:1;right:-35px;width:220px;height:220px}.hero-card:before{font-size:95px;right:-30px}.info-grid{grid-template-columns:1fr}.next-match{gap:8px}.club strong{font-size:14px}.footer{flex-direction:column}.brand{display:none}}
 @media(max-width:520px){.hero{padding-top:25px}.hero h1{letter-spacing:-2px}.hero-card{border-radius:22px}.section{padding:30px 0}.section-head{align-items:start;flex-direction:column}.source{text-align:left}.header-inner{min-height:64px}.back{font-size:11px}}
-</style>
+.trophy-3d{position:absolute;right:4%;top:50%;transform:translateY(-50%);width:270px;height:300px;z-index:3;pointer-events:none;filter:drop-shadow(0 20px 25px rgba(0,0,0,.55))}.trophy-3d svg{width:100%;height:100%;display:block;overflow:visible}.cup-metal{fill:url(#metal);stroke:#c9d1d3;stroke-width:2}.cup-dark{fill:url(#darkMetal)}.cup-highlight{fill:url(#highlight);opacity:.8}.ribbon{fill:url(#ribbon);stroke:#063d29;stroke-width:1.5}.ribbon-text{font:900 15px Arial,sans-serif;fill:#fff;letter-spacing:1px}.trophy-3d .shine{fill:#fff;opacity:.2}.trophy-3d .shadow{fill:#000;opacity:.22}@media(max-width:800px){.trophy-3d{right:-25px;width:230px;height:255px;opacity:.95}}</style>
 </head>
 <body>
 <div class="topline"></div>
@@ -39,7 +39,34 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
 </div></header>
 <main>
 <section class="hero"><div class="hero-card">
-<div class="hero-copy">
+<div class="trophy-3d" aria-hidden="true">
+<svg viewBox="0 0 270 300" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="metal" x1="0" x2="1"><stop offset="0" stop-color="#6d777a"/><stop offset=".18" stop-color="#f7fbfb"/><stop offset=".42" stop-color="#9ba5a8"/><stop offset=".63" stop-color="#ffffff"/><stop offset=".84" stop-color="#737d80"/><stop offset="1" stop-color="#e8eeee"/></linearGradient>
+<linearGradient id="darkMetal" x1="0" x2="1"><stop offset="0" stop-color="#171b1d"/><stop offset=".5" stop-color="#6b7376"/><stop offset="1" stop-color="#101315"/></linearGradient>
+<linearGradient id="highlight" x1="0" x2="1"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#d8ffff"/><stop offset="1" stop-color="#fff"/></linearGradient>
+<linearGradient id="ribbon" x1="0" x2="1"><stop offset="0" stop-color="#004b32"/><stop offset=".45" stop-color="#00a86b"/><stop offset="1" stop-color="#00613f"/></linearGradient>
+</defs>
+<path class="ribbon" d="M47 73 C31 95 28 151 31 252 L61 267 C61 194 62 126 71 83 Z"/>
+<path class="ribbon" d="M223 73 C239 95 242 151 239 252 L209 267 C209 194 208 126 199 83 Z"/>
+<path class="cup-metal" d="M71 62 Q135 48 199 62 L190 155 Q183 191 135 202 Q87 191 80 155 Z"/>
+<path class="cup-metal" d="M75 65 Q53 66 46 85 Q44 105 63 111 L72 99 Q60 96 60 87 Q63 79 79 81 Z"/>
+<path class="cup-metal" d="M195 65 Q217 66 224 85 Q226 105 207 111 L198 99 Q210 96 210 87 Q207 79 191 81 Z"/>
+<ellipse class="cup-highlight" cx="135" cy="65" rx="64" ry="12"/>
+<path class="shine" d="M92 76 Q111 67 119 75 L113 174 Q99 166 95 145 Z"/>
+<path class="cup-metal" d="M117 194 L153 194 L158 218 L112 218 Z"/>
+<path class="cup-metal" d="M98 215 Q135 204 172 215 L184 240 Q135 251 86 240 Z"/>
+<path class="cup-dark" d="M86 237 Q135 247 184 237 L194 252 Q135 267 76 252 Z"/>
+<ellipse class="cup-highlight" cx="135" cy="250" rx="59" ry="10"/>
+<path class="shadow" d="M89 251 Q135 262 181 251 L190 259 Q135 277 80 259 Z"/>
+<text x="135" y="112" text-anchor="middle" font-family="Georgia,serif" font-size="12" font-weight="900" fill="#4f585b">CARABAO CUP</text>
+<text x="135" y="128" text-anchor="middle" font-family="Arial,sans-serif" font-size="6.5" font-weight="800" fill="#697275">FOOTBALL LEAGUE CUP</text>
+<text x="135" y="143" text-anchor="middle" font-family="Arial,sans-serif" font-size="5.5" font-weight="700" fill="#697275">PRESENTED BY THE EFL</text>
+<g transform="translate(40 178) rotate(90)"><text class="ribbon-text" x="0" y="0">CARABAO</text></g>
+<g transform="translate(230 178) rotate(-90)"><text class="ribbon-text" x="0" y="0">CARABAO</text></g>
+<circle cx="135" cy="161" r="10" fill="#008f5e" stroke="#d7e9e2" stroke-width="2"/>
+<path d="M129 163 Q135 153 141 163 Q135 170 129 163Z" fill="#fff"/>
+</svg></div><div class="hero-copy">
 <p class="eyebrow">THE LEAGUE CUP • KNOCKOUT FOOTBALL</p>
 <h1>CARABAO <span>CUP</span></h1>
 <p>Arsenal's dedicated Carabao Cup match centre — built as a 3D-style knockout journey from the opening rounds to Wembley.</p>
@@ -89,7 +116,7 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
 <div class="tie" style="opacity:.7"><div class="team"><span>SEMIFINAL TIE 1</span><b>→</b></div><div class="team"><span>SEMIFINAL TIE 2</span><b>→</b></div><span class="date">JAN / FEB 2027</span></div>
 <div class="tie" style="opacity:.7"><div class="team"><span>SEMIFINAL TIE 3</span><b>→</b></div><div class="team"><span>SEMIFINAL TIE 4</span><b>→</b></div><span class="date">JAN / FEB 2027</span></div>
 </div>
-<div class="round final"><div class="round-title">THE PRIZE</div><div class="tie"><div class="team"><span>FINALISTS</span><b>→</b></div><div class="team winner"><span>WEMBLEY FINAL</span><b>🏆</b></div><span class="date">21 MAR 2027</span></div></div>
+<div class="round final"><div class="round-title">THE PRIZE</div><div class="tie"><div class="team"><span>FINALISTS</span><b>→</b></div><div class="team winner"><span>WEMBLEY FINAL</span><b class="carabao-cup-icon">→</b></div><span class="date">21 MAR 2027</span></div></div>
 </div></div>
 </section>
 <section class="section">
