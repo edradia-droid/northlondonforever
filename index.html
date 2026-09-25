@@ -85,7 +85,7 @@
 <section class="section-block" id="premier-league">
 <div class="section-heading"><div><p class="eyebrow">COMPETITION</p><h2>Premier League</h2></div><a href="premier-league.html">View Premier League table →</a><span class="status">2026 / 27</span></div>
 <div class="competition-grid">
-<div class="stat-card"><strong id="plPosition">2</strong><span>Position</span></div>
+<div class="stat-card"><strong id="plPosition">second</strong><span>Position</span></div>
 <div class="stat-card"><strong id="plPlayed">5</strong><span>Matches</span></div>
 <div class="stat-card"><strong id="plPoints">12</strong><span>Points</span></div>
 <div class="stat-card form-card"><small>FORM</small><strong>W W W W L</strong><span>Last 10 league matches</span></div>
@@ -94,7 +94,7 @@
 <section class="section-block" id="champions-league">
 <div class="section-heading"><div><p class="eyebrow">EUROPE</p><h2>Champions League</h2></div><a href="champions-league.html#uclTable">View Champions League table →</a><span class="status">2026 / 27</span></div>
 <div class="competition-grid">
-<div class="stat-card"><strong id="clPosition">16</strong><span>Position</span></div>
+<div class="stat-card"><strong id="clPosition">sixteenth</strong><span>Position</span></div>
 <div class="stat-card"><strong id="clPlayed">1</strong><span>Matches</span></div>
 <div class="stat-card"><strong id="clPoints">3</strong><span>League-phase points</span></div>
 <div class="stat-card form-card"><small>FORM</small><strong>W</strong><span>Last 8 league-phase matches</span></div>
@@ -147,6 +147,20 @@
     const el=document.querySelector(sel);
     if(el)el.textContent=String(value);
   };
+  const ordinal=(value)=>{
+    const n=Number(value);
+    if(!Number.isFinite(n)||n<1)return String(value);
+    const words=['','first','second','third','fourth','fifth','sixth','seventh','eighth','ninth','tenth','eleventh','twelfth','thirteenth','fourteenth','fifteenth','sixteenth','seventeenth','eighteenth','nineteenth','twentieth'];
+    if(n<words.length)return words[n];
+    const tens=Math.floor(n/10)*10;
+    const ones=n%10;
+    const tensWords={30:'thirtieth',40:'fortieth',50:'fiftieth',60:'sixtieth',70:'seventieth',80:'eightieth',90:'ninetieth'};
+    const base={20:'twentieth',30:'thirtieth',40:'fortieth',50:'fiftieth',60:'sixtieth',70:'seventieth',80:'eightieth',90:'ninetieth'};
+    if(ones===0)return base[tens]||String(n);
+    const onesWords=['','first','second','third','fourth','fifth','sixth','seventh','eighth','ninth'];
+    const prefix={20:'twenty',30:'thirty',40:'forty',50:'fifty',60:'sixty',70:'seventy',80:'eighty',90:'ninety'}[tens];
+    return prefix?prefix+'-'+onesWords[ones]:String(n);
+  };
   const finished=s=>['fulltime','finished','ft','aet','pen'].includes(String(s||'').toLowerCase());
   const outcome=(a,b)=>Number(a)>Number(b)?'W':Number(a)<Number(b)?'L':'D';
 
@@ -159,7 +173,7 @@
     const position=Number(arsenal.position);
     const played=Number(arsenal.played??arsenal.p??0);
     const points=Number(arsenal.points??arsenal.pts??0);
-    set('#premier-league .stat-card:nth-child(1) strong',position);
+    set('#premier-league .stat-card:nth-child(1) strong',ordinal(position));
     set('#premier-league .stat-card:nth-child(2) strong',played);
     set('#premier-league .stat-card:nth-child(3) strong',points);
 
@@ -182,7 +196,7 @@
     if(error||!data?.length)return;
     const arsenal=data.find(r=>/arsenal/i.test(String(r.team_name||'')));
     if(!arsenal)return;
-    set('#champions-league .stat-card:nth-child(1) strong',arsenal.position);
+    set('#champions-league .stat-card:nth-child(1) strong',ordinal(arsenal.position));
     set('#champions-league .stat-card:nth-child(2) strong',arsenal.played);
     set('#champions-league .stat-card:nth-child(3) strong',arsenal.points);
 
