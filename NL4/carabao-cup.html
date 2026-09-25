@@ -69,30 +69,6 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
 .round-anchor{scroll-margin-top:110px}
 @media(max-width:650px){.round-status{align-items:flex-start;flex-direction:column}.round-status-badge{align-self:flex-start}.journey-step{min-width:110px}}
 
-
-.arsenal-path .tie{border-left-color:var(--gold)!important;box-shadow:0 0 24px rgba(232,245,239,.12)}
-.arsenal-path .team.winner{color:#fff}
-.match-detail-panel{margin-top:24px;border:1px solid rgba(0,143,94,.4);border-radius:24px;background:linear-gradient(145deg,rgba(6,24,17,.96),rgba(7,10,13,.98));overflow:hidden;box-shadow:0 20px 55px rgba(0,0,0,.38)}
-.match-detail-head{padding:22px 24px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;gap:18px}
-.match-detail-kicker{color:#8de2bd;font-size:9px;font-weight:900;letter-spacing:2px}
-.match-detail-head h3{margin:5px 0 0;font:900 25px Georgia,serif}
-.match-detail-status{border:1px solid rgba(0,143,94,.45);border-radius:999px;padding:8px 11px;color:#8de2bd;font-size:9px;font-weight:900;letter-spacing:1px;white-space:nowrap}
-.match-scoreline{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:18px;padding:28px 24px;background:radial-gradient(circle at 50% 0,rgba(0,143,94,.2),transparent 58%)}
-.match-team{text-align:center}.match-team small{display:block;color:#7e8882;font-size:9px;letter-spacing:1.5px;margin-bottom:7px}.match-team strong{font-size:16px}.match-score{font:900 42px Georgia,serif;color:#fff;white-space:nowrap}.match-meta{text-align:center;color:#929b96;font-size:10px;margin-top:7px}
-.detail-tabs{display:flex;gap:7px;padding:0 20px 16px;overflow:auto}
-.detail-tabs button{border:1px solid rgba(255,255,255,.1);background:#101419;color:#8e9692;border-radius:999px;padding:9px 13px;font-size:9px;font-weight:900;letter-spacing:1px;cursor:pointer;white-space:nowrap}
-.detail-tabs button.active{background:var(--green);border-color:var(--green);color:#fff}
-.detail-view{padding:0 20px 22px}
-.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.detail-box{border:1px solid rgba(255,255,255,.08);border-radius:15px;background:rgba(255,255,255,.025);padding:14px}
-.detail-box h4{margin:0 0 11px;color:#8de2bd;font-size:9px;letter-spacing:1.5px}
-.detail-row{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:11px}
-.detail-row:last-child{border-bottom:0}.detail-row span{color:#8b938f}.detail-row b{text-align:right}
-.event-list{display:grid;gap:8px}.event{display:grid;grid-template-columns:58px 1fr auto;gap:9px;align-items:center;padding:9px 10px;border-radius:11px;background:rgba(255,255,255,.025);font-size:10px}.event-time{color:#8de2bd;font-weight:900}.event-kind{color:#aeb5b1}.event-player{font-weight:900;text-align:right}
-.lineup{display:grid;grid-template-columns:1fr 1fr;gap:12px}.lineup ul{margin:0;padding:0;list-style:none}.lineup li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:10px}.lineup li span{color:#777}
-.detail-placeholder{padding:22px;border:1px dashed rgba(255,255,255,.12);border-radius:15px;color:#89918d;font-size:11px;line-height:1.6}
-@media(max-width:650px){.match-detail-head{align-items:flex-start;flex-direction:column}.match-scoreline{padding:22px 14px;gap:8px}.match-score{font-size:32px}.match-team strong{font-size:13px}.detail-grid,.lineup{grid-template-columns:1fr}.event{grid-template-columns:45px 1fr}.event-player{display:none}}
-
 </style>
 </head>
 <body>
@@ -172,31 +148,6 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
 <div id="final" class="round final round-anchor"><div class="round-title">THE PRIZE</div><div class="tie"><div class="team"><span>FINALISTS</span><b>→</b></div><div class="team winner"><span>WEMBLEY FINAL</span><b class="carabao-cup-icon">→</b></div><span class="date">21 MAR 2027</span></div></div>
 </div></div>
 </section>
-
-<section class="section" id="matchDetails">
-  <div class="section-head">
-    <div><p class="eyebrow">ARSENAL MATCH CENTRE</p><h2>MATCH DETAILS</h2><p>Choose a completed Arsenal round to open its full match card.</p></div>
-  </div>
-  <div class="match-detail-panel" aria-live="polite">
-    <div class="match-detail-head">
-      <div><div class="match-detail-kicker" id="detailRound">ROUND 3 • RESULT</div><h3 id="detailTitle">Ipswich Town vs Arsenal</h3></div>
-      <span class="match-detail-status" id="detailStatus">ARSENAL QUALIFIED</span>
-    </div>
-    <div class="match-scoreline">
-      <div class="match-team"><small>HOME</small><strong id="detailHome">IPSWICH TOWN</strong></div>
-      <div><div class="match-score" id="detailScore">2 — 4</div><div class="match-meta" id="detailMeta">15 SEP 2026 • PORTMAN ROAD</div></div>
-      <div class="match-team"><small>AWAY</small><strong id="detailAway">ARSENAL</strong></div>
-    </div>
-    <div class="detail-tabs" role="tablist" aria-label="Match detail sections">
-      <button type="button" class="active" data-tab="overview">OVERVIEW</button>
-      <button type="button" data-tab="events">MATCH EVENTS</button>
-      <button type="button" data-tab="lineups">LINEUPS</button>
-      <button type="button" data-tab="subs">SUBSTITUTES</button>
-    </div>
-    <div class="detail-view" id="detailView"></div>
-  </div>
-</section>
-
 <section class="section">
 <div class="section-head"><div><p class="eyebrow">ARSENAL MATCH CENTRE</p><h2>NEXT CUP TEST</h2></div></div>
 <div class="info-grid">
@@ -207,99 +158,109 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
 </main>
 <footer class="footer"><b>ARSENAL HUB • CARABAO CUP</b><span>North London Forever • 2026/27</span></footer>
 
-
 <script>
-const MATCH_DETAILS = {
+/* Carabao Cup round navigation + Arsenal progression tracker.
+   Update ROUND_DATA as results become official. */
+const ROUND_DATA = {
   round3: {
-    played:true, round:"ROUND 3 • RESULT", title:"Ipswich Town vs Arsenal", status:"ARSENAL QUALIFIED",
-    home:"IPSWICH TOWN", away:"ARSENAL", score:"2 — 4", meta:"15 SEP 2026 • PORTMAN ROAD",
-    overview:[["Competition","Carabao Cup"],["Round","Third Round"],["Result","Arsenal won 4–2"],["Progression","Qualified for Round 4"]],
-    events:[
-      ["—","MATCH RESULT","Arsenal 4–2 Ipswich Town"],
-      ["—","PROGRESSION","Arsenal advance to Round 4"]
-    ],
-    lineups:["Arsenal XI","Matchday lineup will appear here when the detailed team sheet is added."],
-    subs:["Arsenal substitutes","Substitution details will appear here when recorded."]
+    label: "ROUND 3",
+    state: "completed",
+    status: "QUALIFIED",
+    summary: "Arsenal beat Ipswich Town 4–2 and advanced to Round 4.",
+    target: "round3"
   },
   round4: {
-    played:false, round:"ROUND 4 • UPCOMING", title:"Fleetwood Town vs Arsenal", status:"UPCOMING",
-    home:"FLEETWOOD TOWN", away:"ARSENAL", score:"—", meta:"27 OCT 2026 • 20:00 • HIGHBURY STADIUM",
-    overview:[["Competition","Carabao Cup"],["Round","Fourth Round"],["Status","Fixture upcoming"],["Progression","Awaiting result"]],
-    events:[], lineups:[], subs:[]
+    label: "ROUND 4",
+    state: "upcoming",
+    status: "UPCOMING",
+    summary: "Fleetwood Town vs Arsenal • 27 October 2026 • 20:00.",
+    target: "round4"
   },
-  round5:{played:false,round:"ROUND 5 • NOT REACHED",title:"Arsenal's Round 5 Match",status:"NOT REACHED YET",home:"TBA",away:"TBA",score:"—",meta:"DRAW / FIXTURE TBA",overview:[["Status","Not reached yet"],["Arsenal route","Dependent on Round 4 result"]],events:[],lineups:[],subs:[]},
-  semifinal:{played:false,round:"SEMI-FINAL • NOT REACHED",title:"Arsenal Semi-Final",status:"NOT REACHED YET",home:"TBA",away:"TBA",score:"—",meta:"DRAW / FIXTURE TBA",overview:[["Status","Not reached yet"],["Arsenal route","Dependent on previous rounds"]],events:[],lineups:[],subs:[]},
-  final:{played:false,round:"FINAL • NOT REACHED",title:"Wembley Final",status:"NOT REACHED YET",home:"TBA",away:"TBA",score:"—",meta:"21 MAR 2027 • WEMBLEY",overview:[["Status","Not reached yet"],["Arsenal route","Dependent on previous rounds"]],events:[],lineups:[],subs:[]}
+  round5: {
+    label: "ROUND 5",
+    state: "not-reached",
+    status: "NOT REACHED YET",
+    summary: "Round 5 will become active after the previous round is completed.",
+    target: "round5"
+  },
+  semifinal: {
+    label: "SEMI-FINAL",
+    state: "not-reached",
+    status: "NOT REACHED YET",
+    summary: "The semi-final is not yet part of Arsenal's confirmed route.",
+    target: "semifinal"
+  },
+  final: {
+    label: "FINAL",
+    state: "not-reached",
+    status: "NOT REACHED YET",
+    summary: "The Wembley final is not yet part of Arsenal's confirmed route.",
+    target: "final"
+  }
 };
 
-function renderDetail(key, tab="overview"){
-  const m=MATCH_DETAILS[key]; if(!m) return;
-  document.getElementById("detailRound").textContent=m.round;
-  document.getElementById("detailTitle").textContent=m.title;
-  document.getElementById("detailStatus").textContent=m.status;
-  document.getElementById("detailHome").textContent=m.home;
-  document.getElementById("detailAway").textContent=m.away;
-  document.getElementById("detailScore").textContent=m.score;
-  document.getElementById("detailMeta").textContent=m.meta;
-  document.querySelectorAll(".detail-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
-  const view=document.getElementById("detailView");
-  if(tab==="overview"){
-    view.innerHTML='<div class="detail-grid">'+m.overview.map(r=>'<div class="detail-box"><h4>'+r[0]+'</h4><div class="detail-row"><span>'+r[0]+'</span><b>'+r[1]+'</b></div></div>').join("")+'</div>';
-  }else if(tab==="events"){
-    view.innerHTML=m.events.length?'<div class="event-list">'+m.events.map(e=>'<div class="event"><span class="event-time">'+e[0]+'</span><span class="event-kind">'+e[1]+'</span><span class="event-player">'+e[2]+'</span></div>').join("")+'</div>':'<div class="detail-placeholder">No match events are available because this fixture has not been played.</div>';
-  }else if(tab==="lineups"){
-    view.innerHTML=m.played?'<div class="lineup"><div class="detail-box"><h4>STARTING XI</h4><ul><li><span>DATA</span>'+m.lineups[1]+'</li></ul></div><div class="detail-box"><h4>FORMATION</h4><div class="detail-placeholder">Lineup data will be populated here.</div></div></div>':'<div class="detail-placeholder">Starting lineups will appear here once the match is played and the official team sheet is available.</div>';
-  }else{
-    view.innerHTML=m.played?'<div class="detail-placeholder">Substitute appearances and substitution times will be displayed here when match data is added.</div>':'<div class="detail-placeholder">Substitutes will appear here once the official matchday squad is available.</div>';
-  }
-}
+const ROUND_ORDER = ["round3","round4","round5","semifinal","final"];
 
-function selectRound(key){
-  const data=ROUND_DATA[key]; if(!data) return;
-  document.querySelectorAll(".round-nav button").forEach(button=>button.classList.toggle("active",button.dataset.round===key));
-  const target=document.getElementById(data.target);
-  if(target) target.scrollIntoView({behavior:"smooth",block:"center"});
-  const title=document.querySelector("#roundStatusTitle"),copy=document.querySelector("#roundStatusCopy"),badge=document.querySelector("#roundStatusBadge"),dot=document.querySelector("#roundStatusDot");
-  if(title) title.textContent=data.label;
-  if(copy) copy.textContent=data.summary;
-  if(badge){badge.textContent=data.status;badge.className="round-status-badge "+data.state}
-  if(dot) dot.className="round-status-dot "+data.state;
-
-  const tie=document.querySelector("#"+data.target+" .arsenal-path");
-  document.querySelectorAll(".arsenal-path").forEach(x=>x.classList.remove("arsenal-path"));
-  if(data.state==="completed" || data.state==="upcoming"){
-    const pathTie=document.querySelector("#"+data.target+" .tie[data-arsenal-match='true']");
-    if(pathTie) pathTie.classList.add("arsenal-path");
-  }
-  renderDetail(key,"overview");
-  const details=document.getElementById("matchDetails");
-  if(details) details.scrollIntoView({behavior:"smooth",block:"start"});
+function stateText(state){
+  return state === "completed" ? "RESULTS" :
+         state === "upcoming" ? "UPCOMING" :
+         state === "eliminated" ? "ELIMINATED" : "NOT REACHED";
 }
 
 function renderRoundTracker(){
-  const nav=document.querySelector(".round-nav"); if(!nav) return;
+  const nav = document.querySelector(".round-nav");
+  if(!nav) return;
+
   nav.querySelectorAll("button").forEach((button,index)=>{
-    const key=ROUND_ORDER[index],data=ROUND_DATA[key]; if(!data) return;
-    button.dataset.round=key;button.dataset.state=data.state;button.type="button";
-    button.innerHTML=data.label+" <span>• "+stateText(data.state)+"</span>";
-    button.title=data.summary;
+    const key = ROUND_ORDER[index];
+    const data = ROUND_DATA[key];
+    if(!data) return;
+    button.dataset.round = key;
+    button.dataset.state = data.state;
+    button.type = "button";
+    button.innerHTML = data.label + " <span>• " + stateText(data.state) + "</span>";
+    button.title = data.summary;
     button.addEventListener("click",()=>selectRound(key));
   });
-  const journey=document.querySelector("#arsenalJourney");
-  if(journey) journey.innerHTML=ROUND_ORDER.map((key,index)=>{
-    const data=ROUND_DATA[key],arrow=index<ROUND_ORDER.length-1?'<i class="journey-arrow">→</i>':'';
-    return '<div class="journey-step '+data.state+'"><b>'+data.label+'</b><span>'+data.status+'</span></div>'+arrow;
-  }).join("");
-  document.querySelectorAll(".detail-tabs button").forEach(b=>b.addEventListener("click",()=>renderDetail(document.querySelector(".round-nav button.active")?.dataset.round||"round3",b.dataset.tab)));
-  renderDetail("round3");
+
+  const journey = document.querySelector("#arsenalJourney");
+  if(journey){
+    journey.innerHTML = ROUND_ORDER.map((key,index)=>{
+      const data = ROUND_DATA[key];
+      const arrow = index < ROUND_ORDER.length-1 ? '<i class="journey-arrow">→</i>' : '';
+      return '<div class="journey-step '+data.state+'"><b>'+data.label+'</b><span>'+data.status+'</span></div>'+arrow;
+    }).join("");
+  }
+
   selectRound("round3");
 }
 
-document.addEventListener("DOMContentLoaded",()=>{
-  document.querySelectorAll("#round3 .tie").forEach(t=>{if(t.textContent.includes("Ipswich Town")&&t.textContent.includes("Arsenal"))t.dataset.arsenalMatch="true"});
-  document.querySelectorAll("#round4 .tie").forEach(t=>{if(t.textContent.includes("Fleetwood Town")&&t.textContent.includes("Arsenal"))t.dataset.arsenalMatch="true"});
-  renderRoundTracker();
-});
+function selectRound(key){
+  const data = ROUND_DATA[key];
+  if(!data) return;
+
+  document.querySelectorAll(".round-nav button").forEach(button=>{
+    button.classList.toggle("active",button.dataset.round===key);
+  });
+
+  const target = document.getElementById(data.target);
+  if(target) target.scrollIntoView({behavior:"smooth",block:"center"});
+
+  const title = document.querySelector("#roundStatusTitle");
+  const copy = document.querySelector("#roundStatusCopy");
+  const badge = document.querySelector("#roundStatusBadge");
+  const dot = document.querySelector("#roundStatusDot");
+
+  if(title) title.textContent = data.label;
+  if(copy) copy.textContent = data.summary;
+  if(badge){
+    badge.textContent = data.status;
+    badge.className = "round-status-badge "+data.state;
+  }
+  if(dot) dot.className = "round-status-dot "+data.state;
+}
+
+document.addEventListener("DOMContentLoaded",renderRoundTracker);
 </script>
 
 </body>
