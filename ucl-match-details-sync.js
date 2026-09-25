@@ -60,7 +60,7 @@ async function load(){
   if(lineupBox){
     const starters=lineupRows.filter(x=>x.is_starter);
     const subs=lineupRows.filter(x=>!x.is_starter);
-    const normalizeName=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ø/g,'o').replace(/đ/g,'d').toLowerCase().trim();
+    const normalizeName=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[øØ]/g,'o').replace(/[đĐ]/g,'d').replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ').toLowerCase();
     const shirts={
       'david raya':1,'william saliba':2,'cristhian mosquera':3,'ben white':4,'piero hincapie':5,'gabriel magalhaes':6,
       'bukayo saka':7,'martin odegaard':8,'gabriel jesus':9,'eberechi eze':10,'gabriel martinelli':11,'jurrien timber':12,
@@ -69,6 +69,7 @@ async function load(){
       'tommy setford':35,'martin zubimendi':36,'bruno guimaraes':39,'declan rice':41,'myles lewis-skelly':49,'max dowman':56,
       'ezri konsa':15
     };
+    const imageAliases={'odegaard':'martin odegaard','martin ødegaard':'martin odegaard','martin odegaard':'martin odegaard'};
     const images={
       'david raya':'assets/player-cutouts/player-01.png','kepa arrizabalaga':'assets/player-cutouts/player-02.png','illan meslier':'assets/player-cutouts/player-03.png','tommy setford':'assets/player-cutouts/player-04.png',
       'william saliba':'assets/player-cutouts/player-05.png','cristhian mosquera':'assets/player-cutouts/player-06.png','ben white':'assets/player-cutouts/player-07.png','piero hincapie':'assets/player-cutouts/player-08.png',
@@ -110,7 +111,7 @@ async function load(){
     const outgoing=new Map((lineups||[]).filter(x=>x.is_starter&&x.minute_off!=null).map(x=>[normalizeName(x.player_name),Number(x.minute_off)]));
     const markings='<span class="cl-pl-box top"></span><span class="cl-pl-goal top"></span><span class="cl-pl-box bottom"></span><span class="cl-pl-goal bottom"></span>';
     const figures=starters.length?starters.map((row,index)=>{
-      const slot=resolved[index], xy=slots[slot]||slots.CM, name=String(row.player_name||'Arsenal'), key=normalizeName(name), image=images[key], shirt=shirts[key]??'', off=outgoing.get(key);
+      const slot=resolved[index], xy=slots[slot]||slots.CM, name=String(row.player_name||'Arsenal'), rawKey=normalizeName(name), key=imageAliases[rawKey]||rawKey, image=images[key], shirt=shirts[key]??'', off=outgoing.get(rawKey)||outgoing.get(key);
       return `<div class="cl-pl-player" style="--x:${xy[0]}%;--y:${xy[1]}%;--depth:${(.78+(xy[1]/100)*.24).toFixed(2)}" title="${esc(name)} • #${esc(shirt)}"><span class="cl-pl-ground"></span><div class="cl-pl-kit">${image?`<img class="cl-pl-photo" src="${esc(image)}" alt="${esc(name)}" loading="eager">`:''}</div><span class="cl-pl-name">${esc(name)}${off!=null?`<span class="cl-pl-out">↓ OFF ${esc(off)}'</span>`:''}</span></div>`;
     }).join(''):'<div class="cl-pl-empty">Starting XI has not been announced yet.</div>';
     lineupBox.innerHTML=markings+figures;
@@ -119,7 +120,7 @@ async function load(){
     const venueEl=document.getElementById('clLineupVenue');if(venueEl)venueEl.textContent=f.venue||'VENUE TBC';
     const subBox=document.getElementById('clSubstitutes');
     if(subBox)subBox.innerHTML=subs.length?subs.map(row=>{
-      const key=normalizeName(row.player_name),img=images[key],on=row.minute_on!=null?`ON ${row.minute_on}'`:'SUB',off=row.minute_off!=null?` • OFF ${row.minute_off}'`:'';
+      const rawKey=normalizeName(row.player_name),key=imageAliases[rawKey]||rawKey,img=images[key],on=row.minute_on!=null?`ON ${row.minute_on}'`:'SUB',off=row.minute_off!=null?` • OFF ${row.minute_off}'`:'';
       return `<div class="cl-pl-sub">${img?`<img src="${esc(img)}" alt="${esc(row.player_name)}">`:''}<div><strong>${esc(row.player_name)}</strong><small>${esc(on+off)}</small></div></div>`;
     }).join(''):'<div class="empty">No substitutions recorded.</div>';
   }
