@@ -615,3 +615,13 @@ body.treasure-home button{font:inherit}
   #calendar .calendar-card p{font-size:8px !important}
   #calendar .calendar-card em{font-size:7px !important}
 }
+
+
+/* RECORD ROOM — subdued trophy background */
+.record-room{position:relative;min-height:430px;margin:70px auto;width:min(var(--home-max),calc(100% - 40px));overflow:hidden;isolation:isolate;display:flex;align-items:center;border:1px solid rgba(245,197,66,.14);border-radius:28px;background:radial-gradient(circle at 72% 50%,rgba(0,82,55,.34),transparent 42%),linear-gradient(120deg,#070807,#101410 55%,#050706)}
+.record-room-backdrop{position:absolute;inset:0;z-index:-2;background:linear-gradient(90deg,rgba(0,0,0,.96) 0%,rgba(0,0,0,.72) 48%,rgba(0,0,0,.22) 100%),repeating-linear-gradient(90deg,transparent 0 18%,rgba(255,255,255,.025) 18.2% 18.35%)}
+.record-room-content{position:relative;z-index:2;width:55%;padding:60px}
+.record-room-content h2{margin:0 0 15px;max-width:650px;font:900 clamp(34px,5vw,62px)/.98 Georgia,"Times New Roman",serif;letter-spacing:-2px}
+.record-room-content p:last-child{max-width:560px;color:#aaa;line-height:1.7}
+.record-room-trophy{position:absolute;z-index:1;right:7%;top:50%;width:250px;height:310px;object-fit:contain;object-position:center;transform:translateY(-50%);opacity:.20;filter:grayscale(.15) saturate(.7) contrast(.9) drop-shadow(0 18px 30px rgba(0,0,0,.7));mix-blend-mode:screen;pointer-events:none}
+@media(max-width:800px){.record-room{min-height:390px;margin:50px auto}.record-room-content{width:100%;padding:38px 28px}.record-room-content h2{max-width:480px}.record-room-trophy{width:190px;height:240px;right:-20px;opacity:.16}}
