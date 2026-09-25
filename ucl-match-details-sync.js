@@ -60,7 +60,7 @@ async function load(){
   if(lineupBox){
     const starters=lineupRows.filter(x=>x.is_starter);
     const subs=lineupRows.filter(x=>!x.is_starter);
-    const normalizeName=v=>String(v||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().trim();
+    const normalizeName=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
     const shirts={
       'david raya':1,'william saliba':2,'cristhian mosquera':3,'ben white':4,'piero hincapie':5,'gabriel magalhaes':6,
       'bukayo saka':7,'martin odegaard':8,'gabriel jesus':9,'eberechi eze':10,'gabriel martinelli':11,'jurrien timber':12,
