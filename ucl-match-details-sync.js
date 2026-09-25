@@ -60,7 +60,7 @@ async function load(){
   if(lineupBox){
     const starters=lineupRows.filter(x=>x.is_starter);
     const subs=lineupRows.filter(x=>!x.is_starter);
-    const normalizeName=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+    const normalizeName=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ø/g,'o').replace(/đ/g,'d').toLowerCase().trim();
     const shirts={
       'david raya':1,'william saliba':2,'cristhian mosquera':3,'ben white':4,'piero hincapie':5,'gabriel magalhaes':6,
       'bukayo saka':7,'martin odegaard':8,'gabriel jesus':9,'eberechi eze':10,'gabriel martinelli':11,'jurrien timber':12,
@@ -96,7 +96,7 @@ async function load(){
     const formation=String(starters[0]?.formation||'').trim() && formationSlots[String(starters[0]?.formation).trim()] ? String(starters[0].formation).trim() : '4-3-3';
     const template=formationSlots[formation];
     const used=new Set();
-    const roleOverride={'david raya':'GK','ben white':'RB','cristhian mosquera':'RCB','ezri konsa':'RCB','gabriel magalhaes':'LCB','riccardo calafiori':'LB','declan rice':'LDM','myles lewis-skelly':'RDM','martin odegaard':'CAM','bukayo saka':'RW','christos tzolis':'LW','kai havertz':'ST'};
+    const roleOverride={'david raya':'GK','martin odegaard':'CAM','ben white':'RB','cristhian mosquera':'RCB','ezri konsa':'RCB','gabriel magalhaes':'LCB','riccardo calafiori':'LB','declan rice':'LDM','myles lewis-skelly':'RDM','martin odegaard':'CAM','bukayo saka':'RW','christos tzolis':'LW','kai havertz':'ST'};
     const resolved=starters.map((row,index)=>{
       const key=normalizeName(row.player_name);
       let requested=String(row.pitch_slot||'').trim().toUpperCase();
