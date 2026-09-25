@@ -10,8 +10,8 @@
 <link href="shared-sidebar.css" rel="stylesheet"/><link href="sidebar-toggle-fix.css" rel="stylesheet"/><style>
 .competition-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 .competition-grid .form-card{grid-column:1/-1}
-@media(max-width:720px){.competition-grid{grid-template-columns:1fr 1fr}.competition-grid .form-card{grid-column:1/-1}}
-@media(max-width:480px){.competition-grid{grid-template-columns:1fr}.competition-grid .form-card{grid-column:1}}
+@media(max-width:720px){.competition-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.competition-grid .form-card{grid-column:1/-1}.competition-grid .stat-card{padding:12px 7px}.competition-grid .stat-card strong{font-size:clamp(18px,5vw,28px)}.competition-grid .stat-card small{font-size:9px}.competition-grid .stat-card span{font-size:9px}}
+@media(max-width:480px){.competition-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.competition-grid .form-card{grid-column:1/-1}.competition-grid .stat-card{padding:10px 5px}.competition-grid .stat-card strong{font-size:18px}.competition-grid .stat-card small{font-size:8px}.competition-grid .stat-card span{font-size:8px}}
 </style></head>
 <body class="nl4-unified-sidebar"><button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button>
 <div class="app-shell">
