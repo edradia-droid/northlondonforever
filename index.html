@@ -134,5 +134,72 @@
 <script src="supabase-client.js"></script>
 <script src="nl4-data.js"></script>
 <script src="index.js"></script>
+<script>
+(function(){
+  'use strict';
+  const db=window.nl4Supabase;
+  if(!db)return;
+  const set=(sel,value)=>{
+    const el=document.querySelector(sel);
+    if(el)el.textContent=String(value);
+  };
+  const finished=s=>['fulltime','finished','ft','aet','pen'].includes(String(s||'').toLowerCase());
+  const outcome=(a,b)=>Number(a)>Number(b)?'W':Number(a)<Number(b)?'L':'D';
+
+  async function syncPremierLeague(){
+    const {data,error}=await db.from('premier_league_standings')
+      .select('*').eq('season','2026/27').order('position',{ascending:true});
+    if(error||!data?.length)return;
+    const arsenal=data.find(r=>/arsenal/i.test(String(r.club||r.team||r.team_name||'')));
+    if(!arsenal)return;
+    const position=Number(arsenal.position);
+    const played=Number(arsenal.played??arsenal.p??0);
+    const points=Number(arsenal.points??arsenal.pts??0);
+    set('#premier-league .stat-card:nth-child(1) strong',position);
+    set('#premier-league .stat-card:nth-child(2) strong',played);
+    set('#premier-league .stat-card:nth-child(3) strong',points);
+
+    const {data:fixtures}=await db.from('fixtures')
+      .select('home_team,away_team,is_home,opponent,arsenal_score,opponent_score,status,kickoff_at,matchday')
+      .eq('season','2026/27').eq('competition','Premier League');
+    const completed=(fixtures||[]).filter(r=>finished(r.status))
+      .filter(r=>/arsenal/i.test(String(r.home_team||r.away_team||r.opponent||'')))
+      .sort((a,b)=>new Date(b.kickoff_at||0)-new Date(a.kickoff_at||0));
+    const form=completed.slice(0,10).reverse().map(r=>outcome(r.arsenal_score,r.opponent_score)).join(' ');
+    set('#premier-league .form-card strong',form||'—');
+    const note=document.querySelector('#premier-league .lineup-note');
+    if(note)note.textContent='Live from the Premier League standings table • Form uses the last 10 completed Premier League matches.';
+  }
+
+  async function syncChampionsLeague(){
+    const {data,error}=await db.from('ucl_standings')
+      .select('position,team_name,played,wins,draws,losses,goals_for,goals_against,goal_difference,points,source_updated_at')
+      .eq('season','2026/27').order('position',{ascending:true});
+    if(error||!data?.length)return;
+    const arsenal=data.find(r=>/arsenal/i.test(String(r.team_name||'')));
+    if(!arsenal)return;
+    set('#champions-league .stat-card:nth-child(1) strong',arsenal.position);
+    set('#champions-league .stat-card:nth-child(2) strong',arsenal.played);
+    set('#champions-league .stat-card:nth-child(3) strong',arsenal.points);
+
+    const {data:fixtures}=await db.from('fixtures')
+      .select('home_team,away_team,is_home,opponent,arsenal_score,opponent_score,status,kickoff_at,matchday')
+      .eq('season','2026/27').eq('competition','Champions League');
+    const completed=(fixtures||[]).filter(r=>finished(r.status))
+      .filter(r=>/arsenal/i.test(String(r.home_team||r.away_team||r.opponent||'')))
+      .sort((a,b)=>new Date(b.kickoff_at||0)-new Date(a.kickoff_at||0));
+    const form=completed.slice(0,8).reverse().map(r=>outcome(r.arsenal_score,r.opponent_score)).join(' ');
+    set('#champions-league .form-card strong',form||'—');
+    const note=document.querySelector('#champions-league .lineup-note');
+    if(note)note.textContent='Live from the Champions League standings table • Form uses the last 8 completed league-phase matches.';
+  }
+
+  async function sync(){
+    await Promise.all([syncPremierLeague(),syncChampionsLeague()]);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sync,{once:true});else sync();
+  setInterval(sync,300000);
+})();
+</script>
 <script src="shared-sidebar.js"></script></body>
 </html>
