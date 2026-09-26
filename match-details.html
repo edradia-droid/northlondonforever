@@ -2049,6 +2049,25 @@
   text-shadow:0 2px 4px #000!important;
 }
 </style>
+<!-- NL4 PL player-photo fallback -->
+<script id="nl4-pl-player-photo-fallback">
+(function(){
+  const FALLBACK='assets/player-cutouts/player-23.png';
+  function install(){
+    document.querySelectorAll('#lineupPhotoExport img.kit-player-photo, #substitutes img.sub-bench-photo').forEach(function(img){
+      if(img.dataset.fallbackReady==='1') return;
+      img.dataset.fallbackReady='1';
+      img.addEventListener('error',function(){
+        if(img.dataset.fallbackUsed==='1') return;
+        img.dataset.fallbackUsed='1';
+        img.src=FALLBACK;
+      });
+    });
+  }
+  install();
+  new MutationObserver(install).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
 </body>
 <style id="nl4-pl-performance-safe">
 /* Keep PL lineup at the CL footprint and avoid expensive oversized paint effects on desktop. */
