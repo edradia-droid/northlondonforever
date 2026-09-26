@@ -67,7 +67,7 @@ async function load(){
       const key=normalizeName(String(row.player_name||'')),unused=Number(row.minute_on||0)===0;
       const on=unused?'UNUSED':`<span class="cl-pl-in">↑</span> ON ${row.minute_on}'`;
       const off=!unused&&row.minute_off!=null?` • OFF ${row.minute_off}'`:'';
-      const incoming=esc(row.player_name),outgoing='';return `<div class="cl-pl-sub"><div><strong>${outgoing}${incoming}</strong><small>${esc(on+off)}</small></div></div>`;
+      const incoming=esc(row.player_name),outgoing='';return `<div class="cl-pl-sub"><div><strong>${outgoing}${incoming}</strong><small>${on}${esc(off)}</small></div></div>`;
     }).join(''):'<div class="empty">No substitutions recorded.</div>';
   } else {
 
