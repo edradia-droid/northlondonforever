@@ -141,7 +141,7 @@ async function load(){
       return `<div class="player-marker" style="--x:${xy[0]}%;--y:${xy[1]}%;--depth:${(.78+(xy[1]/100)*.24).toFixed(2)}" title="${esc(name)} • #${esc(shirt)}">
         <span class="player-ground-shadow"></span>
         <div class="kit-player">${photo}</div>
-        <span class="player-name">${esc(name)}${off!=null?`<span class="cl-pl-out">↓ OFF ${esc(off)}'</span>`:''}</span>
+        <span class="player-name">${esc(name)}${off!=null?`<span class="cl-pl-off">↓ ${esc(off)}'</span>`:''}</span>
       </div>`;
     }).join(''):'<div class="cl-pl-empty">Starting XI has not been announced yet.</div>';
     // Matchday 1 has a verified local-image fallback in the HTML. Keep it in place so a later async refresh cannot replace the visible player photos.
