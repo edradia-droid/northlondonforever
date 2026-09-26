@@ -2050,75 +2050,55 @@
 }
 </style>
 </body>
-</html>
-
-<style>
-/* Keep each starting player's name close to the shirt */
-.player-name{
-  bottom:auto !important;
-  top:70px !important;
-}
-@media(max-width:700px){
-  .player-name{
-    bottom:auto !important;
-    top:55px !important;
-  }
-}
-
-/* FINAL PLAYER SCALE: match the visual footprint of the CL lineup, not just its marker box. */
+<style id="nl4-pl-performance-safe">
+/* Keep PL lineup at the CL footprint and avoid expensive oversized paint effects on desktop. */
 #lineupPhotoExport .player-marker{
-  width:110px!important;
-  height:138px!important;
+  width:96px!important;
+  height:122px!important;
+  transform:translate(-50%,-50%) scale(var(--depth,1))!important;
+  filter:none!important;
 }
 #lineupPhotoExport .kit-player{
-  width:100px!important;
-  height:94px!important;
+  width:88px!important;
+  height:82px!important;
+  margin:0 auto!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
 }
 #lineupPhotoExport .kit-player-photo,
 #lineupPhotoExport img.kit-player-photo{
-  width:78px!important;
-  height:88px!important;
+  width:58px!important;
+  height:66px!important;
   object-fit:contain!important;
   object-position:center bottom!important;
   border:0!important;
   border-radius:0!important;
   box-shadow:none!important;
   background:transparent!important;
+  filter:none!important;
 }
 #lineupPhotoExport .kit-shirt{
-  width:78px!important;
-  height:88px!important;
+  width:58px!important;
+  height:66px!important;
   border-radius:0!important;
   box-shadow:none!important;
 }
-#lineupPhotoExport .kit-front-number,
-#lineupPhotoExport .kit-back-number{
-  top:22px!important;
-  font-size:38px!important;
-}
 #lineupPhotoExport .player-name{
-  width:110px!important;
+  width:96px!important;
   min-height:30px!important;
+  bottom:0!important;
+  top:auto!important;
+  z-index:20!important;
 }
 @media(max-width:700px){
-  #lineupPhotoExport .player-marker{width:82px!important;height:106px!important}
-  #lineupPhotoExport .kit-player{width:74px!important;height:72px!important}
+  #lineupPhotoExport .player-marker{width:68px!important;height:92px!important}
+  #lineupPhotoExport .kit-player{width:62px!important;height:60px!important}
   #lineupPhotoExport .kit-player-photo,
-  #lineupPhotoExport img.kit-player-photo{width:56px!important;height:64px!important}
-  #lineupPhotoExport .kit-shirt{width:56px!important;height:64px!important}
-  #lineupPhotoExport .kit-front-number,
-  #lineupPhotoExport .kit-back-number{top:16px!important;font-size:28px!important}
-  #lineupPhotoExport .player-name{width:82px!important;min-height:24px!important}
-}
-
-/* Desktop name clearance: keep enlarged player cutouts above their names. */
-@media(min-width:701px){
-  #lineupPhotoExport .player-name{
-    bottom:-18px!important;
-    z-index:20!important;
-  }
-  #lineupPhotoExport .player-marker{
-    height:156px!important;
-  }
+  #lineupPhotoExport img.kit-player-photo{width:43px!important;height:49px!important}
+  #lineupPhotoExport .kit-shirt{width:43px!important;height:49px!important}
+  #lineupPhotoExport .player-name{width:68px!important;min-height:23px!important}
 }
 </style>
+</body>
+</html>
