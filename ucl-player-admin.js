@@ -1,6 +1,6 @@
 (function(){'use strict';
 const SEASON='2026/27',TEAM='Arsenal';
-const squad={Goalkeeper:['David Raya','Kepa Arrizabalaga','Illan Meslier'],Defender:['William Saliba','Cristhian Mosquera','Ben White','Piero Hincapié','Gabriel Magalhães','Jurriën Timber','Ezri Konsa','Riccardo Calafiori'],Midfielder:['Martin Ødegaard','Eberechi Eze','Noni Madueke','Mikel Merino','Martín Zubimendi','Bruno Guimarães','Declan Rice'],Forward:['Bukayo Saka','Viktor Gyökeres','Christos Tzolis','Kai Havertz']};
+const squad={Goalkeeper:['David Raya','Kepa Arrizabalaga','Illan Meslier'],Defender:['William Saliba','Cristhian Mosquera','Ben White','Piero Hincapié','Gabriel Magalhães','Jurriën Timber','Ezri Konsa','Riccardo Calafiori','Myles Lewis-Skelly'],Midfielder:['Martin Ødegaard','Eberechi Eze','Noni Madueke','Mikel Merino','Martín Zubimendi','Bruno Guimarães','Declan Rice','Max Dowman'],Forward:['Bukayo Saka','Viktor Gyökeres','Christos Tzolis','Kai Havertz']};
 const fields=[['appearances','APP'],['starts','START'],['minutes','MIN'],['goals','G'],['assists','A'],['yellow_cards','YC'],['red_cards','RC'],['saves','SAVES'],['man_of_the_match','MOTM']];
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let rows=[];
