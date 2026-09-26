@@ -2064,4 +2064,50 @@
     top:55px !important;
   }
 }
+
+/* FINAL PLAYER SCALE: match the visual footprint of the CL lineup, not just its marker box. */
+#lineupPhotoExport .player-marker{
+  width:110px!important;
+  height:138px!important;
+}
+#lineupPhotoExport .kit-player{
+  width:100px!important;
+  height:94px!important;
+}
+#lineupPhotoExport .kit-player-photo,
+#lineupPhotoExport img.kit-player-photo{
+  width:78px!important;
+  height:88px!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+}
+#lineupPhotoExport .kit-shirt{
+  width:78px!important;
+  height:88px!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+#lineupPhotoExport .kit-front-number,
+#lineupPhotoExport .kit-back-number{
+  top:22px!important;
+  font-size:38px!important;
+}
+#lineupPhotoExport .player-name{
+  width:110px!important;
+  min-height:30px!important;
+}
+@media(max-width:700px){
+  #lineupPhotoExport .player-marker{width:82px!important;height:106px!important}
+  #lineupPhotoExport .kit-player{width:74px!important;height:72px!important}
+  #lineupPhotoExport .kit-player-photo,
+  #lineupPhotoExport img.kit-player-photo{width:56px!important;height:64px!important}
+  #lineupPhotoExport .kit-shirt{width:56px!important;height:64px!important}
+  #lineupPhotoExport .kit-front-number,
+  #lineupPhotoExport .kit-back-number{top:16px!important;font-size:28px!important}
+  #lineupPhotoExport .player-name{width:82px!important;min-height:24px!important}
+}
 </style>
