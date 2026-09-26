@@ -13,21 +13,7 @@ async function openFixture(id){try{current=await fetchFullFixture(id)}catch(e){a
 async function recalc(id){try{if(typeof window.recalculateUclStats==='function'){const r=await window.recalculateUclStats(db);msg(id,`Saved. UCL totals recalculated from ${r.matches} completed match${r.matches===1?'':'es'} ✓`)}else msg(id,'Saved ✓')}catch(e){msg(id,'Saved, but totals failed: '+e.message,true)}}
 async function loadLineups(){const {data,error}=await db.from('match_lineups').select('*').eq('fixture_id',current.id).order('is_starter',{ascending:false}).order('minute_on');if(error)return msg('lineupMsg',error.message,true);lineups=data||[];renderLineups()}
 function renderLineups(){const a=lineups.filter(x=>(x.team_name||'Arsenal')===lineupTeam);$('lineupList').innerHTML=a.length?a.map(x=>`<div class="row"><strong>${x.is_starter?'STARTER':'SUB'}</strong><div><b>${esc(x.player_name)}</b><small>${esc(x.position||'')} • ${x.minute_on}'–${x.minute_off??90+Number(current.added_time||0)}'</small></div><div class="row-actions"><button data-le="${x.id}">Edit</button> <button class="danger" data-ld="${x.id}">Delete</button></div></div>`).join(''):'<div class="meta">No lineup saved for this team.</div>'}
-async function tabs(){$('lineupTabs').querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.team===lineupTeam));loadArsenalClPlayers();renderLineups()}
-const ARSENAL_CL_PLAYERS=[
-'Abraham Owusu-Gyasi','Ben White','Brayden Clarke','Cristhian Mosquera','Elyon Mbala','Ezri Konsa','Gabriel Magalhães','Hakeem Abubakar','Joshua Charlie Sesay','Joshua Ogunnaike','Joshua Tahou','Josiah King','Jurriën Timber','Marli Salmon','Patrick Stachow','Piero Hincapié','Riccardo Calafiori','Teshaun Murisa','William Saliba',
-'Bowen Bradley Phillips','Bukayo Saka','Ceadach O\'Neill','Christos Tzolis','Jayden Daniel Tomiwa Oba','Kai Havertz','Louis Zečević-John','Marley Frohock','Noni Madueke','Viktor Gyökeres',
-'David Raya','Illan Meslier','Jack Porter','Jack Talbot','Kepa Arrizabalaga','Khari Ranson',
-'Andre Annous','Brando Bailey-Joseph','Bruno Guimarães','Charlie Purdy','Declan Rice','Eberechi Eze','Emerson Nwaneri','Ife Ibrahim','Louie Copley','Maalik Hashi','Martin Ødegaard','Martín Zubimendi','Max Dowman','Mikel Merino','Myles Lewis-Skelly','Saurap Sampang','Theo Julienne'
-];
-function loadArsenalClPlayers(){
-  const host=$('lineupPlayerField');if(!host)return;
-  const isArsenal=(lineupTeam||'').trim().toLowerCase()==='arsenal';
-  const currentValue=read('lineupPlayer');
-  if(!isArsenal){host.innerHTML='<input id="lineupPlayer" autocomplete="off" placeholder="Player name">';val('lineupPlayer',currentValue);return}
-  host.innerHTML='<select id="lineupPlayer"><option value="">Select Arsenal player</option>'+ARSENAL_CL_PLAYERS.map(p=>'<option value="'+esc(p)+'">'+esc(p)+'</option>').join('')+'</select>';
-  if(currentValue && ARSENAL_CL_PLAYERS.includes(currentValue))val('lineupPlayer',currentValue);
-}
+function tabs(){$('lineupTabs').querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.team===lineupTeam));renderLineups()}
 function resetLineup(){editLineup=null;val('lineupPlayer','');val('minuteOff','');val('lineupRole','true');val('minuteOn',0);$('saveLineup').textContent='Add Player';$('cancelLineup').hidden=true}
 async function loadEvents(){const {data,error}=await db.from('match_events').select('*').eq('fixture_id',current.id).order('minute');if(error)return msg('eventMsg',error.message,true);events=data||[];$('eventsList').innerHTML=events.length?events.map(x=>`<div class="row"><strong>${esc(x.event_type)}</strong><div><b>${esc(x.player_name)}</b><small>${esc(x.team_name)} • ${x.minute??'—'}${x.stoppage_minute?'+'+x.stoppage_minute:''}'${x.related_player_name?' • '+esc(x.related_player_name):''}</small></div><div class="row-actions"><button data-ee="${x.id}">Edit</button> <button class="danger" data-ed="${x.id}">Delete</button></div></div>`).join(''):'<div class="meta">No events saved.</div>'}
 function resetEvent(){editEvent=null;['eventPlayer','eventMinute','eventStoppage','eventRelated'].forEach(x=>val(x,''));val('eventType','goal');$('saveEvent').textContent='Add Event';$('cancelEvent').hidden=true}
