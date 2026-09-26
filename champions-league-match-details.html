@@ -132,6 +132,20 @@
  #clSubstitutes .cl-pl-sub img{width:32px!important;height:37px!important;flex-basis:32px!important}
 }
 </style>
+<style id="ucl-mobile-lock">
+/* UCL MOBILE LOCK — keep this page isolated from global/mobile CSS changes */
+@media(max-width:700px){
+  html{width:100%!important;min-width:100%!important;max-width:100%!important;overflow-x:hidden!important}
+  body{width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;overflow-x:hidden!important}
+  .main{width:100%!important;min-width:0!important;max-width:100%!important;overflow-x:hidden!important}
+  .shell,.grid,.hero,.panel,.scoreboard,.cl-pl-lineup,.cl-pl-broadcast,.cl-pl-top,.cl-pl-grid,.cl-pl-pitch-stage,.cl-pl-side,#clSubstitutes{min-width:0!important;max-width:100%!important}
+  .grid{width:100%!important;grid-template-columns:minmax(0,1fr)!important}
+  .cl-pl-broadcast,.cl-pl-grid,.cl-pl-pitch-stage,.cl-pl-side,#clSubstitutes{overflow-x:hidden!important}
+  .cl-pl-pitch{max-width:calc(100% - 4px)!important}
+  .comparison-table-wrap{max-width:100%!important;overflow-x:hidden!important}
+  .comparison-table{width:100%!important;min-width:0!important;max-width:100%!important;table-layout:fixed!important}
+}
+</style>
 <style id="ucl-mobile-fit-final">
 @media(max-width:700px){
   html,body{width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;padding:0!important;overflow-x:hidden!important;overflow-x:clip!important}
