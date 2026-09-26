@@ -91,6 +91,13 @@
     }
   }
 
+  function withTimeout(promise, ms, label){
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} timed out after ${Math.round(ms/1000)}s`)), ms))
+    ]);
+  }
+
   async function refreshStatus(){
     const button = $('uclRefreshStatus');
     if (!db) {
@@ -100,13 +107,20 @@
     if (button) { button.disabled = true; button.textContent = 'Refreshing…'; }
     setText('uclStatusUpdated','Refreshing…','neutral');
     try {
-      const results = await Promise.allSettled([readFixtureStatus(), readProviderHealth()]);
+      const results = await Promise.allSettled([
+        withTimeout(readFixtureStatus(), 9000, 'Database status check'),
+        withTimeout(readProviderHealth(), 9000, 'football-data.org status check')
+      ]);
       const failed = results.filter(r => r.status === 'rejected');
       if (failed.length === 0) setText('uclStatusError','None','good');
-      else if (failed.length === 1 && results[0].status === 'rejected') setText('uclStatusError',results[0].reason?.message || 'Fixture status check failed','bad');
+      else {
+        const details = failed.map(r => r.reason?.message || 'Status check failed').join(' • ');
+        setText('uclStatusError', details, 'bad');
+      }
       setText('uclStatusUpdated', `Checked ${new Date().toLocaleTimeString()}`, failed.length ? 'warn' : 'good');
     } finally {
       if (button) { button.disabled = false; button.textContent = 'Refresh Status'; }
+      setText('uclStatusUpdated', $('uclStatusUpdated')?.textContent === 'Refreshing…' ? 'Status check finished' : $('uclStatusUpdated')?.textContent || 'Status check finished', 'warn');
     }
   }
 
