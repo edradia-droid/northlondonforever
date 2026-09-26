@@ -4,10 +4,6 @@
   const db = window.nl4Supabase;
   const $ = id => document.getElementById(id);
   const EXPECTED_FIXTURES = 8;
-  // Legacy anon JWT is intentionally used only for protected Edge Function gateway
-  // compatibility. It is a public browser key, not a secret/service-role credential.
-  const UCL_FUNCTION_JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyanhlanV5aXlubGx5Z2lvemhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDk1ODcsImV4cCI6MjEwMjIyNTU4N30.4TJLwF0FjDvTj0ZwlzPJoUJF-pP655hz-ROCnHJcStw';
-  const functionHeaders = { Authorization: `Bearer ${UCL_FUNCTION_JWT}` };
 
   function setText(id, value, state){
     const el = $(id);
@@ -33,10 +29,6 @@
       else seen.add(key);
     }
     return duplicates;
-  }
-
-  async function invokeProtected(name){
-    return db.functions.invoke(name, { body: {}, headers: functionHeaders });
   }
 
   async function readFixtureStatus(){
@@ -68,7 +60,7 @@
     setText('uclProviderHealth','Checking…','neutral');
     setText('uclFunctionHealth','Checking…','neutral');
     try {
-      const { data, error } = await invokeProtected('test-ucl-football-data');
+      const { data, error } = await db.functions.invoke('test-ucl-football-data', { body: {} });
       if (error) throw error;
       if (!data || data.ok !== true) throw new Error(data?.error || `Provider returned ${data?.status || 'an error'}`);
       setText('uclProviderHealth', `Online • HTTP ${data.status || 200}`, 'good');
@@ -91,13 +83,6 @@
     }
   }
 
-  function withTimeout(promise, ms, label){
-    return Promise.race([
-      promise,
-      new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} timed out after ${Math.round(ms/1000)}s`)), ms))
-    ]);
-  }
-
   async function refreshStatus(){
     const button = $('uclRefreshStatus');
     if (!db) {
@@ -107,20 +92,13 @@
     if (button) { button.disabled = true; button.textContent = 'Refreshing…'; }
     setText('uclStatusUpdated','Refreshing…','neutral');
     try {
-      const results = await Promise.allSettled([
-        withTimeout(readFixtureStatus(), 9000, 'Database status check'),
-        withTimeout(readProviderHealth(), 9000, 'football-data.org status check')
-      ]);
+      const results = await Promise.allSettled([readFixtureStatus(), readProviderHealth()]);
       const failed = results.filter(r => r.status === 'rejected');
       if (failed.length === 0) setText('uclStatusError','None','good');
-      else {
-        const details = failed.map(r => r.reason?.message || 'Status check failed').join(' • ');
-        setText('uclStatusError', details, 'bad');
-      }
+      else if (failed.length === 1 && results[0].status === 'rejected') setText('uclStatusError',results[0].reason?.message || 'Fixture status check failed','bad');
       setText('uclStatusUpdated', `Checked ${new Date().toLocaleTimeString()}`, failed.length ? 'warn' : 'good');
     } finally {
       if (button) { button.disabled = false; button.textContent = 'Refresh Status'; }
-      setText('uclStatusUpdated', $('uclStatusUpdated')?.textContent === 'Refreshing…' ? 'Status check finished' : $('uclStatusUpdated')?.textContent || 'Status check finished', 'warn');
     }
   }
 
@@ -131,7 +109,7 @@
     button.textContent = 'Syncing UCL…';
     setText('uclStatusError','None','neutral');
     try {
-      const { data, error } = await invokeProtected('sync-ucl-football');
+      const { data, error } = await db.functions.invoke('sync-ucl-football', { body: {} });
       if (error) throw error;
       if (data?.error) throw new Error(`${data.error}${data.stage ? ` (${data.stage})` : ''}`);
       button.textContent = 'Sync Complete ✓';
@@ -151,14 +129,6 @@
     }
   }
 
-  function loadCompetitionDataModule(){
-    if (document.querySelector('script[data-ucl-competition-data]')) return;
-    const script = document.createElement('script');
-    script.src = 'ucl-competition-data.js?v=20260912-1';
-    script.dataset.uclCompetitionData = '1';
-    document.head.appendChild(script);
-  }
-
   function init(){
     const refresh = $('uclRefreshStatus');
     const sync = $('syncApi');
@@ -166,7 +136,6 @@
     if (sync) sync.addEventListener('click', syncNow);
     setText('uclJwt','Required • verify_jwt enabled','good');
     refreshStatus();
-    loadCompetitionDataModule();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once:true });
