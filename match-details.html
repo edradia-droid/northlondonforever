@@ -2110,4 +2110,15 @@
   #lineupPhotoExport .kit-back-number{top:16px!important;font-size:28px!important}
   #lineupPhotoExport .player-name{width:82px!important;min-height:24px!important}
 }
+
+/* Desktop name clearance: keep enlarged player cutouts above their names. */
+@media(min-width:701px){
+  #lineupPhotoExport .player-name{
+    bottom:-18px!important;
+    z-index:20!important;
+  }
+  #lineupPhotoExport .player-marker{
+    height:156px!important;
+  }
+}
 </style>
