@@ -14,7 +14,26 @@ async function recalc(id){try{if(typeof window.recalculateUclStats==='function')
 async function loadLineups(){const {data,error}=await db.from('match_lineups').select('*').eq('fixture_id',current.id).order('is_starter',{ascending:false}).order('minute_on');if(error)return msg('lineupMsg',error.message,true);lineups=data||[];renderLineups()}
 function renderLineups(){const a=lineups.filter(x=>(x.team_name||'Arsenal')===lineupTeam);$('lineupList').innerHTML=a.length?a.map(x=>`<div class="row"><strong>${x.is_starter?'STARTER':'SUB'}</strong><div><b>${esc(x.player_name)}</b><small>${esc(x.position||'')} • ${x.minute_on}'–${x.minute_off??90+Number(current.added_time||0)}'</small></div><div class="row-actions"><button data-le="${x.id}">Edit</button> <button class="danger" data-ld="${x.id}">Delete</button></div></div>`).join(''):'<div class="meta">No lineup saved for this team.</div>'}
 async function tabs(){$('lineupTabs').querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.team===lineupTeam));await loadArsenalClPlayers();renderLineups()}
-async function loadArsenalClPlayers(){const list=$('arsenalClPlayerList');if(!list)return;const isArsenal=(lineupTeam||'').trim().toLowerCase()==='arsenal';list.innerHTML='';if(!isArsenal)return;const {data,error}=await db.from('ucl_player_stats').select('player_name,position').eq('season','2026/27').ilike('team_name','%Arsenal%').order('position').order('player_name');if(error){console.error('Arsenal CL player list failed:',error);return}const seen=new Set();(data||[]).forEach(x=>{const name=(x.player_name||'').trim().toLowerCase();if(!name||seen.has(name))return;seen.add(name);const o=document.createElement('option');o.value=x.player_name;o.label=x.position||'';list.appendChild(o)})}
+async function loadArsenalClPlayers(){
+  const host=$('lineupPlayerField'); if(!host)return;
+  const isArsenal=(lineupTeam||'').trim().toLowerCase()==='arsenal';
+  const currentValue=read('lineupPlayer');
+  if(!isArsenal){
+    host.innerHTML='<input id="lineupPlayer" autocomplete="off" placeholder="Player name">';
+    val('lineupPlayer',currentValue);
+    return;
+  }
+  const {data,error}=await db.from('ucl_player_stats')
+    .select('player_name,position')
+    .eq('season','2026/27')
+    .ilike('team_name','%Arsenal%')
+    .order('position')
+    .order('player_name');
+  if(error){host.innerHTML='<select id="lineupPlayer"><option value="">Player unavailable</option></select>';console.error('Arsenal CL player list failed:',error);return}
+  const seen=new Set(), rows=(data||[]).filter(x=>{const name=(x.player_name||'').trim().toLowerCase();if(!name||seen.has(name))return false;seen.add(name);return true});
+  host.innerHTML='<select id="lineupPlayer"><option value="">Select Arsenal player</option>'+rows.map(x=>'<option value="'+esc(x.player_name)+'">'+esc(x.player_name)+(x.position?' — '+esc(x.position):'')+'</option>').join('')+'</select>';
+  if(currentValue && rows.some(x=>x.player_name===currentValue)) val('lineupPlayer',currentValue);
+}
 function resetLineup(){editLineup=null;val('lineupPlayer','');val('minuteOff','');val('lineupRole','true');val('minuteOn',0);$('saveLineup').textContent='Add Player';$('cancelLineup').hidden=true}
 async function loadEvents(){const {data,error}=await db.from('match_events').select('*').eq('fixture_id',current.id).order('minute');if(error)return msg('eventMsg',error.message,true);events=data||[];$('eventsList').innerHTML=events.length?events.map(x=>`<div class="row"><strong>${esc(x.event_type)}</strong><div><b>${esc(x.player_name)}</b><small>${esc(x.team_name)} • ${x.minute??'—'}${x.stoppage_minute?'+'+x.stoppage_minute:''}'${x.related_player_name?' • '+esc(x.related_player_name):''}</small></div><div class="row-actions"><button data-ee="${x.id}">Edit</button> <button class="danger" data-ed="${x.id}">Delete</button></div></div>`).join(''):'<div class="meta">No events saved.</div>'}
 function resetEvent(){editEvent=null;['eventPlayer','eventMinute','eventStoppage','eventRelated'].forEach(x=>val(x,''));val('eventType','goal');$('saveEvent').textContent='Add Event';$('cancelEvent').hidden=true}
