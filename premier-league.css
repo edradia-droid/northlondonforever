@@ -940,5 +940,5 @@ body.premier-league-page .main{
 .pl-position-wrap span,.pl-next-top span,.pl-match-centre span,.pl-next-bottom a,.pl-section-link,.pl-race-pos,.pl-leader-type{color:#fff}
 .pl-table tr.arsenal-row{background:linear-gradient(90deg,rgba(55,0,60,.42),rgba(55,0,60,.08))}
 .pl-title-race-section{background:radial-gradient(circle at 80% 15%,rgba(55,0,60,.30),transparent 35%),#090909}
-.pl-race-card.arsenal-race-card{border-color:rgba(255,255,255,.22);background:linear-gradient(145deg,rgba(55,0,60,.42),rgba(55,255,255,.03)),#121315}
+.pl-race-card.arsenal-race-card{border-color:rgba(255,255,255,.22);background:linear-gradient(145deg,rgba(55,0,60,.42),rgba(255,255,255,.03)),#121315}
 @media(max-width:600px){.pl-competition-brand{padding:9px 12px;gap:10px}.pl-competition-brand img{width:86px}.pl-competition-brand span{font-size:8px}}
