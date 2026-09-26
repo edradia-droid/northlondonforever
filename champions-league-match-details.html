@@ -232,4 +232,29 @@
 <script src="supabase-client.js"></script>
 <script src="ucl-match-details-sync.js?v=20260926-arrows1"></script>
 <script src="ucl-match-comparison-live.js?v=20260912-5"></script>
+
+<style id="nl4-cl-player-photo-fallback-v1">
+/* CL: local player-photo fallback + no player boxes. */
+.cl-pl-player,.cl-pl-kit{background:transparent!important;border:0!important;box-shadow:none!important;outline:0!important}
+.cl-pl-player{filter:none!important}
+.cl-pl-photo{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important}
+</style>
+<script id="nl4-cl-player-photo-fallback-v1">
+(function(){
+  const FALLBACK='assets/player-cutouts/player-23.png';
+  function install(){
+    document.querySelectorAll('.cl-pl-photo').forEach(function(img){
+      if(img.dataset.fallbackReady==='1') return;
+      img.dataset.fallbackReady='1';
+      img.addEventListener('error',function(){
+        if(img.dataset.fallbackUsed==='1') return;
+        img.dataset.fallbackUsed='1';
+        img.src=FALLBACK;
+      });
+    });
+  }
+  install();
+  new MutationObserver(install).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
 </body></html>
