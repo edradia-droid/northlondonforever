@@ -65,9 +65,9 @@ async function load(){
     const md1SubBox=document.getElementById('clSubstitutes');
     if(md1SubBox) md1SubBox.innerHTML=md1Subs.length?md1Subs.map(row=>{
       const key=normalizeName(String(row.player_name||'')),unused=Number(row.minute_on||0)===0;
-      const on=unused?'UNUSED':`ON ${row.minute_on}'`;
+      const on=unused?'UNUSED':`<span class="cl-pl-in">↑</span> ON ${row.minute_on}'`;
       const off=!unused&&row.minute_off!=null?` • OFF ${row.minute_off}'`:'';
-      const incoming=esc(row.player_name),outgoing=!unused&&row.player_out_name?esc(row.player_out_name)+' → ':'';return `<div class="cl-pl-sub"><div><strong>${outgoing}${incoming}</strong><small>${esc(on+off)}</small></div></div>`;
+      const incoming=esc(row.player_name),outgoing='';return `<div class="cl-pl-sub"><div><strong>${outgoing}${incoming}</strong><small>${esc(on+off)}</small></div></div>`;
     }).join(''):'<div class="empty">No substitutions recorded.</div>';
   } else {
 
@@ -153,7 +153,7 @@ async function load(){
     const subBox=document.getElementById('clSubstitutes');
     if(subBox)subBox.innerHTML=subs.length?subs.map(row=>{
       const rawKey=normalizeName(row.player_name),key=imageAliases[rawKey]||rawKey,img=images[key],unused=Number(row.minute_on||0)===0,on=unused?'UNUSED':`ON ${row.minute_on}'`,off=!unused&&row.minute_off!=null?` • OFF ${row.minute_off}'`:'';
-      const incoming=esc(row.player_name),outgoing=!unused&&row.player_out_name?esc(row.player_out_name)+' → ':'';return `<div class="cl-pl-sub">${img?`<img src="${esc(img)}" alt="${esc(row.player_name)}" loading="eager">`:''}<div><strong>${outgoing}${incoming}</strong><small>${esc(on+off)}</small></div></div>`;
+      const incoming=esc(row.player_name),outgoing='';return `<div class="cl-pl-sub">${img?`<img src="${esc(img)}" alt="${esc(row.player_name)}" loading="eager">`:''}<div><strong>${outgoing}${incoming}</strong><small>${esc(on+off)}</small></div></div>`;
     }).join(''):'<div class="empty">No substitutions recorded.</div>';
   }
   }
