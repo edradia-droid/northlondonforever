@@ -60,6 +60,15 @@ async function load(){
     const formationEl=document.getElementById('clFormation'); if(formationEl) formationEl.textContent='4-3-3';
     const matchup=document.getElementById('clLineupMatch'); if(matchup) matchup.textContent=`${home} VS ${away}`;
     const venueEl=document.getElementById('clLineupVenue'); if(venueEl) venueEl.textContent=f.venue||'VENUE TBC';
+    // Matchday 1 substitutions are refreshed from Supabase so unused players cannot inherit old minute ranges.
+    const md1Subs=(lineups||[]).filter(x=>/arsenal/i.test(String(x.team_name||''))&&!x.is_starter);
+    const md1SubBox=document.getElementById('clSubstitutes');
+    if(md1SubBox) md1SubBox.innerHTML=md1Subs.length?md1Subs.map(row=>{
+      const key=normalizeName(String(row.player_name||'')),unused=Number(row.minute_on||0)===0;
+      const on=unused?'UNUSED':`ON ${row.minute_on}'`;
+      const off=!unused&&row.minute_off!=null?` • OFF ${row.minute_off}'`:'';
+      return `<div class="cl-pl-sub"><div><strong>${esc(row.player_name)}</strong><small>${esc(on+off)}</small></div></div>`;
+    }).join(''):'<div class="empty">No substitutions recorded.</div>';
   } else {
 
   const arsenalTeam = /arsenal/i.test(home) ? home : (/arsenal/i.test(away) ? away : 'Arsenal');
@@ -143,7 +152,7 @@ async function load(){
     const venueEl=document.getElementById('clLineupVenue');if(venueEl)venueEl.textContent=f.venue||'VENUE TBC';
     const subBox=document.getElementById('clSubstitutes');
     if(subBox)subBox.innerHTML=subs.length?subs.map(row=>{
-      const rawKey=normalizeName(row.player_name),key=imageAliases[rawKey]||rawKey,img=images[key],on=row.minute_on!=null?`ON ${row.minute_on}'`:'SUB',off=row.minute_off!=null?` • OFF ${row.minute_off}'`:'';
+      const rawKey=normalizeName(row.player_name),key=imageAliases[rawKey]||rawKey,img=images[key],unused=Number(row.minute_on||0)===0,on=unused?'UNUSED':`ON ${row.minute_on}'`,off=!unused&&row.minute_off!=null?` • OFF ${row.minute_off}'`:'';
       return `<div class="cl-pl-sub">${img?`<img src="${esc(img)}" alt="${esc(row.player_name)}" loading="eager">`:''}<div><strong>${esc(row.player_name)}</strong><small>${esc(on+off)}</small></div></div>`;
     }).join(''):'<div class="empty">No substitutions recorded.</div>';
   }
