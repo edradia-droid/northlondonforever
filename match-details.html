@@ -2002,6 +2002,53 @@
 @media(max-width:700px){#substitutes.broadcast-subs{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;padding:8px!important}#substitutes .broadcast-sub.sub-bench-row{padding:7px!important;gap:7px!important}#substitutes .sub-bench-photo{width:28px!important;height:34px!important;flex-basis:28px!important}#substitutes .sub-name{font-size:8px!important}#substitutes .sub-bench-used,#substitutes .sub-bench-unused{font-size:7px!important}}
 @media(max-width:430px){#substitutes.broadcast-subs{grid-template-columns:1fr!important}}
 </style>
+<style id="nl4-pl-cl-player-size-clean-v2">
+/* Match the CL player footprint exactly; remove all square/boxed photo treatment. */
+#startingXI .player-marker{
+  width:96px!important;
+  height:122px!important;
+  transform:translate(-50%,-50%) scale(var(--depth,1))!important;
+}
+#startingXI .kit-player{
+  width:88px!important;
+  height:82px!important;
+  margin:0 auto!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+#startingXI .kit-player-photo,
+#startingXI img.kit-player-photo{
+  position:absolute!important;
+  left:50%!important;
+  top:0!important;
+  width:58px!important;
+  height:66px!important;
+  transform:translateX(-50%)!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  outline:0!important;
+  filter:none!important;
+  padding:0!important;
+  margin:0!important;
+  z-index:6!important;
+}
+#startingXI .kit-player-photo[hidden]{display:none!important}
+#startingXI .player-name{
+  width:96px!important;
+  min-height:30px!important;
+  padding:5px 6px!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  border-radius:0!important;
+  text-shadow:0 2px 4px #000!important;
+}
+</style>
 </body>
 </html>
 
