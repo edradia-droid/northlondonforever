@@ -1373,15 +1373,18 @@
         console.warn('NL4 legacy player media unavailable:', error.message);
       }
 
-      // Official Arsenal image fallback when Supabase has no image URL.
+      // Always use the verified local transparent Arsenal cutouts, matching the CL renderer.
+      // This prevents older remote/stat-table images with black backgrounds from being used.
       names.forEach(name => {
         const key = String(name).trim().toLowerCase();
-        const source = ARSENAL_SQUAD_IMAGE_URLS[key];
+        const normalized = normalizePlayerKey(name);
+        const localKey = Object.keys(ARSENAL_SQUAD_IMAGE_URLS).find(candidate => normalizePlayerKey(candidate) === normalized);
+        const source = ARSENAL_SQUAD_IMAGE_URLS[key] || (localKey ? ARSENAL_SQUAD_IMAGE_URLS[localKey] : '');
         if (!source) return;
         const current = map.get(key) || { image:'', shirt:'' };
-        // Always use the local transparent cutout for Arsenal players.
         current.image = source;
         map.set(key, current);
+        map.set(normalized, current);
       });
 
       const aliases = {
@@ -1985,6 +1988,20 @@
 </style>
 
 
+<style id="nl4-pl-cl-lineup-architecture-v1">
+/* PL Match Details: CL-style player cutouts + substitute cards. */
+#startingXI .kit-player-photo,#startingXI img.kit-player-photo{object-fit:contain!important;object-position:center bottom!important;background:transparent!important;border:0!important;box-shadow:0 10px 14px rgba(0,0,0,.42)!important;mix-blend-mode:normal!important;display:block!important;visibility:visible!important;opacity:1!important}
+#substitutes.broadcast-subs{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))!important;align-items:stretch!important;gap:8px!important;width:100%!important;padding:10px!important;overflow:visible!important}
+#substitutes .broadcast-sub.sub-bench-row{display:flex!important;min-width:0!important;align-items:center!important;gap:10px!important;padding:8px 10px!important;border:1px solid rgba(255,255,255,.09)!important;border-radius:8px!important;background:rgba(0,0,0,.16)!important;box-shadow:none!important}
+#substitutes .sub-bench-player{display:flex!important;align-items:center!important;gap:8px!important;min-width:0!important;flex:1 1 auto!important}
+#substitutes .sub-bench-photo{display:block!important;width:34px!important;height:40px!important;flex:0 0 34px!important;object-fit:contain!important;object-position:center bottom!important;border:0!important;border-radius:7px!important;background:transparent!important;box-shadow:none!important}
+#substitutes .sub-name{display:block!important;min-width:0!important;font-size:10px!important;line-height:1.15!important;font-weight:900!important;text-transform:uppercase!important;white-space:normal!important;overflow-wrap:anywhere!important}
+#substitutes .sub-bench-used,#substitutes .sub-bench-unused{flex:0 0 auto!important;font-size:8px!important;font-weight:1000!important;white-space:nowrap!important}
+#substitutes .sub-bench-used{color:#32e875!important}#substitutes .sub-bench-unused{color:#777!important}
+#substitutes .substitution-arrow.in{color:#32e875!important;font-size:10px!important;font-weight:1000!important;margin-right:3px!important}#substitutes .substitution-time{margin-left:2px!important}
+@media(max-width:700px){#substitutes.broadcast-subs{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;padding:8px!important}#substitutes .broadcast-sub.sub-bench-row{padding:7px!important;gap:7px!important}#substitutes .sub-bench-photo{width:28px!important;height:34px!important;flex-basis:28px!important}#substitutes .sub-name{font-size:8px!important}#substitutes .sub-bench-used,#substitutes .sub-bench-unused{font-size:7px!important}}
+@media(max-width:430px){#substitutes.broadcast-subs{grid-template-columns:1fr!important}}
+</style>
 </body>
 </html>
 
