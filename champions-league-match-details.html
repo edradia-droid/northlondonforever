@@ -237,7 +237,10 @@
 /* CL: local player-photo fallback + no player boxes. */
 .cl-pl-player,.cl-pl-kit{background:transparent!important;border:0!important;box-shadow:none!important;outline:0!important}
 .cl-pl-player{filter:none!important}
-.cl-pl-photo{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important}
+.cl-pl-photo{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;object-fit:contain!important;object-position:center bottom!important;clip-path:none!important}
+.cl-pl-player{background:transparent!important;border:0!important;box-shadow:none!important;outline:0!important}
+.cl-pl-kit{background:transparent!important;border:0!important;box-shadow:none!important;outline:0!important}
+.cl-pl-ground{display:none!important;background:transparent!important;box-shadow:none!important;filter:none!important}
 </style>
 <script id="nl4-cl-player-photo-fallback-v1">
 (function(){
