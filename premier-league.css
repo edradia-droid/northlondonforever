@@ -1,9 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 :root{
+  --pl-purple:#37003c;
+  --pl-purple-dark:#17001a;
   --pl-red:#d8001f;
   --pl-red-dark:#750012;
-  --pl-gold:#e7bd58;
+  --pl-gold:#ffffff;
   --pl-bg:#070707;
   --pl-panel:#111214;
   --pl-panel-2:#17181b;
@@ -14,6 +16,7 @@
 
 body.premier-league-page{
   background:var(--pl-bg);
+  background-image:radial-gradient(circle at 50% -10%,rgba(55,0,60,.55),transparent 42%);
   color:var(--pl-text);
   overflow-x:hidden;
 }
@@ -21,7 +24,8 @@ body.premier-league-page{
 body.premier-league-page .main{
   min-width:0;
   background:
-    radial-gradient(circle at 85% 4%,rgba(216,0,31,.14),transparent 24%),
+    radial-gradient(circle at 85% 4%,rgba(55,0,60,.42),transparent 30%),
+    radial-gradient(circle at 15% 0%,rgba(55,0,60,.20),transparent 28%),
     #080808;
 }
 
@@ -43,9 +47,10 @@ body.premier-league-page .main{
   padding:90px clamp(28px,6vw,90px);
   overflow:hidden;
   isolation:isolate;
-  border-bottom:1px solid var(--pl-line);
+  border-bottom:1px solid rgba(255,255,255,.14);
   background:
-    linear-gradient(90deg,#070707 0%,rgba(7,7,7,.94) 42%,rgba(7,7,7,.52) 100%),
+    linear-gradient(90deg,#080009 0%,rgba(12,0,14,.95) 42%,rgba(20,0,24,.55) 100%),
+    radial-gradient(circle at 78% 35%,rgba(55,0,60,.72),transparent 40%),
     url("https://i.postimg.cc/0y7cNbg2/emirate.jpg") center/cover;
 }
 
@@ -67,7 +72,7 @@ body.premier-league-page .main{
   transform:translateY(-50%);
   border-radius:50%;
   z-index:-1;
-  background:radial-gradient(circle,rgba(231,189,88,.12),rgba(216,0,31,.08) 45%,transparent 70%);
+  background:radial-gradient(circle,rgba(55,0,60,.42),rgba(216,0,31,.08) 45%,transparent 70%);
   filter:blur(10px);
 }
 
@@ -902,3 +907,38 @@ body.premier-league-page .main{
 }
 @media(max-width:1050px){.pl-leaders-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.pl-leaders-grid{grid-template-columns:1fr}}
+
+
+/* Premier League official visual identity */
+.pl-competition-brand{
+  display:inline-flex;
+  align-items:center;
+  gap:13px;
+  min-height:58px;
+  padding:10px 15px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(55,0,60,.92),rgba(23,0,26,.88));
+  box-shadow:0 16px 40px rgba(0,0,0,.32),inset 0 1px rgba(255,255,255,.08);
+}
+.pl-competition-brand img{
+  display:block;
+  width:105px;
+  height:auto;
+  max-height:40px;
+  object-fit:contain;
+}
+.pl-competition-brand span{
+  color:#fff;
+  font-size:9px;
+  font-weight:1000;
+  letter-spacing:1.8px;
+}
+.pl-hero .pl-kicker{color:#fff;margin-top:18px}
+.pl-primary-btn{background:#37003c;color:#fff;border:1px solid rgba(255,255,255,.2)}
+.pl-hero-card{border-color:rgba(255,255,255,.18);background:linear-gradient(145deg,rgba(55,0,60,.45),rgba(13,8,15,.96) 58%,#080609)}
+.pl-position-wrap span,.pl-next-top span,.pl-match-centre span,.pl-next-bottom a,.pl-section-link,.pl-race-pos,.pl-leader-type{color:#fff}
+.pl-table tr.arsenal-row{background:linear-gradient(90deg,rgba(55,0,60,.42),rgba(55,0,60,.08))}
+.pl-title-race-section{background:radial-gradient(circle at 80% 15%,rgba(55,0,60,.30),transparent 35%),#090909}
+.pl-race-card.arsenal-race-card{border-color:rgba(255,255,255,.22);background:linear-gradient(145deg,rgba(55,0,60,.42),rgba(55,255,255,.03)),#121315}
+@media(max-width:600px){.pl-competition-brand{padding:9px 12px;gap:10px}.pl-competition-brand img{width:86px}.pl-competition-brand span{font-size:8px}}
