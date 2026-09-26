@@ -134,26 +134,35 @@
 </style>
 <style id="ucl-mobile-fit-final">
 @media(max-width:700px){
-  html,body{width:auto!important;min-width:0!important;max-width:none!important;overflow-x:hidden!important}
-  .main{width:100%!important;min-width:0!important;max-width:none!important;padding:20px 10px 50px!important}
-  .shell{width:100%!important;min-width:0!important;max-width:none!important;margin:0!important}
-  .grid{width:100%!important;min-width:0!important;display:grid!important;grid-template-columns:1fr!important}
-  .hero,.panel{width:100%!important;min-width:0!important;max-width:none!important}
+  html,body{width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;padding:0!important;overflow-x:hidden!important;overflow-x:clip!important}
+  .main{width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;padding:20px 10px 50px!important;overflow-x:clip!important}
+  .shell{width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important}
+  .grid{display:grid!important;width:100%!important;min-width:0!important;max-width:100%!important;grid-template-columns:minmax(0,1fr)!important;overflow:visible!important}
+  .hero,.panel{width:100%!important;min-width:0!important;max-width:100%!important}
   .hero{padding:22px 12px!important}
-  .scoreboard{width:100%!important;min-width:0!important}
-  .cl-pl-broadcast{min-height:0!important}
-  .cl-pl-top{width:100%!important;min-width:0!important;padding:18px 10px 8px!important;gap:6px!important}
-  .cl-pl-kicker{min-width:0!important;max-width:calc(100% - 70px)!important;font-size:20px!important;overflow:hidden!important}
-  .cl-pl-grid{width:100%!important;min-width:0!important;padding:0 0 12px!important}
-  .cl-pl-pitch-stage{width:100%!important;min-width:0!important;min-height:0!important;padding:14px 0 18px!important;overflow:hidden!important}
-  .cl-pl-pitch{width:82vw!important;max-width:340px!important;min-width:0!important;margin:0 auto!important;aspect-ratio:72/104!important}
+  .scoreboard{width:100%!important;min-width:0!important;max-width:100%!important;grid-template-columns:minmax(0,1fr) 70px minmax(0,1fr)!important;gap:5px!important;padding:18px 6px!important}
+  .team,.centre{min-width:0!important;max-width:100%!important}
+  .team strong{overflow-wrap:anywhere!important}
+  .centre strong{font-size:30px!important}
+  .cl-pl-broadcast{width:100%!important;min-width:0!important;max-width:100%!important;min-height:0!important;overflow:hidden!important}
+  .cl-pl-top{width:100%!important;min-width:0!important;max-width:100%!important;padding:18px 10px 8px!important;gap:6px!important}
+  .cl-pl-kicker{min-width:0!important;max-width:calc(100% - 70px)!important;font-size:20px!important;overflow-wrap:anywhere!important;overflow:hidden!important}
+  .cl-pl-grid{width:100%!important;min-width:0!important;max-width:100%!important;padding:0 0 12px!important;overflow:hidden!important}
+  .cl-pl-pitch-stage{width:100%!important;min-width:0!important;max-width:100%!important;min-height:0!important;padding:14px 0 18px!important;overflow:hidden!important}
+  .cl-pl-pitch{width:min(82vw,340px)!important;max-width:calc(100% - 4px)!important;min-width:0!important;margin:0 auto!important;aspect-ratio:72/104!important}
   .cl-pl-pitch .player-marker{width:52px!important;height:70px!important}
   .cl-pl-pitch .kit-player{width:46px!important;height:46px!important}
   .cl-pl-pitch .kit-player-photo{width:32px!important;height:38px!important}
   .cl-pl-pitch .player-name{top:43px!important;width:54px!important;min-height:17px!important;font-size:5px!important;padding:2px!important}
   .cl-pl-pitch .player-ground-shadow{bottom:12px!important;width:30px!important;height:6px!important}
-  .cl-pl-side{width:100%!important;min-width:0!important;margin-top:4px!important}
-  #clSubstitutes{width:100%!important;min-width:0!important}
+  .cl-pl-side{width:100%!important;min-width:0!important;max-width:100%!important;margin:4px 0 14px!important}
+  #clSubstitutes{width:100%!important;min-width:0!important;max-width:100%!important;display:flex!important;flex-wrap:wrap!important;overflow:hidden!important}
+  #clSubstitutes .cl-pl-sub{flex:1 1 135px!important;min-width:0!important;max-width:100%!important}
+  #clSubstitutes .cl-pl-sub>div{min-width:0!important;max-width:100%!important;overflow:hidden!important}
+  #clSubstitutes .cl-pl-sub strong{white-space:normal!important;overflow-wrap:anywhere!important;word-break:break-word!important;text-overflow:clip!important}
+  .comparison-table-wrap{width:100%!important;max-width:100%!important;overflow:hidden!important}
+  .comparison-table{width:100%!important;min-width:0!important;max-width:100%!important;table-layout:fixed!important}
+  .comparison-table th,.comparison-table td{padding:10px 5px!important;font-size:11px!important;overflow-wrap:anywhere!important;word-break:break-word!important}
 }
 </style></head>
 <body>
