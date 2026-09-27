@@ -14,7 +14,6 @@ const fields=[
  ['Shots','home_shots','away_shots','1','999'],
  ['Shots on target','home_shots_on_target','away_shots_on_target','1','999'],
  ['Corners','home_corners','away_corners','1','999'],
- ['Corner goals','home_corner_goals','away_corner_goals','1','999'],
  ['Fouls','home_fouls','away_fouls','1','999'],
  ['Offsides','home_offsides','away_offsides','1','999'],
  ['Saves','home_saves','away_saves','1','999']
@@ -53,7 +52,7 @@ async function createFixture(){
  const p={
    competition:COMP,season:'2026/27',matchday:num('newRound'),home_team:home,away_team:away,
    opponent:homeIsArsenal?away:home,is_home:homeIsArsenal,kickoff_at:read('newKickoff')?new Date(read('newKickoff')).toISOString():null,
-   venue:read('newVenue').trim()||null,status:read('newStatus')||'scheduled',is_published:true,
+   venue:read('newVenue').trim()||null,status:read('newStatus')||'scheduled',is_published:read('newPublished')!=='false',kickoff_confirmed:false,
    source:'NL4 Admin',updated_at:new Date().toISOString()
  };
  const r=await db.from('fixtures').insert(p).select('*').single();
@@ -68,7 +67,7 @@ async function openFixture(id){
  $('title').textContent='Round '+(current.matchday??'—')+' • '+n.home+' vs '+n.away;
  [['status',current.status],['kickoff',current.kickoff_at?new Date(current.kickoff_at).toISOString().slice(0,16):''],['venue',current.venue],['referee',current.referee],
  ['arsenalScore',current.arsenal_score],['opponentScore',current.opponent_score],['htArsenal',current.halftime_arsenal_score],
- ['htOpponent',current.halftime_opponent_score],['attendance',current.attendance],['addedTime',current.added_time],['motm',current.man_of_the_match]].forEach(x=>val(...x));
+ ['htOpponent',current.halftime_opponent_score],['attendance',current.attendance],['addedTime',current.added_time],['kickoffConfirmed',String(current.kickoff_confirmed!==false)],['arsenalPenalties',current.arsenal_penalty_score],['opponentPenalties',current.opponent_penalty_score],['lineupFormation',current.lineup_formation||''],['published',String(current.is_published!==false)],['motm',current.man_of_the_match]].forEach(x=>val(...x));
  $('motmTeam').innerHTML=$('eventTeam').innerHTML='<option value="'+esc(n.home)+'">'+esc(n.home)+'</option><option value="'+esc(n.away)+'">'+esc(n.away)+'</option>';
  const homeLabel=$('arsenalScore')?.closest('label'),awayLabel=$('opponentScore')?.closest('label'); if(homeLabel)homeLabel.firstChild.textContent=(current.home_team==='Arsenal'||current.away_team==='Arsenal')?'Arsenal score':'Home score'; if(awayLabel)awayLabel.firstChild.textContent=(current.home_team==='Arsenal'||current.away_team==='Arsenal')?'Opponent score':'Away score';
  val('motmTeam',current.man_of_the_match_team||n.home);
@@ -85,7 +84,7 @@ async function saveDetails(){
  const k=read('kickoff');
  const p={status:read('status'),kickoff_at:k?new Date(k).toISOString():null,venue:read('venue').trim()||null,referee:read('referee').trim()||null,
  arsenal_score:num('arsenalScore'),opponent_score:num('opponentScore'),halftime_arsenal_score:num('htArsenal'),halftime_opponent_score:num('htOpponent'),
- attendance:num('attendance'),added_time:num('addedTime')||0,man_of_the_match:read('motm').trim()||null,
+ attendance:num('attendance'),added_time:num('addedTime')||0,kickoff_confirmed:read('kickoffConfirmed')==='true',arsenal_penalty_score:num('arsenalPenalties'),opponent_penalty_score:num('opponentPenalties'),lineup_formation:read('lineupFormation').trim()||null,is_published:read('published')!=='false',man_of_the_match:read('motm').trim()||null,
  man_of_the_match_team:read('motm').trim()?read('motmTeam'):null,updated_at:new Date().toISOString()};
  const r=await db.from('fixtures').update(p).eq('id',current.id).select('*').single();
  if(r.error)return msg('detailsMsg',r.error.message,true); current=r.data; msg('detailsMsg','Match details saved ✓'); await loadFixtures();
