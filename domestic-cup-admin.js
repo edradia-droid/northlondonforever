@@ -19,14 +19,6 @@ const fields=[
  ['Offsides','home_offsides','away_offsides','1','999'],
  ['Saves','home_saves','away_saves','1','999']
 ];
-const comparisonFields=[
- ['Matches','matches',1],['Wins','wins',1],['Draws','draws',1],['Losses','losses',1],
- ['Goals for','goals_for',1],['Goals against','goals_against',1],['Points','points',1],
- ['Average possession %','possession_average',0.1],['Shots','shots',1],['Shots on target','shots_on_target',1],
- ['Corners','corners',1],['Corner goals','corner_goals',1],['Fouls','fouls',1],['Offsides','offsides',1],
- ['Saves','saves',1],['Yellow cards','yellow_cards',1],['Red cards','red_cards',1]
-];
-
 function names(){
  const home=current?.home_team||(current?.is_home?'Arsenal':'');
  const away=current?.away_team||(current?.is_home?current?.opponent:'Arsenal');
@@ -87,7 +79,7 @@ async function openFixture(id){
  $('lineupTabs').innerHTML='<button data-team="'+esc(n.home)+'">'+esc(n.home)+'</button><button data-team="'+esc(n.away)+'">'+esc(n.away)+'</button>';
  resetLineup();resetEvent();tabs();
  $('editor').scrollIntoView({behavior:'smooth'});
- await Promise.all([loadLineups(),loadEvents(),loadComparison()]);
+ await Promise.all([loadLineups(),loadEvents()]);
 }
 async function saveDetails(){
  const k=read('kickoff');
