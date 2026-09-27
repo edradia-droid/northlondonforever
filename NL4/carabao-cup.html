@@ -101,7 +101,7 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
 .match-empty{border:1px dashed rgba(255,255,255,.1);border-radius:14px;padding:18px;color:#808985;font-size:10px;line-height:1.6}
 .match-next{margin-top:14px;border-top:1px solid rgba(255,255,255,.07);padding-top:14px;display:flex;justify-content:space-between;gap:15px;align-items:center}
 .match-next small{display:block;color:#6f7974;font-size:8px;letter-spacing:1.3px;font-weight:900}.match-next strong{display:block;margin-top:4px;font-size:11px}.match-next button{border:1px solid rgba(0,143,94,.45);background:#0c1712;color:#8de2bd;border-radius:10px;padding:8px 10px;font-size:8px;font-weight:900;letter-spacing:.8px;cursor:pointer}
-@media(max-width:700px){.bracket-match-centre{margin-left:0}.match-centre-head{align-items:flex-start;flex-direction:column}.match-scoreline{padding:18px 10px}.match-score{font-size:29px}.match-team strong{font-size:11px}.match-summary-grid{grid-template-columns:1fr}.arsenal-route-svg{left:4px}}
+.lineups-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.lineup-team{border:1px solid rgba(255,255,255,.08);border-radius:15px;padding:13px;background:rgba(255,255,255,.02)}.lineup-team-title{font-size:10px;font-weight:900;letter-spacing:1px;color:#8de2bd;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.07)}.lineup-team-title span{float:right;color:#777;font-size:7px}.lineup-list{display:grid;gap:6px;margin-top:9px}.lineup-player{display:flex;justify-content:space-between;gap:8px;padding:7px 8px;border-radius:8px;background:rgba(255,255,255,.025)}.lineup-player b{font-size:9px}.lineup-player small{color:#737d78;font-size:8px}.subs-title{margin-top:14px;color:#777;font-size:8px;font-weight:900;letter-spacing:1px}.subs-list{display:grid;gap:5px;margin-top:7px}.sub-row{display:grid;grid-template-columns:30px 1fr;column-gap:7px;align-items:center;padding:6px 7px;border-left:2px solid var(--green);background:rgba(0,143,94,.05);border-radius:7px}.sub-row span{grid-row:span 2;color:#8de2bd;font-size:8px;font-weight:900}.sub-row b{font-size:9px}.sub-row small{color:#737d78;font-size:7px}.event-list{display:grid;gap:7px}.event-row{display:grid;grid-template-columns:38px 75px 1fr;gap:8px;align-items:center;padding:9px 10px;border:1px solid rgba(255,255,255,.07);border-radius:10px;background:rgba(255,255,255,.02)}.event-row>span{color:#8de2bd;font-size:8px;font-weight:900}.event-row>b{color:#777;font-size:7px;letter-spacing:.6px}.event-row>strong{font-size:9px}.event-row>small{grid-column:3;color:#737d78;font-size:7px}@media(max-width:700px){.lineups-grid{grid-template-columns:1fr}.event-row{grid-template-columns:34px 65px 1fr}}@media(max-width:700px){.bracket-match-centre{margin-left:0}.match-centre-head{align-items:flex-start;flex-direction:column}.match-scoreline{padding:18px 10px}.match-score{font-size:29px}.match-team strong{font-size:11px}.match-summary-grid{grid-template-columns:1fr}.arsenal-route-svg{left:4px}}
 
 </style>
 </head>
@@ -216,6 +216,8 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
 <footer class="footer"><b>ARSENAL HUB • CARABAO CUP</b><span>North London Forever • 2026/27</span></footer>
 
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
+<script src="../supabase-client.js?v=20260927-carabao-sync1"></script>
 <script>
 /* Carabao Cup interactive round + match centre. */
 const ROUND_DATA = {
@@ -289,9 +291,10 @@ function renderRoundTracker(){
 function renderPane(key,pane){
   const d=MATCH_DETAILS[key],box=document.querySelector("#matchPane"); if(!d||!box)return;
   if(pane==="overview")box.innerHTML='<div class="match-summary-grid">'+d.overview.map(x=>'<div class="match-summary-item"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join("")+'</div>';
-  else {
-    const copy=pane==="events"?d.events:d.lineups;
-    box.innerHTML='<div class="match-empty">'+copy+'</div>';
+  else if(pane==="events"){
+    box.innerHTML=d.eventsHtml||'<div class="match-empty">'+d.events+'</div>';
+  } else {
+    box.innerHTML=d.lineupsHtml||'<div class="match-empty">'+d.lineups+'</div>';
   }
 }
 
@@ -330,9 +333,59 @@ function selectRound(key,focusPanel=true){
   if(focusPanel)setTimeout(()=>document.getElementById("matchDetails")?.scrollIntoView({behavior:"smooth",block:"nearest"}),220);
 }
 
+function hydrateIpswichArsenalFromSupabase(){
+  const client=window.nl4Supabase;
+  if(!client)return;
+  (async()=>{
+    try{
+      const fr=await client.from("fixtures").select("*").eq("season","2026/27").eq("competition","Carabao Cup").eq("home_team","Ipswich Town").eq("away_team","Arsenal").maybeSingle();
+      if(fr.error||!fr.data)return;
+      const f=fr.data;
+      const [lr,er]=await Promise.all([
+        client.from("match_lineups").select("*").eq("fixture_id",f.id).order("is_starter",{ascending:false}).order("minute_on"),
+        client.from("match_events").select("*").eq("fixture_id",f.id).order("minute").order("stoppage_minute")
+      ]);
+      const rows=lr.data||[], evs=er.data||[];
+      const teams=[f.home_team,f.away_team];
+      const starters=t=>rows.filter(x=>x.team_name===t&&x.is_starter);
+      const subs=t=>rows.filter(x=>x.team_name===t&&!x.is_starter&&Number(x.minute_on||0)>0);
+      const teamBlock=t=>{
+        const xi=starters(t), used=subs(t);
+        return '<div class="lineup-team"><div class="lineup-team-title">'+esc(t)+' <span>'+xi.length+' STARTERS</span></div><div class="lineup-list">'+xi.map(x=>'<div class="lineup-player"><b>'+esc(x.player_name)+'</b><small>'+esc(x.position||"")+'</small></div>').join("")+'</div>'+
+          '<div class="subs-title">SUBSTITUTIONS</div><div class="subs-list">'+(used.length?used.map(x=>'<div class="sub-row"><span>'+esc(x.minute_on??"—")+"'"</span><b>"+esc(x.player_name)+"</b><small>for "+esc(x.player_out_name||"—")+"</small></div>").join(""):'<div class="match-empty">No substitutions recorded.</div>')+'</div></div>';
+      };
+      const eventHtml=evs.length?'<div class="event-list">'+evs.map(x=>{
+        const minute=(x.minute??"—")+(x.stoppage_minute?"+"+x.stoppage_minute:"");
+        return '<div class="event-row"><span>'+esc(minute)+"'</span><b>"+esc((x.event_type||"").replace(/_/g," ").toUpperCase())+"</b><strong>"+esc(x.player_name||"")+"</strong><small>"+esc(x.team_name||"")+(x.related_player_name?" • "+esc(x.related_player_name):"")+"</small></div>";
+      }).join("")+'</div>':'<div class="match-empty">No match events recorded.</div>';
+      const scoreHome=f.arsenal_score!==null&&f.home_team!=="Arsenal"?f.opponent_score:f.arsenal_score;
+      const scoreAway=f.away_team==="Arsenal"?f.arsenal_score:f.opponent_score;
+      const fmtDate=f.kickoff_at?new Date(f.kickoff_at).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}).toUpperCase():"";
+      const meta=[fmtDate,f.venue].filter(Boolean).join(" • ");
+      const resultHome=Number(scoreHome),resultAway=Number(scoreAway);
+      const resultText=(Number.isFinite(resultHome)&&Number.isFinite(resultAway))?((f.home_team==="Arsenal"?"Arsenal":f.home_team)+" "+resultHome+"–"+resultAway+" "+(f.away_team==="Arsenal"?"Arsenal":f.away_team)):"";
+      MATCH_DETAILS.round3.overview=[
+        ["Competition","Carabao Cup"],["Round","Third Round"],["Result",resultText||"Arsenal won 4–2"],["Half-time",(f.halftime_arsenal_score??2)+"–"+(f.halftime_opponent_score??0)],["Referee",f.referee||"Peter Bankes"],["Attendance",f.attendance?Number(f.attendance).toLocaleString():"28,966"],["Man of the Match",f.man_of_the_match||"Max Dowman"]
+      ];
+      MATCH_DETAILS.round3.eventsHtml=eventHtml;
+      MATCH_DETAILS.round3.lineupsHtml='<div class="lineups-grid">'+teamBlock(teams[0])+teamBlock(teams[1])+'</div>';
+      MATCH_DETAILS.round3.events="Match events loaded from the NL4 fixture record.";
+      MATCH_DETAILS.round3.lineups="Official lineup data loaded from the NL4 fixture record.";
+      MATCH_DETAILS.round3.subs="Substitutions loaded from the NL4 fixture record.";
+      MATCH_DETAILS.round3.score=String(scoreHome)+" — "+String(scoreAway);
+      MATCH_DETAILS.round3.meta=meta||"15 SEP 2026 • PORTMAN ROAD";
+      updateMatchCentre("round3");
+      document.querySelectorAll(".match-tab").forEach(t=>t.classList.toggle("active",t.dataset.pane==="overview"));
+      const tabs=document.querySelectorAll(".match-tab");
+      tabs.forEach(t=>t.onclick=()=>{tabs.forEach(z=>z.classList.remove("active"));t.classList.add("active");renderPane("round3",t.dataset.pane);});
+    }catch(err){console.warn("[NL4 Carabao] Match data sync failed:",err);}
+  })();
+}
+
 document.addEventListener("DOMContentLoaded",()=>{
   document.querySelectorAll(".match-tab").forEach(tab=>tab.addEventListener("click",()=>{document.querySelectorAll(".match-tab").forEach(t=>t.classList.remove("active"));tab.classList.add("active");renderPane(document.querySelector(".round-nav button.active")?.dataset.round||"round3",tab.dataset.pane)}));
   renderRoundTracker();
+  hydrateIpswichArsenalFromSupabase();
   window.addEventListener("resize",()=>setTimeout(buildRoute,50));
 });
 </script>
