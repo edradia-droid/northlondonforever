@@ -76,7 +76,7 @@ async function openFixture(id){
  $('preview').href=PAGE;
  lineupTeam=n.home;
  $('lineupTabs').innerHTML='<button data-team="'+esc(n.home)+'">'+esc(n.home)+'</button><button data-team="'+esc(n.away)+'">'+esc(n.away)+'</button>';
- resetLineup();resetEvent();tabs();
+ resetLineup();resetEvent();tabs();await loadPlayerLists();
  $('editor').scrollIntoView({behavior:'smooth'});
  await Promise.all([loadLineups(),loadEvents()]);
 }
@@ -97,7 +97,7 @@ async function saveStats(){
 }
 async function loadLineups(){
  const r=await db.from('match_lineups').select('*').eq('fixture_id',current.id).order('is_starter',{ascending:false}).order('minute_on');
- if(r.error)return msg('lineupMsg',r.error.message,true);lineups=r.data||[];renderLineups();
+ if(r.error)return msg('lineupMsg',r.error.message,true);lineups=r.data||[];renderLineups();await loadPlayerLists();
 }
 function renderLineups(){
  const a=lineups.filter(x=>(x.team_name||'')===lineupTeam);
@@ -109,13 +109,34 @@ function renderLineups(){
  }).join(''):'<div class="empty">No lineup saved for this team.</div>';
  refreshOutgoingOptions();
 }
+async function loadPlayerLists(){
+ const n=names(), clubs=[n.home,n.away].filter(Boolean);
+ let roster=[];
+ try{
+   const r=await db.from('record_room_players').select('player_name,position,club').eq('season','2026/27').in('club',clubs).order('club').order('player_name');
+   if(!r.error) roster=r.data||[];
+ }catch(e){}
+ const existing=lineups.map(x=>({player_name:x.player_name,position:x.position||'',club:x.team_name||''}));
+ const all=[...roster,...existing];
+ const seen=new Set(), players=all.filter(x=>{const k=String(x.player_name||'').trim().toLowerCase();if(!k||seen.has(k))return false;seen.add(k);return true;});
+ const teamPlayers=players.filter(x=>String(x.club||x.team_name||'')===lineupTeam);
+ const opts=teamPlayers.map(x=>'<option value="'+esc(x.player_name)+'">'+esc(x.player_name)+'</option>').join('');
+ const allOpts=players.map(x=>'<option value="'+esc(x.player_name)+'">'+esc(x.player_name)+'</option>').join('');
+ const lp=$('lineupPlayer'),motm=$('motm'),ep=$('eventPlayer'),er=$('eventRelated');
+ const preserve=[lp?.value,motm?.value,ep?.value,er?.value];
+ if(lp)lp.innerHTML='<option value="">Select player</option>'+opts;
+ if(motm)motm.innerHTML='<option value="">Select player</option>'+allOpts;
+ if(ep)ep.innerHTML='<option value="">Select player</option>'+opts;
+ if(er)er.innerHTML='<option value="">None</option>'+allOpts;
+ [lp,motm,ep,er].forEach((el,i)=>{if(el&&preserve[i]&&Array.from(el.options).some(o=>o.value===preserve[i]))el.value=preserve[i]});
+}
 function refreshOutgoingOptions(selected=''){
  const el=$('lineupPlayerOut');if(!el)return;
  const starters=lineups.filter(x=>x.team_name===lineupTeam&&x.is_starter);
  el.innerHTML='<option value="">Select player going out</option>'+starters.map(x=>'<option value="'+esc(x.player_name)+'">'+esc(x.player_name)+'</option>').join('');
  val('lineupPlayerOut',selected||'');
 }
-function tabs(){$('lineupTabs').querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.team===lineupTeam));renderLineups()}
+function tabs(){$('lineupTabs').querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.team===lineupTeam));renderLineups();loadPlayerLists()}
 function resetLineup(){editLineup=null;val('lineupPlayer','');val('lineupPosition','Goalkeeper');val('lineupRole','true');val('lineupPlayerOut','');val('minuteOn',0);val('minuteOff','');$('lineupPlayerOut').disabled=true;$('saveLineup').textContent='Add Player';$('cancelLineup').hidden=true}
 async function saveLineup(){
  const name=read('lineupPlayer').trim(),starter=read('lineupRole')==='true',playerOut=starter?null:(read('lineupPlayerOut').trim()||null);
@@ -123,7 +144,7 @@ async function saveLineup(){
  if(!starter&&!playerOut&&Number(num('minuteOn')??0)>0)return msg('lineupMsg','Select the player going out for this substitution.',true);
  const p={fixture_id:current.id,team_name:lineupTeam,player_name:name,position:read('lineupPosition'),is_starter:starter,minute_on:starter?0:(num('minuteOn')??0),minute_off:num('minuteOff'),player_out_name:playerOut,updated_at:new Date().toISOString()};
  const r=editLineup?await db.from('match_lineups').update(p).eq('id',editLineup):await db.from('match_lineups').upsert(p,{onConflict:'fixture_id,team_name,player_name'});
- if(r.error)return msg('lineupMsg',r.error.message,true);msg('lineupMsg','Lineup saved ✓');resetLineup();await loadLineups();
+ if(r.error)return msg('lineupMsg',r.error.message,true);msg('lineupMsg','Lineup saved ✓');resetLineup();await loadLineups();await loadPlayerLists();
 }
 async function loadEvents(){
  const r=await db.from('match_events').select('*').eq('fixture_id',current.id).order('minute').order('stoppage_minute');
@@ -135,7 +156,7 @@ async function saveEvent(){
  const player=read('eventPlayer').trim();if(!player)return msg('eventMsg','Enter a player name.',true);
  const p={fixture_id:current.id,event_type:read('eventType'),player_name:player,team_name:read('eventTeam'),minute:num('eventMinute'),stoppage_minute:num('eventStoppage'),related_player_name:read('eventRelated').trim()||null,updated_at:new Date().toISOString()};
  const r=editEvent?await db.from('match_events').update(p).eq('id',editEvent):await db.from('match_events').insert(p);
- if(r.error)return msg('eventMsg',r.error.message,true);msg('eventMsg','Event saved ✓');resetEvent();await loadEvents();
+ if(r.error)return msg('eventMsg',r.error.message,true);msg('eventMsg','Event saved ✓');resetEvent();await loadEvents();await loadPlayerLists();
 }
 $('list').onclick=e=>{const b=e.target.closest('[data-fixture]');if(b)openFixture(b.dataset.fixture)};
 $('newFixtureBtn').onclick=createFixture;
