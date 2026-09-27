@@ -128,7 +128,7 @@ async function saveLineup(){
 }
 async function loadEvents(){
  const r=await db.from('match_events').select('*').eq('fixture_id',current.id).order('minute').order('stoppage_minute');
- if(r.error)return msg('eventMsg',r.error.message,true);events=r.data||[];
+ if(r.error)return msg('eventMsg',r.error.message,true);events=(r.data||[]).filter(x=>x.event_type!=='substitution');
  $('eventsList').innerHTML=events.length?events.map(x=>'<div class="row"><strong>'+esc(x.event_type)+'</strong><div><b>'+esc(x.player_name)+'</b><small>'+esc(x.team_name)+' • '+(x.minute??'—')+(x.stoppage_minute?'+'+x.stoppage_minute:'')+"'"+(x.related_player_name?' • '+esc(x.related_player_name):'')+'</small></div><div class="row-actions"><button data-ee="'+x.id+'">Edit</button> <button class="danger" data-ed="'+x.id+'">Delete</button></div></div>').join(''):'<div class="empty">No events saved.</div>';
 }
 function resetEvent(){editEvent=null;['eventPlayer','eventMinute','eventStoppage','eventRelated'].forEach(x=>val(x,''));val('eventType','goal');$('saveEvent').textContent='Add Event';$('cancelEvent').hidden=true}
