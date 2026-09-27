@@ -393,7 +393,7 @@ function findBracketTie(f){
   if(!root)return null;
   const home=String(f.home_team||"").trim().toLowerCase(),away=String(f.away_team||"").trim().toLowerCase();
   return Array.from(root.querySelectorAll(".tie")).find(t=>{
-    const names=Array.from(t.querySelectorAll(".team b")).map(x=>x.textContent.trim().toLowerCase());
+    const names=Array.from(t.querySelectorAll(".team span")).map(x=>x.textContent.trim().toLowerCase());
     return names.includes(home)&&names.includes(away);
   })||null;
 }
