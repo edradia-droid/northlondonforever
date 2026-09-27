@@ -346,64 +346,241 @@ function selectRound(key,focusPanel=true){
   if(focusPanel)setTimeout(()=>document.getElementById("matchDetails")?.scrollIntoView({behavior:"smooth",block:"nearest"}),220);
 }
 
-function hydrateIpswichArsenalFromSupabase(){
-  const client=window.nl4Supabase;
-  if(!client)return;
-  (async()=>{
-    try{
-      const fr=await client.from("fixtures").select("*").eq("season","2026/27").eq("competition","Carabao Cup").eq("home_team","Ipswich Town").eq("away_team","Arsenal").maybeSingle();
-      if(fr.error||!fr.data)return;
-      const f=fr.data;
-      const [lr,er]=await Promise.all([
-        client.from("match_lineups").select("*").eq("fixture_id",f.id).order("is_starter",{ascending:false}).order("minute_on"),
-        client.from("match_events").select("*").eq("fixture_id",f.id).order("minute").order("stoppage_minute")
-      ]);
-      const rows=lr.data||[], evs=(er.data||[]).filter(x=>x.event_type!=="substitution");
-      const teams=[f.home_team,f.away_team];
-      const statRows=[["Possession",f.home_possession,f.away_possession,v=>v===null||v===undefined?"—":Number(v).toFixed(Number(v)%1?1:0)+"%"],["Shots",f.home_shots,f.away_shots,v=>v??"—"],["Shots on target",f.home_shots_on_target,f.away_shots_on_target,v=>v??"—"],["Corners",f.home_corners,f.away_corners,v=>v??"—"],["Fouls",f.home_fouls,f.away_fouls,v=>v??"—"],["Offsides",f.home_offsides,f.away_offsides,v=>v??"—"],["Saves",f.home_saves,f.away_saves,v=>v??"—"]];
-      const statsHtml='<div class="match-stats"><div class="match-stats-title">BOTH-TEAM MATCH STATISTICS</div>'+statRows.map(s=>'<div class="match-stat"><b>'+esc(s[3](s[1]))+'</b><span>'+esc(s[0])+'</span><b>'+esc(s[3](s[2]))+'</b></div>').join("")+"</div>";
-      const starters=t=>rows.filter(x=>x.team_name===t&&x.is_starter);
-      const subs=t=>rows.filter(x=>x.team_name===t&&!x.is_starter&&Number(x.minute_on||0)>0);
-      const normalizeLineupName=v=>String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[øØ]/g,"o").replace(/[đĐ]/g,"d").replace(/[^a-z0-9]+/gi," ").trim().replace(/\s+/g," ").toLowerCase();
-      const lineupImages={"kepa arrizabalaga":"../assets/player-cutouts/player-02.png","martin zubimendi":"../assets/player-cutouts/player-16.png","gabriel magalhaes":"../assets/player-cutouts/player-09.png","marli salmon":"../assets/player-cutouts/player-27.png","myles lewis skelly":"../assets/player-cutouts/player-18.png","mikel merino":"../assets/player-cutouts/player-17.png","bruno guimaraes":"../assets/player-cutouts/player-14.png","noni madueke":"../assets/player-cutouts/player-24.png","max dowman":"../assets/player-cutouts/player-21.png","eberechi eze":"../assets/player-cutouts/player-19.png","viktor gyokeres":"../assets/player-cutouts/player-26.png","ezri konsa":"../assets/player-cutouts/player-11.png","martin odegaard":"../assets/player-cutouts/player-15.png","christos tzolis":"../assets/player-cutouts/player-22.png"};
-      const formationSlots={"4-3-3":["GK","LB","LCB","RCB","RB","LCM","CM","RCM","LW","ST","RW"],"4-2-3-1":["GK","LB","LCB","RCB","RB","LDM","RDM","LW","CAM","RW","ST"]};
-      const slots={GK:[50,89],LB:[13,72],LCB:[36,74],CB:[50,74],RCB:[64,74],RB:[87,72],LDM:[34,57],RDM:[66,57],LM:[11,45],LCM:[34,47],CM:[50,47],RCM:[66,47],RM:[89,45],LW:[12,25],CAM:[50,33],RW:[88,25],ST:[50,15]};
-      const lineupRoles={"Arsenal":{"kepa arrizabalaga":"GK","martin zubimendi":"RB","myles lewis skelly":"LB","gabriel magalhaes":"LCB","marli salmon":"RCB","mikel merino":"LCM","bruno guimaraes":"CM","max dowman":"RCM","eberechi eze":"LW","noni madueke":"RW","viktor gyokeres":"ST"},"Ipswich Town":{"christian walton":"GK","darnell furlong":"RB","cedric kipre":"RCB","jacob greaves":"LCB","abdoul ouattara":"LB","florentino luis":"LDM","marcelino nunez":"RDM","kasey mcateer":"RM","anis mehmeti":"CAM","jaden philogene bidace":"LW","zian flemming":"ST"}};
-      function initials(name){const p=String(name||"").trim().split(/\s+/).filter(Boolean);return esc(((p[0]?.[0]||"")+(p.length>1?(p[p.length-1]?.[0]||""):"")).toUpperCase());}
-      function renderCLTeamLineup(team,xi,usedSubs){
-        const teamKey=team==="Arsenal"?"Arsenal":"Ipswich Town",roleMap=lineupRoles[teamKey]||{},formation=teamKey==="Arsenal"?"4-3-3":"4-2-3-1",template=formationSlots[formation],used=new Set();
-        const resolved=xi.map((row,index)=>{const key=normalizeLineupName(row.player_name);let role=roleMap[key]||String(row.position||"").toUpperCase();if(role==="DF")role=index<4?"LB":"RCB";if(role==="MF")role="CM";if(role==="FW")role="ST";if(!template.includes(role)||used.has(role))role=template.find(x=>!used.has(x))||template[index]||"CM";used.add(role);return {row,role};});
-        const figures=resolved.map(({row,role})=>{const xy=slots[role]||slots.CM,key=normalizeLineupName(row.player_name),img=lineupImages[key]||"",off=row.minute_off!=null&&Number(row.minute_off)>0?'<span class="cl-pl-off">↓ '+esc(row.minute_off)+"'</span>":"",photo=img?'<img class="cl-pl-photo" src="'+esc(img)+'" alt="'+esc(row.player_name)+'" loading="eager">':'<span class="cl-pl-fallback">'+initials(row.player_name)+'</span>';return '<div class="cl-pl-player" style="--x:'+xy[0]+'%;--y:'+xy[1]+'%;--depth:'+(.78+(xy[1]/100)*.24).toFixed(2)+'" title="'+esc(row.player_name)+'"><span class="cl-pl-ground"></span><div class="cl-pl-kit">'+photo+'</div><span class="cl-pl-name">'+esc(row.player_name)+off+"</span></div>";}).join("");
-        const subHtml=usedSubs.length?usedSubs.map(row=>{const key=normalizeLineupName(row.player_name),img=lineupImages[key]||"",photo=img?'<img src="'+esc(img)+'" alt="'+esc(row.player_name)+'" loading="eager">':'<span class="cl-pl-fallback" style="width:38px;height:38px;font-size:8px">'+initials(row.player_name)+'</span>';return '<div class="cl-pl-sub">'+photo+'<div><strong>'+esc(row.player_name)+'</strong><small><span class="cl-pl-in">↑</span> ON '+esc(row.minute_on)+"'</small></div></div>";}).join(""):'<div class="match-empty">No substitutions recorded.</div>';
-        return '<div class="cl-pl-team-card"><div class="cl-pl-team-head"><strong>'+esc(team)+'</strong><span>'+formation+' • STARTING XI</span></div><div class="cl-pl-pitch-stage"><div class="cl-pl-pitch"><span class="cl-pl-box top"></span><span class="cl-pl-goal top"></span><span class="cl-pl-box bottom"></span><span class="cl-pl-goal bottom"></span>'+figures+'</div></div><div class="cl-pl-subs"><div class="cl-pl-side-head">SUBSTITUTES</div><div class="cl-pl-sub-list">'+subHtml+'</div></div></div>';
-      }
-      const teamBlock=t=>t==="Arsenal"?renderCLTeamLineup(t,starters(t),subs(t)):'<div class="cl-pl-team-card"><div class="cl-pl-team-head"><strong>'+esc(t)+'</strong><span>STARTING XI</span></div><div class="cl-pl-subs"><div class="cl-pl-side-head">LINEUP</div><div class="cl-pl-sub-list">'+starters(t).map(row=>'<div class="cl-pl-sub"><span class="cl-pl-fallback" style="width:38px;height:38px;font-size:8px">'+initials(row.player_name)+'</span><div><strong>'+esc(row.player_name)+'</strong><small>'+esc(row.position||"STARTING XI")+'</small></div></div>').join("")+'</div></div><div class="cl-pl-subs"><div class="cl-pl-side-head">SUBSTITUTES</div><div class="cl-pl-sub-list">'+(subs(t).length?subs(t).map(row=>'<div class="cl-pl-sub"><span class="cl-pl-fallback" style="width:38px;height:38px;font-size:8px">'+initials(row.player_name)+'</span><div><strong>'+esc(row.player_name)+'</strong><small>↑ ON '+esc(row.minute_on)+"'</small></div></div>").join(""):'<div class="match-empty">No substitutions recorded.</div>')+'</div></div></div>';
-      const eventHtml=evs.length?'<div class="event-list">'+evs.map(x=>{
-        const minute=(x.minute??"—")+(x.stoppage_minute?"+"+x.stoppage_minute:"");
-        return '<div class="event-row"><span>'+esc(minute)+"'</span><b>"+esc((x.event_type||"").replace(/_/g," ").toUpperCase())+"</b><strong>"+esc(x.player_name||"")+"</strong><small>"+esc(x.team_name||"")+(x.related_player_name?" • "+esc(x.related_player_name):"")+"</small></div>";
-      }).join("")+'</div>':'<div class="match-empty">No match events recorded.</div>';
-      const scoreHome=f.arsenal_score!==null&&f.home_team!=="Arsenal"?f.opponent_score:f.arsenal_score;
-      const scoreAway=f.away_team==="Arsenal"?f.arsenal_score:f.opponent_score;
-      const fmtDate=f.kickoff_at?new Date(f.kickoff_at).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}).toUpperCase():"";
-      const meta=[fmtDate,f.venue].filter(Boolean).join(" • ");
-      const resultHome=Number(scoreHome),resultAway=Number(scoreAway);
-      const resultText=(Number.isFinite(resultHome)&&Number.isFinite(resultAway))?((f.home_team==="Arsenal"?"Arsenal":f.home_team)+" "+resultHome+"–"+resultAway+" "+(f.away_team==="Arsenal"?"Arsenal":f.away_team)):"";
-      MATCH_DETAILS.round3.overview=[
-        ["Competition","Carabao Cup"],["Round","Third Round"],["Result",resultText||"Arsenal won 4–2"],["Half-time",(f.halftime_arsenal_score??2)+"–"+(f.halftime_opponent_score??0)],["Referee",f.referee||"Peter Bankes"],["Attendance",f.attendance?Number(f.attendance).toLocaleString():"28,966"],["Man of the Match",f.man_of_the_match||"Max Dowman"]
-      ];
-      MATCH_DETAILS.round3.eventsHtml=eventHtml;
-      MATCH_DETAILS.round3.statsHtml=statsHtml;
-      MATCH_DETAILS.round3.lineupsHtml='<div class="cl-pl-lineup"><div class="cl-pl-broadcast"><div class="cl-pl-top"><div><div class="cl-pl-kicker">MATCHDAY LINEUPS<small><span class="cl-pl-venue">'+esc(f.venue||"PORTMAN ROAD")+'</span></small></div></div></div><div class="cl-pl-grid">'+teamBlock(teams[0])+teamBlock(teams[1])+'</div></div></div>';
-      MATCH_DETAILS.round3.events="Match events loaded from the NL4 fixture record.";
-      MATCH_DETAILS.round3.lineups="Official lineup data loaded from the NL4 fixture record.";
-      MATCH_DETAILS.round3.subs="Substitutions loaded from the NL4 fixture record.";
-      MATCH_DETAILS.round3.score=String(scoreHome)+" — "+String(scoreAway);
-      MATCH_DETAILS.round3.meta=meta||"15 SEP 2026 • PORTMAN ROAD";
-      updateMatchCentre("round3");
-    }catch(err){console.warn("[NL4 Carabao] Match data sync failed:",err);}
-  })();
+const CARABAO_SEASON="2026/27";
+const CARABAO_COMPETITION="Carabao Cup";
+const ARSENAL_FIXTURES={};
+let carabaoRealtimeChannel=null;
+
+function fixtureRoundKey(f){
+  const n=Number(f?.matchday);
+  return n===3?"round3":n===4?"round4":n===5?"round5":n===6?"semifinal":n===7?"final":null;
+}
+function fixtureScores(f){
+  if(f?.home_team==="Arsenal") return {home:f.arsenal_score,away:f.opponent_score};
+  return {home:f.opponent_score,away:f.arsenal_score};
+}
+function fixtureIsPlayed(f){return ["fulltime","completed","finished"].includes(String(f?.status||"").toLowerCase()) || (f?.arsenal_score!=null&&f?.opponent_score!=null);}
+function fixtureState(f){
+  if(!fixtureIsPlayed(f)) return "upcoming";
+  const s=fixtureScores(f);
+  if(Number.isFinite(Number(s.home))&&Number.isFinite(Number(s.away))){
+    const arsenalScore=f.home_team==="Arsenal"?Number(s.home):Number(s.away);
+    const opponentScore=f.home_team==="Arsenal"?Number(s.away):Number(s.home);
+    if(arsenalScore<opponentScore)return "eliminated";
+  }
+  return "completed";
+}
+function fixtureDate(f){
+  return f?.kickoff_at?new Date(f.kickoff_at).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}).toUpperCase():"DATE TBC";
+}
+function fixtureTime(f){
+  return f?.kickoff_at?new Date(f.kickoff_at).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",hour12:false}):"TIME TBC";
+}
+function roundName(key){
+  return ({round3:"Third Round",round4:"Fourth Round",round5:"Round 5",semifinal:"Semi-Final",final:"Final"})[key]||"Carabao Cup";
+}
+function roundIndex(key){return ROUND_ORDER.indexOf(key);}
+function nextRoundFor(key){
+  const i=roundIndex(key);
+  return i>=0&&i<ROUND_ORDER.length-1?ROUND_ORDER[i+1]:"";
+}
+function setText(selector,value){
+  const el=document.querySelector(selector);if(el)el.textContent=value??"";
 }
 
+function findBracketTie(f){
+  const key=fixtureRoundKey(f),root=key&&document.getElementById(key);
+  if(!root)return null;
+  const home=String(f.home_team||"").trim().toLowerCase(),away=String(f.away_team||"").trim().toLowerCase();
+  return Array.from(root.querySelectorAll(".tie")).find(t=>{
+    const names=Array.from(t.querySelectorAll(".team b")).map(x=>x.textContent.trim().toLowerCase());
+    return names.includes(home)&&names.includes(away);
+  })||null;
+}
+function paintBracketFromFixtures(fixtures){
+  document.querySelectorAll(".tie").forEach(t=>{
+    t.classList.remove("arsenal-route-tie","arsenal-current","arsenal-upcoming","arsenal-path-tie");
+    t.removeAttribute("data-fixture-id");t.removeAttribute("data-round");
+  });
+  fixtures.filter(f=>f.home_team==="Arsenal"||f.away_team==="Arsenal").forEach(f=>{
+    const key=fixtureRoundKey(f),tie=findBracketTie(f);
+    if(!key||!tie)return;
+    tie.dataset.fixtureId=f.id;tie.dataset.round=key;tie.classList.add("arsenal-route-tie");
+    const state=fixtureState(f);
+    if(state==="upcoming")tie.classList.add("arsenal-upcoming");
+    if(state==="completed")tie.classList.add("arsenal-current");
+    tie.onclick=()=>selectRound(key,true);
+    tie.style.cursor="pointer";
+    const score=fixtureScores(f);
+    const teamEls=tie.querySelectorAll(".team");
+    if(teamEls.length>=2){
+      teamEls[0].querySelector("b")?.replaceChildren(document.createTextNode(f.home_team||"TBC"));
+      teamEls[1].querySelector("b")?.replaceChildren(document.createTextNode(f.away_team||"TBC"));
+      const spans=tie.querySelectorAll(".team span");
+      if(spans.length>=2){
+        spans[0].textContent=score.home==null?"—":score.home;
+        spans[1].textContent=score.away==null?"—":score.away;
+      }
+    }
+  });
+}
+function buildFixtureDetails(f){
+  const key=fixtureRoundKey(f),state=fixtureState(f),score=fixtureScores(f);
+  if(!key)return;
+  const played=fixtureIsPlayed(f),arsenalWon=played&&(
+    f.home_team==="Arsenal"?Number(score.home)>Number(score.away):Number(score.away)>Number(score.home)
+  );
+  const title=(f.home_team||"TBC")+" vs "+(f.away_team||"TBC");
+  const badge=state==="completed"?(arsenalWon?"ARSENAL QUALIFIED":"ARSENAL ELIMINATED"):state==="upcoming"?"UPCOMING":"NOT REACHED";
+  const badgeClass=state==="upcoming"?"upcoming":state==="completed"?"":"locked";
+  const scoreText=score.home==null||score.away==null?"—":String(score.home)+" — "+String(score.away);
+  const next=nextRoundFor(key);
+  MATCH_DETAILS[key]={
+    ...(MATCH_DETAILS[key]||{}),
+    kicker:roundName(key).toUpperCase()+" • "+(state==="completed"?"RESULT":state==="upcoming"?"UPCOMING":"LOCKED"),
+    title,badge,badgeClass,
+    home:String(f.home_team||"TBC").toUpperCase(),away:String(f.away_team||"TBC").toUpperCase(),
+    score:scoreText,
+    meta:[fixtureDate(f),fixtureTime(f),f.venue].filter(Boolean).join(" • "),
+    overview:[
+      ["Competition",CARABAO_COMPETITION],
+      ["Round",roundName(key)],
+      ["Status",played?(arsenalWon?"Arsenal won":"Arsenal lost"):"Fixture confirmed"],
+      ["Venue",f.venue||"TBC"],
+      ["Referee",f.referee||"Not recorded"],
+      ["Attendance",f.attendance?Number(f.attendance).toLocaleString():"Not recorded"],
+      ["Man of the Match",f.man_of_the_match||"Not recorded"]
+    ],
+    events:played?"Match events are loaded from the NL4 fixture record.":"No match events yet — this fixture has not been played.",
+    lineups:played?"Official lineup data is loaded from the NL4 fixture record.":"Lineups will appear here once officially confirmed.",
+    subs:played?"Substitutions are loaded from the NL4 lineup record.":"Substitutes will appear here once officially confirmed.",
+    next:next?roundName(next).toUpperCase()+" • "+(ROUND_DATA[next]?.summary||"NEXT ROUND"):"",
+    nextLabel:next?"ROAD AHEAD":"",
+    nextButton:next?"VIEW "+roundName(next).toUpperCase():"",
+    nextRound:next,
+    fixtureId:f.id
+  };
+  if(ROUND_DATA[key]){
+    ROUND_DATA[key].state=state;
+    ROUND_DATA[key].status=stateText(state);
+    ROUND_DATA[key].label=roundName(key).toUpperCase();
+    ROUND_DATA[key].summary=played?(arsenalWon?"Arsenal progressed from this round.":"Arsenal were eliminated in this round."):"Arsenal's fixture is confirmed and awaiting kick-off.";
+    ROUND_DATA[key].fixtureId=f.id;
+  }
+}
+
+async function loadFixtureMatchData(f){
+  const client=window.nl4Supabase;
+  if(!client||!f)return;
+  const key=fixtureRoundKey(f);if(!key)return;
+  try{
+    const [lr,er]=await Promise.all([
+      client.from("match_lineups").select("*").eq("fixture_id",f.id).order("is_starter",{ascending:false}).order("minute_on"),
+      client.from("match_events").select("*").eq("fixture_id",f.id).order("minute").order("stoppage_minute")
+    ]);
+    if(lr.error)console.warn("[NL4 Carabao] lineup sync:",lr.error);
+    if(er.error)console.warn("[NL4 Carabao] event sync:",er.error);
+    const rows=lr.data||[],evs=(er.data||[]).filter(x=>x.event_type!=="substitution");
+    const teams=[f.home_team,f.away_team];
+    const statRows=[
+      ["Possession",f.home_possession,f.away_possession,v=>v==null?"—":Number(v).toFixed(Number(v)%1?1:0)+"%"],
+      ["Shots",f.home_shots,f.away_shots,v=>v??"—"],["Shots on target",f.home_shots_on_target,f.away_shots_on_target,v=>v??"—"],
+      ["Corners",f.home_corners,f.away_corners,v=>v??"—"],["Fouls",f.home_fouls,f.away_fouls,v=>v??"—"],
+      ["Offsides",f.home_offsides,f.away_offsides,v=>v??"—"],["Saves",f.home_saves,f.away_saves,v=>v??"—"]
+    ];
+    MATCH_DETAILS[key].statsHtml='<div class="match-stats"><div class="match-stats-title">BOTH-TEAM MATCH STATISTICS</div>'+
+      statRows.map(s=>'<div class="match-stat"><b>'+esc(s[3](s[1]))+'</b><span>'+esc(s[0])+'</span><b>'+esc(s[3](s[2]))+'</b></div>').join("")+"</div>";
+    const starters=t=>rows.filter(x=>x.team_name===t&&x.is_starter);
+    const subs=t=>rows.filter(x=>x.team_name===t&&!x.is_starter&&Number(x.minute_on||0)>0);
+    const normalize=v=>String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[øØ]/g,"o").replace(/[đĐ]/g,"d").replace(/[^a-z0-9]+/gi," ").trim().replace(/\s+/g," ").toLowerCase();
+    const lineupImages={"kepa arrizabalaga":"../assets/player-cutouts/player-02.png","martin zubimendi":"../assets/player-cutouts/player-16.png","gabriel magalhaes":"../assets/player-cutouts/player-09.png","marli salmon":"../assets/player-cutouts/player-27.png","myles lewis skelly":"../assets/player-cutouts/player-18.png","mikel merino":"../assets/player-cutouts/player-17.png","bruno guimaraes":"../assets/player-cutouts/player-14.png","noni madueke":"../assets/player-cutouts/player-24.png","max dowman":"../assets/player-cutouts/player-21.png","eberechi eze":"../assets/player-cutouts/player-19.png","viktor gyokeres":"../assets/player-cutouts/player-26.png","ezri konsa":"../assets/player-cutouts/player-11.png","martin odegaard":"../assets/player-cutouts/player-15.png","christos tzolis":"../assets/player-cutouts/player-22.png"};
+    const formationSlots={"4-3-3":["GK","LB","LCB","RCB","RB","LCM","CM","RCM","LW","ST","RW"],"4-2-3-1":["GK","LB","LCB","RCB","RB","LDM","RDM","LW","CAM","RW","ST"]};
+    const slots={GK:[50,89],LB:[13,72],LCB:[36,74],CB:[50,74],RCB:[64,74],RB:[87,72],LDM:[34,57],RDM:[66,57],LM:[11,45],LCM:[34,47],CM:[50,47],RCM:[66,47],RM:[89,45],LW:[12,25],CAM:[50,33],RW:[88,25],ST:[50,15]};
+    const lineupRoles={"Arsenal":{"kepa arrizabalaga":"GK","martin zubimendi":"RB","myles lewis skelly":"LB","gabriel magalhaes":"LCB","marli salmon":"RCB","mikel merino":"LCM","bruno guimaraes":"CM","max dowman":"RCM","eberechi eze":"LW","noni madueke":"RW","viktor gyokeres":"ST"}};
+    const initials=name=>{const p=String(name||"").trim().split(/\s+/).filter(Boolean);return esc(((p[0]?.[0]||"")+(p.length>1?(p[p.length-1]?.[0]||""):"")).toUpperCase());};
+    function arsenalLineup(xi,usedSubs){
+      const formation=String(xi[0]?.formation||f.lineup_formation||"4-3-3"),template=formationSlots[formation]||formationSlots["4-3-3"],used=new Set();
+      const resolved=xi.map((row,index)=>{const k=normalize(row.player_name);let role=lineupRoles.Arsenal[k]||String(row.pitch_slot||row.position||"").toUpperCase();if(!template.includes(role)||used.has(role))role=template.find(x=>!used.has(x))||template[index]||"CM";used.add(role);return {row,role};});
+      const figures=resolved.map(({row,role})=>{const xy=(row.position_x!=null&&row.position_y!=null)?[Number(row.position_x),Number(row.position_y)]:slots[role]||slots.CM,k=normalize(row.player_name),img=lineupImages[k]||"",off=row.minute_off!=null&&Number(row.minute_off)>0?'<span class="cl-pl-off">↓ '+esc(row.minute_off)+"'</span>":"",photo=img?'<img class="cl-pl-photo" src="'+esc(img)+'" alt="'+esc(row.player_name)+'" loading="eager">':'<span class="cl-pl-fallback">'+initials(row.player_name)+'</span>';return '<div class="cl-pl-player" style="--x:'+xy[0]+'%;--y:'+xy[1]+'%;--depth:.9" title="'+esc(row.player_name)+'"><span class="cl-pl-ground"></span><div class="cl-pl-kit">'+photo+'</div><span class="cl-pl-name">'+esc(row.player_name)+off+"</span></div>";}).join("");
+      const subHtml=usedSubs.length?usedSubs.map(row=>{const img=lineupImages[normalize(row.player_name)]||"",photo=img?'<img src="'+esc(img)+'" alt="'+esc(row.player_name)+'" loading="eager">':'<span class="cl-pl-fallback" style="width:38px;height:38px;font-size:8px">'+initials(row.player_name)+'</span>';return '<div class="cl-pl-sub">'+photo+'<div><strong>'+esc(row.player_name)+'</strong><small><span class="cl-pl-in">↑</span> ON '+esc(row.minute_on)+"'</small></div></div>";}).join(""):'<div class="match-empty">No substitutions recorded.</div>';
+      return '<div class="cl-pl-team-card"><div class="cl-pl-team-head"><strong>Arsenal</strong><span>'+esc(formation)+' • STARTING XI</span></div><div class="cl-pl-pitch-stage"><div class="cl-pl-pitch"><span class="cl-pl-box top"></span><span class="cl-pl-goal top"></span><span class="cl-pl-box bottom"></span><span class="cl-pl-goal bottom"></span>'+figures+'</div></div><div class="cl-pl-subs"><div class="cl-pl-side-head">SUBSTITUTES</div><div class="cl-pl-sub-list">'+subHtml+'</div></div></div>';
+    }
+    const opponentBlock=t=>{
+      const xi=starters(t),su=subs(t);
+      return '<div class="cl-pl-team-card"><div class="cl-pl-team-head"><strong>'+esc(t)+'</strong><span>STARTING XI</span></div><div class="cl-pl-subs"><div class="cl-pl-side-head">LINEUP</div><div class="cl-pl-sub-list">'+(xi.length?xi.map(row=>'<div class="cl-pl-sub"><span class="cl-pl-fallback" style="width:38px;height:38px;font-size:8px">'+initials(row.player_name)+'</span><div><strong>'+esc(row.player_name)+'</strong><small>'+esc(row.position||"STARTING XI")+'</small></div></div>').join(""):'<div class="match-empty">No lineup recorded.</div>')+'</div></div><div class="cl-pl-subs"><div class="cl-pl-side-head">SUBSTITUTES</div><div class="cl-pl-sub-list">'+(su.length?su.map(row=>'<div class="cl-pl-sub"><span class="cl-pl-fallback" style="width:38px;height:38px;font-size:8px">'+initials(row.player_name)+'</span><div><strong>'+esc(row.player_name)+'</strong><small>↑ ON '+esc(row.minute_on)+"'</small></div></div>").join(""):'<div class="match-empty">No substitutions recorded.</div>')+'</div></div></div>';
+    };
+    const eventHtml=evs.length?'<div class="event-list">'+evs.map(x=>{const minute=(x.minute??"—")+(x.stoppage_minute?"+"+x.stoppage_minute:"");return '<div class="event-row"><span>'+esc(minute)+"'</span><b>"+esc((x.event_type||"").replace(/_/g," ").toUpperCase())+"</b><strong>"+esc(x.player_name||"")+"</strong><small>"+esc(x.team_name||"")+(x.related_player_name?" • "+esc(x.related_player_name):"")+"</small></div>";}).join("")+'</div>':'<div class="match-empty">No match events recorded.</div>';
+    const homeIsArsenal=f.home_team==="Arsenal",arsenalRows=starters("Arsenal");
+    MATCH_DETAILS[key].eventsHtml=eventHtml;
+    MATCH_DETAILS[key].lineupsHtml='<div class="cl-pl-lineup"><div class="cl-pl-broadcast"><div class="cl-pl-top"><div><div class="cl-pl-kicker">MATCHDAY LINEUPS<small><span class="cl-pl-venue">'+esc(f.venue||"VENUE TBC")+'</span></small></div></div></div><div class="cl-pl-grid">'+(homeIsArsenal?arsenalLineup(arsenalRows,subs("Arsenal")):opponentBlock(f.home_team))+(homeIsArsenal?opponentBlock(f.away_team):arsenalLineup(arsenalRows,subs("Arsenal")) )+'</div></div></div>';
+    renderPane(key,document.querySelector(".match-tab.active")?.dataset.pane||"overview");
+  }catch(err){console.warn("[NL4 Carabao] match detail sync failed:",err);}
+}
+
+function selectRound(key,focusPanel=true){
+  const data=ROUND_DATA[key];if(!data)return;
+  document.querySelectorAll(".round-nav button").forEach(b=>b.classList.toggle("active",b.dataset.round===key));
+  const title=document.querySelector("#roundStatusTitle"),copy=document.querySelector("#roundStatusCopy"),badge=document.querySelector("#roundStatusBadge"),dot=document.querySelector("#roundStatusDot");
+  if(title)title.textContent=data.label;if(copy)copy.textContent=data.summary;
+  if(badge){badge.textContent=data.status;badge.className="round-status-badge "+data.state}
+  if(dot)dot.className="round-status-dot "+data.state;
+  const target=document.getElementById(data.target);
+  if(target)target.scrollIntoView({behavior:"smooth",block:"center"});
+  updateMatchCentre(key);
+  if(data.fixtureId&&ARSENAL_FIXTURES[data.fixtureId])loadFixtureMatchData(ARSENAL_FIXTURES[data.fixtureId]);
+  if(focusPanel)setTimeout(()=>document.getElementById("matchDetails")?.scrollIntoView({behavior:"smooth",block:"nearest"}),220);
+}
+
+async function hydrateCarabaoFromSupabase(){
+  const client=window.nl4Supabase;
+  if(!client){console.warn("[NL4 Carabao] Supabase client not available.");return;}
+  try{
+    const fr=await client.from("fixtures").select("*").eq("season",CARABAO_SEASON).eq("competition",CARABAO_COMPETITION).eq("is_published",true).order("kickoff_at");
+    if(fr.error)throw fr.error;
+    const fixtures=fr.data||[];
+    const arsenalFixtures=fixtures.filter(f=>f.home_team==="Arsenal"||f.away_team==="Arsenal");
+    arsenalFixtures.forEach(f=>{ARSENAL_FIXTURES[f.id]=f;buildFixtureDetails(f);});
+    paintBracketFromFixtures(fixtures);
+    renderRoundTracker();
+    const active=arsenalFixtures.find(f=>fixtureRoundKey(f)===document.querySelector(".round-nav button.active")?.dataset.round)||
+      arsenalFixtures.find(f=>fixtureState(f)==="upcoming")||arsenalFixtures[arsenalFixtures.length-1];
+    if(active){
+      const key=fixtureRoundKey(active);if(key)selectRound(key,false);
+    }
+    if(carabaoRealtimeChannel)client.removeChannel(carabaoRealtimeChannel);
+    carabaoRealtimeChannel=client.channel("nl4-carabao-live")
+      .on("postgres_changes",{event:"*",schema:"public",table:"fixtures"},payload=>{
+        const row=payload.new||payload.old;
+        if(row?.season===CARABAO_SEASON&&row?.competition===CARABAO_COMPETITION)hydrateCarabaoFromSupabase();
+      })
+      .on("postgres_changes",{event:"*",schema:"public",table:"match_lineups"},payload=>{
+        const id=(payload.new||payload.old)?.fixture_id;
+        if(id&&ARSENAL_FIXTURES[id])loadFixtureMatchData(ARSENAL_FIXTURES[id]);
+      })
+      .on("postgres_changes",{event:"*",schema:"public",table:"match_events"},payload=>{
+        const id=(payload.new||payload.old)?.fixture_id;
+        if(id&&ARSENAL_FIXTURES[id])loadFixtureMatchData(ARSENAL_FIXTURES[id]);
+      })
+      .subscribe((status,err)=>{
+        if(status==="CHANNEL_ERROR"||status==="TIMED_OUT")console.warn("[NL4 Carabao] Realtime:",status,err);
+      });
+  }catch(err){console.error("[NL4 Carabao] Competition sync failed:",err);}
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+  renderRoundTracker();
+  const matchTabs=document.querySelector(".match-tabs");
+  if(matchTabs){
+    matchTabs.addEventListener("click",event=>{
+      const tab=event.target.closest(".match-tab");if(!tab)return;
+      event.preventDefault();
+      const key=document.querySelector(".round-nav button.active")?.dataset.round||"round3";
+      document.querySelectorAll(".match-tab").forEach(t=>t.classList.toggle("active",t===tab));
+      renderPane(key,tab.dataset.pane);
+    });
+  }
+  hydrateCarabaoFromSupabase();
+});
 document.addEventListener("DOMContentLoaded",()=>{
   renderRoundTracker();
 
