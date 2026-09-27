@@ -393,7 +393,7 @@ function hydrateIpswichArsenalFromSupabase(){
       ];
       MATCH_DETAILS.round3.eventsHtml=eventHtml;
       MATCH_DETAILS.round3.statsHtml=statsHtml;
-      MATCH_DETAILS.round3.lineupsHtml='<div class="cl-pl-lineup"><div class="cl-pl-broadcast"><div class="cl-pl-top"><div><div class="cl-pl-kicker">MATCHDAY LINEUPS<small><span class="cl-pl-venue">'+esc(f.venue||"PORTMAN ROAD")+'</span></small></div></div><span class="cl-pl-formation">CL STYLE</span></div><div class="cl-pl-grid">'+teamBlock(teams[0])+teamBlock(teams[1])+'</div></div></div>';
+      MATCH_DETAILS.round3.lineupsHtml='<div class="cl-pl-lineup"><div class="cl-pl-broadcast"><div class="cl-pl-top"><div><div class="cl-pl-kicker">MATCHDAY LINEUPS<small><span class="cl-pl-venue">'+esc(f.venue||"PORTMAN ROAD")+'</span></small></div></div></div><div class="cl-pl-grid">'+teamBlock(teams[0])+teamBlock(teams[1])+'</div></div></div>';
       MATCH_DETAILS.round3.events="Match events loaded from the NL4 fixture record.";
       MATCH_DETAILS.round3.lineups="Official lineup data loaded from the NL4 fixture record.";
       MATCH_DETAILS.round3.subs="Substitutions loaded from the NL4 fixture record.";
