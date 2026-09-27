@@ -6,7 +6,7 @@ const COMP=cfg.competition||'The FA Cup', LABEL=cfg.label||COMP, PAGE=cfg.page||
 let fixtures=[],current=null,lineups=[],events=[],lineupTeam='',editLineup=null,editEvent=null,roundFilter='all';
 
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const read=id=>$(id)?.value??'', val=(id,v)=>{if($(id))$(id).value=v??''};
+const read=id=>$(id)?.value??'', val=(id,v)=>{if($(id))$(id).value=v??''};\nconst playerValue=(selectId,manualId)=>{const manual=read(manualId).trim();return manual||read(selectId).trim()};\nconst setPlayerField=(selectId,manualId,value)=>{val(selectId,value);val(manualId,'')};
 const num=id=>read(id)===''?null:Number(read(id));
 const msg=(id,s,b=false)=>{if($(id)){ $(id).textContent=s; $(id).style.color=b?'#ff8993':'#8df0b2'; }};
 const fields=[
@@ -67,10 +67,10 @@ async function openFixture(id){
  $('title').textContent='Round '+(current.matchday??'—')+' • '+n.home+' vs '+n.away;
  [['status',current.status],['kickoff',current.kickoff_at?new Date(current.kickoff_at).toISOString().slice(0,16):''],['venue',current.venue],['referee',current.referee],
  ['arsenalScore',current.arsenal_score],['opponentScore',current.opponent_score],['htArsenal',current.halftime_arsenal_score],
- ['htOpponent',current.halftime_opponent_score],['attendance',current.attendance],['addedTime',current.added_time],['kickoffConfirmed',String(current.kickoff_confirmed!==false)],['arsenalPenalties',current.arsenal_penalty_score],['opponentPenalties',current.opponent_penalty_score],['lineupFormation',current.lineup_formation||''],['published',String(current.is_published!==false)],['motm',current.man_of_the_match]].forEach(x=>val(...x));
+ ['htOpponent',current.halftime_opponent_score],['attendance',current.attendance],['addedTime',current.added_time],['kickoffConfirmed',String(current.kickoff_confirmed!==false)],['arsenalPenalties',current.arsenal_penalty_score],['opponentPenalties',current.opponent_penalty_score],['lineupFormation',current.lineup_formation||''],['published',String(current.is_published!==false)]].forEach(x=>val(...x));
  $('motmTeam').innerHTML=$('eventTeam').innerHTML='<option value="'+esc(n.home)+'">'+esc(n.home)+'</option><option value="'+esc(n.away)+'">'+esc(n.away)+'</option>';
  const homeLabel=$('arsenalScore')?.closest('label'),awayLabel=$('opponentScore')?.closest('label'); if(homeLabel)homeLabel.firstChild.textContent=(current.home_team==='Arsenal'||current.away_team==='Arsenal')?'Arsenal score':'Home score'; if(awayLabel)awayLabel.firstChild.textContent=(current.home_team==='Arsenal'||current.away_team==='Arsenal')?'Opponent score':'Away score';
- val('motmTeam',current.man_of_the_match_team||n.home);
+ setPlayerField('motm','motmManual',current.man_of_the_match||'');val('motmTeam',current.man_of_the_match_team||n.home);
  $('statsHome').textContent=n.home;$('statsAway').textContent=n.away;
  fields.forEach((x,i)=>{val('sh'+i,current[x[1]]);val('sa'+i,current[x[2]])});
  $('preview').href=PAGE;
@@ -84,8 +84,8 @@ async function saveDetails(){
  const k=read('kickoff');
  const p={status:read('status'),kickoff_at:k?new Date(k).toISOString():null,venue:read('venue').trim()||null,referee:read('referee').trim()||null,
  arsenal_score:num('arsenalScore'),opponent_score:num('opponentScore'),halftime_arsenal_score:num('htArsenal'),halftime_opponent_score:num('htOpponent'),
- attendance:num('attendance'),added_time:num('addedTime')||0,kickoff_confirmed:read('kickoffConfirmed')==='true',arsenal_penalty_score:num('arsenalPenalties'),opponent_penalty_score:num('opponentPenalties'),lineup_formation:read('lineupFormation').trim()||null,is_published:read('published')!=='false',man_of_the_match:read('motm').trim()||null,
- man_of_the_match_team:read('motm').trim()?read('motmTeam'):null,updated_at:new Date().toISOString()};
+ attendance:num('attendance'),added_time:num('addedTime')||0,kickoff_confirmed:read('kickoffConfirmed')==='true',arsenal_penalty_score:num('arsenalPenalties'),opponent_penalty_score:num('opponentPenalties'),lineup_formation:read('lineupFormation').trim()||null,is_published:read('published')!=='false',man_of_the_match:playerValue('motm','motmManual')||null,
+ man_of_the_match_team:playerValue('motm','motmManual')?read('motmTeam'):null,updated_at:new Date().toISOString()};
  const r=await db.from('fixtures').update(p).eq('id',current.id).select('*').single();
  if(r.error)return msg('detailsMsg',r.error.message,true); current=r.data; msg('detailsMsg','Match details saved ✓'); await loadFixtures();
 }
@@ -124,10 +124,10 @@ async function loadPlayerLists(){
  const allOpts=players.map(x=>'<option value="'+esc(x.player_name)+'">'+esc(x.player_name)+'</option>').join('');
  const lp=$('lineupPlayer'),motm=$('motm'),ep=$('eventPlayer'),er=$('eventRelated');
  const preserve=[lp?.value,motm?.value,ep?.value,er?.value];
- if(lp)lp.innerHTML='<option value="">Select player</option>'+opts;
- if(motm)motm.innerHTML='<option value="">Select player</option>'+allOpts;
- if(ep)ep.innerHTML='<option value="">Select player</option>'+opts;
- if(er)er.innerHTML='<option value="">None</option>'+allOpts;
+ if(lp)lp.innerHTML='<option value="">Select player from roster</option>'+opts;
+ if(motm)motm.innerHTML='<option value="">Select player from roster</option>'+allOpts;
+ if(ep)ep.innerHTML='<option value="">Select player from roster</option>'+opts;
+ if(er)er.innerHTML='<option value="">Select player from roster</option><option value="">None</option>'+allOpts;
  [lp,motm,ep,er].forEach((el,i)=>{if(el&&preserve[i]&&Array.from(el.options).some(o=>o.value===preserve[i]))el.value=preserve[i]});
 }
 function refreshOutgoingOptions(selected=''){
@@ -137,24 +137,24 @@ function refreshOutgoingOptions(selected=''){
  val('lineupPlayerOut',selected||'');
 }
 function tabs(){$('lineupTabs').querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.team===lineupTeam));renderLineups();loadPlayerLists()}
-function resetLineup(){editLineup=null;val('lineupPlayer','');val('lineupPosition','Goalkeeper');val('lineupRole','true');val('lineupPlayerOut','');val('minuteOn',0);val('minuteOff','');$('lineupPlayerOut').disabled=true;$('saveLineup').textContent='Add Player';$('cancelLineup').hidden=true}
+function resetLineup(){editLineup=null;val('lineupPlayer','');val('lineupPlayerManual','');val('lineupPosition','Goalkeeper');val('lineupRole','true');val('lineupPlayerOut','');val('minuteOn',0);val('minuteOff','');$('lineupPlayerOut').disabled=true;$('saveLineup').textContent='Add Player';$('cancelLineup').hidden=true}
 async function saveLineup(){
  const name=read('lineupPlayer').trim(),starter=read('lineupRole')==='true',playerOut=starter?null:(read('lineupPlayerOut').trim()||null);
- if(!name)return msg('lineupMsg','Enter a player name.',true);
+ const manualName=read('lineupPlayerManual').trim();\n if(!name&&!manualName)return msg('lineupMsg','Select a player or enter one manually.',true);\n const finalName=manualName||name;
  if(!starter&&!playerOut&&Number(num('minuteOn')??0)>0)return msg('lineupMsg','Select the player going out for this substitution.',true);
- const p={fixture_id:current.id,team_name:lineupTeam,player_name:name,position:read('lineupPosition'),is_starter:starter,minute_on:starter?0:(num('minuteOn')??0),minute_off:num('minuteOff'),player_out_name:playerOut,updated_at:new Date().toISOString()};
+ const p={fixture_id:current.id,team_name:lineupTeam,player_name:finalName,position:read('lineupPosition'),is_starter:starter,minute_on:starter?0:(num('minuteOn')??0),minute_off:num('minuteOff'),player_out_name:playerOut,updated_at:new Date().toISOString()};
  const r=editLineup?await db.from('match_lineups').update(p).eq('id',editLineup):await db.from('match_lineups').upsert(p,{onConflict:'fixture_id,team_name,player_name'});
- if(r.error)return msg('lineupMsg',r.error.message,true);msg('lineupMsg','Lineup saved ✓');resetLineup();await loadLineups();await loadPlayerLists();
+ if(r.error)return msg('lineupMsg',r.error.message,true);msg('lineupMsg','Lineup saved ✓');resetLineup();val('lineupPlayerManual','');await loadLineups();await loadPlayerLists();
 }
 async function loadEvents(){
  const r=await db.from('match_events').select('*').eq('fixture_id',current.id).order('minute').order('stoppage_minute');
  if(r.error)return msg('eventMsg',r.error.message,true);events=(r.data||[]).filter(x=>x.event_type!=='substitution');
  $('eventsList').innerHTML=events.length?events.map(x=>'<div class="row"><strong>'+esc(x.event_type)+'</strong><div><b>'+esc(x.player_name)+'</b><small>'+esc(x.team_name)+' • '+(x.minute??'—')+(x.stoppage_minute?'+'+x.stoppage_minute:'')+"'"+(x.related_player_name?' • '+esc(x.related_player_name):'')+'</small></div><div class="row-actions"><button data-ee="'+x.id+'">Edit</button> <button class="danger" data-ed="'+x.id+'">Delete</button></div></div>').join(''):'<div class="empty">No events saved.</div>';
 }
-function resetEvent(){editEvent=null;['eventPlayer','eventMinute','eventStoppage','eventRelated'].forEach(x=>val(x,''));val('eventType','goal');$('saveEvent').textContent='Add Event';$('cancelEvent').hidden=true}
+function resetEvent(){editEvent=null;['eventPlayer','eventMinute','eventStoppage','eventRelated','eventPlayerManual','eventRelatedManual'].forEach(x=>val(x,''));val('eventType','goal');$('saveEvent').textContent='Add Event';$('cancelEvent').hidden=true}
 async function saveEvent(){
- const player=read('eventPlayer').trim();if(!player)return msg('eventMsg','Enter a player name.',true);
- const p={fixture_id:current.id,event_type:read('eventType'),player_name:player,team_name:read('eventTeam'),minute:num('eventMinute'),stoppage_minute:num('eventStoppage'),related_player_name:read('eventRelated').trim()||null,updated_at:new Date().toISOString()};
+ const player=playerValue('eventPlayer','eventPlayerManual');if(!player)return msg('eventMsg','Select a player or enter one manually.',true);
+ const p={fixture_id:current.id,event_type:read('eventType'),player_name:player,team_name:read('eventTeam'),minute:num('eventMinute'),stoppage_minute:num('eventStoppage'),related_player_name:playerValue('eventRelated','eventRelatedManual')||null,updated_at:new Date().toISOString()};
  const r=editEvent?await db.from('match_events').update(p).eq('id',editEvent):await db.from('match_events').insert(p);
  if(r.error)return msg('eventMsg',r.error.message,true);msg('eventMsg','Event saved ✓');resetEvent();await loadEvents();await loadPlayerLists();
 }
@@ -166,12 +166,12 @@ $('saveEvent').onclick=saveEvent;$('cancelEvent').onclick=resetEvent;$('lineupTa
 $('lineupRole').onchange=()=>{$('lineupPlayerOut').disabled=read('lineupRole')==='true';if(read('lineupRole')==='true')val('lineupPlayerOut','')};
 $('lineupList').onclick=async e=>{
  const eb=e.target.closest('[data-le]'),del=e.target.closest('[data-ld]');
- if(eb){const x=lineups.find(y=>y.id===eb.dataset.le);if(!x)return;editLineup=x.id;lineupTeam=x.team_name;val('lineupPlayer',x.player_name);val('lineupPosition',x.position||'Goalkeeper');val('lineupRole',String(x.is_starter));val('minuteOn',x.minute_on);val('minuteOff',x.minute_off);$('lineupPlayerOut').disabled=x.is_starter;refreshOutgoingOptions(x.player_out_name||'');$('saveLineup').textContent='Save Player';$('cancelLineup').hidden=false;tabs();return}
+ if(eb){const x=lineups.find(y=>y.id===eb.dataset.le);if(!x)return;editLineup=x.id;lineupTeam=x.team_name;setPlayerField('lineupPlayer','lineupPlayerManual',x.player_name);val('lineupPosition',x.position||'Goalkeeper');val('lineupRole',String(x.is_starter));val('minuteOn',x.minute_on);val('minuteOff',x.minute_off);$('lineupPlayerOut').disabled=x.is_starter;refreshOutgoingOptions(x.player_out_name||'');$('saveLineup').textContent='Save Player';$('cancelLineup').hidden=false;tabs();return}
  if(del&&confirm('Delete this lineup entry?')){const r=await db.from('match_lineups').delete().eq('id',del.dataset.ld);if(r.error)return msg('lineupMsg',r.error.message,true);await loadLineups();msg('lineupMsg','Lineup entry deleted ✓')}
 };
 $('eventsList').onclick=async e=>{
  const eb=e.target.closest('[data-ee]'),del=e.target.closest('[data-ed]');
- if(eb){const x=events.find(y=>y.id===eb.dataset.ee);if(!x)return;editEvent=x.id;val('eventType',x.event_type);val('eventPlayer',x.player_name);val('eventTeam',x.team_name);val('eventMinute',x.minute);val('eventStoppage',x.stoppage_minute);val('eventRelated',x.related_player_name);$('saveEvent').textContent='Save Event';$('cancelEvent').hidden=false;return}
+ if(eb){const x=events.find(y=>y.id===eb.dataset.ee);if(!x)return;editEvent=x.id;val('eventType',x.event_type);setPlayerField('eventPlayer','eventPlayerManual',x.player_name);val('eventTeam',x.team_name);val('eventMinute',x.minute);val('eventStoppage',x.stoppage_minute);setPlayerField('eventRelated','eventRelatedManual',x.related_player_name||'');$('saveEvent').textContent='Save Event';$('cancelEvent').hidden=false;return}
  if(del&&confirm('Delete this event?')){const r=await db.from('match_events').delete().eq('id',del.dataset.ed);if(r.error)return msg('eventMsg',r.error.message,true);await loadEvents();msg('eventMsg','Event deleted ✓')}
 };
 $('refreshFixtures').onclick=loadFixtures;
