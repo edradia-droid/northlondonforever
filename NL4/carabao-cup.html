@@ -352,8 +352,9 @@ function hydrateIpswichArsenalFromSupabase(){
       const subs=t=>rows.filter(x=>x.team_name===t&&!x.is_starter&&Number(x.minute_on||0)>0);
       const teamBlock=t=>{
         const xi=starters(t), used=subs(t);
-        return '<div class="lineup-team"><div class="lineup-team-title">'+esc(t)+' <span>'+xi.length+' STARTERS</span></div><div class="lineup-list">'+xi.map(x=>'<div class="lineup-player"><b>'+esc(x.player_name)+'</b><small>'+esc(x.position||"")+'</small></div>').join("")+'</div>'+
-          '<div class="subs-title">SUBSTITUTIONS</div><div class="subs-list">'+(used.length?used.map(x=>'<div class="sub-row"><span>'+esc(x.minute_on??"—")+"'"</span><b>"+esc(x.player_name)+"</b><small>for "+esc(x.player_out_name||"—")+"</small></div>").join(""):'<div class="match-empty">No substitutions recorded.</div>')+'</div></div>';
+        const starterHtml=xi.map(x=>'<div class="lineup-player"><b>'+esc(x.player_name)+'</b><small>'+esc(x.position||"")+'</small></div>').join("");
+        const subHtml=used.length?used.map(x=>'<div class="sub-row"><span>'+esc(x.minute_on??"—")+"'</span><b>"+esc(x.player_name)+"</b><small>for "+esc(x.player_out_name||"—")+"</small></div>").join(""):'<div class="match-empty">No substitutions recorded.</div>';
+        return '<div class="lineup-team"><div class="lineup-team-title">'+esc(t)+' <span>'+xi.length+' STARTERS</span></div><div class="lineup-list">'+starterHtml+'</div><div class="subs-title">SUBSTITUTIONS</div><div class="subs-list">'+subHtml+'</div></div>';
       };
       const eventHtml=evs.length?'<div class="event-list">'+evs.map(x=>{
         const minute=(x.minute??"—")+(x.stoppage_minute?"+"+x.stoppage_minute:"");
