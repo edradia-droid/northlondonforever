@@ -343,6 +343,7 @@ function selectRound(key,focusPanel=true){
   const target=document.getElementById(data.target);
   if(target)target.scrollIntoView({behavior:"smooth",block:"center"});
   updateMatchCentre(key);
+  if(data.fixtureId&&ARSENAL_FIXTURES[data.fixtureId])loadFixtureMatchData(ARSENAL_FIXTURES[data.fixtureId]);
   if(focusPanel)setTimeout(()=>document.getElementById("matchDetails")?.scrollIntoView({behavior:"smooth",block:"nearest"}),220);
 }
 
