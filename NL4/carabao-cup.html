@@ -581,25 +581,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   }
   hydrateCarabaoFromSupabase();
 });
-document.addEventListener("DOMContentLoaded",()=>{
-  renderRoundTracker();
 
-  // One reliable tab controller for the match centre. Using event delegation keeps
-  // the buttons working even after Supabase replaces the match-centre content.
-  const matchTabs=document.querySelector(".match-tabs");
-  if(matchTabs){
-    matchTabs.addEventListener("click",event=>{
-      const tab=event.target.closest(".match-tab");
-      if(!tab)return;
-      event.preventDefault();
-      const key=document.querySelector(".round-nav button.active")?.dataset.round||"round3";
-      document.querySelectorAll(".match-tab").forEach(t=>t.classList.toggle("active",t===tab));
-      renderPane(key,tab.dataset.pane);
-    });
-  }
-
-  hydrateIpswichArsenalFromSupabase();
-});
 </script>
 
 </body>
