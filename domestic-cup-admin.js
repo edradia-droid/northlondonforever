@@ -146,30 +146,11 @@ async function saveEvent(){
  const r=editEvent?await db.from('match_events').update(p).eq('id',editEvent):await db.from('match_events').insert(p);
  if(r.error)return msg('eventMsg',r.error.message,true);msg('eventMsg','Event saved ✓');resetEvent();await loadEvents();
 }
-async function loadComparison(){
- const n=names();
- const r=await db.from('ucl_match_comparisons').select('*').eq('fixture_id',current.id).maybeSingle();
- if(r.error)return msg('comparisonMsg',r.error.message,true);
- const empty=name=>({team_name:name,matches:0,wins:0,draws:0,losses:0,goals_for:0,goals_against:0,points:0,possession_total:0,shots:0,shots_on_target:0,corners:0,corner_goals:0,fouls:0,offsides:0,saves:0,yellow_cards:0,red_cards:0});
- const home={...empty(n.home),...(r.data?.home_stats||{})},away={...empty(n.away),...(r.data?.away_stats||{})};
- $('compareHome').textContent=n.home;$('compareAway').textContent=n.away;
- const display=(x,key)=>key==='possession_average'?(x.matches?Number(x.possession_total||0)/Number(x.matches):0):Number(x[key]||0);
- $('comparisonInputs').innerHTML=comparisonFields.map(([label,key,step])=>'<tr><th>'+label+'</th><td><input id="compareHome_'+key+'" type="number" min="0" step="'+step+'" value="'+display(home,key)+'"></td><td><input id="compareAway_'+key+'" type="number" min="0" step="'+step+'" value="'+display(away,key)+'"></td></tr>').join('');
- msg('comparisonMsg',r.data?'Saved values loaded.':'No manual comparison saved yet.');
-}
-function readComparison(side){const row={};comparisonFields.forEach(([,key])=>row[key]=Math.max(0,Number($('compare'+side+'_'+key)?.value)||0));row.possession_total=row.possession_average*row.matches;delete row.possession_average;return row}
-async function saveComparison(){
- const p={fixture_id:current.id,home_stats:readComparison('Home'),away_stats:readComparison('Away'),updated_at:new Date().toISOString()};
- const r=await db.from('ucl_match_comparisons').upsert(p,{onConflict:'fixture_id'});
- if(r.error)return msg('comparisonMsg',r.error.message,true);msg('comparisonMsg','Comparison table saved ✓');
-}
 $('list').onclick=e=>{const b=e.target.closest('[data-fixture]');if(b)openFixture(b.dataset.fixture)};
 $('newFixtureBtn').onclick=createFixture;
 $('close').onclick=()=>{$('editor').hidden=true};
 $('saveDetails').onclick=saveDetails;$('saveStats').onclick=saveStats;$('saveLineup').onclick=saveLineup;$('cancelLineup').onclick=resetLineup;
-$('saveEvent').onclick=saveEvent;$('cancelEvent').onclick=resetEvent;$('saveComparison').onclick=saveComparison;
-$('resetComparison').onclick=()=>loadComparison();
-$('lineupTabs').onclick=e=>{const b=e.target.closest('[data-team]');if(b){lineupTeam=b.dataset.team;resetLineup();tabs()}};
+$('saveEvent').onclick=saveEvent;$('cancelEvent').onclick=resetEvent;$('lineupTabs').onclick=e=>{const b=e.target.closest('[data-team]');if(b){lineupTeam=b.dataset.team;resetLineup();tabs()}};
 $('lineupRole').onchange=()=>{$('lineupPlayerOut').disabled=read('lineupRole')==='true';if(read('lineupRole')==='true')val('lineupPlayerOut','')};
 $('lineupList').onclick=async e=>{
  const eb=e.target.closest('[data-le]'),del=e.target.closest('[data-ld]');
