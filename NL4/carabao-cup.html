@@ -267,6 +267,7 @@ const MATCH_DETAILS = {
 const ROUND_ORDER=["round3","round4","round5","semifinal","final"];
 
 function stateText(state){return state==="completed"?"RESULTS":state==="upcoming"?"UPCOMING":state==="eliminated"?"ELIMINATED":"NOT REACHED";}
+const esc=v=>String(v??"").replace(/[&<>"\']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 
 function renderRoundTracker(){
   const nav=document.querySelector(".round-nav"); if(!nav)return;
