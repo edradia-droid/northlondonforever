@@ -376,18 +376,28 @@ function hydrateIpswichArsenalFromSupabase(){
       MATCH_DETAILS.round3.score=String(scoreHome)+" — "+String(scoreAway);
       MATCH_DETAILS.round3.meta=meta||"15 SEP 2026 • PORTMAN ROAD";
       updateMatchCentre("round3");
-      document.querySelectorAll(".match-tab").forEach(t=>t.classList.toggle("active",t.dataset.pane==="overview"));
-      const tabs=document.querySelectorAll(".match-tab");
-      tabs.forEach(t=>t.onclick=()=>{tabs.forEach(z=>z.classList.remove("active"));t.classList.add("active");renderPane("round3",t.dataset.pane);});
     }catch(err){console.warn("[NL4 Carabao] Match data sync failed:",err);}
   })();
 }
 
 document.addEventListener("DOMContentLoaded",()=>{
-  document.querySelectorAll(".match-tab").forEach(tab=>tab.addEventListener("click",()=>{document.querySelectorAll(".match-tab").forEach(t=>t.classList.remove("active"));tab.classList.add("active");renderPane(document.querySelector(".round-nav button.active")?.dataset.round||"round3",tab.dataset.pane)}));
   renderRoundTracker();
+
+  // One reliable tab controller for the match centre. Using event delegation keeps
+  // the buttons working even after Supabase replaces the match-centre content.
+  const matchTabs=document.querySelector(".match-tabs");
+  if(matchTabs){
+    matchTabs.addEventListener("click",event=>{
+      const tab=event.target.closest(".match-tab");
+      if(!tab)return;
+      event.preventDefault();
+      const key=document.querySelector(".round-nav button.active")?.dataset.round||"round3";
+      document.querySelectorAll(".match-tab").forEach(t=>t.classList.toggle("active",t===tab));
+      renderPane(key,tab.dataset.pane);
+    });
+  }
+
   hydrateIpswichArsenalFromSupabase();
-  window.addEventListener("resize",()=>setTimeout(buildRoute,50));
 });
 </script>
 
