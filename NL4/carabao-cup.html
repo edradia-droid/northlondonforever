@@ -291,9 +291,9 @@ function renderRoundTracker(){
 
 function renderPane(key,pane){
   const d=MATCH_DETAILS[key],box=document.querySelector("#matchPane"); if(!d||!box)return;
-  if(pane==="overview")box.innerHTML='<div class="match-summary-grid">'+d.overview.map(x=>'<div class="match-summary-item"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join("")+'</div>'+(d.statsHtml||"");
+  if(pane==="overview")box.innerHTML='<div class="match-summary-grid">'+d.overview.map(x=>'<div class="match-summary-item"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join("")+'</div>';
   else if(pane==="events"){
-    box.innerHTML=d.eventsHtml||'<div class="match-empty">'+d.events+'</div>';
+    box.innerHTML=(d.eventsHtml||'<div class="match-empty">'+d.events+'</div>')+(d.statsHtml||"");
   } else {
     box.innerHTML=d.lineupsHtml||'<div class="match-empty">'+d.lineups+'</div>';
   }
