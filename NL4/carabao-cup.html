@@ -401,6 +401,8 @@ function paintBracketFromFixtures(fixtures){
   document.querySelectorAll(".tie").forEach(t=>{
     t.classList.remove("arsenal-route-tie","arsenal-current","arsenal-upcoming","arsenal-path-tie");
     t.removeAttribute("data-fixture-id");t.removeAttribute("data-round");
+    t.removeAttribute("role");t.removeAttribute("tabindex");t.removeAttribute("aria-label");
+    t.onclick=null;t.onkeydown=null;
   });
   fixtures.filter(f=>f.home_team==="Arsenal"||f.away_team==="Arsenal").forEach(f=>{
     const key=fixtureRoundKey(f),tie=findBracketTie(f);
@@ -409,18 +411,22 @@ function paintBracketFromFixtures(fixtures){
     const state=fixtureState(f);
     if(state==="upcoming")tie.classList.add("arsenal-upcoming");
     if(state==="completed")tie.classList.add("arsenal-current");
-    tie.onclick=()=>selectRound(key,true);
+    tie.onclick=()=>{
+      selectRound(key,true);
+      setTimeout(()=>document.getElementById("matchDetails")?.scrollIntoView({behavior:"smooth",block:"start"}),250);
+    };
+    tie.setAttribute("role","button");
+    tie.setAttribute("tabindex","0");
+    tie.setAttribute("aria-label",roundName(key)+" match: "+f.home_team+" vs "+f.away_team+". Open match centre.");
+    tie.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();tie.click();}};
     tie.style.cursor="pointer";
     const score=fixtureScores(f);
     const teamEls=tie.querySelectorAll(".team");
     if(teamEls.length>=2){
-      teamEls[0].querySelector("b")?.replaceChildren(document.createTextNode(f.home_team||"TBC"));
-      teamEls[1].querySelector("b")?.replaceChildren(document.createTextNode(f.away_team||"TBC"));
-      const spans=tie.querySelectorAll(".team span");
-      if(spans.length>=2){
-        spans[0].textContent=score.home==null?"—":score.home;
-        spans[1].textContent=score.away==null?"—":score.away;
-      }
+      teamEls[0].querySelector("span").textContent=f.home_team||"TBC";
+      teamEls[1].querySelector("span").textContent=f.away_team||"TBC";
+      teamEls[0].querySelector("b").textContent=score.home==null?"—":score.home;
+      teamEls[1].querySelector("b").textContent=score.away==null?"—":score.away;
     }
   });
 }
