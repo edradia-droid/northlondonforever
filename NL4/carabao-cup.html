@@ -32,6 +32,9 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
 @media(max-width:800px){.hero-card{padding:35px 25px;min-height:420px}.trophy-mark{opacity:.12;right:-35px;width:220px;height:280px}.hero-card:before{font-size:95px;right:-30px}.info-grid{grid-template-columns:1fr}.next-match{gap:8px}.club strong{font-size:14px}.footer{flex-direction:column}.brand{display:none}}
 @media(max-width:520px){.hero{padding-top:25px}.hero h1{letter-spacing:-2px}.hero-card{border-radius:22px}.section{padding:30px 0}.section-head{align-items:start;flex-direction:column}.source{text-align:left}.header-inner{min-height:64px}.back{font-size:11px}}
 
+/* STATIC ARSENAL ROUTE: visible and clickable before/without Supabase hydration */
+.tie.arsenal-static-tie{background:linear-gradient(145deg,rgba(0,143,94,.98),rgba(0,88,59,.98)) !important;border:1px solid #8de2bd !important;border-left:4px solid #8de2bd !important;box-shadow:0 0 30px rgba(0,143,94,.58),inset 0 0 22px rgba(141,226,189,.1) !important;cursor:pointer !important}.tie.arsenal-static-tie .team{color:#fff !important}.tie.arsenal-static-tie .date{color:#b8f0d5 !important}
+
 /* FINAL ARSENAL ROUTE OVERRIDE: applied while each fixed bracket slot is created */
 .tie.bracket-slot.arsenal-highlight{background:linear-gradient(145deg,rgba(0,143,94,.98),rgba(0,88,59,.98)) !important;border:1px solid #8de2bd !important;border-left:4px solid #8de2bd !important;box-shadow:0 0 24px rgba(0,143,94,.55),inset 0 0 20px rgba(141,226,189,.08) !important;}
 .tie.bracket-slot.arsenal-highlight .team{color:#fff !important;}
@@ -182,7 +185,7 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
 <div class="tie"><div class="team"><span>Chelsea</span><b>6</b></div><div class="team"><span>Leeds United</span><b>3</b></div><span class="date">9 SEP</span></div>
 <div class="tie"><div class="team"><span>Peterborough United</span><b>2</b></div><div class="team"><span>Barnsley</span><b>2</b></div><span class="date">15 SEP • 7–6 PENS</span></div>
 <div class="tie"><div class="team"><span>West Ham United</span><b>2</b></div><div class="team winner"><span>Fulham</span><b>3</b></div><span class="date">15 SEP</span></div>
-<div class="tie" style="border-left-color:var(--gold);box-shadow:0 0 28px rgba(0,143,94,.16)"><div class="team"><span>Ipswich Town</span><b>2</b></div><div class="team winner"><span>Arsenal</span><b>4</b></div><span class="date">15 SEP • PORTMAN ROAD</span></div>
+<div class="tie arsenal-static-tie" data-static-arsenal="true"><div class="team"><span>Ipswich Town</span><b>2</b></div><div class="team winner"><span>Arsenal</span><b>4</b></div><span class="date">15 SEP • PORTMAN ROAD</span></div>
 <div class="tie"><div class="team"><span>Liverpool</span><b>3</b></div><div class="team winner"><span>Tottenham Hotspur</span><b>1</b></div><span class="date">15 SEP</span></div>
 <div class="tie"><div class="team"><span>Reading</span><b>1</b></div><div class="team winner"><span>Brentford</span><b>2</b></div><span class="date">15 SEP</span></div>
 <div class="tie"><div class="team"><span>Everton</span><b>1</b></div><div class="team winner"><span>Wolverhampton Wanderers</span><b>0</b></div><span class="date">16 SEP</span></div>
@@ -193,7 +196,7 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
 </div>
 <div id="round4" class="round round-anchor"><div class="round-title">ROUND 4 • 27–29 OCT</div>
 <div class="tie"><div class="team"><span>Bradford City</span><b>—</b></div><div class="team"><span>Peterborough United</span><b>—</b></div><span class="date">27 OCT</span></div>
-<div class="tie" style="border-left-color:var(--gold);box-shadow:0 0 28px rgba(244,197,66,.16)"><div class="team"><span>Fleetwood Town</span><b>—</b></div><div class="team"><span>Arsenal</span><b>—</b></div><span class="date">27 OCT • 20:00</span></div>
+<div class="tie arsenal-static-tie" data-static-arsenal="true"><div class="team"><span>Fleetwood Town</span><b>—</b></div><div class="team"><span>Arsenal</span><b>—</b></div><span class="date">27 OCT • 20:00</span></div>
 <div class="tie"><div class="team"><span>Manchester City</span><b>—</b></div><div class="team"><span>Brighton</span><b>—</b></div><span class="date">28 OCT</span></div>
 <div class="tie"><div class="team"><span>Sunderland</span><b>—</b></div><div class="team"><span>Brentford</span><b>—</b></div><span class="date">28 OCT</span></div>
 <div class="tie"><div class="team"><span>Fulham</span><b>—</b></div><div class="team"><span>Crystal Palace</span><b>—</b></div><span class="date">28 OCT</span></div>
@@ -787,6 +790,17 @@ async function hydrateCarabaoFromSupabase(){
 }
 
 document.addEventListener("DOMContentLoaded",()=>{
+  // Static fallback: make the two known Arsenal bracket ties green/clickable
+  // immediately, even if Supabase hydration is still loading or temporarily fails.
+  document.querySelectorAll(".arsenal-static-tie").forEach(tie=>{
+    tie.classList.add("arsenal-highlight","arsenal-route-tie");
+    const round=tie.closest(".round")?.id;
+    tie.setAttribute("role","button");
+    tie.setAttribute("tabindex","0");
+    tie.setAttribute("aria-label",(roundName(round)||"Arsenal")+" match. Open Arsenal match centre.");
+    tie.addEventListener("click",()=>{if(round)selectRound(round,true);});
+    tie.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();tie.click();}});
+  });
   renderRoundTracker();
   const matchTabs=document.querySelector(".match-tabs");
   if(matchTabs){
