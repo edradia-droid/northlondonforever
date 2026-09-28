@@ -36,7 +36,7 @@ function buildStats(){
 function renderFixtures(){
  const list=$('list'); if(!list)return;
  const shown=roundFilter==='all'?fixtures:fixtures.filter(f=>String(f.matchday)===String(roundFilter));
- list.innerHTML=shown.length?shown.map(f=>{const home=f.home_team||'Arsenal',away=f.away_team||f.opponent||'Opponent';const played=f.arsenal_score!==null&&f.arsenal_score!==undefined&&f.opponent_score!==null&&f.opponent_score!==undefined;const score=played?'<strong class="fixture-score">'+esc(f.arsenal_score)+' — '+esc(f.opponent_score)+'</strong>':'<strong class="fixture-score muted">VS</strong>';return '<article class="match"><div><div class="fixture-line"><strong>Round '+esc(f.matchday??'—')+' • '+esc(home)+' vs '+esc(away)+'</strong>'+score+'</div><div class="meta">'+(f.kickoff_at?new Date(f.kickoff_at).toLocaleString():'TBC')+' • '+esc(f.venue||'TBC')+' • '+esc(f.status||'scheduled')+'</div></div><button class="primary edit" data-fixture="'+f.id+'">Manage</button></article>'}).join(''):'<div class="empty">No '+esc(LABEL)+' fixtures match this round filter.</div>';
+ list.innerHTML=shown.length?shown.map(f=>{const home=f.home_team||'Arsenal',away=f.away_team||f.opponent||'Opponent';const arsenal=home==='Arsenal'||away==='Arsenal';const hs=arsenal?(home==='Arsenal'?f.arsenal_score:f.opponent_score):f.home_score;const as=arsenal?(away==='Arsenal'?f.arsenal_score:f.opponent_score):f.away_score;const played=hs!==null&&hs!==undefined&&as!==null&&as!==undefined;const score=played?'<strong class="fixture-score">'+esc(hs)+' — '+esc(as)+'</strong>':'<strong class="fixture-score muted">VS</strong>';return '<article class="match"><div><div class="fixture-line"><strong>Round '+esc(f.matchday??'—')+' • '+esc(home)+' vs '+esc(away)+'</strong>'+score+'</div><div class="meta">'+(f.kickoff_at?new Date(f.kickoff_at).toLocaleString():'TBC')+' • '+esc(f.venue||'TBC')+' • '+esc(f.status||'scheduled')+(arsenal?' • ARSENAL MATCH CENTRE':'')+'</div></div><button class="primary edit" data-fixture="'+f.id+'">Manage</button></article>'}).join(''):'<div class="empty">No '+esc(LABEL)+' fixtures match this round filter.</div>';
 }
 async function loadSyncStatus(){
  try{
@@ -75,7 +75,7 @@ async function manualCarabaoSync(){
 
 async function loadFixtures(){
  if(!db){$('list').textContent='Supabase client unavailable.';return}
- const r=await db.from('fixtures').select('id,matchday,home_team,away_team,kickoff_at,venue,status,is_home,opponent,arsenal_score,opponent_score').eq('season','2026/27').eq('competition',COMP).order('matchday').order('kickoff_at');
+ const r=await db.from('fixtures').select('id,matchday,home_team,away_team,kickoff_at,venue,status,is_home,opponent,arsenal_score,opponent_score,home_score,away_score,source_updated_at').eq('season','2026/27').eq('competition',COMP).order('matchday').order('kickoff_at');
  if(r.error){$('list').textContent='Could not load fixtures: '+r.error.message;return}
  fixtures=r.data||[]; buildRoundFilter(); renderFixtures();
  if($('fixtureCount'))$('fixtureCount').textContent=fixtures.length+' FIXTURE'+(fixtures.length===1?'':'S');
