@@ -347,9 +347,10 @@ function updateMatchCentre(key){
   renderPane(key,"overview");
   document.querySelectorAll(".tie").forEach(t=>t.classList.remove("arsenal-dim"));
   const current=document.getElementById(key);
-  if(current)current.querySelectorAll(".tie").forEach((t,i)=>{
-    if((key==="round3"&&i!==8)||(key==="round4"&&i!==1))t.classList.add("arsenal-dim");
-  });
+  if(current){
+    const arsenalTie=current.querySelector(".arsenal-route-tie");
+    current.querySelectorAll(".tie").forEach(t=>t.classList.toggle("arsenal-dim",!!arsenalTie && t!==arsenalTie));
+  }
 }
 
 function selectRound(key,focusPanel=true){
@@ -373,7 +374,7 @@ let carabaoRealtimeChannel=null;
 
 function fixtureRoundKey(f){
   const n=Number(f?.matchday);
-  return n===3?"round3":n===4?"round4":n===5?"round5":n===6?"semifinal":n===7?"final":null;
+  return n===300?"round300":n===1?"round1":n===2?"round2":n===3?"round3":n===4?"round4":n===5?"round5":n===6?"semifinal":n===7?"final":null;
 }
 function fixtureScores(f){
   if(f?.home_team==="Arsenal") return {home:f.arsenal_score,away:f.opponent_score};
@@ -409,6 +410,43 @@ function setText(selector,value){
   const el=document.querySelector(selector);if(el)el.textContent=value??"";
 }
 
+function renderSourceTie(f,isArsenal=false){
+  const score=fixtureScores(f);
+  const h=score.home==null?"—":score.home;
+  const a=score.away==null?"—":score.away;
+  const tie=document.createElement("div");
+  tie.className="tie"+(isArsenal?" arsenal-route-tie":"");
+  tie.innerHTML='<div class="team"><span></span><b></b></div><div class="team"><span></span><b></b></div><span class="date"></span>';
+  const teams=tie.querySelectorAll(".team");
+  teams[0].querySelector("span").textContent=f.home_team||"TBC";
+  teams[0].querySelector("b").textContent=h;
+  teams[1].querySelector("span").textContent=f.away_team||"TBC";
+  teams[1].querySelector("b").textContent=a;
+  tie.querySelector(".date").textContent=fixtureDate(f)+(f.kickoff_at?" • "+fixtureTime(f):"");
+  return tie;
+}
+function renderLiveSourceRounds(fixtures){
+  const grouped={round300:[],round1:[],round2:[]};
+  (fixtures||[]).forEach(f=>{const key=fixtureRoundKey(f);if(grouped[key])grouped[key].push(f);});
+  let count=0;
+  Object.entries(grouped).forEach(([key,rows])=>{
+    const root=document.getElementById(key);if(!root)return;
+    const list=root.querySelector(".early-round-list");if(!list)return;
+    list.innerHTML="";
+    rows.forEach(f=>{
+      const tie=renderSourceTie(f,f.home_team==="Arsenal"||f.away_team==="Arsenal");
+      tie.dataset.fixtureId=f.id;tie.dataset.round=key;
+      if(f.home_team==="Arsenal"||f.away_team==="Arsenal"){
+        tie.setAttribute("role","button");tie.setAttribute("tabindex","0");tie.style.cursor="pointer";
+        tie.onclick=()=>{document.getElementById("matchDetails")?.scrollIntoView({behavior:"smooth",block:"start"});};
+      }
+      list.appendChild(tie);
+    });
+    const badge=root.querySelector(".early-round-title span");if(badge)badge.textContent=rows.length;
+    count+=rows.length;
+  });
+  const liveCount=document.getElementById("earlyLiveCount");if(liveCount)liveCount.textContent=count+" LIVE FIXTURES";
+}
 function findBracketTie(f){
   const key=fixtureRoundKey(f),root=key&&document.getElementById(key);
   if(!root)return null;
