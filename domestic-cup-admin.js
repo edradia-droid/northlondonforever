@@ -6,7 +6,9 @@ const COMP=cfg.competition||'The FA Cup', LABEL=cfg.label||COMP, PAGE=cfg.page||
 let fixtures=[],current=null,lineups=[],events=[],lineupTeam='',editLineup=null,editEvent=null,roundFilter='all';
 
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const read=id=>$(id)?.value??'', val=(id,v)=>{if($(id))$(id).value=v??''};\nconst playerValue=(selectId,manualId)=>{const manual=read(manualId).trim();return manual||read(selectId).trim()};\nconst setPlayerField=(selectId,manualId,value)=>{val(selectId,value);val(manualId,'')};
+const read=id=>$(id)?.value??'', val=(id,v)=>{if($(id))$(id).value=v??''};
+const playerValue=(selectId,manualId)=>{const manual=read(manualId).trim();return manual||read(selectId).trim()};
+const setPlayerField=(selectId,manualId,value)=>{val(selectId,value);val(manualId,'')};
 const num=id=>read(id)===''?null:Number(read(id));
 const msg=(id,s,b=false)=>{if($(id)){ $(id).textContent=s; $(id).style.color=b?'#ff8993':'#8df0b2'; }};
 const fields=[
@@ -188,7 +190,9 @@ function tabs(){$('lineupTabs').querySelectorAll('button').forEach(b=>b.classLis
 function resetLineup(){editLineup=null;val('lineupPlayer','');val('lineupPlayerManual','');val('lineupPosition','Goalkeeper');val('lineupRole','true');val('lineupPlayerOut','');val('minuteOn',0);val('minuteOff','');$('lineupPlayerOut').disabled=true;$('saveLineup').textContent='Add Player';$('cancelLineup').hidden=true}
 async function saveLineup(){
  const name=read('lineupPlayer').trim(),starter=read('lineupRole')==='true',playerOut=starter?null:(read('lineupPlayerOut').trim()||null);
- const manualName=read('lineupPlayerManual').trim();\n if(!name&&!manualName)return msg('lineupMsg','Select a player or enter one manually.',true);\n const finalName=manualName||name;
+ const manualName=read('lineupPlayerManual').trim();
+ if(!name&&!manualName)return msg('lineupMsg','Select a player or enter one manually.',true);
+ const finalName=manualName||name;
  if(!starter&&!playerOut&&Number(num('minuteOn')??0)>0)return msg('lineupMsg','Select the player going out for this substitution.',true);
  const p={fixture_id:current.id,team_name:lineupTeam,player_name:finalName,position:read('lineupPosition'),is_starter:starter,minute_on:starter?0:(num('minuteOn')??0),minute_off:num('minuteOff'),player_out_name:playerOut,updated_at:new Date().toISOString()};
  const r=editLineup?await db.from('match_lineups').update(p).eq('id',editLineup):await db.from('match_lineups').upsert(p,{onConflict:'fixture_id,team_name,player_name'});
