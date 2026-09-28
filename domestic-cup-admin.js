@@ -40,13 +40,26 @@ function renderFixtures(){
 }
 async function loadSyncStatus(){
  try{
-   const r=await db.from('fixtures').select('source_updated_at',{count:'exact',head:false}).eq('season','2026/27').eq('competition',COMP).order('source_updated_at',{ascending:false}).limit(1);
-   if(!r.error){
-     const count=await db.from('fixtures').select('id',{count:'exact',head:true}).eq('season','2026/27').eq('competition',COMP);
-     if($('syncFixtureCount'))$('syncFixtureCount').textContent=String(count.count??fixtures.length);
-     if($('syncLastUpdate'))$('syncLastUpdate').textContent=r.data?.[0]?.source_updated_at?new Date(r.data[0].source_updated_at).toLocaleString():'—';
-   }
- }catch(e){console.warn('[NL4 Cup Admin] Sync status:',e)}
+   const baseQuery=db.from('fixtures').select('source_updated_at').eq('season','2026/27').eq('competition',COMP).order('source_updated_at',{ascending:false,nullsLast:true}).limit(1);
+   const [latest,count,control]=await Promise.all([
+     baseQuery,
+     db.from('fixtures').select('id',{count:'exact',head:true}).eq('season','2026/27').eq('competition',COMP),
+     COMP==='Carabao Cup'?db.from('carabao_sync_control').select('last_manual_sync_at').eq('id',1).maybeSingle():Promise.resolve({data:null,error:null})
+   ]);
+   if(latest.error) throw latest.error;
+   if(count.error) throw count.error;
+   if(control.error) throw control.error;
+   if($('syncFixtureCount'))$('syncFixtureCount').textContent=String(count.count??fixtures.length);
+   const sourceTime=latest.data?.[0]?.source_updated_at;
+   if($('syncLastUpdate'))$('syncLastUpdate').textContent=sourceTime?new Date(sourceTime).toLocaleString():'No source update yet';
+   const manualTime=control.data?.last_manual_sync_at;
+   if($('syncLastManual'))$('syncLastManual').textContent=manualTime?new Date(manualTime).toLocaleString():'Not run yet';
+   if($('syncStatus')&&$('syncStatus').textContent!=='SYNCING')$('syncStatus').textContent=sourceTime?'READY':'WAITING FOR DATA';
+ }catch(e){
+   console.warn('[NL4 Cup Admin] Sync status:',e);
+   if($('syncStatus'))$('syncStatus').textContent='READ ERROR';
+   if($('syncMsg'))$('syncMsg').textContent='Could not read sync status: '+(e.message||e);
+ }
 }
 async function manualCarabaoSync(){
  if(COMP!=='Carabao Cup')return msg('syncMsg','Manual BSD sync is available on the Carabao Cup admin only.',true);
