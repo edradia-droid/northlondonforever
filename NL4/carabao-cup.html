@@ -158,13 +158,6 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
   <div class="journey-title">ARSENAL'S CARABAO CUP JOURNEY</div>
   <div id="arsenalJourney" class="journey-steps"></div>
 </div>
-<div class="early-rounds" id="liveEarlyRounds">
-<div class="early-rounds-head"><div><h3>LIVE COMPETITION ROUNDS</h3><p>Every fixture currently supplied by the live competition feed. Arsenal Match Centre data remains separated below.</p></div><span id="earlyLiveCount" class="early-live-count">LIVE FIXTURES</span></div>
-<div class="early-round-grid">
-<div class="early-round" id="round300"><div class="early-round-title">PRELIMINARY ROUND <span>0</span></div><div class="early-round-list"></div></div>
-<div class="early-round" id="round1"><div class="early-round-title">ROUND 1 <span>0</span></div><div class="early-round-list"></div></div>
-<div class="early-round" id="round2"><div class="early-round-title">ROUND 2 <span>0</span></div><div class="early-round-list"></div></div>
-</div></div>
 <div class="bracket-wrap"><div class="bracket">
 <div id="round3" class="round round-anchor"><div class="round-title">ROUND 3 • 15–17 SEP</div>
 <div class="tie"><div class="team"><span>Bournemouth</span><b>4</b></div><div class="team winner"><span>Lincoln City</span><b>0</b></div><span class="date">8 SEP</span></div>
@@ -292,8 +285,8 @@ const MATCH_DETAILS = {
   }
 };
 const ROUND_ORDER=["round3","round4","round5","semifinal","final"];
-const SOURCE_ROUND_ORDER=["round300","round1","round2","round3","round4"];
-const SOURCE_ROUND_NAMES={round300:"Preliminary Round",round1:"Round 1",round2:"Round 2",round3:"Round 3",round4:"Round 4"};
+const SOURCE_ROUND_ORDER=["round3","round4"];
+const SOURCE_ROUND_NAMES={round3:"Round 3",round4:"Round 4"};
 
 function stateText(state){return state==="completed"?"RESULTS":state==="upcoming"?"UPCOMING":state==="eliminated"?"ELIMINATED":"NOT REACHED";}
 const esc=v=>String(v??"").replace(/[&<>"\']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
@@ -374,7 +367,7 @@ let carabaoRealtimeChannel=null;
 
 function fixtureRoundKey(f){
   const n=Number(f?.matchday);
-  return n===300?"round300":n===1?"round1":n===2?"round2":n===3?"round3":n===4?"round4":n===5?"round5":n===6?"semifinal":n===7?"final":null;
+  return n===3?"round3":n===4?"round4":n===5?"round5":n===6?"semifinal":n===7?"final":null;
 }
 function fixtureScores(f){
   if(f?.home_team==="Arsenal") return {home:f.arsenal_score,away:f.opponent_score};
@@ -424,28 +417,6 @@ function renderSourceTie(f,isArsenal=false){
   teams[1].querySelector("b").textContent=a;
   tie.querySelector(".date").textContent=fixtureDate(f)+(f.kickoff_at?" • "+fixtureTime(f):"");
   return tie;
-}
-function renderLiveSourceRounds(fixtures){
-  const grouped={round300:[],round1:[],round2:[]};
-  (fixtures||[]).forEach(f=>{const key=fixtureRoundKey(f);if(grouped[key])grouped[key].push(f);});
-  let count=0;
-  Object.entries(grouped).forEach(([key,rows])=>{
-    const root=document.getElementById(key);if(!root)return;
-    const list=root.querySelector(".early-round-list");if(!list)return;
-    list.innerHTML="";
-    rows.forEach(f=>{
-      const tie=renderSourceTie(f,f.home_team==="Arsenal"||f.away_team==="Arsenal");
-      tie.dataset.fixtureId=f.id;tie.dataset.round=key;
-      if(f.home_team==="Arsenal"||f.away_team==="Arsenal"){
-        tie.setAttribute("role","button");tie.setAttribute("tabindex","0");tie.style.cursor="pointer";
-        tie.onclick=()=>{document.getElementById("matchDetails")?.scrollIntoView({behavior:"smooth",block:"start"});};
-      }
-      list.appendChild(tie);
-    });
-    const badge=root.querySelector(".early-round-title span");if(badge)badge.textContent=rows.length;
-    count+=rows.length;
-  });
-  const liveCount=document.getElementById("earlyLiveCount");if(liveCount)liveCount.textContent=count+" LIVE FIXTURES";
 }
 function findBracketTie(f){
   const key=fixtureRoundKey(f),root=key&&document.getElementById(key);
