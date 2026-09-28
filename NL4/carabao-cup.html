@@ -291,7 +291,9 @@ const MATCH_DETAILS = {
     next:"",nextLabel:"",nextButton:"",nextRound:""
   }
 };
-const ROUND_ORDER=["round3","round4","round5","semifinal","final"];\nconst SOURCE_ROUND_ORDER=["round300","round1","round2","round3","round4"];\nconst SOURCE_ROUND_NAMES={round300:"Preliminary Round",round1:"Round 1",round2:"Round 2",round3:"Round 3",round4:"Round 4"};
+const ROUND_ORDER=["round3","round4","round5","semifinal","final"];
+const SOURCE_ROUND_ORDER=["round300","round1","round2","round3","round4"];
+const SOURCE_ROUND_NAMES={round300:"Preliminary Round",round1:"Round 1",round2:"Round 2",round3:"Round 3",round4:"Round 4"};
 
 function stateText(state){return state==="completed"?"RESULTS":state==="upcoming"?"UPCOMING":state==="eliminated"?"ELIMINATED":"NOT REACHED";}
 const esc=v=>String(v??"").replace(/[&<>"\']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
