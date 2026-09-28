@@ -525,7 +525,7 @@ async function loadFixtureMatchData(f){
     MATCH_DETAILS[key].statsHtml='<div class="match-stats"><div class="match-stats-title">BOTH-TEAM MATCH STATISTICS</div>'+
       statRows.map(s=>'<div class="match-stat"><b>'+esc(s[3](s[1]))+'</b><span>'+esc(s[0])+'</span><b>'+esc(s[3](s[2]))+'</b></div>').join("")+"</div>";
     const starters=t=>rows.filter(x=>x.team_name===t&&x.is_starter);
-    const subs=t=>rows.filter(x=>x.team_name===t&&!x.is_starter&&Number(x.minute_on||0)>0);
+    const subs=t=>rows.filter(x=>x.team_name===t&&!x.is_starter);
     const normalize=v=>String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[øØ]/g,"o").replace(/[đĐ]/g,"d").replace(/[^a-z0-9]+/gi," ").trim().replace(/\s+/g," ").toLowerCase();
     const lineupImages={"kepa arrizabalaga":"../assets/player-cutouts/player-02.png","martin zubimendi":"../assets/player-cutouts/player-16.png","gabriel magalhaes":"../assets/player-cutouts/player-09.png","marli salmon":"../assets/player-cutouts/player-27.png","myles lewis skelly":"../assets/player-cutouts/player-18.png","mikel merino":"../assets/player-cutouts/player-17.png","bruno guimaraes":"../assets/player-cutouts/player-14.png","noni madueke":"../assets/player-cutouts/player-24.png","max dowman":"../assets/player-cutouts/player-21.png","eberechi eze":"../assets/player-cutouts/player-19.png","viktor gyokeres":"../assets/player-cutouts/player-26.png","ezri konsa":"../assets/player-cutouts/player-11.png","martin odegaard":"../assets/player-cutouts/player-15.png","christos tzolis":"../assets/player-cutouts/player-22.png"};
     const formationSlots={"4-3-3":["GK","LB","LCB","RCB","RB","LCM","CM","RCM","LW","ST","RW"],"4-2-3-1":["GK","LB","LCB","RCB","RB","LDM","RDM","LW","CAM","RW","ST"]};
