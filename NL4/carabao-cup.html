@@ -309,8 +309,6 @@ function renderRoundTracker(){
     const d=ROUND_DATA[key],arrow=index<ROUND_ORDER.length-1?'<i class="journey-arrow">→</i>':"";
     return '<div class="journey-step '+d.state+'"><b>'+d.label+'</b><span>'+d.status+'</span></div>'+arrow;
   }).join("");
-  document.querySelectorAll("#round3 .tie").forEach((el,i)=>{el.classList.toggle("arsenal-current",i===8);el.classList.toggle("arsenal-route-tie",i===8);});
-  document.querySelectorAll("#round4 .tie").forEach((el,i)=>{el.classList.toggle("arsenal-upcoming",i===1);el.classList.toggle("arsenal-route-tie",i===1);});
   // Only confirmed Arsenal ties are highlighted. Future rounds stay neutral until the Arsenal fixture is determined.
   document.querySelectorAll("#round5 .tie,#semifinal .tie,#final .tie").forEach(el=>el.classList.remove("arsenal-path-tie"));
   selectRound("round3",false);
