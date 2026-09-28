@@ -57,7 +57,7 @@ async function loadSyncStatus(){
    if($('syncLastUpdate'))$('syncLastUpdate').textContent=sourceTime?new Date(sourceTime).toLocaleString():'No source update yet';
    const manualTime=control.data?.last_manual_sync_at;
    if($('syncLastManual'))$('syncLastManual').textContent=manualTime?new Date(manualTime).toLocaleString():'Not run yet';
-   if($('syncStatus')&&$('syncStatus').textContent!=='SYNCING')$('syncStatus').textContent=sourceTime?'READY':'WAITING FOR DATA';
+   if($('syncStatus')&&$('syncStatus').textContent!=='SYNCING')$('syncStatus').textContent=sourceTime?'SOURCE DATA READY':'WAITING FOR DATA';
  }catch(e){
    console.warn('[NL4 Cup Admin] Sync status:',e);
    if($('syncStatus'))$('syncStatus').textContent='READ ERROR';
@@ -78,7 +78,7 @@ async function manualCarabaoSync(){
    const s=data.sync||{};
    if($('syncStatus'))$('syncStatus').textContent='UPDATED';
    if($('syncLastManual'))$('syncLastManual').textContent=data.manualSyncAt?new Date(data.manualSyncAt).toLocaleString():'Just now';
-   msg('syncMsg','Sync complete ✓ '+(s.saved??'')+' competition fixtures checked.');
+   msg('syncMsg','Sync complete ✓ '+(s.saved??'')+' source fixtures checked • '+(fixtures.length||'')+' total database fixtures.');
    await loadFixtures();
    await loadSyncStatus();
  }catch(e){
