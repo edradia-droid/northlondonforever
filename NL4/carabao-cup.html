@@ -443,8 +443,11 @@ function fixtureState(f){
   const s=fixtureScores(f);
   if(Number.isFinite(Number(s.home))&&Number.isFinite(Number(s.away))){
     const arsenalIsHome=normalizeTeamName(f.home_team)==="arsenal";
-    const arsenalWon=fixtureWinnerIsHome(f)===arsenalIsHome;
-    if(arsenalWon===false)return "eliminated";
+    const arsenalIsAway=normalizeTeamName(f.away_team)==="arsenal";
+    if(arsenalIsHome||arsenalIsAway){
+      const arsenalWon=fixtureWinnerIsHome(f)===arsenalIsHome;
+      if(arsenalWon===false)return "eliminated";
+    }
   }
   return "completed";
 }
