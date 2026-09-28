@@ -11,6 +11,28 @@ const playerValue=(selectId,manualId)=>{const manual=read(manualId).trim();retur
 const setPlayerField=(selectId,manualId,value)=>{val(selectId,value);val(manualId,'')};
 const num=id=>read(id)===''?null:Number(read(id));
 const msg=(id,s,b=false)=>{if($(id)){ $(id).textContent=s; $(id).style.color=b?'#ff8993':'#8df0b2'; }};
+async function lockMatchDetails(){
+  if(!current?.id)return;
+  const r=await db.from('fixtures').update({details_locked:true,updated_at:new Date().toISOString()}).eq('id',current.id);
+  if(r.error)throw r.error;
+  current.details_locked=true;
+}
+async function syncSubstitutionForLineup(row){
+  if(!row||row.is_starter||Number(row.minute_on||0)<=0||!row.player_out_name)return;
+  const minute=Number(row.minute_on), team=row.team_name, incoming=row.player_name, outgoing=row.player_out_name;
+  const out=await db.from('match_lineups').update({minute_off:minute,updated_at:new Date().toISOString()}).eq('fixture_id',current.id).eq('team_name',team).eq('player_name',outgoing).eq('is_starter',true);
+  if(out.error)throw out.error;
+  const existing=await db.from('match_events').select('id').eq('fixture_id',current.id).eq('event_type','substitution').eq('team_name',team).eq('player_name',incoming).eq('related_player_name',outgoing).maybeSingle();
+  if(existing.error)throw existing.error;
+  const payload={fixture_id:current.id,event_type:'substitution',player_name:incoming,team_name:team,minute,stoppage_minute:null,related_player_name:outgoing,updated_at:new Date().toISOString()};
+  const ev=existing.data?await db.from('match_events').update(payload).eq('id',existing.data.id):await db.from('match_events').insert(payload);
+  if(ev.error)throw ev.error;
+}
+async function removeSubstitutionForLineup(row){
+  if(!row||row.is_starter||Number(row.minute_on||0)<=0||!row.player_out_name)return;
+  await db.from('match_lineups').update({minute_off:null,updated_at:new Date().toISOString()}).eq('fixture_id',current.id).eq('team_name',row.team_name).eq('player_name',row.player_out_name).eq('is_starter',true);
+  await db.from('match_events').delete().eq('fixture_id',current.id).eq('event_type','substitution').eq('team_name',row.team_name).eq('player_name',row.player_name).eq('related_player_name',row.player_out_name);
+}
 const fields=[
  ['Possession %','home_possession','away_possession','0.1','100'],
  ['Shots','home_shots','away_shots','1','999'],
@@ -138,13 +160,13 @@ async function saveDetails(){
  attendance:num('attendance'),added_time:num('addedTime')||0,kickoff_confirmed:read('kickoffConfirmed')==='true',arsenal_penalty_score:num('arsenalPenalties'),opponent_penalty_score:num('opponentPenalties'),lineup_formation:read('lineupFormation').trim()||null,is_published:read('published')!=='false',man_of_the_match:playerValue('motm','motmManual')||null,
  man_of_the_match_team:playerValue('motm','motmManual')?read('motmTeam'):null,updated_at:new Date().toISOString()};
  const r=await db.from('fixtures').update(p).eq('id',current.id).select('*').single();
- if(r.error)return msg('detailsMsg',r.error.message,true); current=r.data; msg('detailsMsg','Match details saved ✓'); await loadFixtures();
+ if(r.error)return msg('detailsMsg',r.error.message,true); current=r.data; try{await lockMatchDetails();}catch(e){return msg('detailsMsg','Saved, but could not lock match details: '+e.message,true)} msg('detailsMsg','Match details saved ✓ — Admin is now authoritative for this match.'); await loadFixtures();
 }
 async function saveStats(){
  const p={updated_at:new Date().toISOString()};
  fields.forEach((x,i)=>{p[x[1]]=num('sh'+i);p[x[2]]=num('sa'+i)});
  const r=await db.from('fixtures').update(p).eq('id',current.id).select('*').single();
- if(r.error)return msg('statsMsg',r.error.message,true);current=r.data;msg('statsMsg','Statistics saved ✓');
+ if(r.error)return msg('statsMsg',r.error.message,true);current=r.data;try{await lockMatchDetails();}catch(e){return msg('statsMsg','Statistics saved, but match could not be locked: '+e.message,true)}msg('statsMsg','Statistics saved ✓ — Admin data is protected from automatic detail overwrite.');
 }
 async function loadLineups(){
  const r=await db.from('match_lineups').select('*').eq('fixture_id',current.id).order('is_starter',{ascending:false}).order('minute_on');
@@ -196,8 +218,16 @@ async function saveLineup(){
  const finalName=manualName||name;
  if(!starter&&!playerOut&&Number(num('minuteOn')??0)>0)return msg('lineupMsg','Select the player going out for this substitution.',true);
  const p={fixture_id:current.id,team_name:lineupTeam,player_name:finalName,position:read('lineupPosition'),is_starter:starter,minute_on:starter?0:(num('minuteOn')??0),minute_off:num('minuteOff'),player_out_name:playerOut,updated_at:new Date().toISOString()};
+ const previous=editLineup?lineups.find(x=>x.id===editLineup):null;
  const r=editLineup?await db.from('match_lineups').update(p).eq('id',editLineup):await db.from('match_lineups').upsert(p,{onConflict:'fixture_id,team_name,player_name'});
- if(r.error)return msg('lineupMsg',r.error.message,true);msg('lineupMsg','Lineup saved ✓');resetLineup();val('lineupPlayerManual','');await loadLineups();await loadPlayerLists();
+ if(r.error)return msg('lineupMsg',r.error.message,true);
+ try{
+   if(previous&&(!p.is_starter||!p.player_out_name||Number(p.minute_on||0)<=0)) await removeSubstitutionForLineup(previous);
+   const saved=editLineup?(await db.from('match_lineups').select('*').eq('id',editLineup).single()).data:(await db.from('match_lineups').select('*').eq('fixture_id',current.id).eq('team_name',lineupTeam).eq('player_name',finalName).single()).data;
+   if(saved)await syncSubstitutionForLineup(saved);
+   await lockMatchDetails();
+ }catch(e){return msg('lineupMsg','Lineup saved, but substitution/lock sync failed: '+e.message,true)}
+ msg('lineupMsg','Lineup saved ✓ — Admin is authoritative for this match.');resetLineup();val('lineupPlayerManual','');await loadLineups();await loadPlayerLists();
 }
 async function loadEvents(){
  const r=await db.from('match_events').select('*').eq('fixture_id',current.id).order('minute').order('stoppage_minute');
@@ -209,7 +239,7 @@ async function saveEvent(){
  const player=playerValue('eventPlayer','eventPlayerManual');if(!player)return msg('eventMsg','Select a player or enter one manually.',true);
  const p={fixture_id:current.id,event_type:read('eventType'),player_name:player,team_name:read('eventTeam'),minute:num('eventMinute'),stoppage_minute:num('eventStoppage'),related_player_name:playerValue('eventRelated','eventRelatedManual')||null,updated_at:new Date().toISOString()};
  const r=editEvent?await db.from('match_events').update(p).eq('id',editEvent):await db.from('match_events').insert(p);
- if(r.error)return msg('eventMsg',r.error.message,true);msg('eventMsg','Event saved ✓');resetEvent();await loadEvents();await loadPlayerLists();
+ if(r.error)return msg('eventMsg',r.error.message,true);try{await lockMatchDetails()}catch(e){return msg('eventMsg','Event saved, but match lock failed: '+e.message,true)}msg('eventMsg','Event saved ✓ — Admin is authoritative for this match.');resetEvent();await loadEvents();await loadPlayerLists();
 }
 $('list').onclick=e=>{const b=e.target.closest('[data-fixture]');if(b)openFixture(b.dataset.fixture)};
 $('newFixtureBtn').onclick=createFixture;
@@ -220,12 +250,12 @@ $('lineupRole').onchange=()=>{$('lineupPlayerOut').disabled=read('lineupRole')==
 $('lineupList').onclick=async e=>{
  const eb=e.target.closest('[data-le]'),del=e.target.closest('[data-ld]');
  if(eb){const x=lineups.find(y=>y.id===eb.dataset.le);if(!x)return;editLineup=x.id;lineupTeam=x.team_name;setPlayerField('lineupPlayer','lineupPlayerManual',x.player_name);val('lineupPosition',x.position||'Goalkeeper');val('lineupRole',String(x.is_starter));val('minuteOn',x.minute_on);val('minuteOff',x.minute_off);$('lineupPlayerOut').disabled=x.is_starter;refreshOutgoingOptions(x.player_out_name||'');$('saveLineup').textContent='Save Player';$('cancelLineup').hidden=false;tabs();return}
- if(del&&confirm('Delete this lineup entry?')){const r=await db.from('match_lineups').delete().eq('id',del.dataset.ld);if(r.error)return msg('lineupMsg',r.error.message,true);await loadLineups();msg('lineupMsg','Lineup entry deleted ✓')}
+ if(del&&confirm('Delete this lineup entry?')){const row=lineups.find(x=>x.id===del.dataset.ld);if(row)await removeSubstitutionForLineup(row);const r=await db.from('match_lineups').delete().eq('id',del.dataset.ld);if(r.error)return msg('lineupMsg',r.error.message,true);try{await lockMatchDetails()}catch(e){return msg('lineupMsg','Lineup deleted, but match lock failed: '+e.message,true)}await loadLineups();msg('lineupMsg','Lineup entry deleted ✓')}
 };
 $('eventsList').onclick=async e=>{
  const eb=e.target.closest('[data-ee]'),del=e.target.closest('[data-ed]');
  if(eb){const x=events.find(y=>y.id===eb.dataset.ee);if(!x)return;editEvent=x.id;val('eventType',x.event_type);setPlayerField('eventPlayer','eventPlayerManual',x.player_name);val('eventTeam',x.team_name);val('eventMinute',x.minute);val('eventStoppage',x.stoppage_minute);setPlayerField('eventRelated','eventRelatedManual',x.related_player_name||'');$('saveEvent').textContent='Save Event';$('cancelEvent').hidden=false;return}
- if(del&&confirm('Delete this event?')){const r=await db.from('match_events').delete().eq('id',del.dataset.ed);if(r.error)return msg('eventMsg',r.error.message,true);await loadEvents();msg('eventMsg','Event deleted ✓')}
+ if(del&&confirm('Delete this event?')){const r=await db.from('match_events').delete().eq('id',del.dataset.ed);if(r.error)return msg('eventMsg',r.error.message,true);try{await lockMatchDetails()}catch(e){return msg('eventMsg','Event deleted, but match lock failed: '+e.message,true)}await loadEvents();msg('eventMsg','Event deleted ✓')}
 };
 $('refreshFixtures').onclick=loadFixtures;
 if($('carabaoSyncNow'))$('carabaoSyncNow').onclick=manualCarabaoSync;
