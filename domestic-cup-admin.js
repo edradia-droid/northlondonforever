@@ -41,6 +41,7 @@ function renderFixtures(){
  list.innerHTML=shown.length?shown.map(f=>{const home=f.home_team||'Arsenal',away=f.away_team||f.opponent||'Opponent';const arsenal=home==='Arsenal'||away==='Arsenal';const hs=arsenal?(home==='Arsenal'?f.arsenal_score:f.opponent_score):f.home_score;const as=arsenal?(away==='Arsenal'?f.arsenal_score:f.opponent_score):f.away_score;const played=hs!==null&&hs!==undefined&&as!==null&&as!==undefined;const score=played?'<strong class="fixture-score">'+esc(hs)+' — '+esc(as)+'</strong>':'<strong class="fixture-score muted">VS</strong>';return '<article class="match"><div><div class="fixture-line"><strong>Round '+esc(f.matchday??'—')+' • '+esc(home)+' vs '+esc(away)+'</strong>'+score+'</div><div class="meta">'+(f.kickoff_at?new Date(f.kickoff_at).toLocaleString():'TBC')+' • '+esc(f.venue||'TBC')+' • '+esc(f.status||'scheduled')+(arsenal?' • ARSENAL MATCH CENTRE':'')+'</div></div><button class="primary edit" data-fixture="'+f.id+'">Manage</button></article>'}).join(''):'<div class="empty">No '+esc(LABEL)+' fixtures match this round filter.</div>';
 }
 async function loadSyncStatus(){
+ if(!db){ if($('syncStatus'))$('syncStatus').textContent='DATABASE CLIENT ERROR'; if($('syncMsg'))msg('syncMsg','Supabase client did not load.',true); return; }
  try{
    const baseQuery=db.from('fixtures').select('source_updated_at').eq('season','2026/27').eq('competition',COMP).order('source_updated_at',{ascending:false,nullsLast:true}).limit(1);
    const [latest,count,control]=await Promise.all([
