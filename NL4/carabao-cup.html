@@ -207,7 +207,9 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
     <div class="match-tabs" role="tablist">
       <button class="match-tab active" data-pane="overview" type="button">OVERVIEW</button>
       <button class="match-tab" data-pane="events" type="button">MATCH EVENTS</button>
-      <button class="match-tab" data-pane="lineups" type="button">LINEUP &amp; SUBSTITUTION</button>
+      <button class="match-tab" data-pane="stats" type="button">STATISTICS</button>
+      <button class="match-tab" data-pane="lineups" type="button">LINEUPS</button>
+      <button class="match-tab" data-pane="subs" type="button">SUBSTITUTIONS</button>
     </div>
     <div id="matchPane" class="match-pane"></div>
     <div class="match-next">
@@ -305,7 +307,11 @@ function renderPane(key,pane){
   const d=MATCH_DETAILS[key],box=document.querySelector("#matchPane"); if(!d||!box)return;
   if(pane==="overview")box.innerHTML='<div class="match-summary-grid">'+d.overview.map(x=>'<div class="match-summary-item"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join("")+'</div>';
   else if(pane==="events"){
-    box.innerHTML=(d.eventsHtml||'<div class="match-empty">'+d.events+'</div>')+(d.statsHtml||"");
+    box.innerHTML=d.eventsHtml||'<div class="match-empty">'+d.events+'</div>';
+  } else if(pane==="stats") {
+    box.innerHTML=d.statsHtml||'<div class="match-empty">Match statistics are not available yet.</div>';
+  } else if(pane==="subs") {
+    box.innerHTML=d.subsHtml||'<div class="match-empty">'+d.subs+'</div>';
   } else {
     box.innerHTML=d.lineupsHtml||'<div class="match-empty">'+d.lineups+'</div>';
   }
@@ -487,7 +493,7 @@ async function loadFixtureMatchData(f){
     ]);
     if(lr.error)console.warn("[NL4 Carabao] lineup sync:",lr.error);
     if(er.error)console.warn("[NL4 Carabao] event sync:",er.error);
-    const rows=lr.data||[],evs=(er.data||[]).filter(x=>x.event_type!=="substitution");
+    const rows=lr.data||[],allEvents=er.data||[],evs=allEvents.filter(x=>x.event_type!=="substitution"),subEvents=allEvents.filter(x=>x.event_type==="substitution");
     const teams=[f.home_team,f.away_team];
     const statRows=[
       ["Possession",f.home_possession,f.away_possession,v=>v==null?"—":Number(v).toFixed(Number(v)%1?1:0)+"%"],
@@ -517,6 +523,8 @@ async function loadFixtureMatchData(f){
       return '<div class="cl-pl-team-card"><div class="cl-pl-team-head"><strong>'+esc(t)+'</strong><span>STARTING XI</span></div><div class="cl-pl-subs"><div class="cl-pl-side-head">LINEUP</div><div class="cl-pl-sub-list">'+(xi.length?xi.map(row=>'<div class="cl-pl-sub"><span class="cl-pl-fallback" style="width:38px;height:38px;font-size:8px">'+initials(row.player_name)+'</span><div><strong>'+esc(row.player_name)+'</strong><small>'+esc(row.position||"STARTING XI")+'</small></div></div>').join(""):'<div class="match-empty">No lineup recorded.</div>')+'</div></div><div class="cl-pl-subs"><div class="cl-pl-side-head">SUBSTITUTES</div><div class="cl-pl-sub-list">'+(su.length?su.map(row=>'<div class="cl-pl-sub"><span class="cl-pl-fallback" style="width:38px;height:38px;font-size:8px">'+initials(row.player_name)+'</span><div><strong>'+esc(row.player_name)+'</strong><small>↑ ON '+esc(row.minute_on)+"'</small></div></div>").join(""):'<div class="match-empty">No substitutions recorded.</div>')+'</div></div></div>';
     };
     const eventHtml=evs.length?'<div class="event-list">'+evs.map(x=>{const minute=(x.minute??"—")+(x.stoppage_minute?"+"+x.stoppage_minute:"");return '<div class="event-row"><span>'+esc(minute)+"'</span><b>"+esc((x.event_type||"").replace(/_/g," ").toUpperCase())+"</b><strong>"+esc(x.player_name||"")+"</strong><small>"+esc(x.team_name||"")+(x.related_player_name?" • "+esc(x.related_player_name):"")+"</small></div>";}).join("")+'</div>':'<div class="match-empty">No match events recorded.</div>';
+    const subHtml=subEvents.length?'<div class="event-list">'+subEvents.map(x=>{const minute=(x.minute??"—")+(x.stoppage_minute?"+"+x.stoppage_minute:"");return '<div class="event-row"><span>'+esc(minute)+"'</span><b>SUBSTITUTION</b><strong>"+esc(x.player_name||"Substitution")+"</strong><small>"+esc(x.team_name||"")+(x.related_player_name?" • OUT: "+esc(x.related_player_name):"")+"</small></div>";}).join("")+'</div>':'<div class="match-empty">No substitutions recorded.</div>';
+    MATCH_DETAILS[key].subsHtml='<div class="match-stats"><div class="match-stats-title">SUBSTITUTION TIMELINE</div>'+subHtml+'</div>';
     const homeIsArsenal=f.home_team==="Arsenal",arsenalRows=starters("Arsenal");
     MATCH_DETAILS[key].eventsHtml=eventHtml;
     MATCH_DETAILS[key].lineupsHtml='<div class="cl-pl-lineup"><div class="cl-pl-broadcast"><div class="cl-pl-top"><div><div class="cl-pl-kicker">MATCHDAY LINEUPS<small><span class="cl-pl-venue">'+esc(f.venue||"VENUE TBC")+'</span></small></div></div></div><div class="cl-pl-grid">'+(homeIsArsenal?arsenalLineup(arsenalRows,subs("Arsenal")):opponentBlock(f.home_team))+(homeIsArsenal?opponentBlock(f.away_team):arsenalLineup(arsenalRows,subs("Arsenal")) )+'</div></div></div>';
