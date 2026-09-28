@@ -402,14 +402,49 @@ function fixtureScores(f){
   if(f?.away_team==="Arsenal") return {home:f.opponent_score,away:f.arsenal_score};
   return {home:f?.home_score ?? f?.score_home ?? f?.home_team_score ?? null,away:f?.away_score ?? f?.score_away ?? f?.away_team_score ?? null};
 }
+function fixturePenaltyScores(f){
+  if(f?.home_penalty_score!=null || f?.away_penalty_score!=null){
+    return {home:f?.home_penalty_score ?? null,away:f?.away_penalty_score ?? null};
+  }
+  if(f?.arsenal_penalty_score!=null || f?.opponent_penalty_score!=null){
+    return f?.home_team==="Arsenal"
+      ? {home:f?.arsenal_penalty_score ?? null,away:f?.opponent_penalty_score ?? null}
+      : f?.away_team==="Arsenal"
+        ? {home:f?.opponent_penalty_score ?? null,away:f?.arsenal_penalty_score ?? null}
+        : {home:null,away:null};
+  }
+  return {home:null,away:null};
+}
+function fixtureWentToPenalties(f){
+  const s=fixtureScores(f),p=fixturePenaltyScores(f);
+  return fixtureIsPlayed(f) && Number.isFinite(Number(s.home)) && Number.isFinite(Number(s.away))
+    && Number(s.home)===Number(s.away)
+    && Number.isFinite(Number(p.home)) && Number.isFinite(Number(p.away));
+}
+function fixtureDisplayScore(f){
+  const s=fixtureScores(f);
+  if(s.home==null || s.away==null)return "—";
+  const base=String(s.home)+" — "+String(s.away);
+  if(fixtureWentToPenalties(f)){
+    const p=fixturePenaltyScores(f);
+    return base+" ("+p.home+"–"+p.away+" pens)";
+  }
+  return base;
+}
+function fixtureWinnerIsHome(f){
+  const s=fixtureScores(f);
+  if(!fixtureWentToPenalties(f))return Number(s.home)>Number(s.away);
+  const p=fixturePenaltyScores(f);
+  return Number(p.home)>Number(p.away);
+}
 function fixtureIsPlayed(f){return ["fulltime","completed","finished"].includes(String(f?.status||"").toLowerCase()) || (f?.arsenal_score!=null&&f?.opponent_score!=null) || (f?.home_score!=null&&f?.away_score!=null);}
 function fixtureState(f){
   if(!fixtureIsPlayed(f)) return "upcoming";
   const s=fixtureScores(f);
   if(Number.isFinite(Number(s.home))&&Number.isFinite(Number(s.away))){
-    const arsenalScore=f.home_team==="Arsenal"?Number(s.home):Number(s.away);
-    const opponentScore=f.home_team==="Arsenal"?Number(s.away):Number(s.home);
-    if(arsenalScore<opponentScore)return "eliminated";
+    const arsenalIsHome=normalizeTeamName(f.home_team)==="arsenal";
+    const arsenalWon=fixtureWinnerIsHome(f)===arsenalIsHome;
+    if(arsenalWon===false)return "eliminated";
   }
   return "completed";
 }
@@ -501,10 +536,11 @@ function buildSlotTie(f,slotIndex,key){
   tie.dataset.round=key;
   if(f) tie.dataset.fixtureId=f.id;
   const score=f?fixtureScores(f):{home:null,away:null};
+  const displayScore=f?fixtureDisplayScore(f):"—";
   const home=f?.home_team||BRACKET_SLOTS[key]?.[slotIndex]?.[0]||"TBC";
   const away=f?.away_team||BRACKET_SLOTS[key]?.[slotIndex]?.[1]||"TBC";
   const date=f?(fixtureDate(f)+(f.kickoff_at?" • "+fixtureTime(f):"")):(key==="round5"?"W/C 14 DEC • DRAW TBA":key==="semifinal"?"JAN / FEB 2027":key==="final"?"21 MAR 2027":"DATE TBC");
-  tie.innerHTML='<div class="team"><span>'+esc(home)+'</span><b>'+esc(score.home==null?"—":score.home)+'</b></div><div class="team"><span>'+esc(away)+'</span><b>'+esc(score.away==null?"—":score.away)+'</b></div><span class="date">'+esc(date)+'</span>';
+  tie.innerHTML='<div class="team"><span>'+esc(home)+'</span><b>'+esc(score.home==null?"—":score.home)+'</b></div><div class="team"><span>'+esc(away)+'</span><b>'+esc(score.away==null?"—":score.away)+'</b></div><span class="date">'+esc(date+(f&&fixtureWentToPenalties(f)?" • "+displayScore.split(" (")[1].replace(")",""):""))+'</span>';
   return tie;
 }
 function renderFixedRound(key,fixtures){
@@ -663,13 +699,11 @@ function paintBracketFromFixtures(fixtures){
 function buildFixtureDetails(f){
   const key=fixtureRoundKey(f),state=fixtureState(f),score=fixtureScores(f);
   if(!key)return;
-  const played=fixtureIsPlayed(f),arsenalWon=played&&(
-    f.home_team==="Arsenal"?Number(score.home)>Number(score.away):Number(score.away)>Number(score.home)
-  );
+  const played=fixtureIsPlayed(f),arsenalIsHome=normalizeTeamName(f.home_team)==="arsenal",arsenalWon=played&&(fixtureWinnerIsHome(f)===arsenalIsHome);
   const title=(f.home_team||"TBC")+" vs "+(f.away_team||"TBC");
   const badge=state==="completed"?(arsenalWon?"ARSENAL QUALIFIED":"ARSENAL ELIMINATED"):state==="upcoming"?"UPCOMING":"NOT REACHED";
   const badgeClass=state==="upcoming"?"upcoming":state==="completed"?"":"locked";
-  const scoreText=score.home==null||score.away==null?"—":String(score.home)+" — "+String(score.away);
+  const scoreText=fixtureDisplayScore(f);
   const next=nextRoundFor(key);
   MATCH_DETAILS[key]={
     ...(MATCH_DETAILS[key]||{}),
