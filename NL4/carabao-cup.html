@@ -79,6 +79,14 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
 .arsenal-route{fill:none;stroke:var(--green);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:9 8;filter:drop-shadow(0 0 6px rgba(0,143,94,.8));animation:routeFlow 2.2s linear infinite}
 @keyframes routeFlow{to{stroke-dashoffset:-34}}
 .arsenal-route-point{fill:#e8f5ef;stroke:var(--green);stroke-width:3;filter:drop-shadow(0 0 7px rgba(0,143,94,.9))}
+.bracket-edge-layer{position:absolute;left:0;top:0;width:100%;height:100%;z-index:0;pointer-events:none;overflow:visible}
+.bracket-edge{fill:none;stroke:rgba(0,143,94,.34);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.bracket-edge.arsenal{stroke:var(--green);stroke-width:3.5;filter:drop-shadow(0 0 6px rgba(0,143,94,.75));stroke-dasharray:7 7;animation:routeFlow 2.2s linear infinite}
+.bracket-edge-glow{fill:none;stroke:rgba(0,143,94,.12);stroke-width:9;stroke-linecap:round;stroke-linejoin:round;filter:blur(5px)}
+.bracket-slot{position:relative}
+.bracket-slot .tie{z-index:2}
+.arsenal-dim{opacity:.38;filter:saturate(.55)}
+@media(max-width:800px){.bracket-edge-layer{display:none}}
 .bracket-match-centre{width:min(1280px,calc(100% - 8px));max-width:none;margin:0 auto;border:1px solid rgba(0,143,94,.42);border-radius:24px;background:linear-gradient(145deg,rgba(7,24,17,.97),rgba(7,9,12,.98));box-shadow:0 22px 65px rgba(0,0,0,.42),0 0 45px rgba(0,143,94,.08);overflow:hidden;scroll-margin-top:110px;position:relative}
 .bracket-match-centre:before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:linear-gradient(var(--green),var(--gold));box-shadow:0 0 22px rgba(0,143,94,.35)}
 .match-centre-head{padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;gap:15px}
@@ -285,7 +293,7 @@ const MATCH_DETAILS = {
   }
 };
 const ROUND_ORDER=["round3","round4","round5","semifinal","final"];
-const SOURCE_ROUND_ORDER=["round3","round4"];
+const SOURCE_ROUND_ORDER=["round3","round4","round5","semifinal","final"];
 const SOURCE_ROUND_NAMES={round3:"Round 3",round4:"Round 4"};
 
 function stateText(state){return state==="completed"?"RESULTS":state==="upcoming"?"UPCOMING":state==="eliminated"?"ELIMINATED":"NOT REACHED";}
@@ -305,7 +313,7 @@ function renderRoundTracker(){
     return '<div class="journey-step '+d.state+'"><b>'+d.label+'</b><span>'+d.status+'</span></div>'+arrow;
   }).join("");
   // Only confirmed Arsenal ties are highlighted. Future rounds stay neutral until the Arsenal fixture is determined.
-  document.querySelectorAll("#round5 .tie,#semifinal .tie,#final .tie").forEach(el=>el.classList.remove("arsenal-path-tie"));
+  document.querySelectorAll("#round5 .tie,#semifinal .tie,#final .tie").forEach(el=>el.classList.remove("arsenal-path-tie","arsenal-route-tie"));
   selectRound("round3",false);
 }
 
@@ -403,59 +411,191 @@ function setText(selector,value){
   const el=document.querySelector(selector);if(el)el.textContent=value??"";
 }
 
-function renderSourceTie(f,isArsenal=false){
-  const score=fixtureScores(f);
-  const h=score.home==null?"—":score.home;
-  const a=score.away==null?"—":score.away;
+function normalizeTeamName(v){
+  return String(v||"").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").replace(/[øØ]/g,"o").replace(/&/g,"and").replace(/\\bafc\\b/gi,"").replace(/\\bfc\\b/gi,"").replace(/[^a-z0-9]+/gi," ").trim().replace(/\\s+/g," ").toLowerCase();
+}
+function fixturePairKey(f){
+  return [normalizeTeamName(f?.home_team),normalizeTeamName(f?.away_team)].sort().join(" :: ");
+}
+function validBracketFixture(f){
+  const s=String(f?.status||"").toLowerCase();
+  return s!=="postponed" || fixtureIsPlayed(f);
+}
+function dedupeBracketFixtures(fixtures){
+  const map=new Map();
+  (fixtures||[]).filter(validBracketFixture).forEach(f=>{
+    const key=fixturePairKey(f);
+    const prior=map.get(key);
+    if(!prior || fixtureIsPlayed(f) && !fixtureIsPlayed(prior) || (fixtureIsPlayed(f)===fixtureIsPlayed(prior) && new Date(f.kickoff_at||0)>new Date(prior.kickoff_at||0))) map.set(key,f);
+  });
+  return [...map.values()];
+}
+const BRACKET_SLOTS={
+  round3:[
+    ["Leyton Orient","Bradford City"],["Peterborough United","Barnsley"],
+    ["Fleetwood Town","Sheffield United"],["Ipswich Town","Arsenal"],
+    ["Manchester United","Brighton & Hove Albion"],["Manchester City","Norwich City"],
+    ["Sunderland","Hull City"],["Reading","Brentford"],
+    ["West Ham United","Fulham"],["Crystal Palace","Middlesbrough"],
+    ["Bournemouth","Lincoln City"],["Coventry City","Aston Villa"],
+    ["Liverpool FC","Tottenham Hotspur"],["Chelsea","Leeds United"],
+    ["Everton","Wolverhampton"],["Millwall","Newcastle United"]
+  ],
+  round4:[
+    ["Bradford City","Peterborough United"],["Fleetwood Town","Arsenal"],
+    ["Manchester City","Brighton & Hove Albion"],["Sunderland","Brentford"],
+    ["Fulham","Crystal Palace"],["Bournemouth","Aston Villa"],
+    ["Liverpool FC","Chelsea"],["Everton","Newcastle United"]
+  ],
+  round5:[null,null,null,null],
+  semifinal:[null,null],
+  final:[null]
+};
+function roundSlotCount(key){return BRACKET_SLOTS[key]?.length||0}
+function staticSlotIndex(f,key){
+  const pair=fixturePairKey(f);
+  const slots=BRACKET_SLOTS[key]||[];
+  return slots.findIndex(p=>p&&fixturePairKey({home_team:p[0],away_team:p[1]})===pair);
+}
+function stableFixtureHash(id){
+  let h=2166136261;
+  for(const ch of String(id||"")){h^=ch.charCodeAt(0);h=Math.imul(h,16777619);}
+  return (h>>>0);
+}
+function assignFutureSlots(rows,key){
+  const count=roundSlotCount(key),assigned=new Map(),used=new Set();
+  [...rows].sort((a,b)=>String(a.id).localeCompare(String(b.id))).forEach(f=>{
+    let slot=stableFixtureHash(f.id)%count;
+    for(let n=0;n<count;n++){const candidate=(slot+n)%count;if(!used.has(candidate)){slot=candidate;break;}}
+    used.add(slot);assigned.set(f.id,slot);
+  });
+  return assigned;
+}
+function buildSlotTie(f,slotIndex,key){
   const tie=document.createElement("div");
-  tie.className="tie"+(isArsenal?" arsenal-route-tie":"");
-  tie.innerHTML='<div class="team"><span></span><b></b></div><div class="team"><span></span><b></b></div><span class="date"></span>';
-  const teams=tie.querySelectorAll(".team");
-  teams[0].querySelector("span").textContent=f.home_team||"TBC";
-  teams[0].querySelector("b").textContent=h;
-  teams[1].querySelector("span").textContent=f.away_team||"TBC";
-  teams[1].querySelector("b").textContent=a;
-  tie.querySelector(".date").textContent=fixtureDate(f)+(f.kickoff_at?" • "+fixtureTime(f):"");
+  tie.className="tie bracket-slot";
+  tie.dataset.slot=String(slotIndex);
+  tie.dataset.round=key;
+  if(f) tie.dataset.fixtureId=f.id;
+  const score=f?fixtureScores(f):{home:null,away:null};
+  const home=f?.home_team||BRACKET_SLOTS[key]?.[slotIndex]?.[0]||"TBC";
+  const away=f?.away_team||BRACKET_SLOTS[key]?.[slotIndex]?.[1]||"TBC";
+  const date=f?(fixtureDate(f)+(f.kickoff_at?" • "+fixtureTime(f):"")):(key==="round5"?"W/C 14 DEC • DRAW TBA":key==="semifinal"?"JAN / FEB 2027":key==="final"?"21 MAR 2027":"DATE TBC");
+  tie.innerHTML='<div class="team"><span>'+esc(home)+'</span><b>'+esc(score.home==null?"—":score.home)+'</b></div><div class="team"><span>'+esc(away)+'</span><b>'+esc(score.away==null?"—":score.away)+'</b></div><span class="date">'+esc(date)+'</span>';
   return tie;
 }
-function findBracketTie(f){
-  const key=fixtureRoundKey(f),root=key&&document.getElementById(key);
-  if(!root)return null;
-  const home=String(f.home_team||"").trim().toLowerCase(),away=String(f.away_team||"").trim().toLowerCase();
-  return Array.from(root.querySelectorAll(".tie")).find(t=>{
-    const names=Array.from(t.querySelectorAll(".team span")).map(x=>x.textContent.trim().toLowerCase());
-    return names.includes(home)&&names.includes(away);
+function renderFixedRound(key,fixtures){
+  const root=document.getElementById(key);if(!root)return [];
+  const title=root.querySelector(".round-title")?.textContent||roundName(key).toUpperCase();
+  root.innerHTML="";
+  const heading=document.createElement("div");heading.className="round-title";heading.textContent=title;root.appendChild(heading);
+  const rows=dedupeBracketFixtures(fixtures);
+  const bySlot=new Map();
+  rows.forEach(f=>{
+    let slot=staticSlotIndex(f,key);
+    if(slot<0) slot=-1;
+    if(slot>=0) bySlot.set(slot,f);
+  });
+  const future=rows.filter(f=>!bySlot.has(staticSlotIndex(f,key)));
+  if(future.length){
+    const free=[...Array(roundSlotCount(key)).keys()].filter(i=>!bySlot.has(i));
+    const assigned=assignFutureSlots(future,key);
+    future.forEach(f=>{
+      const s=assigned.get(f.id);
+      if(!bySlot.has(s)) bySlot.set(s,f);
+    });
+    if(free.length<future.length) console.warn("[NL4 Carabao] Bracket slot overflow",key);
+  }
+  const ties=[];
+  for(let i=0;i<roundSlotCount(key);i++){const tie=buildSlotTie(bySlot.get(i)||null,i,key);root.appendChild(tie);ties.push(tie);}
+  return ties;
+}
+function fixtureSlotMap(fixtures){
+  const map=new Map();
+  for(const key of ROUND_ORDER){
+    const rows=dedupeBracketFixtures((fixtures||[]).filter(f=>fixtureRoundKey(f)===key));
+    const slots=BRACKET_SLOTS[key]||[];
+    rows.forEach(f=>{
+      let s=staticSlotIndex(f,key);
+      if(s<0){
+        const existing=[...map.entries()].find(([,v])=>v.fixtureId===f.id);
+        if(existing)s=existing[1].slot;
+      }
+      if(s>=0) map.set(f.id,{round:key,slot:s,fixtureId:f.id});
+    });
+    if(key==="round5"||key==="semifinal"||key==="final"){
+      const assigned=assignFutureSlots(rows,key);
+      rows.forEach(f=>{if(!map.has(f.id))map.set(f.id,{round:key,slot:assigned.get(f.id),fixtureId:f.id});});
+    }
+  }
+  return map;
+}
+function findTeamFixture(fixtures,team,roundKey){
+  const n=normalizeTeamName(team);
+  return dedupeBracketFixtures((fixtures||[]).filter(f=>fixtureRoundKey(f)===roundKey)).find(f=>{
+    return normalizeTeamName(f.home_team)===n||normalizeTeamName(f.away_team)===n;
   })||null;
 }
-function rebuildStaticRoundFromSource(root,rows){
-  if(!root)return;
-  const title=root.querySelector(".round-title");
-  root.innerHTML="";
-  if(title)root.appendChild(title);
-  rows.forEach(f=>root.appendChild(renderSourceTie(f,f.home_team==="Arsenal"||f.away_team==="Arsenal")));
+function bracketPathPairs(fixtures){
+  const edges=[];
+  for(let i=1;i<ROUND_ORDER.length;i++){
+    const key=ROUND_ORDER[i],prev=ROUND_ORDER[i-1],curr=dedupeBracketFixtures((fixtures||[]).filter(f=>fixtureRoundKey(f)===key));
+    const slotMap=fixtureSlotMap(fixtures);
+    curr.forEach(f=>{
+      const current=slotMap.get(f.id);if(!current)return;
+      const teams=[f.home_team,f.away_team].filter(Boolean);
+      const parents=teams.map(t=>findTeamFixture(fixtures,t,prev)).filter(Boolean);
+      const unique=[...new Map(parents.map(p=>[p.id,p])).values()];
+      unique.forEach(p=>{
+        const ps=slotMap.get(p.id);if(ps)edges.push({fromRound:prev,fromSlot:ps.slot,toRound:key,toSlot:current.slot,arsenal:teams.some(t=>normalizeTeamName(t)==="arsenal")||[p.home_team,p.away_team].some(t=>normalizeTeamName(t)==="arsenal")});
+      });
+    });
+  }
+  return edges;
+}
+function drawBracketEdges(fixtures){
+  const wrap=document.querySelector(".bracket-wrap"),bracket=document.querySelector(".bracket");if(!wrap||!bracket)return;
+  let svg=wrap.querySelector(".bracket-edge-layer");
+  if(!svg){svg=document.createElementNS("http://www.w3.org/2000/svg","svg");svg.classList.add("bracket-edge-layer");wrap.insertBefore(svg,bracket);}
+  const rect=wrap.getBoundingClientRect(),width=Math.max(bracket.scrollWidth,1420),height=Math.max(bracket.scrollHeight,rect.height);
+  svg.setAttribute("width",width);svg.setAttribute("height",height);svg.setAttribute("viewBox","0 0 "+width+" "+height);svg.innerHTML="";
+  const slotMap=fixtureSlotMap(fixtures),edges=bracketPathPairs(fixtures);
+  const point=(round,slot,side)=>{
+    const el=document.querySelector("#"+round+" .tie[data-slot='"+slot+"']");if(!el)return null;
+    const r=el.getBoundingClientRect();return {x:(side==="right"?r.right:r.left)-rect.left+wrap.scrollLeft,y:r.top-rect.top+wrap.scrollTop+r.height/2};
+  };
+  edges.forEach(e=>{
+    const a=point(e.fromRound,e.fromSlot,"right"),b=point(e.toRound,e.toSlot,"left");if(!a||!b)return;
+    const mid=(a.x+b.x)/2;
+    const d="M "+a.x+" "+a.y+" H "+mid+" V "+b.y+" H "+b.x;
+    const glow=document.createElementNS("http://www.w3.org/2000/svg","path");glow.setAttribute("d",d);glow.setAttribute("class","bracket-edge-glow");svg.appendChild(glow);
+    const path=document.createElementNS("http://www.w3.org/2000/svg","path");path.setAttribute("d",d);path.setAttribute("class","bracket-edge"+(e.arsenal?" arsenal":""));svg.appendChild(path);
+  });
+}
+function attachArsenalTie(tie,f,key){
+  const isArsenal=normalizeTeamName(f?.home_team)==="arsenal"||normalizeTeamName(f?.away_team)==="arsenal";
+  if(!isArsenal)return;
+  tie.classList.add("arsenal-route-tie");
+  const state=fixtureState(f);if(state==="upcoming")tie.classList.add("arsenal-upcoming");if(state==="completed")tie.classList.add("arsenal-current");
+  tie.onclick=()=>{selectRound(key,true);setTimeout(()=>document.getElementById("matchDetails")?.scrollIntoView({behavior:"smooth",block:"start"}),250)};
+  tie.setAttribute("role","button");tie.setAttribute("tabindex","0");tie.setAttribute("aria-label",roundName(key)+" match: "+f.home_team+" vs "+f.away_team+". Open Arsenal match centre.");
+  tie.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();tie.click()}};tie.style.cursor="pointer";
 }
 function paintBracketFromFixtures(fixtures){
-  const grouped={round3:[],round4:[]};
-  fixtures.forEach(f=>{const key=fixtureRoundKey(f);if(grouped[key])grouped[key].push(f);});
-  ["round3","round4"].forEach(key=>{
-    const root=document.getElementById(key);if(root)rebuildStaticRoundFromSource(root,grouped[key]||[]);
-  });
+  const source={};for(const key of ROUND_ORDER)source[key]=(fixtures||[]).filter(f=>fixtureRoundKey(f)===key);
+  for(const key of ROUND_ORDER)renderFixedRound(key,source[key]||[]);
   document.querySelectorAll(".tie").forEach(t=>{
-    t.classList.remove("arsenal-route-tie","arsenal-current","arsenal-upcoming","arsenal-path-tie");
-    t.removeAttribute("data-fixture-id");t.removeAttribute("data-round");t.removeAttribute("role");t.removeAttribute("tabindex");t.removeAttribute("aria-label");t.onclick=null;t.onkeydown=null;t.style.cursor="";
+    t.classList.remove("arsenal-route-tie","arsenal-current","arsenal-upcoming","arsenal-path-tie","arsenal-dim");
+    t.removeAttribute("data-fixture-id");t.removeAttribute("role");t.removeAttribute("tabindex");t.removeAttribute("aria-label");t.onclick=null;t.onkeydown=null;t.style.cursor="";
   });
-  fixtures.forEach(f=>{
-    const key=fixtureRoundKey(f),tie=findBracketTie(f);if(!key||!tie)return;
-    const isArsenal=f.home_team==="Arsenal"||f.away_team==="Arsenal";tie.dataset.fixtureId=f.id;tie.dataset.round=key;
-    if(isArsenal){
-      tie.classList.add("arsenal-route-tie");
-      const state=fixtureState(f);if(state==="upcoming")tie.classList.add("arsenal-upcoming");if(state==="completed")tie.classList.add("arsenal-current");
-      tie.onclick=()=>{selectRound(key,true);setTimeout(()=>document.getElementById("matchDetails")?.scrollIntoView({behavior:"smooth",block:"start"}),250)};
-      tie.setAttribute("role","button");tie.setAttribute("tabindex","0");tie.setAttribute("aria-label",roundName(key)+" match: "+f.home_team+" vs "+f.away_team+". Open Arsenal match centre.");tie.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();tie.click()}};tie.style.cursor="pointer";
-    }
-    const score=fixtureScores(f),teamEls=tie.querySelectorAll(".team");
-    if(teamEls.length>=2){teamEls[0].querySelector("span").textContent=f.home_team||"TBC";teamEls[1].querySelector("span").textContent=f.away_team||"TBC";teamEls[0].querySelector("b").textContent=score.home==null?"—":score.home;teamEls[1].querySelector("b").textContent=score.away==null?"—":score.away;const date=tie.querySelector(".date");if(date)date.textContent=fixtureDate(f)+(f.kickoff_at?" • "+fixtureTime(f):"");}
+  const deduped=[...ROUND_ORDER.flatMap(key=>dedupeBracketFixtures(source[key]||[]))];
+  deduped.forEach(f=>{
+    const key=fixtureRoundKey(f),slot=fixtureSlotMap(fixtures).get(f.id);if(!key||!slot)return;
+    const tie=document.querySelector("#"+key+" .tie[data-slot='"+slot.slot+"']");if(!tie)return;
+    attachArsenalTie(tie,f,key);
   });
+  drawBracketEdges(fixtures);
+  requestAnimationFrame(()=>drawBracketEdges(fixtures));
 }
 
 function buildFixtureDetails(f){
@@ -571,7 +711,7 @@ async function hydrateCarabaoFromSupabase(){
   const client=window.nl4Supabase;
   if(!client){console.warn("[NL4 Carabao] Supabase client not available.");return;}
   try{
-    const fr=await client.from("fixtures").select("*").eq("season",CARABAO_SEASON).eq("competition",CARABAO_COMPETITION).eq("is_published",true).order("kickoff_at");
+    const fr=await client.from("fixtures").select("*").eq("season",CARABAO_SEASON).eq("competition",CARABAO_COMPETITION).eq("is_published",true).order("matchday").order("id");
     if(fr.error)throw fr.error;
     const fixtures=fr.data||[];
     const arsenalFixtures=fixtures.filter(f=>f.home_team==="Arsenal"||f.away_team==="Arsenal");
