@@ -122,7 +122,7 @@ async function importBsdMatchData(){
  msg('bsdImportMsg','Importing this Arsenal match from BSD…');
  try{
   const id=current.id;
-  const r=await db.functions.invoke('import-carabao-match-data-v2',{body:{fixture_id:id}});
+  const r=await db.functions.invoke('import-carabao-match-data',{body:{fixture_id:id}});
   if(r.error)throw r.error;const data=r.data||{};
   if(data.ok===false)throw new Error(data.error||'BSD match import failed');
   await openFixture(id);const i=data.imported||{};
