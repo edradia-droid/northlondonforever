@@ -364,9 +364,10 @@ function fixtureRoundKey(f){
 }
 function fixtureScores(f){
   if(f?.home_team==="Arsenal") return {home:f.arsenal_score,away:f.opponent_score};
-  return {home:f.opponent_score,away:f.arsenal_score};
+  if(f?.away_team==="Arsenal") return {home:f.opponent_score,away:f.arsenal_score};
+  return {home:f?.home_score ?? f?.score_home ?? f?.home_team_score ?? null,away:f?.away_score ?? f?.score_away ?? f?.away_team_score ?? null};
 }
-function fixtureIsPlayed(f){return ["fulltime","completed","finished"].includes(String(f?.status||"").toLowerCase()) || (f?.arsenal_score!=null&&f?.opponent_score!=null);}
+function fixtureIsPlayed(f){return ["fulltime","completed","finished"].includes(String(f?.status||"").toLowerCase()) || (f?.arsenal_score!=null&&f?.opponent_score!=null) || (f?.home_score!=null&&f?.away_score!=null);}
 function fixtureState(f){
   if(!fixtureIsPlayed(f)) return "upcoming";
   const s=fixtureScores(f);
@@ -409,24 +410,28 @@ function paintBracketFromFixtures(fixtures){
     t.classList.remove("arsenal-route-tie","arsenal-current","arsenal-upcoming","arsenal-path-tie");
     t.removeAttribute("data-fixture-id");t.removeAttribute("data-round");
     t.removeAttribute("role");t.removeAttribute("tabindex");t.removeAttribute("aria-label");
-    t.onclick=null;t.onkeydown=null;
+    t.onclick=null;t.onkeydown=null;t.style.cursor="";
   });
-  fixtures.filter(f=>f.home_team==="Arsenal"||f.away_team==="Arsenal").forEach(f=>{
+  fixtures.forEach(f=>{
     const key=fixtureRoundKey(f),tie=findBracketTie(f);
     if(!key||!tie)return;
-    tie.dataset.fixtureId=f.id;tie.dataset.round=key;tie.classList.add("arsenal-route-tie");
-    const state=fixtureState(f);
-    if(state==="upcoming")tie.classList.add("arsenal-upcoming");
-    if(state==="completed")tie.classList.add("arsenal-current");
-    tie.onclick=()=>{
-      selectRound(key,true);
-      setTimeout(()=>document.getElementById("matchDetails")?.scrollIntoView({behavior:"smooth",block:"start"}),250);
-    };
-    tie.setAttribute("role","button");
-    tie.setAttribute("tabindex","0");
-    tie.setAttribute("aria-label",roundName(key)+" match: "+f.home_team+" vs "+f.away_team+". Open match centre.");
-    tie.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();tie.click();}};
-    tie.style.cursor="pointer";
+    const isArsenal=f.home_team==="Arsenal"||f.away_team==="Arsenal";
+    tie.dataset.fixtureId=f.id;tie.dataset.round=key;
+    if(isArsenal){
+      tie.classList.add("arsenal-route-tie");
+      const state=fixtureState(f);
+      if(state==="upcoming")tie.classList.add("arsenal-upcoming");
+      if(state==="completed")tie.classList.add("arsenal-current");
+      tie.onclick=()=>{
+        selectRound(key,true);
+        setTimeout(()=>document.getElementById("matchDetails")?.scrollIntoView({behavior:"smooth",block:"start"}),250);
+      };
+      tie.setAttribute("role","button");
+      tie.setAttribute("tabindex","0");
+      tie.setAttribute("aria-label",roundName(key)+" match: "+f.home_team+" vs "+f.away_team+". Open Arsenal match centre.");
+      tie.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();tie.click();}};
+      tie.style.cursor="pointer";
+    }
     const score=fixtureScores(f);
     const teamEls=tie.querySelectorAll(".team");
     if(teamEls.length>=2){
@@ -434,6 +439,8 @@ function paintBracketFromFixtures(fixtures){
       teamEls[1].querySelector("span").textContent=f.away_team||"TBC";
       teamEls[0].querySelector("b").textContent=score.home==null?"—":score.home;
       teamEls[1].querySelector("b").textContent=score.away==null?"—":score.away;
+      const date=tie.querySelector(".date");
+      if(date && f.kickoff_at) date.textContent=fixtureDate(f)+" • "+fixtureTime(f);
     }
   });
 }
@@ -554,6 +561,7 @@ async function hydrateCarabaoFromSupabase(){
     if(fr.error)throw fr.error;
     const fixtures=fr.data||[];
     const arsenalFixtures=fixtures.filter(f=>f.home_team==="Arsenal"||f.away_team==="Arsenal");
+    Object.keys(ARSENAL_FIXTURES).forEach(k=>delete ARSENAL_FIXTURES[k]);
     arsenalFixtures.forEach(f=>{ARSENAL_FIXTURES[f.id]=f;buildFixtureDetails(f);});
     paintBracketFromFixtures(fixtures);
     renderRoundTracker();
