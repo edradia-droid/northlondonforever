@@ -118,20 +118,17 @@ async function importBsdMatchData(){
  if(!current)return msg('bsdImportMsg','Open an Arsenal fixture first.',true);
  const isArsenal=current.home_team==='Arsenal'||current.away_team==='Arsenal';
  if(!isArsenal)return msg('bsdImportMsg','BSD match-detail import is enabled for Arsenal fixtures.',true);
- const button=$('importBsdMatch');
- if(button){button.disabled=true;button.textContent='IMPORTING…'}
- msg('bsdImportMsg','Importing BSD lineup, incidents and substitutions into the NL4 Match Centre tables…');
+ const button=$('importBsdMatch');if(button){button.disabled=true;button.textContent='IMPORTING…'}
+ msg('bsdImportMsg','Importing this Arsenal match from BSD…');
  try{
-   const id=current.id;
-   const ok=await manualCarabaoSync();
-   if(!ok)return;
-   await openFixture(id);
-   msg('bsdImportMsg','BSD match data imported ✓ You can now edit the Arsenal lineup, events and substitutions here. The public Match Centre reads these same records.');
- }catch(e){
-   msg('bsdImportMsg','BSD match-data import failed: '+(e.message||e),true);
- }finally{
-   if(button){button.disabled=false;button.textContent='↻ IMPORT BSD MATCH DATA'}
- }
+  const id=current.id;
+  const r=await db.functions.invoke('import-carabao-match-data',{body:{fixture_id:id}});
+  if(r.error)throw r.error;const data=r.data||{};
+  if(data.ok===false)throw new Error(data.error||'BSD match import failed');
+  await openFixture(id);const i=data.imported||{};
+  msg('bsdImportMsg','BSD import complete ✓ '+(i.lineups??0)+' lineup entries • '+(i.incidents??0)+' events • '+(i.substitutions??0)+' substitutions. You can now edit the NL4 version; the public Match Centre uses these same records.');
+ }catch(e){msg('bsdImportMsg','BSD match-data import failed: '+(e.message||e),true)}
+ finally{if(button){button.disabled=false;button.textContent='↻ IMPORT BSD MATCH DATA'}}
 }
 async function openFixture(id){
  try{current=await fetchFixture(id)}catch(e){alert('Could not load match: '+e.message);return}
