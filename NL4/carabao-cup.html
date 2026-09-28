@@ -480,7 +480,8 @@ function assignFutureSlots(rows,key){
 function buildSlotTie(f,slotIndex,key){
   const tie=document.createElement("div");
   tie.className="tie bracket-slot";
-  const arsenalTie=!!f&&(normalizeTeamName(f.home_team)==="arsenal"||normalizeTeamName(f.away_team)==="arsenal");
+  const staticPair=BRACKET_SLOTS[key]?.[slotIndex];
+  const arsenalTie=!!f&&(normalizeTeamName(f.home_team)==="arsenal"||normalizeTeamName(f.away_team)==="arsenal") || !!staticPair&&(normalizeTeamName(staticPair[0])==="arsenal"||normalizeTeamName(staticPair[1])==="arsenal");
   if(arsenalTie) tie.classList.add("arsenal-highlight","arsenal-route-tie");
   tie.dataset.slot=String(slotIndex);
   tie.dataset.round=key;
@@ -594,7 +595,7 @@ function paintBracketFromFixtures(fixtures){
   const source={};for(const key of ROUND_ORDER)source[key]=(fixtures||[]).filter(f=>fixtureRoundKey(f)===key);
   for(const key of ROUND_ORDER)renderFixedRound(key,source[key]||[]);
   document.querySelectorAll(".tie").forEach(t=>{
-    t.classList.remove("arsenal-route-tie","arsenal-highlight","arsenal-current","arsenal-upcoming","arsenal-path-tie","arsenal-dim");
+    t.classList.remove("arsenal-current","arsenal-upcoming","arsenal-path-tie","arsenal-dim");
     t.removeAttribute("data-fixture-id");t.removeAttribute("role");t.removeAttribute("tabindex");t.removeAttribute("aria-label");t.onclick=null;t.onkeydown=null;t.style.cursor="";
   });
   const deduped=[...ROUND_ORDER.flatMap(key=>dedupeBracketFixtures(source[key]||[]))];
