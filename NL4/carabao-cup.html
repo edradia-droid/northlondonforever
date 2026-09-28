@@ -613,6 +613,31 @@ function paintBracketFromFixtures(fixtures){
   });
   drawBracketEdges(fixtures);
   requestAnimationFrame(()=>drawBracketEdges(fixtures));
+
+  // Delegated Arsenal click handler: survives bracket redraws and does not depend
+  // on an inline handler being attached to a particular tie element.
+  const bracket=document.querySelector(".bracket");
+  if(bracket){
+    bracket.onclick=null;
+    bracket.onclick=e=>{
+      const tie=e.target.closest(".tie[data-fixture-id]");
+      if(!tie)return;
+      const fixtureId=tie.dataset.fixtureId;
+      const fixture=ARSENAL_FIXTURES[fixtureId];
+      if(!fixture)return;
+      const key=fixtureRoundKey(fixture);
+      if(!key)return;
+      if(normalizeTeamName(fixture.home_team)!=="arsenal" && normalizeTeamName(fixture.away_team)!=="arsenal")return;
+      selectRound(key,true);
+    };
+    bracket.onkeydown=e=>{
+      if(e.key!=="Enter" && e.key!==" ")return;
+      const tie=e.target.closest(".tie[data-fixture-id]");
+      if(!tie)return;
+      e.preventDefault();
+      tie.click();
+    };
+  }
 }
 
 function buildFixtureDetails(f){
