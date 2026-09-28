@@ -81,11 +81,9 @@ async function manualCarabaoSync(){
    msg('syncMsg','Sync complete ✓ '+(s.saved??'')+' source fixtures checked • '+(fixtures.length||'')+' total database fixtures.');
    await loadFixtures();
    await loadSyncStatus();
-   return true;
  }catch(e){
    if($('syncStatus'))$('syncStatus').textContent='ERROR';
    msg('syncMsg','Sync failed: '+(e.message||e),true);
-   return false;
  }finally{
    if(panel)panel.classList.remove('syncing'); if(button){button.disabled=false;button.textContent='↻ SYNC NOW'}
  }
@@ -113,23 +111,6 @@ async function createFixture(){
  msg('createMsg','Fixture created ✓'); ['newAway','newVenue','newKickoff','newRound'].forEach(x=>val(x,'')); val('newHome','Arsenal'); await loadFixtures(); openFixture(r.data.id);
 }
 async function fetchFixture(id){const r=await db.from('fixtures').select('*').eq('id',id).single();if(r.error)throw r.error;return r.data}
-async function importBsdMatchData(){
- if(COMP!=='Carabao Cup')return;
- if(!current)return msg('bsdImportMsg','Open an Arsenal fixture first.',true);
- const isArsenal=current.home_team==='Arsenal'||current.away_team==='Arsenal';
- if(!isArsenal)return msg('bsdImportMsg','BSD match-detail import is enabled for Arsenal fixtures.',true);
- const button=$('importBsdMatch');if(button){button.disabled=true;button.textContent='IMPORTING…'}
- msg('bsdImportMsg','Importing this Arsenal match from BSD…');
- try{
-  const id=current.id;
-  const r=await db.functions.invoke('import-carabao-match-data',{body:{fixture_id:id}});
-  if(r.error)throw r.error;const data=r.data||{};
-  if(data.ok===false)throw new Error(data.error||'BSD match import failed');
-  await openFixture(id);const i=data.imported||{};
-  msg('bsdImportMsg','BSD import complete ✓ '+(i.lineups??0)+' lineup entries • '+(i.incidents??0)+' events • '+(i.substitutions??0)+' substitutions. You can now edit the NL4 version; the public Match Centre uses these same records.');
- }catch(e){msg('bsdImportMsg','BSD match-data import failed: '+(e.message||e),true)}
- finally{if(button){button.disabled=false;button.textContent='↻ IMPORT BSD MATCH DATA'}}
-}
 async function openFixture(id){
  try{current=await fetchFixture(id)}catch(e){alert('Could not load match: '+e.message);return}
  const n=names();
@@ -144,7 +125,6 @@ async function openFixture(id){
  $('statsHome').textContent=n.home;$('statsAway').textContent=n.away;
  fields.forEach((x,i)=>{val('sh'+i,current[x[1]]);val('sa'+i,current[x[2]])});
  $('preview').href=PAGE;
- const bsdButton=$('importBsdMatch'); if(bsdButton){const isArsenal=current.home_team==='Arsenal'||current.away_team==='Arsenal';bsdButton.hidden=!isArsenal;}
  lineupTeam=n.home;
  $('lineupTabs').innerHTML='<button data-team="'+esc(n.home)+'">'+esc(n.home)+'</button><button data-team="'+esc(n.away)+'">'+esc(n.away)+'</button>';
  resetLineup();resetEvent();tabs();await loadPlayerLists();
@@ -153,7 +133,7 @@ async function openFixture(id){
 }
 async function saveDetails(){
  const k=read('kickoff');
- const p={details_locked:true,status:read('status'),kickoff_at:k?new Date(k).toISOString():null,venue:read('venue').trim()||null,referee:read('referee').trim()||null,
+ const p={status:read('status'),kickoff_at:k?new Date(k).toISOString():null,venue:read('venue').trim()||null,referee:read('referee').trim()||null,
  arsenal_score:num('arsenalScore'),opponent_score:num('opponentScore'),halftime_arsenal_score:num('htArsenal'),halftime_opponent_score:num('htOpponent'),
  attendance:num('attendance'),added_time:num('addedTime')||0,kickoff_confirmed:read('kickoffConfirmed')==='true',arsenal_penalty_score:num('arsenalPenalties'),opponent_penalty_score:num('opponentPenalties'),lineup_formation:read('lineupFormation').trim()||null,is_published:read('published')!=='false',man_of_the_match:playerValue('motm','motmManual')||null,
  man_of_the_match_team:playerValue('motm','motmManual')?read('motmTeam'):null,updated_at:new Date().toISOString()};
@@ -161,7 +141,7 @@ async function saveDetails(){
  if(r.error)return msg('detailsMsg',r.error.message,true); current=r.data; msg('detailsMsg','Match details saved ✓'); await loadFixtures();
 }
 async function saveStats(){
- const p={details_locked:true,updated_at:new Date().toISOString()};
+ const p={updated_at:new Date().toISOString()};
  fields.forEach((x,i)=>{p[x[1]]=num('sh'+i);p[x[2]]=num('sa'+i)});
  const r=await db.from('fixtures').update(p).eq('id',current.id).select('*').single();
  if(r.error)return msg('statsMsg',r.error.message,true);current=r.data;msg('statsMsg','Statistics saved ✓');
@@ -215,7 +195,7 @@ async function saveLineup(){
  if(!name&&!manualName)return msg('lineupMsg','Select a player or enter one manually.',true);
  const finalName=manualName||name;
  if(!starter&&!playerOut&&Number(num('minuteOn')??0)>0)return msg('lineupMsg','Select the player going out for this substitution.',true);
- const p={fixture_id:current.id,details_locked:true,team_name:lineupTeam,player_name:finalName,position:read('lineupPosition'),is_starter:starter,minute_on:starter?0:(num('minuteOn')??0),minute_off:num('minuteOff'),player_out_name:playerOut,updated_at:new Date().toISOString()};
+ const p={fixture_id:current.id,team_name:lineupTeam,player_name:finalName,position:read('lineupPosition'),is_starter:starter,minute_on:starter?0:(num('minuteOn')??0),minute_off:num('minuteOff'),player_out_name:playerOut,updated_at:new Date().toISOString()};
  const r=editLineup?await db.from('match_lineups').update(p).eq('id',editLineup):await db.from('match_lineups').upsert(p,{onConflict:'fixture_id,team_name,player_name'});
  if(r.error)return msg('lineupMsg',r.error.message,true);msg('lineupMsg','Lineup saved ✓');resetLineup();val('lineupPlayerManual','');await loadLineups();await loadPlayerLists();
 }
@@ -227,7 +207,7 @@ async function loadEvents(){
 function resetEvent(){editEvent=null;['eventPlayer','eventMinute','eventStoppage','eventRelated','eventPlayerManual','eventRelatedManual'].forEach(x=>val(x,''));val('eventType','goal');$('saveEvent').textContent='Add Event';$('cancelEvent').hidden=true}
 async function saveEvent(){
  const player=playerValue('eventPlayer','eventPlayerManual');if(!player)return msg('eventMsg','Select a player or enter one manually.',true);
- const p={fixture_id:current.id,details_locked:true,event_type:read('eventType'),player_name:player,team_name:read('eventTeam'),minute:num('eventMinute'),stoppage_minute:num('eventStoppage'),related_player_name:playerValue('eventRelated','eventRelatedManual')||null,updated_at:new Date().toISOString()};
+ const p={fixture_id:current.id,event_type:read('eventType'),player_name:player,team_name:read('eventTeam'),minute:num('eventMinute'),stoppage_minute:num('eventStoppage'),related_player_name:playerValue('eventRelated','eventRelatedManual')||null,updated_at:new Date().toISOString()};
  const r=editEvent?await db.from('match_events').update(p).eq('id',editEvent):await db.from('match_events').insert(p);
  if(r.error)return msg('eventMsg',r.error.message,true);msg('eventMsg','Event saved ✓');resetEvent();await loadEvents();await loadPlayerLists();
 }
@@ -235,8 +215,7 @@ $('list').onclick=e=>{const b=e.target.closest('[data-fixture]');if(b)openFixtur
 $('newFixtureBtn').onclick=createFixture;
 $('close').onclick=()=>{$('editor').hidden=true};
 $('saveDetails').onclick=saveDetails;$('saveStats').onclick=saveStats;$('saveLineup').onclick=saveLineup;$('cancelLineup').onclick=resetLineup;
-$('saveEvent').onclick=saveEvent;$('cancelEvent').onclick=resetEvent;
-if($('importBsdMatch'))$('importBsdMatch').onclick=importBsdMatchData;$('lineupTabs').onclick=e=>{const b=e.target.closest('[data-team]');if(b){lineupTeam=b.dataset.team;resetLineup();tabs()}};
+$('saveEvent').onclick=saveEvent;$('cancelEvent').onclick=resetEvent;$('lineupTabs').onclick=e=>{const b=e.target.closest('[data-team]');if(b){lineupTeam=b.dataset.team;resetLineup();tabs()}};
 $('lineupRole').onchange=()=>{$('lineupPlayerOut').disabled=read('lineupRole')==='true';if(read('lineupRole')==='true')val('lineupPlayerOut','')};
 $('lineupList').onclick=async e=>{
  const eb=e.target.closest('[data-le]'),del=e.target.closest('[data-ld]');
