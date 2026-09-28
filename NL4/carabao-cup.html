@@ -435,7 +435,6 @@ function rebuildStaticRoundFromSource(root,rows){
   rows.forEach(f=>root.appendChild(renderSourceTie(f,f.home_team==="Arsenal"||f.away_team==="Arsenal")));
 }
 function paintBracketFromFixtures(fixtures){
-  renderLiveSourceRounds(fixtures);
   const grouped={round3:[],round4:[]};
   fixtures.forEach(f=>{const key=fixtureRoundKey(f);if(grouped[key])grouped[key].push(f);});
   ["round3","round4"].forEach(key=>{
