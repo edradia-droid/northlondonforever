@@ -153,7 +153,7 @@ async function openFixture(id){
 }
 async function saveDetails(){
  const k=read('kickoff');
- const p={status:read('status'),kickoff_at:k?new Date(k).toISOString():null,venue:read('venue').trim()||null,referee:read('referee').trim()||null,
+ const p={details_locked:true,status:read('status'),kickoff_at:k?new Date(k).toISOString():null,venue:read('venue').trim()||null,referee:read('referee').trim()||null,
  arsenal_score:num('arsenalScore'),opponent_score:num('opponentScore'),halftime_arsenal_score:num('htArsenal'),halftime_opponent_score:num('htOpponent'),
  attendance:num('attendance'),added_time:num('addedTime')||0,kickoff_confirmed:read('kickoffConfirmed')==='true',arsenal_penalty_score:num('arsenalPenalties'),opponent_penalty_score:num('opponentPenalties'),lineup_formation:read('lineupFormation').trim()||null,is_published:read('published')!=='false',man_of_the_match:playerValue('motm','motmManual')||null,
  man_of_the_match_team:playerValue('motm','motmManual')?read('motmTeam'):null,updated_at:new Date().toISOString()};
@@ -161,7 +161,7 @@ async function saveDetails(){
  if(r.error)return msg('detailsMsg',r.error.message,true); current=r.data; msg('detailsMsg','Match details saved ✓'); await loadFixtures();
 }
 async function saveStats(){
- const p={updated_at:new Date().toISOString()};
+ const p={details_locked:true,updated_at:new Date().toISOString()};
  fields.forEach((x,i)=>{p[x[1]]=num('sh'+i);p[x[2]]=num('sa'+i)});
  const r=await db.from('fixtures').update(p).eq('id',current.id).select('*').single();
  if(r.error)return msg('statsMsg',r.error.message,true);current=r.data;msg('statsMsg','Statistics saved ✓');
@@ -215,7 +215,7 @@ async function saveLineup(){
  if(!name&&!manualName)return msg('lineupMsg','Select a player or enter one manually.',true);
  const finalName=manualName||name;
  if(!starter&&!playerOut&&Number(num('minuteOn')??0)>0)return msg('lineupMsg','Select the player going out for this substitution.',true);
- const p={fixture_id:current.id,team_name:lineupTeam,player_name:finalName,position:read('lineupPosition'),is_starter:starter,minute_on:starter?0:(num('minuteOn')??0),minute_off:num('minuteOff'),player_out_name:playerOut,updated_at:new Date().toISOString()};
+ const p={fixture_id:current.id,details_locked:true,team_name:lineupTeam,player_name:finalName,position:read('lineupPosition'),is_starter:starter,minute_on:starter?0:(num('minuteOn')??0),minute_off:num('minuteOff'),player_out_name:playerOut,updated_at:new Date().toISOString()};
  const r=editLineup?await db.from('match_lineups').update(p).eq('id',editLineup):await db.from('match_lineups').upsert(p,{onConflict:'fixture_id,team_name,player_name'});
  if(r.error)return msg('lineupMsg',r.error.message,true);msg('lineupMsg','Lineup saved ✓');resetLineup();val('lineupPlayerManual','');await loadLineups();await loadPlayerLists();
 }
@@ -227,7 +227,7 @@ async function loadEvents(){
 function resetEvent(){editEvent=null;['eventPlayer','eventMinute','eventStoppage','eventRelated','eventPlayerManual','eventRelatedManual'].forEach(x=>val(x,''));val('eventType','goal');$('saveEvent').textContent='Add Event';$('cancelEvent').hidden=true}
 async function saveEvent(){
  const player=playerValue('eventPlayer','eventPlayerManual');if(!player)return msg('eventMsg','Select a player or enter one manually.',true);
- const p={fixture_id:current.id,event_type:read('eventType'),player_name:player,team_name:read('eventTeam'),minute:num('eventMinute'),stoppage_minute:num('eventStoppage'),related_player_name:playerValue('eventRelated','eventRelatedManual')||null,updated_at:new Date().toISOString()};
+ const p={fixture_id:current.id,details_locked:true,event_type:read('eventType'),player_name:player,team_name:read('eventTeam'),minute:num('eventMinute'),stoppage_minute:num('eventStoppage'),related_player_name:playerValue('eventRelated','eventRelatedManual')||null,updated_at:new Date().toISOString()};
  const r=editEvent?await db.from('match_events').update(p).eq('id',editEvent):await db.from('match_events').insert(p);
  if(r.error)return msg('eventMsg',r.error.message,true);msg('eventMsg','Event saved ✓');resetEvent();await loadEvents();await loadPlayerLists();
 }
