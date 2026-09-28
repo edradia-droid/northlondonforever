@@ -81,9 +81,11 @@ async function manualCarabaoSync(){
    msg('syncMsg','Sync complete ✓ '+(s.saved??'')+' source fixtures checked • '+(fixtures.length||'')+' total database fixtures.');
    await loadFixtures();
    await loadSyncStatus();
+   return true;
  }catch(e){
    if($('syncStatus'))$('syncStatus').textContent='ERROR';
    msg('syncMsg','Sync failed: '+(e.message||e),true);
+   return false;
  }finally{
    if(panel)panel.classList.remove('syncing'); if(button){button.disabled=false;button.textContent='↻ SYNC NOW'}
  }
@@ -111,6 +113,26 @@ async function createFixture(){
  msg('createMsg','Fixture created ✓'); ['newAway','newVenue','newKickoff','newRound'].forEach(x=>val(x,'')); val('newHome','Arsenal'); await loadFixtures(); openFixture(r.data.id);
 }
 async function fetchFixture(id){const r=await db.from('fixtures').select('*').eq('id',id).single();if(r.error)throw r.error;return r.data}
+async function importBsdMatchData(){
+ if(COMP!=='Carabao Cup')return;
+ if(!current)return msg('bsdImportMsg','Open an Arsenal fixture first.',true);
+ const isArsenal=current.home_team==='Arsenal'||current.away_team==='Arsenal';
+ if(!isArsenal)return msg('bsdImportMsg','BSD match-detail import is enabled for Arsenal fixtures.',true);
+ const button=$('importBsdMatch');
+ if(button){button.disabled=true;button.textContent='IMPORTING…'}
+ msg('bsdImportMsg','Importing BSD lineup, incidents and substitutions into the NL4 Match Centre tables…');
+ try{
+   const id=current.id;
+   const ok=await manualCarabaoSync();
+   if(!ok)return;
+   await openFixture(id);
+   msg('bsdImportMsg','BSD match data imported ✓ You can now edit the Arsenal lineup, events and substitutions here. The public Match Centre reads these same records.');
+ }catch(e){
+   msg('bsdImportMsg','BSD match-data import failed: '+(e.message||e),true);
+ }finally{
+   if(button){button.disabled=false;button.textContent='↻ IMPORT BSD MATCH DATA'}
+ }
+}
 async function openFixture(id){
  try{current=await fetchFixture(id)}catch(e){alert('Could not load match: '+e.message);return}
  const n=names();
@@ -125,6 +147,7 @@ async function openFixture(id){
  $('statsHome').textContent=n.home;$('statsAway').textContent=n.away;
  fields.forEach((x,i)=>{val('sh'+i,current[x[1]]);val('sa'+i,current[x[2]])});
  $('preview').href=PAGE;
+ const bsdButton=$('importBsdMatch'); if(bsdButton){const isArsenal=current.home_team==='Arsenal'||current.away_team==='Arsenal';bsdButton.hidden=!isArsenal;}
  lineupTeam=n.home;
  $('lineupTabs').innerHTML='<button data-team="'+esc(n.home)+'">'+esc(n.home)+'</button><button data-team="'+esc(n.away)+'">'+esc(n.away)+'</button>';
  resetLineup();resetEvent();tabs();await loadPlayerLists();
@@ -215,7 +238,8 @@ $('list').onclick=e=>{const b=e.target.closest('[data-fixture]');if(b)openFixtur
 $('newFixtureBtn').onclick=createFixture;
 $('close').onclick=()=>{$('editor').hidden=true};
 $('saveDetails').onclick=saveDetails;$('saveStats').onclick=saveStats;$('saveLineup').onclick=saveLineup;$('cancelLineup').onclick=resetLineup;
-$('saveEvent').onclick=saveEvent;$('cancelEvent').onclick=resetEvent;$('lineupTabs').onclick=e=>{const b=e.target.closest('[data-team]');if(b){lineupTeam=b.dataset.team;resetLineup();tabs()}};
+$('saveEvent').onclick=saveEvent;$('cancelEvent').onclick=resetEvent;
+if($('importBsdMatch'))$('importBsdMatch').onclick=importBsdMatchData;$('lineupTabs').onclick=e=>{const b=e.target.closest('[data-team]');if(b){lineupTeam=b.dataset.team;resetLineup();tabs()}};
 $('lineupRole').onchange=()=>{$('lineupPlayerOut').disabled=read('lineupRole')==='true';if(read('lineupRole')==='true')val('lineupPlayerOut','')};
 $('lineupList').onclick=async e=>{
  const eb=e.target.closest('[data-le]'),del=e.target.closest('[data-ld]');
