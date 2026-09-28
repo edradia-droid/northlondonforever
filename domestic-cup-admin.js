@@ -38,6 +38,41 @@ function renderFixtures(){
  const shown=roundFilter==='all'?fixtures:fixtures.filter(f=>String(f.matchday)===String(roundFilter));
  list.innerHTML=shown.length?shown.map(f=>{const home=f.home_team||'Arsenal',away=f.away_team||f.opponent||'Opponent';const played=f.arsenal_score!==null&&f.arsenal_score!==undefined&&f.opponent_score!==null&&f.opponent_score!==undefined;const score=played?'<strong class="fixture-score">'+esc(f.arsenal_score)+' — '+esc(f.opponent_score)+'</strong>':'<strong class="fixture-score muted">VS</strong>';return '<article class="match"><div><div class="fixture-line"><strong>Round '+esc(f.matchday??'—')+' • '+esc(home)+' vs '+esc(away)+'</strong>'+score+'</div><div class="meta">'+(f.kickoff_at?new Date(f.kickoff_at).toLocaleString():'TBC')+' • '+esc(f.venue||'TBC')+' • '+esc(f.status||'scheduled')+'</div></div><button class="primary edit" data-fixture="'+f.id+'">Manage</button></article>'}).join(''):'<div class="empty">No '+esc(LABEL)+' fixtures match this round filter.</div>';
 }
+async function loadSyncStatus(){
+ try{
+   const r=await db.from('fixtures').select('source_updated_at',{count:'exact',head:false}).eq('season','2026/27').eq('competition',COMP).order('source_updated_at',{ascending:false}).limit(1);
+   if(!r.error){
+     const count=await db.from('fixtures').select('id',{count:'exact',head:true}).eq('season','2026/27').eq('competition',COMP);
+     if($('syncFixtureCount'))$('syncFixtureCount').textContent=String(count.count??fixtures.length);
+     if($('syncLastUpdate'))$('syncLastUpdate').textContent=r.data?.[0]?.source_updated_at?new Date(r.data[0].source_updated_at).toLocaleString():'—';
+   }
+ }catch(e){console.warn('[NL4 Cup Admin] Sync status:',e)}
+}
+async function manualCarabaoSync(){
+ if(COMP!=='Carabao Cup')return msg('syncMsg','Manual BSD sync is available on the Carabao Cup admin only.',true);
+ const panel=document.querySelector('.sync-panel'),button=$('carabaoSyncNow');
+ if(panel)panel.classList.add('syncing'); if(button){button.disabled=true;button.textContent='SYNCING…'}
+ if($('syncStatus'))$('syncStatus').textContent='SYNCING';
+ msg('syncMsg','Contacting the live Carabao Cup data service…');
+ try{
+   const r=await db.functions.invoke('manual-carabao-sync');
+   if(r.error)throw r.error;
+   const data=r.data||{};
+   if(data.ok===false)throw new Error(data.error||'Sync failed');
+   const s=data.sync||{};
+   if($('syncStatus'))$('syncStatus').textContent='UPDATED';
+   if($('syncLastManual'))$('syncLastManual').textContent=data.manualSyncAt?new Date(data.manualSyncAt).toLocaleString():'Just now';
+   msg('syncMsg','Sync complete ✓ '+(s.saved??'')+' competition fixtures checked.');
+   await loadFixtures();
+   await loadSyncStatus();
+ }catch(e){
+   if($('syncStatus'))$('syncStatus').textContent='ERROR';
+   msg('syncMsg','Sync failed: '+(e.message||e),true);
+ }finally{
+   if(panel)panel.classList.remove('syncing'); if(button){button.disabled=false;button.textContent='↻ SYNC NOW'}
+ }
+}
+
 async function loadFixtures(){
  if(!db){$('list').textContent='Supabase client unavailable.';return}
  const r=await db.from('fixtures').select('id,matchday,home_team,away_team,kickoff_at,venue,status,is_home,opponent,arsenal_score,opponent_score').eq('season','2026/27').eq('competition',COMP).order('matchday').order('kickoff_at');
@@ -175,5 +210,7 @@ $('eventsList').onclick=async e=>{
  if(del&&confirm('Delete this event?')){const r=await db.from('match_events').delete().eq('id',del.dataset.ed);if(r.error)return msg('eventMsg',r.error.message,true);await loadEvents();msg('eventMsg','Event deleted ✓')}
 };
 $('refreshFixtures').onclick=loadFixtures;
-buildStats();loadFixtures();
+if($('carabaoSyncNow'))$('carabaoSyncNow').onclick=manualCarabaoSync;
+if($('carabaoSyncRefresh'))$('carabaoSyncRefresh').onclick=async()=>{await loadFixtures();await loadSyncStatus();msg('syncMsg','Admin view refreshed ✓')};
+buildStats();loadFixtures();loadSyncStatus();
 })();
