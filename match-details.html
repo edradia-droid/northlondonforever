@@ -114,7 +114,7 @@
     .sub-photo,.sub-num,.sub-time{display:none!important}.sub-name{display:block;min-width:0;font-size:10px;font-weight:900;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .broadcast-side .empty{padding:25px 13px}
     .sub-bench-player{display:flex;align-items:center;gap:8px;min-width:0}
-    .sub-bench-photo{width:34px;height:40px;object-fit:cover;object-position:center 18%;border:0;border-radius:7px;background:transparent;box-shadow:0 4px 8px rgba(0,0,0,.35);flex:0 0 auto}
+    .sub-bench-photo{width:42px;height:48px;object-fit:contain;object-position:center bottom;border:0;border-radius:0;background:transparent;box-shadow:none;flex:0 0 auto;display:block}
     .sub-bench-row .sub-name{min-width:0}
     @media(max-width:980px){.broadcast-grid{grid-template-columns:minmax(0,1fr) 125px;gap:7px;padding-left:8px;padding-right:8px}.broadcast-side{margin-top:18px}.broadcast-subs{grid-template-columns:1fr}.pitch-stage{min-height:560px}.football-pitch{width:min(760px,96%)}}
     @media(max-width:700px){
@@ -1783,7 +1783,14 @@
         }
       }
 
-      const mediaRows = [...(lineup || []), ...(recordRoomBench || [])];
+      const mediaRows = [
+        ...(lineup || []),
+        ...(recordRoomBench || []),
+        ...(pitchSubstitutionRows || []).flatMap(row => [
+          row.inPlayer ? { player_name: row.inPlayer } : null,
+          row.outPlayer ? { player_name: row.outPlayer } : null
+        ]).filter(Boolean)
+      ];
       const playerMedia = await loadPlayerMedia(mediaRows);
       const currentPitchLineup = buildCurrentPitchLineup(starters, pitchSubstitutionRows, normalizedFormation(fixture.lineup_formation || starters.find(r => r.formation)?.formation));
       render3DPitch(starters, playerMedia, fixture.lineup_formation, pitchSubstitutionRows, currentPitchLineup);
@@ -1822,7 +1829,9 @@
               <div class="broadcast-sub sub-bench-row">
                 <span class="sub-bench-player">
                   ${(() => {
-                    const benchMedia = playerMedia.get(normalizePlayerKey(row.player_name)) || {};
+                    const benchMedia = playerMedia.get(normalizePlayerKey(row.player_name))
+                      || playerMedia.get(String(row.player_name || '').trim().toLowerCase())
+                      || {};
                     return benchMedia.image
                       ? '<img class="sub-bench-photo" src="' + esc(benchMedia.image) + '" alt="' + esc(row.player_name) + '" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden=true">'
                       : '';
