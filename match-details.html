@@ -2659,9 +2659,9 @@ body.match-details-page{
 #lineupPhotoExport .pitch-outgoing-layer{z-index:300!important;pointer-events:none!important;position:absolute!important;inset:0!important;overflow:visible!important}
 #lineupPhotoExport .pitch-off-marker{
   position:absolute!important;
-  left:var(--x)!important;
-  top:var(--y)!important;
-  transform:translate(-50%,-50%)!important;
+  left:calc(var(--x) + 58px)!important;
+  top:calc(var(--y) - 8px)!important;
+  transform:translate(0,-50%)!important;
   z-index:9999!important;
   display:inline-flex!important;
   align-items:center!important;
@@ -2681,7 +2681,13 @@ body.match-details-page{
   pointer-events:none!important;
 }
 @media(max-width:700px){
-  #lineupPhotoExport .pitch-off-marker{min-width:28px!important;padding:2px 4px!important;font-size:9px!important}
+  #lineupPhotoExport .pitch-off-marker{
+    left:calc(var(--x) + 39px)!important;
+    top:calc(var(--y) - 5px)!important;
+    min-width:28px!important;
+    padding:2px 4px!important;
+    font-size:9px!important;
+  }
 }
 </style>
 </html>
