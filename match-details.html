@@ -930,8 +930,10 @@
   color:#777!important;
   font-weight:900!important;
 }
-.pitch-player-off{z-index:7!important;opacity:.62!important;pointer-events:none!important;filter:drop-shadow(0 8px 7px rgba(0,0,0,.48))!important}
+.pitch-player-off{z-index:40!important;opacity:.68!important;pointer-events:none!important;filter:drop-shadow(0 8px 7px rgba(0,0,0,.48))!important;transform:translate(-34px,12px)!important}
 .pitch-player-off .kit-player-photo,.pitch-player-off .kit-shirt{filter:saturate(.72) brightness(.82)!important}
+.pitch-player-off .player-name{position:relative;z-index:41!important}
+.pitch-player-off .kit-player{position:relative;z-index:40!important}
 .pitch-substitution-out{
   display:flex!important;
   align-items:center!important;
@@ -1279,6 +1281,11 @@
         _cameOn: false
       }));
       const outgoingSubstitutions = [];
+      const outgoingKeys = new Set();
+
+      // Build the visible OFF layer from the same canonical substitution events
+      // used for the active XI. If an event pairing is unavailable, use the
+      // starter's minute_off as a safe data-backed fallback.
       [...(substitutionRows || [])]
         .filter(row => row && row.inPlayer && Number.isFinite(Number(row.minute)))
         .sort((x,y) => Number(x.minute) - Number(y.minute))
@@ -1286,17 +1293,44 @@
           const outKey = normalizePlayerKey(event.outPlayer);
           const inKey = normalizePlayerKey(event.inPlayer);
           const slotIndex = current.findIndex(player => normalizePlayerKey(player.player_name) === outKey);
-          if (slotIndex < 0 || current.some(player => normalizePlayerKey(player.player_name) === inKey)) return;
+          if (slotIndex < 0 || !outKey || !inKey || current.some(player => normalizePlayerKey(player.player_name) === inKey)) return;
+
+          const outgoing = current[slotIndex];
+          const offMinute = Number(event.minute);
           outgoingSubstitutions.push({
-            ...current[slotIndex],
-            player_name: event.outPlayer || current[slotIndex].player_name,
-            _pitchSlot: current[slotIndex]._pitchSlot,
-            _minuteOff: Number(event.minute)
+            ...outgoing,
+            player_name: event.outPlayer || outgoing.player_name,
+            _pitchSlot: outgoing._pitchSlot,
+            _minuteOff: offMinute
           });
+          outgoingKeys.add(outKey);
+
           const source = starters.find(row => normalizePlayerKey(row.player_name) === inKey)
             || {player_name:event.inPlayer,team_name:event.teamName,is_starter:false};
-          current[slotIndex] = {...source,_pitchSlot:current[slotIndex]._pitchSlot,_minuteOn:Number(event.minute),_cameOn:true};
+          current[slotIndex] = {
+            ...source,
+            _pitchSlot:outgoing._pitchSlot,
+            _minuteOn:offMinute,
+            _cameOn:true
+          };
         });
+
+      // Never lose an OFF player merely because BSD/event-name pairing differs.
+      // Record Room/Admin lineup minute_off remains a valid exact-minute fallback.
+      starters.forEach((starter, index) => {
+        const key = normalizePlayerKey(starter.player_name);
+        const minuteOff = Number(starter.minute_off);
+        if (!key || !Number.isFinite(minuteOff) || minuteOff <= 0 || outgoingKeys.has(key)) return;
+        const active = current[index];
+        if (!active || normalizePlayerKey(active.player_name) === key) {
+          outgoingSubstitutions.push({
+            ...starter,
+            _pitchSlot: active?._pitchSlot : resolvedSlots[index],
+            _minuteOff: minuteOff
+          });
+        }
+      });
+
       current._outgoingSubstitutions = outgoingSubstitutions;
       return current;
     }
