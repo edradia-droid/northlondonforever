@@ -1708,21 +1708,22 @@
         return aId.localeCompare(bId);
       });
 
-      // De-duplicate substitutions at display level. BSD can expose the same
-      // change through more than one event representation; the public page must
-      // show one IN -> OUT row per team/minute/player pair.
+      // Canonical substitution list: one incoming player per team.
+      // Every substitution UI consumes this same list, preventing duplicate
+      // players when BSD exposes multiple representations of one change.
       const substitutionSeen = new Set();
       const uniqueSubstitutionRows = substitutionRows.filter(row => {
         const key = [
           normalizePlayerKey(row.teamName || pitchTeam),
-          Number(row.minute),
           normalizePlayerKey(row.inPlayer)
         ].join('|');
-        if (substitutionSeen.has(key)) return false;
+        if (!normalizePlayerKey(row.inPlayer) || substitutionSeen.has(key)) return false;
         substitutionSeen.add(key);
         return true;
       });
-      const pitchSubstitutionRows = uniqueSubstitutionRows.filter(row => row.teamName === pitchTeam);
+      const pitchSubstitutionRows = uniqueSubstitutionRows.filter(row =>
+        normalizePlayerKey(row.teamName) === normalizePlayerKey(pitchTeam)
+      );
 
       const leagueTeamsEl = document.getElementById("leagueWideTeams");
       const leagueEventsEl = document.getElementById("leagueWideEvents");
