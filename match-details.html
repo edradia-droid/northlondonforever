@@ -1,10 +1,10 @@
 <style id="nl4-no-duplicate-off-player-v1">
-/* OFF marker sits beside the outgoing player's figure/name, never over the player. */
+/* OFF marker is anchored directly above the outgoing starter's head. */
 #lineupPhotoExport .pitch-outgoing-layer{z-index:300!important;pointer-events:none!important;position:absolute!important;inset:0!important;overflow:visible!important}
 #lineupPhotoExport .pitch-off-marker{
   position:absolute!important;
   left:50%!important;
-  top:-8px!important;
+  top:-11px!important;
   transform:translateX(-50%)!important;
   z-index:30!important;
   display:inline-flex!important;
@@ -26,7 +26,7 @@
 }
 @media(max-width:700px){
   #lineupPhotoExport .pitch-off-marker{
-    top:-6px!important;
+    top:-9px!important;
     padding:1px 2px!important;
     border-radius:2px!important;
     font-size:6px!important;
@@ -1518,7 +1518,7 @@
                   <span class="kit-back-number">${esc(safeShirtNumber)}</span>
                 </span>`}
           </div>
-          <span class="player-name"><span class="player-name-first">${esc(String(displayName).trim().split(/\s+/)[0]||displayName)}</span><span class="player-name-last">${esc(String(displayName).trim().split(/\s+/).slice(1).join(" ")||"")}</span>${incomingBadge}${outgoingBadge}</span>
+          ${outgoingBadge}\n          <span class="player-name"><span class="player-name-first">${esc(String(displayName).trim().split(/\s+/)[0]||displayName)}</span><span class="player-name-last">${esc(String(displayName).trim().split(/\s+/).slice(1).join(" ")||"")}</span>${incomingBadge}</span>
         </div>`;
       }).join('');
 
