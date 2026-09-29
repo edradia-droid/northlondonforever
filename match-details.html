@@ -1794,8 +1794,10 @@
           .map(row => [normalizePlayerKey(row.inPlayer), row])
       );
 
-      const completeBench = recordRoomBench.length
-        ? recordRoomBench.map(row => {
+      // BSD lineup bench is primary. Record Room is fallback only when BSD has no bench rows.
+      const benchRows = subs.length ? subs : recordRoomBench;
+      const completeBench = benchRows.length
+        ? benchRows.map(row => {
             const key = normalizePlayerKey(row.player_name);
             const used = usedNames.get(key);
             const minute = used ? `<span class="substitution-time">${esc(used.minute)}’</span>` : "";
