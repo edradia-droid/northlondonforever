@@ -1589,7 +1589,7 @@
       // or lineup-row order when multiple players change at the same minute.
       const { data: substitutionEvents, error: substitutionEventsError } = await db
         .from("match_events")
-        .select("player_name,related_player_name,minute,stoppage_minute,external_event_id,created_at,id")
+        .select("player_name,related_player_name,minute,stoppage_minute,external_event_id,created_at,id,team_name")
         .eq("fixture_id", fixture.id)
         .in("team_name", [home, away])
         .eq("event_type", "substitution")
