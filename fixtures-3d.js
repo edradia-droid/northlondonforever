@@ -223,6 +223,7 @@
         .eq('season','2026/27')
         .eq('competition','Premier League')
         .eq('is_published',true)
+        .or('home_team.eq.Arsenal,away_team.eq.Arsenal')
         .order('matchday',{ ascending:true });
 
       const result = await Promise.race([request, timeout]);
@@ -245,7 +246,8 @@
         row &&
         row.season === '2026/27' &&
         row.competition === 'Premier League' &&
-        row.is_published !== false
+        row.is_published !== false &&
+        (row.home_team === 'Arsenal' || row.away_team === 'Arsenal' || row.opponent === 'Arsenal')
       );
     }
 
