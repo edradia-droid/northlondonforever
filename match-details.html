@@ -1790,13 +1790,13 @@
         // stores the player's full name. Resolve that form before the pitch
         // renderer sees the event so the OFF marker can always identify the
         // actual starter.
-        const parts = raw.replace(/\\./g, "").split(/\\s+/).filter(Boolean);
+        const parts = raw.replace(/\./g, "").split(/\s+/).filter(Boolean);
         if (parts.length >= 2) {
           const initial = normalizePlayerKey(parts[0]).charAt(0);
           const surname = normalizePlayerKey(parts[parts.length - 1]);
           if (initial && surname) {
             for (const [key, fullName] of canonicalPlayerNames.entries()) {
-              const fullParts = String(fullName).trim().split(/\\s+/).filter(Boolean);
+              const fullParts = String(fullName).trim().split(/\s+/).filter(Boolean);
               if (fullParts.length >= 2) {
                 const fullInitial = normalizePlayerKey(fullParts[0]).charAt(0);
                 const fullSurname = normalizePlayerKey(fullParts[fullParts.length - 1]);
