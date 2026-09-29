@@ -1642,11 +1642,25 @@
         return canonicalPlayerNames.get(normalizePlayerKey(raw)) || raw;
       };
 
+      // BSD is the authoritative live-feed source when BSD substitution
+      // events exist for a team. Older sun-ars/manual rows can coexist with
+      // BSD rows for the same change (and may use a different minute/name
+      // format), so never render both sources together.
+      const substitutionSource = [home, away].flatMap(team => {
+        const teamRows = (substitutionEvents || []).filter(row =>
+          row.player_name && row.team_name === team
+        );
+        const bsdRows = teamRows.filter(row =>
+          String(row.external_event_id || "").toLowerCase().startsWith("bsd:")
+        );
+        return bsdRows.length ? bsdRows : teamRows;
+      });
+
       // match_events is the authoritative substitution source:
       // player_name = IN, related_player_name = OUT.
-      // Keep every event as its own row so simultaneous substitutions retain
-      // their exact IN -> OUT relationship and order.
-      const substitutionRows = (substitutionEvents || [])
+      // Keep every BSD event as its own row so simultaneous substitutions
+      // retain their exact IN -> OUT relationship and order.
+      const substitutionRows = substitutionSource
         .filter(row => row.player_name)
         .map((row, index) => ({
           teamName: row.team_name,
@@ -1813,7 +1827,7 @@
       const usedNames = new Map(
         pitchSubstitutionRows
           .filter(row => row.inPlayer)
-          .map(row => [normalizePlayerKey(row.inPlayer), row])
+          .map(row => [substitutionPlayerKey(row.inPlayer), row])
       );
 
       // Match Squad > Arsenal Substitutes is an IN-game list, not a full
@@ -1823,6 +1837,10 @@
       // duplicate substitutions.
       const actualSubstituteRows = pitchSubstitutionRows
         .filter(row => row.inPlayer)
+        .filter((row, index, rows) => {
+          const key = substitutionPlayerKey(row.inPlayer);
+          return rows.findIndex(other => substitutionPlayerKey(other.inPlayer) === key) === index;
+        })
         .filter(row => {
           const media = resolvePlayerMedia(row.inPlayer);
           return Boolean(media.image);
@@ -1832,16 +1850,11 @@
           team_name: pitchTeam,
           minute_on: row.minute,
           is_starter: false
-        }))
-        .filter((row, index, rows) =>
-          rows.findIndex(other =>
-            normalizePlayerKey(other.player_name) === normalizePlayerKey(row.player_name)
-          ) === index
-        );
+        }));
 
       const completeBench = actualSubstituteRows.length
         ? actualSubstituteRows.map(row => {
-            const key = normalizePlayerKey(row.player_name);
+            const key = substitutionPlayerKey(row.player_name);
             const used = usedNames.get(key);
             const minute = used ? `<span class="substitution-time">${esc(used.minute)}’</span>` : "";
             return `
