@@ -1727,12 +1727,21 @@
 
       const exactSubHtml = pitchSubstitutionRows.map(row => {
         const minuteText = `${row.minute}’`;
+        const exactMedia = playerMedia.get(normalizePlayerKey(row.inPlayer))
+          || playerMedia.get(String(row.inPlayer || '').trim().toLowerCase())
+          || {};
+        const exactPhoto = exactMedia.image
+          ? '<img class="sub-bench-photo" src="' + esc(exactMedia.image) + '" alt="' + esc(row.inPlayer) + '" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden=true">'
+          : '';
         return `
-          <div class="broadcast-sub" title="${esc(minuteText)}">
-            <span class="sub-name">
-              <span class="substitution-time">${esc(minuteText)}</span>
-              <span class="substitution-arrow in" aria-hidden="true">↑</span>${esc(row.inPlayer)} <span class="substitution-label in">IN</span>
-              ${row.outPlayer ? `<span class="substitution-separator"> • </span><span class="substitution-arrow out" aria-hidden="true">↓</span>${esc(row.outPlayer)} <span class="substitution-label out">OUT</span>` : ""}
+          <div class="broadcast-sub sub-bench-row" title="${esc(minuteText)}">
+            <span class="sub-bench-player">
+              ${exactPhoto}
+              <span class="sub-name">
+                <span class="substitution-time">${esc(minuteText)}</span>
+                <span class="substitution-arrow in" aria-hidden="true">↑</span>${esc(row.inPlayer)} <span class="substitution-label in">IN</span>
+                ${row.outPlayer ? `<span class="substitution-separator"> • </span><span class="substitution-arrow out" aria-hidden="true">↓</span>${esc(row.outPlayer)} <span class="substitution-label out">OUT</span>` : ""}
+              </span>
             </span>
           </div>`;
       }).join("");
