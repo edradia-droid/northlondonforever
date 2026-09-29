@@ -1717,7 +1717,7 @@
         if (leagueEventsError) leagueEventsEl.innerHTML = "<div class=\"empty\">Match events could not be loaded.</div>";
         else if (!(leagueEvents || []).length) leagueEventsEl.innerHTML = "<div class=\"empty\">No goals, cards or substitutions recorded yet.</div>";
         else leagueEventsEl.innerHTML = leagueEvents.map(function(ev) {
-          const labels = {goal:"GOAL",own_goal:"OWN GOAL",yellow_card:"YELLOW CARD",red_card:"RED CARD",substitution:"SUBSTITUTION"};
+          const labels = {goal:"GOAL",own_goal:"OWN GOAL",yellow_card:"YELLOW CARD",red_card:"RED CARD",substitution:"SUBSTITUTION",var_decision:"VAR"};
           const minute = Number(ev.minute);
           const minuteText = Number.isFinite(minute) ? String(minute) + String.fromCharCode(39) : "—";
           const type = labels[ev.event_type] || String(ev.event_type || "EVENT").replace(/_/g," ");
