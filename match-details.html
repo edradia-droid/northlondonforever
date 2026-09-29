@@ -901,6 +901,16 @@
 .substitution-arrow.out{
   color:#ff4b4b!important;
 }
+.substitution-label.in{color:#35d66f!important;font-weight:1000}
+.substitution-label.out{color:#ff4b4b!important;font-weight:1000}
+.substitution-arrow{display:inline-block!important;font-weight:1000!important;line-height:1}
+.substitution-separator{color:#777!important}
+.pitch-substitution-in{display:flex!important;align-items:center;justify-content:center;width:100%;margin:2px 0 0;font-weight:1000;white-space:nowrap}
+.pitch-substitution-in .substitution-time{color:#35d66f!important}
+.sub-off-list{display:grid;gap:7px;padding:8px 10px 12px}
+.sub-off-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border:1px solid rgba(255,75,75,.16);border-radius:8px;background:rgba(255,75,75,.035)}
+.sub-off-status{color:#ff4b4b!important}
+
 .substitution-time{
   font-size:.9em!important;
   font-weight:900!important;
@@ -1720,9 +1730,9 @@
         return `
           <div class="broadcast-sub" title="${esc(minuteText)}">
             <span class="sub-name">
-              <span style="color:#d8ad45">${esc(minuteText)}</span>
-              ${esc(row.inPlayer)} <span style="color:#d8ad45">IN</span>
-              ${row.outPlayer ? `<span style="color:#777"> • </span>${esc(row.outPlayer)} <span style="color:#d8ad45">OUT</span>` : ""}
+              <span class="substitution-time">${esc(minuteText)}</span>
+              <span class="substitution-arrow in" aria-hidden="true">↑</span>${esc(row.inPlayer)} <span class="substitution-label in">IN</span>
+              ${row.outPlayer ? `<span class="substitution-separator"> • </span><span class="substitution-arrow out" aria-hidden="true">↓</span>${esc(row.outPlayer)} <span class="substitution-label out">OUT</span>` : ""}
             </span>
           </div>`;
       }).join("");
@@ -1766,7 +1776,7 @@
           const minute = Number(ev.minute);
           const minuteText = Number.isFinite(minute) ? String(minute) + String.fromCharCode(39) : "—";
           const type = labels[ev.event_type] || String(ev.event_type || "EVENT").replace(/_/g," ");
-          const detail = ev.event_type === "substitution" && ev.related_player_name ? esc(ev.player_name || "Unknown") + " IN • " + esc(ev.related_player_name) + " OUT" : esc(ev.player_name || "Match event");
+          const detail = ev.event_type === "substitution" && ev.related_player_name ? '<span class="substitution-arrow in" aria-hidden="true">↑</span>' + esc(ev.player_name || "Unknown") + ' <span class="substitution-label in">IN</span> • <span class="substitution-arrow out" aria-hidden="true">↓</span>' + esc(ev.related_player_name) + ' <span class="substitution-label out">OUT</span>' : esc(ev.player_name || "Match event");
           return "<div class=\"event-row\"><span class=\"event-minute\">" + minuteText + "</span><span class=\"event-type\">" + esc(type) + "</span><div>" + detail + "<span class=\"event-team\">" + esc(ev.team_name || "") + "</span></div></div>";
           }).join("");
           if (leagueStatusEl) leagueStatusEl.textContent = "BSD Match Centre • both teams • " + uniqueLeagueEvents.length + " events";
@@ -1808,11 +1818,21 @@
           }).join("")
         : "";
 
-      els.subs.innerHTML = completeBench || exactSubHtml || (
-        subs.length
-          ? subs.map(row => rowHtml(row, playerMedia)).join("")
-          : '<div class="empty">Substitutes will appear here when they are entered in Record Room.</div>'
-      );
+      const offStarterRows = starters.filter(row => Number.isFinite(Number(row.minute_off)) && Number(row.minute_off) > 0);
+      const offStarterHtml = offStarterRows.length
+        ? '<div class="sub-off-list">' + offStarterRows.map(row => `
+            <div class="sub-off-row">
+              <span class="sub-name">${esc(row.player_name)}</span>
+              <span class="sub-bench-used sub-off-status"><span class="substitution-arrow out" aria-hidden="true">↓</span><span class="substitution-time">${esc(row.minute_off)}’</span></span>
+            </div>`).join("") + '</div>'
+        : "";
+      els.subs.innerHTML = completeBench
+        ? completeBench + offStarterHtml
+        : exactSubHtml || (
+            subs.length
+              ? subs.map(row => rowHtml(row, playerMedia)).join("")
+              : '<div class="empty">Substitutes will appear here when they are entered in Record Room.</div>'
+          );
       let availabilityText = "";
       if (status === "scheduled") {
         availabilityText = starters.length
