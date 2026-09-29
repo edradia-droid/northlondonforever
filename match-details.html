@@ -2,37 +2,34 @@
 /* OFF marker sits beside the outgoing player's figure/name, never over the player. */
 #lineupPhotoExport .pitch-outgoing-layer{z-index:300!important;pointer-events:none!important;position:absolute!important;inset:0!important;overflow:visible!important}
 #lineupPhotoExport .pitch-off-marker{
+  position:absolute!important;
+  left:50%!important;
+  top:-8px!important;
+  transform:translateX(-50%)!important;
+  z-index:30!important;
   display:inline-flex!important;
   align-items:center!important;
-  margin-left:3px!important;
+  justify-content:center!important;
+  min-width:0!important;
   padding:1px 3px!important;
+  margin:0!important;
   border-radius:3px!important;
-  background:rgba(120,0,18,.92)!important;
+  background:rgba(120,0,18,.94)!important;
   border:1px solid rgba(255,70,90,.8)!important;
+  box-shadow:none!important;
   color:#ff4058!important;
   font-size:8px!important;
   font-weight:1000!important;
   line-height:1!important;
   white-space:nowrap!important;
-  vertical-align:middle!important;
-  position:relative!important;
-  left:auto!important;
-  top:auto!important;
-  transform:none!important;
-  box-shadow:none!important;
   pointer-events:none!important;
 }
 @media(max-width:700px){
   #lineupPhotoExport .pitch-off-marker{
-    left:calc(var(--x) + 20px)!important;
-    top:calc(var(--y) + 7px)!important;
-    min-width:15px!important;
-    padding:1px 1px!important;
-    border-radius:3px!important;
-    border-width:1px!important;
-    box-shadow:0 2px 4px rgba(0,0,0,.35)!important;
+    top:-6px!important;
+    padding:1px 2px!important;
+    border-radius:2px!important;
     font-size:6px!important;
-    line-height:.9!important;
   }
 }
 </style><!doctype html>
