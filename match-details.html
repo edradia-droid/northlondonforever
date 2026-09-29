@@ -1593,6 +1593,7 @@
         .eq("fixture_id", fixture.id)
         .in("team_name", [home, away])
         .eq("event_type", "substitution")
+        .not("external_event_id", "like", "rr-%-sub-%")
         .order("minute", { ascending:true })
         .order("stoppage_minute", { ascending:true, nullsFirst:true })
         .order("external_event_id", { ascending:true, nullsFirst:false })
@@ -1727,7 +1728,7 @@
           return "<article class=\"leaguewide-team\"><div class=\"leaguewide-team-head\"><strong>" + esc(team) + "</strong><span>" + startersCount + " START • " + benchCount + " BENCH</span></div><div class=\"leaguewide-player-list\">" + html + "</div></article>";
         }).join("");
       }
-      const { data: leagueEvents, error: leagueEventsError } = await db.from("match_events").select("event_type,player_name,related_player_name,minute,stoppage_minute,team_name,external_event_id").eq("fixture_id", fixture.id).order("minute", { ascending:true }).order("stoppage_minute", { ascending:true, nullsFirst:true }).order("external_event_id", { ascending:true, nullsFirst:false });
+      const { data: leagueEvents, error: leagueEventsError } = await db.from("match_events").select("event_type,player_name,related_player_name,minute,stoppage_minute,team_name,external_event_id").eq("fixture_id", fixture.id).not("external_event_id", "like", "rr-%-sub-%").order("minute", { ascending:true }).order("stoppage_minute", { ascending:true, nullsFirst:true }).order("external_event_id", { ascending:true, nullsFirst:false });
       if (leagueEventsEl) {
         if (leagueEventsError) leagueEventsEl.innerHTML = "<div class=\"empty\">Match events could not be loaded.</div>";
         else if (!(leagueEvents || []).length) leagueEventsEl.innerHTML = "<div class=\"empty\">No goals, cards or substitutions recorded yet.</div>";
