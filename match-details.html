@@ -1,41 +1,4 @@
-<style id="nl4-no-duplicate-off-player-v1">
-/* OFF marker sits beside the outgoing player's figure/name, never over the player. */
-#lineupPhotoExport .pitch-outgoing-layer{z-index:300!important;pointer-events:none!important;position:absolute!important;inset:0!important;overflow:visible!important}
-#lineupPhotoExport .pitch-off-marker{
-  display:inline-flex!important;
-  align-items:center!important;
-  margin-left:3px!important;
-  padding:1px 3px!important;
-  border-radius:3px!important;
-  background:rgba(120,0,18,.92)!important;
-  border:1px solid rgba(255,70,90,.8)!important;
-  color:#ff4058!important;
-  font-size:8px!important;
-  font-weight:1000!important;
-  line-height:1!important;
-  white-space:nowrap!important;
-  vertical-align:middle!important;
-  position:relative!important;
-  left:auto!important;
-  top:auto!important;
-  transform:none!important;
-  box-shadow:none!important;
-  pointer-events:none!important;
-}
-@media(max-width:700px){
-  #lineupPhotoExport .pitch-off-marker{
-    left:calc(var(--x) + 20px)!important;
-    top:calc(var(--y) + 7px)!important;
-    min-width:15px!important;
-    padding:1px 1px!important;
-    border-radius:3px!important;
-    border-width:1px!important;
-    box-shadow:0 2px 4px rgba(0,0,0,.35)!important;
-    font-size:6px!important;
-    line-height:.9!important;
-  }
-}
-</style><!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -1500,16 +1463,7 @@
 
         // Incoming players remain part of the current XI, but show no ON marker.
         // Only outgoing starters receive the red OFF arrow and minute.
-        const incomingBadge = '';
-        const outgoingRow = (activeRows._outgoingSubstitutions || []).find(item =>
-          normalizePlayerKey(item.player_name) === normalizePlayerKey(displayName)
-        );
-        const offMinute = outgoingRow && Number.isFinite(Number(outgoingRow._minuteOff))
-          ? Number(outgoingRow._minuteOff)
-          : null;
-        const outgoingBadge = offMinute != null
-          ? '<span class="pitch-off-marker" aria-label="' + esc(String(displayName)) + ' substituted off at ' + esc(offMinute) + ' minutes">↓ ' + esc(offMinute) + '’</span>'
-          : '';
+        const incomingBadge = ''; 
         return `<div class="player-marker" style="--x:${x}%;--y:${y}%;--depth:${depth}" title="${esc(displayName)} • #${esc(safeShirtNumber)}">
           <span class="player-ground-shadow"></span>
           <div class="kit-player" aria-label="${esc(displayName)} Arsenal home shirt number ${esc(safeShirtNumber)}">
@@ -1521,13 +1475,24 @@
                   <span class="kit-back-number">${esc(safeShirtNumber)}</span>
                 </span>`}
           </div>
-          <span class="player-name"><span class="player-name-first">${esc(String(displayName).trim().split(/\s+/)[0]||displayName)}</span><span class="player-name-last">${esc(String(displayName).trim().split(/\s+/).slice(1).join(" ")||"")}</span>${incomingBadge}${outgoingBadge}</span>
+          <span class="player-name"><span class="player-name-first">${esc(String(displayName).trim().split(/\s+/)[0]||displayName)}</span><span class="player-name-last">${esc(String(displayName).trim().split(/\s+/).slice(1).join(" ")||"")}</span>${incomingBadge}</span>
         </div>`;
       }).join('');
 
-      // The OFF marker is rendered inside the outgoing starter's own name label.
-      // It therefore stays beside the player at every pitch size, including mobile.
-      els.starters.innerHTML = markings + '<div class="pitch-active-layer">' + figures + '</div>';
+      // Keep outgoing players visible at their original pitch slots.
+      const outgoingFigures = (activeRows._outgoingSubstitutions || []).map(row => {
+        const slot = row._pitchSlot || 'CM';
+        const [fallbackX,fallbackY] = PITCH_COORDS[slot] || PITCH_COORDS.CM;
+        const offMinute = Number.isFinite(Number(row._minuteOff)) ? Number(row._minuteOff) : null;
+        if (offMinute == null) return '';
+        // The Starting XI figure already renders the outgoing player's image and name.
+        // Render ONLY the red OFF marker here, so the player is never duplicated.
+        return '<span class="pitch-off-marker" style="--x:' + fallbackX + '%;--y:' + fallbackY + '%" title="' + esc(String(row.player_name || 'Arsenal')) + ' • OFF ' + esc(offMinute) + '’" aria-label="' + esc(String(row.player_name || 'Arsenal')) + ' substituted off at ' + esc(offMinute) + ' minutes">↓ ' + esc(offMinute) + '’</span>';
+      }).join('');
+      // Outgoing starters sit in a real absolute overlay above the active XI.
+      // This keeps the red OFF marker visible even when an incoming player
+      // occupies the same pitch slot.
+      els.starters.innerHTML = markings + '<div class="pitch-active-layer">' + figures + '</div>' + '<div class="pitch-outgoing-layer">' + outgoingFigures + '</div>';
     }
 
     const ARSENAL_SQUAD_IMAGE_URLS = {
@@ -2694,9 +2659,9 @@ body.match-details-page{
 #lineupPhotoExport .pitch-outgoing-layer{z-index:300!important;pointer-events:none!important;position:absolute!important;inset:0!important;overflow:visible!important}
 #lineupPhotoExport .pitch-off-marker{
   position:absolute!important;
-  left:calc(var(--x) + 58px)!important;
-  top:calc(var(--y) - 8px)!important;
-  transform:translate(0,-50%)!important;
+  left:var(--x)!important;
+  top:var(--y)!important;
+  transform:translate(-50%,-50%)!important;
   z-index:9999!important;
   display:inline-flex!important;
   align-items:center!important;
@@ -2716,13 +2681,7 @@ body.match-details-page{
   pointer-events:none!important;
 }
 @media(max-width:700px){
-  #lineupPhotoExport .pitch-off-marker{
-    left:calc(var(--x) + 39px)!important;
-    top:calc(var(--y) - 5px)!important;
-    min-width:28px!important;
-    padding:2px 4px!important;
-    font-size:9px!important;
-  }
+  #lineupPhotoExport .pitch-off-marker{min-width:28px!important;padding:2px 4px!important;font-size:9px!important}
 }
 </style>
 </html>
