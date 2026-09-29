@@ -1,4 +1,39 @@
-<!doctype html>
+<style id="nl4-no-duplicate-off-player-v1">
+/* OFF marker sits beside the outgoing player's figure/name, never over the player. */
+#lineupPhotoExport .pitch-outgoing-layer{z-index:300!important;pointer-events:none!important;position:absolute!important;inset:0!important;overflow:visible!important}
+#lineupPhotoExport .pitch-off-marker{
+  position:absolute!important;
+  left:calc(var(--x) + 52px)!important;
+  top:calc(var(--y) + 18px)!important;
+  transform:translate(0,-50%)!important;
+  z-index:9999!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-width:30px!important;
+  padding:2px 4px!important;
+  border-radius:5px!important;
+  background:rgba(120,0,18,.9)!important;
+  border:1px solid rgba(255,70,90,.8)!important;
+  box-shadow:0 3px 7px rgba(0,0,0,.45)!important;
+  color:#ff4058!important;
+  font-size:11px!important;
+  font-weight:1000!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.8)!important;
+  pointer-events:none!important;
+}
+@media(max-width:700px){
+  #lineupPhotoExport .pitch-off-marker{
+    left:calc(var(--x) + 38px)!important;
+    top:calc(var(--y) + 13px)!important;
+    min-width:25px!important;
+    padding:2px 3px!important;
+    font-size:8px!important;
+  }
+}
+</style><!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
