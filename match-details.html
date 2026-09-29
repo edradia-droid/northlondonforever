@@ -1716,8 +1716,7 @@
         const key = [
           String(row.teamName || '').trim().toLowerCase(),
           Number(row.minute),
-          normalizePlayerKey(row.inPlayer),
-          normalizePlayerKey(row.outPlayer)
+          normalizePlayerKey(row.inPlayer)
         ].join('|');
         if (substitutionSeen.has(key)) return false;
         substitutionSeen.add(key);
@@ -1861,8 +1860,11 @@
               <span class="sub-bench-used sub-off-status"><span class="substitution-arrow out" aria-hidden="true">↓</span><span class="substitution-time">${esc(row.minute_off)}’</span></span>
             </div>`).join("") + '</div>'
         : "";
+      // Show each incoming substitute exactly once. The IN -> OUT substitution
+      // row already contains the outgoing player, so do not append the separate
+      // off-starter list here; that was causing every substitution to appear twice.
       els.subs.innerHTML = completeBench
-        ? completeBench + offStarterHtml
+        ? completeBench
         : (exactSubHtml || '<div class="empty">No Arsenal substitutes used in this match.</div>');
       let availabilityText = "";
       if (status === "scheduled") {
