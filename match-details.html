@@ -1340,7 +1340,7 @@
           // BSD normally supplies related_player_name for OUT. If that field
           // is missing/variant, resolve the OUT player from the Starting XI
           // minute_off at the exact substitution minute.
-          if (!outKey) {
+          if (!outKey || !starters.some(player => normalizePlayerKey(player.player_name) === outKey)) {
             const minuteCandidate = starters.find(player => {
               const key = normalizePlayerKey(player.player_name);
               const off = Number(player.minute_off);
@@ -1743,8 +1743,9 @@
       }
 
       // Header values are all Admin-driven: fixture.opponent, fixture.venue, and lineup formation.
-      const pitchTeam = [home, away].includes("Arsenal") ? "Arsenal" : home;
-      const pitchLineup = (lineup || []).filter(row => row.team_name === pitchTeam);
+      const sameTeamName = (a,b) => normalizePlayerKey(a) === normalizePlayerKey(b);
+      const pitchTeam = [home, away].some(team => sameTeamName(team, "Arsenal")) ? [home, away].find(team => sameTeamName(team, "Arsenal")) : home;
+      const pitchLineup = (lineup || []).filter(row => sameTeamName(row.team_name, pitchTeam));
       const starters = pitchLineup.filter(row => row.is_starter);
       const subs = pitchLineup.filter(row => !row.is_starter);
 
@@ -1788,7 +1789,7 @@
       // format), so never render both sources together.
       const substitutionSource = [home, away].flatMap(team => {
         const teamRows = (substitutionEvents || []).filter(row =>
-          row.player_name && row.team_name === team
+          row.player_name && sameTeamName(row.team_name, team)
         );
         const bsdRows = teamRows.filter(row =>
           String(row.external_event_id || "").toLowerCase().startsWith("bsd:")
@@ -1879,7 +1880,7 @@
         return true;
       });
       const pitchSubstitutionRows = uniqueSubstitutionRows.filter(row =>
-        normalizePlayerKey(row.teamName) === normalizePlayerKey(pitchTeam)
+        sameTeamName(row.teamName, pitchTeam)
       );
 
       const leagueTeamsEl = document.getElementById("leagueWideTeams");
