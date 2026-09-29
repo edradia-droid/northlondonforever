@@ -1333,9 +1333,25 @@
         .filter(row => row && row.inPlayer && Number.isFinite(Number(row.minute)))
         .sort((x,y) => Number(x.minute) - Number(y.minute))
         .forEach(event => {
-          const outKey = normalizePlayerKey(event.outPlayer);
+          let outKey = normalizePlayerKey(event.outPlayer);
           const inKey = normalizePlayerKey(event.inPlayer);
-          if (!outKey || !inKey) return;
+          if (!inKey) return;
+
+          // BSD normally supplies related_player_name for OUT. If that field
+          // is missing/variant, resolve the OUT player from the Starting XI
+          // minute_off at the exact substitution minute.
+          if (!outKey) {
+            const minuteCandidate = starters.find(player => {
+              const key = normalizePlayerKey(player.player_name);
+              const off = Number(player.minute_off);
+              return key && Number.isFinite(off) && off > 0 && off === Number(event.minute) && !outgoingKeys.has(key);
+            });
+            if (minuteCandidate) {
+              outKey = normalizePlayerKey(minuteCandidate.player_name);
+              event.outPlayer = minuteCandidate.player_name;
+            }
+          }
+          if (!outKey) return;
 
           // Resolve the OFF player from the current pitch first, then from the
           // original Starting XI. The latter is important when a prior
