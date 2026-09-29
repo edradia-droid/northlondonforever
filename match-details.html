@@ -126,6 +126,7 @@
     .pre-lineup-subs-panel .sub-name{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .pre-lineup-subs-panel .broadcast-sub::after{content:attr(title);color:#d8ad45;font-size:10px;font-weight:900;white-space:nowrap}
     @media(max-width:700px){.pre-lineup-subs-panel .pre-lineup-subs{grid-template-columns:1fr;padding:12px}}
+    .leaguewide-panel{grid-column:1/-1}.leaguewide-teams{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:18px}.leaguewide-team{border:1px solid rgba(255,255,255,.08);border-radius:15px;background:#101010;overflow:hidden}.leaguewide-team-head{display:flex;justify-content:space-between;gap:10px;padding:13px 15px;border-bottom:1px solid rgba(255,255,255,.07)}.leaguewide-team-head strong{font-size:13px}.leaguewide-team-head span{font-size:9px;color:#d8ad45;font-weight:900}.leaguewide-player-list{display:grid;gap:7px;padding:12px}.leaguewide-player{display:flex;justify-content:space-between;gap:10px;padding:9px 10px;border-radius:10px;background:#151515}.leaguewide-player small{color:#888;font-size:9px;white-space:nowrap}.events-list{display:grid;gap:8px;padding:18px}.event-row{display:grid;grid-template-columns:52px 100px minmax(0,1fr);gap:9px;padding:10px 12px;border:1px solid rgba(255,255,255,.06);border-radius:11px;background:#111}.event-minute{color:#d8ad45;font-weight:1000}.event-type{font-size:9px;color:#aaa;font-weight:900;text-transform:uppercase}.event-team{display:block;color:#777;font-size:9px;margin-top:2px}@media(max-width:700px){.leaguewide-teams{grid-template-columns:1fr;padding:12px}.event-row{grid-template-columns:42px 78px minmax(0,1fr);font-size:10px}}
     .empty{padding:20px;color:#777;text-align:center}
     .status-note{padding:14px 18px;border-top:1px solid rgba(255,255,255,.07);color:#777;font-size:11px}
     .error-card{padding:22px;border:1px solid rgba(216,0,31,.35);border-radius:16px;background:rgba(216,0,31,.06);color:#ddd}
@@ -1058,6 +1059,8 @@
           Starting XI appears as soon as it is entered in Admin. Substitutions update during the match as they are added.
         </p>
 
+<section class="match-panel leaguewide-panel" id="leagueWideMatchCentre"><div class="match-panel-head"><p>BSD MATCH CENTRE</p><h2>Both Teams • Lineups & Events</h2></div><div id="leagueWideTeams" class="leaguewide-teams"></div><div id="leagueWideEvents" class="events-list"></div><p class="status-note" id="leagueWideStatus">Loading league-wide match data…</p></section>
+
         <section class="match-panel stats-panel" id="matchStatsPanel">
           <div class="match-panel-head">
             <p>MATCH DATA</p>
@@ -1524,7 +1527,7 @@
         .from("match_lineups")
         .select("player_name,position,formation,pitch_slot,position_x,position_y,is_starter,minute_on,minute_off,updated_at,team_name")
         .eq("fixture_id", fixture.id)
-        .eq("team_name", "Arsenal")
+        .in("team_name", [home, away])
         .order("is_starter", { ascending:false })
         .order("minute_on", { ascending:true });
 
@@ -1575,8 +1578,10 @@
       }
 
       // Header values are all Admin-driven: fixture.opponent, fixture.venue, and lineup formation.
-      const starters = (lineup || []).filter(row => row.is_starter);
-      const subs = (lineup || []).filter(row => !row.is_starter);
+      const pitchTeam = [home, away].includes("Arsenal") ? "Arsenal" : home;
+      const pitchLineup = (lineup || []).filter(row => row.team_name === pitchTeam);
+      const starters = pitchLineup.filter(row => row.is_starter);
+      const subs = pitchLineup.filter(row => !row.is_starter);
 
       // Build substitutions from the actual recorded substitution events.
       // match_events stores the authoritative IN -> OUT relationship, so the
@@ -1586,7 +1591,7 @@
         .from("match_events")
         .select("player_name,related_player_name,minute,stoppage_minute,external_event_id,created_at,id")
         .eq("fixture_id", fixture.id)
-        .eq("team_name", "Arsenal")
+        .in("team_name", [home, away])
         .eq("event_type", "substitution")
         .order("minute", { ascending:true })
         .order("stoppage_minute", { ascending:true, nullsFirst:true })
@@ -1618,6 +1623,7 @@
       const substitutionRows = (substitutionEvents || [])
         .filter(row => row.player_name)
         .map((row, index) => ({
+          teamName: row.team_name,
           inPlayer: canonicalSubstitutionName(row.player_name),
           outPlayer: canonicalSubstitutionName(row.related_player_name),
           minute: Number(row.minute),
@@ -1676,7 +1682,9 @@
         return aId.localeCompare(bId);
       });
 
-      const exactSubHtml = substitutionRows.map(row => {
+      const pitchSubstitutionRows = substitutionRows.filter(row => row.teamName === pitchTeam);
+
+      const exactSubHtml = pitchSubstitutionRows.map(row => {
         const minuteText = `${row.minute}’`;
         return `
           <div class="broadcast-sub" title="${esc(minuteText)}">
@@ -1688,9 +1696,40 @@
           </div>`;
       }).join("");
 
+      const leagueTeamsEl = document.getElementById("leagueWideTeams");
+      const leagueEventsEl = document.getElementById("leagueWideEvents");
+      const leagueStatusEl = document.getElementById("leagueWideStatus");
+      if (leagueTeamsEl) {
+        leagueTeamsEl.innerHTML = [home, away].map(function(team) {
+          const rows = (lineup || []).filter(function(row) { return row.team_name === team; });
+          const startersCount = rows.filter(function(row) { return row.is_starter; }).length;
+          const benchCount = rows.filter(function(row) { return !row.is_starter; }).length;
+          const html = rows.length ? rows.map(function(row) {
+            const timing = row.is_starter ? "START" : (Number(row.minute_on) > 0 ? "ON " + Number(row.minute_on) + String.fromCharCode(39) : "BENCH");
+            const off = row.minute_off != null && Number(row.minute_off) > 0 ? " • OFF " + Number(row.minute_off) + String.fromCharCode(39) : "";
+            return "<div class=\"leaguewide-player\"><strong>" + esc(row.player_name) + "</strong><small>" + esc(timing + off) + "</small></div>";
+          }).join("") : "<div class=\"empty\">No confirmed lineup data yet.</div>";
+          return "<article class=\"leaguewide-team\"><div class=\"leaguewide-team-head\"><strong>" + esc(team) + "</strong><span>" + startersCount + " START • " + benchCount + " BENCH</span></div><div class=\"leaguewide-player-list\">" + html + "</div></article>";
+        }).join("");
+      }
+      const { data: leagueEvents, error: leagueEventsError } = await db.from("match_events").select("event_type,player_name,related_player_name,minute,stoppage_minute,team_name,external_event_id").eq("fixture_id", fixture.id).order("minute", { ascending:true }).order("stoppage_minute", { ascending:true, nullsFirst:true }).order("external_event_id", { ascending:true, nullsFirst:false });
+      if (leagueEventsEl) {
+        if (leagueEventsError) leagueEventsEl.innerHTML = "<div class=\"empty\">Match events could not be loaded.</div>";
+        else if (!(leagueEvents || []).length) leagueEventsEl.innerHTML = "<div class=\"empty\">No goals, cards or substitutions recorded yet.</div>";
+        else leagueEventsEl.innerHTML = leagueEvents.map(function(ev) {
+          const labels = {goal:"GOAL",own_goal:"OWN GOAL",yellow_card:"YELLOW CARD",red_card:"RED CARD",substitution:"SUBSTITUTION"};
+          const minute = Number(ev.minute);
+          const minuteText = Number.isFinite(minute) ? String(minute) + String.fromCharCode(39) : "—";
+          const type = labels[ev.event_type] || String(ev.event_type || "EVENT").replace(/_/g," ");
+          const detail = ev.event_type === "substitution" && ev.related_player_name ? esc(ev.player_name || "Unknown") + " IN • " + esc(ev.related_player_name) + " OUT" : esc(ev.player_name || "Match event");
+          return "<div class=\"event-row\"><span class=\"event-minute\">" + minuteText + "</span><span class=\"event-type\">" + esc(type) + "</span><div>" + detail + "<span class=\"event-team\">" + esc(ev.team_name || "") + "</span></div></div>";
+        }).join("");
+        if (leagueStatusEl) leagueStatusEl.textContent = "BSD Match Centre • both teams • " + (leagueEvents || []).length + " events";
+      }
+
       const mediaRows = [...(lineup || []), ...(recordRoomBench || [])];
       const playerMedia = await loadPlayerMedia(mediaRows);
-      render3DPitch(starters, playerMedia, fixture.lineup_formation, substitutionRows);
+      render3DPitch(starters, playerMedia, fixture.lineup_formation, pitchSubstitutionRows);
 
       const usedNames = new Map(
         substitutionRows
