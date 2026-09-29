@@ -1714,7 +1714,7 @@
       const substitutionSeen = new Set();
       const uniqueSubstitutionRows = substitutionRows.filter(row => {
         const key = [
-          String(row.teamName || '').trim().toLowerCase(),
+          normalizePlayerKey(row.teamName || pitchTeam),
           Number(row.minute),
           normalizePlayerKey(row.inPlayer)
         ].join('|');
@@ -1749,10 +1749,9 @@
           const uniqueLeagueEvents = (leagueEvents || []).filter(function(ev) {
             if (ev.event_type !== "substitution") return true;
             const key = [
-              String(ev.team_name || '').trim().toLowerCase(),
+              normalizePlayerKey(ev.team_name || ""),
               Number(ev.minute),
-              normalizePlayerKey(ev.player_name),
-              normalizePlayerKey(ev.related_player_name)
+              normalizePlayerKey(ev.player_name)
             ].join('|');
             if (eventSeen.has(key)) return false;
             eventSeen.add(key);
@@ -1890,9 +1889,10 @@
       // Show each incoming substitute exactly once. The IN -> OUT substitution
       // row already contains the outgoing player, so do not append the separate
       // off-starter list here; that was causing every substitution to appear twice.
-      els.subs.innerHTML = completeBench
-        ? completeBench
-        : (exactSubHtml || '<div class="empty">No Arsenal substitutes used in this match.</div>');
+      // One renderer only: Match Squad substitutes come exclusively from the
+      // de-duplicated BSD incoming-substitute list. Do not fall back to a second
+      // substitution renderer, which can make the same change appear twice.
+      els.subs.innerHTML = completeBench || '<div class="empty">No Arsenal substitutes with verified photos used in this match.</div>';
       let availabilityText = "";
       if (status === "scheduled") {
         availabilityText = starters.length
