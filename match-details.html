@@ -1712,12 +1712,15 @@
       // Every substitution UI consumes this same list, preventing duplicate
       // players when BSD exposes multiple representations of one change.
       const substitutionSeen = new Set();
+      const substitutionPlayerKey = value => {
+        const normalized = normalizePlayerKey(value);
+        if (!normalized) return "";
+        const words = String(value || "").trim().split(/\\s+/).filter(Boolean);
+        return words.length > 1 ? normalizePlayerKey(words[words.length - 1]) : normalized;
+      };
       const uniqueSubstitutionRows = substitutionRows.filter(row => {
-        const key = [
-          normalizePlayerKey(row.teamName || pitchTeam),
-          normalizePlayerKey(row.inPlayer)
-        ].join('|');
-        if (!normalizePlayerKey(row.inPlayer) || substitutionSeen.has(key)) return false;
+        const key = [normalizePlayerKey(row.teamName || pitchTeam), substitutionPlayerKey(row.inPlayer)].join('|');
+        if (!substitutionPlayerKey(row.inPlayer) || substitutionSeen.has(key)) return false;
         substitutionSeen.add(key);
         return true;
       });
