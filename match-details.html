@@ -1258,7 +1258,30 @@
       return String(name || 'A').trim().split(/\s+/).slice(0,2).map(x => x[0] || '').join('').toUpperCase();
     }
 
-    function render3DPitch(starters, mediaMap = new Map(), fixtureFormation = '', substitutionRows = []){
+    function buildCurrentPitchLineup(starters, substitutionRows, formation){
+      const resolvedSlots = resolveFormationSlots(starters, formation);
+      const current = starters.map((row,index) => ({
+        ...row,
+        _pitchSlot: resolvedSlots[index],
+        _minuteOn: Number.isFinite(Number(row.minute_on)) && Number(row.minute_on) > 0 ? Number(row.minute_on) : null,
+        _cameOn: false
+      }));
+      [...(substitutionRows || [])]
+        .filter(row => row && row.inPlayer && Number.isFinite(Number(row.minute)))
+        .sort((x,y) => Number(x.minute) - Number(y.minute))
+        .forEach(event => {
+          const outKey = normalizePlayerKey(event.outPlayer);
+          const inKey = normalizePlayerKey(event.inPlayer);
+          const slotIndex = current.findIndex(player => normalizePlayerKey(player.player_name) === outKey);
+          if (slotIndex < 0 || current.some(player => normalizePlayerKey(player.player_name) === inKey)) return;
+          const source = starters.find(row => normalizePlayerKey(row.player_name) === inKey)
+            || {player_name:event.inPlayer,team_name:event.teamName,is_starter:false};
+          current[slotIndex] = {...source,_pitchSlot:current[slotIndex]._pitchSlot,_minuteOn:Number(event.minute),_cameOn:true};
+        });
+      return current;
+    }
+
+    function render3DPitch(starters, mediaMap = new Map(), fixtureFormation = '', substitutionRows = [], currentPitchLineup = null){
       const exportBoard = document.getElementById('lineupPhotoExport');
       if (exportBoard) exportBoard.classList.toggle('has-lineup', starters.length > 0);
       const markings = '<span class="penalty-box top"></span><span class="goal-box top"></span><span class="goal-net top"></span><span class="penalty-box bottom"></span><span class="goal-box bottom"></span><span class="goal-net bottom"></span><span class="centre-spot"></span>';
@@ -1269,17 +1292,9 @@
       }
       const formation = normalizedFormation(fixtureFormation || starters.find(r => r.formation)?.formation);
       els.formationBadge.textContent = formation;
-      const resolvedSlots = resolveFormationSlots(starters, formation);
-      const outgoingByName = new Map(
-        substitutionRows
-          .filter(row => row.outPlayer && Number.isFinite(Number(row.minute)))
-          .map(row => [
-            normalizePlayerKey(row.outPlayer),
-            Number(row.minute)
-          ])
-      );
-      const figures = starters.map((row,index) => {
-        const slot = resolvedSlots[index];
+      const activeRows = currentPitchLineup || buildCurrentPitchLineup(starters, substitutionRows, formation);
+      const figures = activeRows.map((row,index) => {
+        const slot = row._pitchSlot || 'CM';
         const [fallbackX,fallbackY] = PITCH_COORDS[slot] || PITCH_COORDS.CM;
 
         // Record Room formation + tactical slot are the source of truth.
@@ -1298,11 +1313,11 @@
         const safeShirtNumber = (shirtNumber === '—' || shirtNumber === '-' || shirtNumber == null) ? '' : shirtNumber;
         const shirtName = String(displayName).trim().split(/\s+/).slice(-1)[0] || 'ARSENAL';
 
-        const offMinute = outgoingByName.get(normalizePlayerKey(displayName));
-        const outgoingBadge = Number.isFinite(offMinute)
-          ? `<span class="pitch-substitution-out" aria-label="Substituted off at ${esc(offMinute)} minutes"><span class="substitution-arrow out" aria-hidden="true">↓</span><span class="substitution-time">${esc(offMinute)}’</span></span>`
+        const onMinute = Number.isFinite(Number(row._minuteOn)) && row._cameOn ? Number(row._minuteOn) : null;
+        const incomingBadge = Number.isFinite(onMinute)
+          ? `<span class="pitch-substitution-in" aria-label="Substituted on at ${esc(onMinute)} minutes"><span class="substitution-arrow in" aria-hidden="true">↑</span><span class="substitution-time">${esc(onMinute)}’</span></span>`
           : '';
-        return `<div class="player-marker" style="--x:${x}%;--y:${y}%;--depth:${depth}" title="${esc(displayName)} • #${esc(safeShirtNumber)}${Number.isFinite(offMinute) ? ` • OFF ${esc(offMinute)}’` : ''}">
+        return `<div class="player-marker" style="--x:${x}%;--y:${y}%;--depth:${depth}" title="${esc(displayName)} • #${esc(safeShirtNumber)}${Number.isFinite(onMinute) ? ` • ON ${esc(onMinute)}’` : ''}">
           <span class="player-ground-shadow"></span>
           <div class="kit-player" aria-label="${esc(displayName)} Arsenal home shirt number ${esc(safeShirtNumber)}">
             ${media.image
@@ -1313,7 +1328,7 @@
                   <span class="kit-back-number">${esc(safeShirtNumber)}</span>
                 </span>`}
           </div>
-          <span class="player-name"><span class="player-name-first">${esc(String(displayName).trim().split(/\s+/)[0]||displayName)}</span><span class="player-name-last">${esc(String(displayName).trim().split(/\s+/).slice(1).join(" ")||"")}</span>${outgoingBadge}</span>
+          <span class="player-name"><span class="player-name-first">${esc(String(displayName).trim().split(/\s+/)[0]||displayName)}</span><span class="player-name-last">${esc(String(displayName).trim().split(/\s+/).slice(1).join(" ")||"")}</span>${incomingBadge}</span>
         </div>`;
       }).join('');
       els.starters.innerHTML = markings + figures;
@@ -1760,7 +1775,8 @@
 
       const mediaRows = [...(lineup || []), ...(recordRoomBench || [])];
       const playerMedia = await loadPlayerMedia(mediaRows);
-      render3DPitch(starters, playerMedia, fixture.lineup_formation, pitchSubstitutionRows);
+      const currentPitchLineup = buildCurrentPitchLineup(starters, pitchSubstitutionRows, normalizedFormation(fixture.lineup_formation || starters.find(r => r.formation)?.formation));
+      render3DPitch(starters, playerMedia, fixture.lineup_formation, pitchSubstitutionRows, currentPitchLineup);
 
       const usedNames = new Map(
         substitutionRows
