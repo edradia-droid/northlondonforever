@@ -1695,7 +1695,7 @@
           const candidates = outgoingByMinute.get(minute) || [];
           const out = candidates.shift();
           if (out?.player_name) {
-            substitutionRows.push({ inPlayer: inn.player_name, outPlayer: out.player_name, minute });
+            substitutionRows.push({ teamName: pitchTeam, inPlayer: inn.player_name, outPlayer: out.player_name, minute });
           }
         });
       }
