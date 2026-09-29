@@ -1445,7 +1445,7 @@
           '<span class="player-ground-shadow"></span>' +
           '<div class="kit-player" aria-label="' + esc(displayName) + ' substituted off at ' + esc(offMinute) + ' minutes">' + photo + '</div>' +
           '<span class="player-name"><span class="player-name-first">' + esc(String(displayName).trim().split(/\s+/)[0] || displayName) + '</span><span class="player-name-last">' + esc(String(displayName).trim().split(/\s+/).slice(1).join(" ") || "") + '</span><span class="cl-pl-off">↓ ' + esc(offMinute) + '’</span></span>' +
-          '</div>''</div>';
+          '</div>';
       }).join('');
       // Render outgoing players in a dedicated overlay layer so their red
       // DOWN arrow and exact OFF minute cannot be clipped by the active-player
