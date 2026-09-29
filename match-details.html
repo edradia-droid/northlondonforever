@@ -1789,34 +1789,35 @@
       render3DPitch(starters, playerMedia, fixture.lineup_formation, pitchSubstitutionRows, currentPitchLineup);
 
       const usedNames = new Map(
-        substitutionRows
+        pitchSubstitutionRows
           .filter(row => row.inPlayer)
           .map(row => [normalizePlayerKey(row.inPlayer), row])
       );
 
-      // BSD substitution events are the only source allowed to create IN/OUT rows.
-      // Record Room is used only to fill the named bench with players who did not come on.
-      const bsdBenchRows = subs;
-      const recordRoomUnusedBench = recordRoomBench.filter(row => {
-        // Record Room is fallback-only for genuinely unused bench players.
-        // Any row carrying minute_on OR minute_off belongs to substitution
-        // state and must never be rendered as a bench/substitution here.
-        const minuteOn = Number(row.minute_on);
-        const minuteOff = Number(row.minute_off);
-        const hasMinuteOn = Number.isFinite(minuteOn) && minuteOn > 0;
-        const hasMinuteOff = Number.isFinite(minuteOff) && minuteOff > 0;
-        return !hasMinuteOn && !hasMinuteOff &&
-          row.minute_on == null && row.minute_off == null;
-      });
-      const benchRows = bsdBenchRows.length ? bsdBenchRows : recordRoomUnusedBench;
-      const completeBench = benchRows.length
-        ? benchRows.map(row => {
+      // Match Squad > Arsenal Substitutes is an IN-game list, not a full
+      // bench roster. Only players confirmed by BSD substitution events are
+      // rendered here. Record Room is deliberately excluded from this visible
+      // list so its historical/manual bench rows cannot appear as UNUSED or
+      // duplicate substitutions.
+      const actualSubstituteRows = pitchSubstitutionRows
+        .filter(row => row.inPlayer)
+        .map(row => ({
+          player_name: row.inPlayer,
+          team_name: pitchTeam,
+          minute_on: row.minute,
+          is_starter: false
+        }))
+        .filter((row, index, rows) =>
+          rows.findIndex(other =>
+            normalizePlayerKey(other.player_name) === normalizePlayerKey(row.player_name)
+          ) === index
+        );
+
+      const completeBench = actualSubstituteRows.length
+        ? actualSubstituteRows.map(row => {
             const key = normalizePlayerKey(row.player_name);
-            const used = bsdBenchRows.length ? usedNames.get(key) : null;
+            const used = usedNames.get(key);
             const minute = used ? `<span class="substitution-time">${esc(used.minute)}’</span>` : "";
-            const state = used
-              ? `<span class="sub-bench-used"><span class="substitution-arrow in" aria-hidden="true">↑</span>${minute}</span>`
-              : '<span class="sub-bench-unused">UNUSED</span>';
             return `
               <div class="broadcast-sub sub-bench-row">
                 <span class="sub-bench-player">
@@ -1828,10 +1829,11 @@
                   })()}
                   <span class="sub-name">${esc(row.player_name)}</span>
                 </span>
-                ${state}
+                <span class="sub-bench-used"><span class="substitution-arrow in" aria-hidden="true">↑</span>${minute}</span>
               </div>`;
           }).join("")
         : "";
+
       const offStarterRows = starters.filter(row => Number.isFinite(Number(row.minute_off)) && Number(row.minute_off) > 0);
       const offStarterHtml = offStarterRows.length
         ? '<div class="sub-off-list">' + offStarterRows.map(row => `
