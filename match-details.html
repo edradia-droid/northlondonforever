@@ -1844,11 +1844,7 @@
         : "";
       els.subs.innerHTML = completeBench
         ? completeBench + offStarterHtml
-        : exactSubHtml || (
-            subs.length
-              ? subs.map(row => rowHtml(row, playerMedia)).join("")
-              : '<div class="empty">Substitutes will appear here when they are entered in Record Room.</div>'
-          );
+        : (exactSubHtml || '<div class="empty">No Arsenal substitutes used in this match.</div>');
       let availabilityText = "";
       if (status === "scheduled") {
         availabilityText = starters.length
