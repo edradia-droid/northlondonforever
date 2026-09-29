@@ -1335,27 +1335,42 @@
         .forEach(event => {
           const outKey = normalizePlayerKey(event.outPlayer);
           const inKey = normalizePlayerKey(event.inPlayer);
-          const slotIndex = current.findIndex(player => normalizePlayerKey(player.player_name) === outKey);
-          if (slotIndex < 0 || !outKey || !inKey || current.some(player => normalizePlayerKey(player.player_name) === inKey)) return;
+          if (!outKey || !inKey) return;
 
-          const outgoing = current[slotIndex];
+          // Resolve the OFF player from the current pitch first, then from the
+          // original Starting XI. The latter is important when a prior
+          // substitution has already occupied/replaced the original slot.
+          const slotIndex = current.findIndex(player => normalizePlayerKey(player.player_name) === outKey);
+          const starterIndex = starters.findIndex(player => normalizePlayerKey(player.player_name) === outKey);
+          const sourceOutgoing = slotIndex >= 0 ? current[slotIndex] : (starterIndex >= 0 ? {
+            ...starters[starterIndex],
+            _pitchSlot: resolvedSlots[starterIndex]
+          } : null);
+
+          // If the incoming player is already active, do not create a second
+          // active marker, but still preserve the documented OFF event.
           const offMinute = Number(event.minute);
+          if (!sourceOutgoing || !Number.isFinite(offMinute)) return;
+
           outgoingSubstitutions.push({
-            ...outgoing,
-            player_name: event.outPlayer || outgoing.player_name,
-            _pitchSlot: outgoing._pitchSlot,
+            ...sourceOutgoing,
+            player_name: event.outPlayer || sourceOutgoing.player_name,
+            _pitchSlot: sourceOutgoing._pitchSlot || (starterIndex >= 0 ? resolvedSlots[starterIndex] : 'CM'),
             _minuteOff: offMinute
           });
           outgoingKeys.add(outKey);
 
           const source = starters.find(row => normalizePlayerKey(row.player_name) === inKey)
             || {player_name:event.inPlayer,team_name:event.teamName,is_starter:false};
-          current[slotIndex] = {
-            ...source,
-            _pitchSlot:outgoing._pitchSlot,
-            _minuteOn:offMinute,
-            _cameOn:true
-          };
+
+          if (slotIndex >= 0) {
+            current[slotIndex] = {
+              ...source,
+              _pitchSlot:sourceOutgoing._pitchSlot || resolvedSlots[slotIndex],
+              _minuteOn:offMinute,
+              _cameOn:true
+            };
+          }
         });
 
       // Never lose an OFF player merely because BSD/event-name pairing differs.
@@ -1444,7 +1459,7 @@
         return '<div class="player-marker pitch-player-off" style="--x:' + fallbackX + '%;--y:' + fallbackY + '%;--depth:' + depth + '" title="' + esc(displayName) + ' • #' + esc(safeShirtNumber) + ' • OFF ' + esc(offMinute) + '’">' +
           '<span class="player-ground-shadow"></span>' +
           '<div class="kit-player" aria-label="' + esc(displayName) + ' substituted off at ' + esc(offMinute) + ' minutes">' + photo + '</div>' +
-          '<span class="player-name"><span class="player-name-first">' + esc(String(displayName).trim().split(/\s+/)[0] || displayName) + '</span><span class="player-name-last">' + esc(String(displayName).trim().split(/\s+/).slice(1).join(" ") || "") + '</span><span class="cl-pl-off">↓ ' + esc(offMinute) + '’</span></span>' +
+          '<span class="player-name">' + esc(String(displayName).trim().toUpperCase() || displayName) + '<span class="cl-pl-off">↓ ' + esc(offMinute) + '’</span></span>' +
           '</div>';
       }).join('');
       // Render outgoing players in a dedicated overlay layer so their red
