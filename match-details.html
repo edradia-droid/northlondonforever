@@ -1797,9 +1797,17 @@
       // BSD substitution events are the only source allowed to create IN/OUT rows.
       // Record Room is used only to fill the named bench with players who did not come on.
       const bsdBenchRows = subs;
-      const recordRoomUnusedBench = recordRoomBench.filter(row =>
-        !Number.isFinite(Number(row.minute_on)) || Number(row.minute_on) <= 0
-      );
+      const recordRoomUnusedBench = recordRoomBench.filter(row => {
+        // Record Room is fallback-only for genuinely unused bench players.
+        // Any row carrying minute_on OR minute_off belongs to substitution
+        // state and must never be rendered as a bench/substitution here.
+        const minuteOn = Number(row.minute_on);
+        const minuteOff = Number(row.minute_off);
+        const hasMinuteOn = Number.isFinite(minuteOn) && minuteOn > 0;
+        const hasMinuteOff = Number.isFinite(minuteOff) && minuteOff > 0;
+        return !hasMinuteOn && !hasMinuteOff &&
+          row.minute_on == null && row.minute_off == null;
+      });
       const benchRows = bsdBenchRows.length ? bsdBenchRows : recordRoomUnusedBench;
       const completeBench = benchRows.length
         ? benchRows.map(row => {
