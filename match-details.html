@@ -1780,7 +1780,32 @@
 
       const canonicalSubstitutionName = value => {
         const raw = String(value || '').trim();
-        return canonicalPlayerNames.get(normalizePlayerKey(raw)) || raw;
+        const normalized = normalizePlayerKey(raw);
+        if (!normalized) return "";
+        const direct = canonicalPlayerNames.get(normalized);
+        if (direct) return direct;
+
+        // BSD commonly supplies substitutions as initials + surname
+        // (for example "B. Guimarães" or "M. Ødegaard"), while match_lineups
+        // stores the player's full name. Resolve that form before the pitch
+        // renderer sees the event so the OFF marker can always identify the
+        // actual starter.
+        const parts = raw.replace(/\\./g, "").split(/\\s+/).filter(Boolean);
+        if (parts.length >= 2) {
+          const initial = normalizePlayerKey(parts[0]).charAt(0);
+          const surname = normalizePlayerKey(parts[parts.length - 1]);
+          if (initial && surname) {
+            for (const [key, fullName] of canonicalPlayerNames.entries()) {
+              const fullParts = String(fullName).trim().split(/\\s+/).filter(Boolean);
+              if (fullParts.length >= 2) {
+                const fullInitial = normalizePlayerKey(fullParts[0]).charAt(0);
+                const fullSurname = normalizePlayerKey(fullParts[fullParts.length - 1]);
+                if (fullInitial === initial && fullSurname === surname) return fullName;
+              }
+            }
+          }
+        }
+        return raw;
       };
 
       // BSD is the authoritative live-feed source when BSD substitution
