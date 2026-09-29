@@ -1804,29 +1804,7 @@
         return {};
       };
 
-      const exactSubHtml = pitchSubstitutionRows
-        .map(row => {
-          const minuteText = `${row.minute}’`;
-          const exactMedia = resolvePlayerMedia(row.inPlayer);
-          return exactMedia.image ? { row, media: exactMedia, minuteText } : null;
-        })
-        .filter(Boolean)
-        .map(({row, media, minuteText}) => {
-          const exactPhoto = '<img class="sub-bench-photo" src="' + esc(media.image) + '" alt="' + esc(row.inPlayer) + '" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden=true">';
-          return `
-            <div class="broadcast-sub sub-bench-row" title="${esc(minuteText)}">
-              <span class="sub-bench-player">
-                ${exactPhoto}
-                <span class="sub-name">
-                  <span class="substitution-time">${esc(minuteText)}</span>
-                  <span class="substitution-arrow in" aria-hidden="true">↑</span>${esc(row.inPlayer)} <span class="substitution-label in">IN</span>
-                  ${row.outPlayer ? `<span class="substitution-separator"> • </span><span class="substitution-arrow out" aria-hidden="true">↓</span>${esc(row.outPlayer)} <span class="substitution-label out">OUT</span>` : ""}
-                </span>
-              </span>
-            </div>`;
-        }).join("");
-
-      const currentPitchLineup = buildCurrentPitchLineup(starters, pitchSubstitutionRows, normalizedFormation(fixture.lineup_formation || starters.find(r => r.formation)?.formation));
+            const currentPitchLineup = buildCurrentPitchLineup(starters, pitchSubstitutionRows, normalizedFormation(fixture.lineup_formation || starters.find(r => r.formation)?.formation));
       render3DPitch(starters, playerMedia, fixture.lineup_formation, pitchSubstitutionRows, currentPitchLineup);
 
       const usedNames = new Map(
