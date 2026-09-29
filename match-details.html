@@ -1725,27 +1725,6 @@
       });
       const pitchSubstitutionRows = uniqueSubstitutionRows.filter(row => row.teamName === pitchTeam);
 
-      const exactSubHtml = pitchSubstitutionRows.map(row => {
-        const minuteText = `${row.minute}’`;
-        const exactMedia = playerMedia.get(normalizePlayerKey(row.inPlayer))
-          || playerMedia.get(String(row.inPlayer || '').trim().toLowerCase())
-          || {};
-        const exactPhoto = exactMedia.image
-          ? '<img class="sub-bench-photo" src="' + esc(exactMedia.image) + '" alt="' + esc(row.inPlayer) + '" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden=true">'
-          : '';
-        return `
-          <div class="broadcast-sub sub-bench-row" title="${esc(minuteText)}">
-            <span class="sub-bench-player">
-              ${exactPhoto}
-              <span class="sub-name">
-                <span class="substitution-time">${esc(minuteText)}</span>
-                <span class="substitution-arrow in" aria-hidden="true">↑</span>${esc(row.inPlayer)} <span class="substitution-label in">IN</span>
-                ${row.outPlayer ? `<span class="substitution-separator"> • </span><span class="substitution-arrow out" aria-hidden="true">↓</span>${esc(row.outPlayer)} <span class="substitution-label out">OUT</span>` : ""}
-              </span>
-            </span>
-          </div>`;
-      }).join("");
-
       const leagueTeamsEl = document.getElementById("leagueWideTeams");
       const leagueEventsEl = document.getElementById("leagueWideEvents");
       const leagueStatusEl = document.getElementById("leagueWideStatus");
@@ -1801,6 +1780,28 @@
         ]).filter(Boolean)
       ];
       const playerMedia = await loadPlayerMedia(mediaRows);
+
+      const exactSubHtml = pitchSubstitutionRows.map(row => {
+        const minuteText = `${row.minute}’`;
+        const exactMedia = playerMedia.get(normalizePlayerKey(row.inPlayer))
+          || playerMedia.get(String(row.inPlayer || '').trim().toLowerCase())
+          || {};
+        const exactPhoto = exactMedia.image
+          ? '<img class="sub-bench-photo" src="' + esc(exactMedia.image) + '" alt="' + esc(row.inPlayer) + '" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden=true">'
+          : '';
+        return `
+          <div class="broadcast-sub sub-bench-row" title="${esc(minuteText)}">
+            <span class="sub-bench-player">
+              ${exactPhoto}
+              <span class="sub-name">
+                <span class="substitution-time">${esc(minuteText)}</span>
+                <span class="substitution-arrow in" aria-hidden="true">↑</span>${esc(row.inPlayer)} <span class="substitution-label in">IN</span>
+                ${row.outPlayer ? `<span class="substitution-separator"> • </span><span class="substitution-arrow out" aria-hidden="true">↓</span>${esc(row.outPlayer)} <span class="substitution-label out">OUT</span>` : ""}
+              </span>
+            </span>
+          </div>`;
+      }).join("");
+
       const currentPitchLineup = buildCurrentPitchLineup(starters, pitchSubstitutionRows, normalizedFormation(fixture.lineup_formation || starters.find(r => r.formation)?.formation));
       render3DPitch(starters, playerMedia, fixture.lineup_formation, pitchSubstitutionRows, currentPitchLineup);
 
