@@ -1783,9 +1783,7 @@
       const exactSubHtml = pitchSubstitutionRows
         .map(row => {
           const minuteText = `${row.minute}’`;
-          const exactMedia = playerMedia.get(normalizePlayerKey(row.inPlayer))
-            || playerMedia.get(String(row.inPlayer || '').trim().toLowerCase())
-            || {};
+          const exactMedia = resolvePlayerMedia(row.inPlayer);
           return exactMedia.image ? { row, media: exactMedia, minuteText } : null;
         })
         .filter(Boolean)
@@ -1804,6 +1802,30 @@
             </div>`;
         }).join("");
 
+      const resolvePlayerMedia = playerName => {
+        const key = normalizePlayerKey(playerName);
+        if (!key) return {};
+        const direct = playerMedia.get(key) || playerMedia.get(String(playerName || '').trim().toLowerCase());
+        if (direct?.image) return direct;
+
+        // BSD may return match-event names as initials (for example "E. Eze")
+        // while the player/media tables contain the full name. Resolve those
+        // forms by initial + surname so the same rule works on every fixture.
+        const parts = String(playerName || '').trim().replace(/\./g, '').split(/\s+/).filter(Boolean);
+        if (parts.length >= 2) {
+          const initial = normalizePlayerKey(parts[0]).charAt(0);
+          const surname = normalizePlayerKey(parts[parts.length - 1]);
+          if (initial && surname) {
+            for (const [fullKey, media] of playerMedia.entries()) {
+              if (media?.image && fullKey.charAt(0) === initial && fullKey.endsWith(surname)) {
+                return media;
+              }
+            }
+          }
+        }
+        return {};
+      };
+
       const currentPitchLineup = buildCurrentPitchLineup(starters, pitchSubstitutionRows, normalizedFormation(fixture.lineup_formation || starters.find(r => r.formation)?.formation));
       render3DPitch(starters, playerMedia, fixture.lineup_formation, pitchSubstitutionRows, currentPitchLineup);
 
@@ -1821,9 +1843,7 @@
       const actualSubstituteRows = pitchSubstitutionRows
         .filter(row => row.inPlayer)
         .filter(row => {
-          const media = playerMedia.get(normalizePlayerKey(row.inPlayer))
-            || playerMedia.get(String(row.inPlayer || '').trim().toLowerCase())
-            || {};
+          const media = resolvePlayerMedia(row.inPlayer);
           return Boolean(media.image);
         })
         .map(row => ({
@@ -1847,9 +1867,7 @@
               <div class="broadcast-sub sub-bench-row">
                 <span class="sub-bench-player">
                   ${(() => {
-                    const benchMedia = playerMedia.get(normalizePlayerKey(row.player_name))
-                      || playerMedia.get(String(row.player_name || '').trim().toLowerCase())
-                      || {};
+                    const benchMedia = resolvePlayerMedia(row.player_name);
                     return benchMedia.image
                       ? '<img class="sub-bench-photo" src="' + esc(benchMedia.image) + '" alt="' + esc(row.player_name) + '" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden=true">'
                       : '';
