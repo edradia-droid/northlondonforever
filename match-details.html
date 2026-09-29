@@ -1429,6 +1429,10 @@
       current._outgoingSubstitutions = outgoingSubstitutions;
       return current;
     }
+    function resolvedFormationSlotsForRender(starters, formation){
+      return resolveFormationSlots(starters, formation);
+    }
+
     function render3DPitch(starters, mediaMap = new Map(), fixtureFormation = '', substitutionRows = [], currentPitchLineup = null){
       const exportBoard = document.getElementById('lineupPhotoExport');
       if (exportBoard) exportBoard.classList.toggle('has-lineup', starters.length > 0);
@@ -1480,7 +1484,22 @@
       }).join('');
 
       // Keep outgoing players visible at their original pitch slots.
-      const outgoingFigures = (activeRows._outgoingSubstitutions || []).map(row => {
+      const visibleOutgoing = (activeRows._outgoingSubstitutions && activeRows._outgoingSubstitutions.length)
+        ? activeRows._outgoingSubstitutions
+        : (substitutionRows || []).filter(event => {
+            const outKey = normalizePlayerKey(event.outPlayer);
+            return outKey && starters.some(player => normalizePlayerKey(player.player_name) === outKey);
+          }).map(event => {
+            const starterIndex = starters.findIndex(player => normalizePlayerKey(player.player_name) === normalizePlayerKey(event.outPlayer));
+            if (starterIndex < 0) return null;
+            return {
+              ...starters[starterIndex],
+              _pitchSlot: resolvedFormationSlotsForRender(starters, formation)[starterIndex],
+              _minuteOff: Number(event.minute)
+            };
+          }).filter(Boolean);
+
+      const outgoingFigures = visibleOutgoing.map(row => {
         const slot = row._pitchSlot || 'CM';
         const [fallbackX,fallbackY] = PITCH_COORDS[slot] || PITCH_COORDS.CM;
         const offMinute = Number.isFinite(Number(row._minuteOff)) ? Number(row._minuteOff) : null;
