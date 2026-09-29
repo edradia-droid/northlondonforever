@@ -930,6 +930,8 @@
   color:#777!important;
   font-weight:900!important;
 }
+.pitch-player-off{z-index:7!important;opacity:.62!important;pointer-events:none!important;filter:drop-shadow(0 8px 7px rgba(0,0,0,.48))!important}
+.pitch-player-off .kit-player-photo,.pitch-player-off .kit-shirt{filter:saturate(.72) brightness(.82)!important}
 .pitch-substitution-out{
   display:flex!important;
   align-items:center!important;
@@ -1276,6 +1278,7 @@
         _minuteOn: Number.isFinite(Number(row.minute_on)) && Number(row.minute_on) > 0 ? Number(row.minute_on) : null,
         _cameOn: false
       }));
+      const outgoingSubstitutions = [];
       [...(substitutionRows || [])]
         .filter(row => row && row.inPlayer && Number.isFinite(Number(row.minute)))
         .sort((x,y) => Number(x.minute) - Number(y.minute))
@@ -1284,13 +1287,19 @@
           const inKey = normalizePlayerKey(event.inPlayer);
           const slotIndex = current.findIndex(player => normalizePlayerKey(player.player_name) === outKey);
           if (slotIndex < 0 || current.some(player => normalizePlayerKey(player.player_name) === inKey)) return;
+          outgoingSubstitutions.push({
+            ...current[slotIndex],
+            player_name: event.outPlayer || current[slotIndex].player_name,
+            _pitchSlot: current[slotIndex]._pitchSlot,
+            _minuteOff: Number(event.minute)
+          });
           const source = starters.find(row => normalizePlayerKey(row.player_name) === inKey)
             || {player_name:event.inPlayer,team_name:event.teamName,is_starter:false};
           current[slotIndex] = {...source,_pitchSlot:current[slotIndex]._pitchSlot,_minuteOn:Number(event.minute),_cameOn:true};
         });
+      current._outgoingSubstitutions = outgoingSubstitutions;
       return current;
     }
-
     function render3DPitch(starters, mediaMap = new Map(), fixtureFormation = '', substitutionRows = [], currentPitchLineup = null){
       const exportBoard = document.getElementById('lineupPhotoExport');
       if (exportBoard) exportBoard.classList.toggle('has-lineup', starters.length > 0);
@@ -1341,7 +1350,27 @@
           <span class="player-name"><span class="player-name-first">${esc(String(displayName).trim().split(/\s+/)[0]||displayName)}</span><span class="player-name-last">${esc(String(displayName).trim().split(/\s+/).slice(1).join(" ")||"")}</span>${incomingBadge}</span>
         </div>`;
       }).join('');
+
+      // Keep outgoing players visible at their original pitch slots.
+      const outgoingFigures = (activeRows._outgoingSubstitutions || []).map(row => {
+        const slot = row._pitchSlot || 'CM';
+        const [fallbackX,fallbackY] = PITCH_COORDS[slot] || PITCH_COORDS.CM;
+        const depth = (0.78 + (fallbackY/100)*0.24).toFixed(2);
+        const displayName = row.player_name || 'Arsenal';
+        const media = mediaMap.get(String(displayName).trim().toLowerCase()) || {};
+        const shirtNumber = (media.shirt !== undefined && media.shirt !== null && String(media.shirt).trim() !== '') ? media.shirt : currentShirtNumber(displayName);
+        const safeShirtNumber = (shirtNumber === '—' || shirtNumber === '-' || shirtNumber == null) ? '' : shirtNumber;
+        const offMinute = Number.isFinite(Number(row._minuteOff)) ? Number(row._minuteOff) : null;
+        if (offMinute == null) return '';
+        const photo = media.image ? '<img class="kit-player-photo" src="' + esc(media.image) + '" alt="' + esc(displayName) + '" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden=true">' : '<span class="kit-shirt' + (slot === 'GK' ? ' goalkeeper-kit' : '') + '" data-number="' + esc(safeShirtNumber) + '"><span class="kit-collar"></span><span class="kit-front-number" aria-hidden="true">' + esc(safeShirtNumber) + '</span><span class="kit-back-number">' + esc(safeShirtNumber) + '</span></span>';
+        return '<div class="player-marker pitch-player-off" style="--x:' + fallbackX + '%;--y:' + fallbackY + '%;--depth:' + depth + '" title="' + esc(displayName) + ' • #' + esc(safeShirtNumber) + ' • OFF ' + esc(offMinute) + '’">' +
+          '<span class="player-ground-shadow"></span>' +
+          '<div class="kit-player" aria-label="' + esc(displayName) + ' substituted off at ' + esc(offMinute) + ' minutes">' + photo + '</div>' +
+          '<span class="player-name"><span class="player-name-first">' + esc(String(displayName).trim().split(/\s+/)[0] || displayName) + '</span><span class="player-name-last">' + esc(String(displayName).trim().split(/\s+/).slice(1).join(' ') || '') + '</span><span class="pitch-substitution-out" aria-label="Substituted off at ' + esc(offMinute) + ' minutes"><span class="substitution-arrow out" aria-hidden="true">↓</span><span class="substitution-time">' + esc(offMinute) + '’</span></span></span>' +
+          '</div>';
+      }).join('');
       els.starters.innerHTML = markings + figures;
+      els.starters.innerHTML = markings + outgoingFigures + figures;
     }
 
     const ARSENAL_SQUAD_IMAGE_URLS = {
