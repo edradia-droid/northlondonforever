@@ -968,7 +968,13 @@
 #lineupPhotoExport .pitch-player-off .pitch-substitution-out .substitution-arrow.out{display:inline-flex!important;visibility:visible!important;color:#ff3030!important;font-size:1.15em!important;font-weight:1000!important}
 #lineupPhotoExport .pitch-player-off .pitch-substitution-out .substitution-time{display:inline!important;visibility:visible!important;color:#ff4b4b!important;font-size:1em!important;font-weight:1000!important}
 </style>
-</head>
+<style id="nl4-substitution-off-badge-final">
+#lineupPhotoExport .pitch-player-off{transform:translate(-62%,-52%) scale(var(--depth,1))!important;z-index:1200!important;opacity:.82!important;visibility:visible!important;display:block!important;overflow:visible!important}
+#lineupPhotoExport .pitch-player-off .pitch-off-badge{position:absolute!important;left:50%!important;top:88px!important;transform:translateX(-50%) scale(calc(1 / var(--depth,1)))!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:3px!important;min-width:42px!important;min-height:22px!important;padding:2px 7px!important;box-sizing:border-box!important;border-radius:999px!important;background:rgba(0,0,0,.88)!important;border:2px solid #ff3030!important;color:#ff3030!important;font-size:12px!important;line-height:1!important;font-weight:1000!important;white-space:nowrap!important;z-index:1300!important;visibility:visible!important;opacity:1!important;box-shadow:0 3px 8px rgba(0,0,0,.55)!important}
+#lineupPhotoExport .pitch-player-off .pitch-off-badge .substitution-arrow.out{display:inline-flex!important;color:#ff3030!important;font-size:18px!important;line-height:16px!important;margin:0!important;font-weight:1000!important}
+#lineupPhotoExport .pitch-player-off .pitch-off-badge .substitution-time{display:inline!important;color:#ff3030!important;font-size:12px!important;line-height:16px!important;margin:0!important;font-weight:1000!important}
+@media(max-width:700px){#lineupPhotoExport .pitch-player-off{transform:translate(-62%,-52%) scale(var(--depth,1))!important}#lineupPhotoExport .pitch-player-off .pitch-off-badge{top:68px!important;min-width:38px!important;min-height:19px!important;padding:2px 5px!important;font-size:10px!important;border-width:1.5px!important}#lineupPhotoExport .pitch-player-off .pitch-off-badge .substitution-arrow.out{font-size:15px!important;line-height:13px!important}#lineupPhotoExport .pitch-player-off .pitch-off-badge .substitution-time{font-size:10px!important;line-height:13px!important}}
+</style></head>
 
 <body class="nl4-unified-sidebar match-details-page">
   <button id="nl4MenuToggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation">☰</button>
@@ -1411,7 +1417,7 @@
         return '<div class="player-marker pitch-player-off" style="--x:' + fallbackX + '%;--y:' + fallbackY + '%;--depth:' + depth + '" title="' + esc(displayName) + ' • #' + esc(safeShirtNumber) + ' • OFF ' + esc(offMinute) + '’">' +
           '<span class="player-ground-shadow"></span>' +
           '<div class="kit-player" aria-label="' + esc(displayName) + ' substituted off at ' + esc(offMinute) + ' minutes">' + photo + '</div>' +
-          '<span class="player-name"><span class="player-name-first">' + esc(String(displayName).trim().split(/\s+/)[0] || displayName) + '</span><span class="player-name-last">' + esc(String(displayName).trim().split(/\s+/).slice(1).join(' ') || '') + '</span><span class="pitch-substitution-out" aria-label="Substituted off at ' + esc(offMinute) + ' minutes"><span class="substitution-arrow out" aria-hidden="true">↓</span><span class="substitution-time">' + esc(offMinute) + '’</span></span></span>' +
+          '<span class="player-name"><span class="player-name-first">' + esc(String(displayName).trim().split(/\s+/)[0] || displayName) + '</span><span class="player-name-last">' + esc(String(displayName).trim().split(/\s+/).slice(1).join(" ") || "") + '</span></span><span class="pitch-off-badge" aria-label="Substituted off at ' + esc(offMinute) + ' minutes"><span class="substitution-arrow out" aria-hidden="true">↓</span><span class="substitution-time">' + esc(offMinute) + '’</span></span></span>' +
           '</div>';
       }).join('');
       // Render outgoing players in a dedicated overlay layer so their red
