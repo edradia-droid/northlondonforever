@@ -1794,12 +1794,17 @@
           .map(row => [normalizePlayerKey(row.inPlayer), row])
       );
 
-      // BSD lineup bench is primary. Record Room is fallback only when BSD has no bench rows.
-      const benchRows = subs.length ? subs : recordRoomBench;
+      // BSD substitution events are the only source allowed to create IN/OUT rows.
+      // Record Room is used only to fill the named bench with players who did not come on.
+      const bsdBenchRows = subs;
+      const recordRoomUnusedBench = recordRoomBench.filter(row =>
+        !Number.isFinite(Number(row.minute_on)) || Number(row.minute_on) <= 0
+      );
+      const benchRows = bsdBenchRows.length ? bsdBenchRows : recordRoomUnusedBench;
       const completeBench = benchRows.length
         ? benchRows.map(row => {
             const key = normalizePlayerKey(row.player_name);
-            const used = usedNames.get(key);
+            const used = bsdBenchRows.length ? usedNames.get(key) : null;
             const minute = used ? `<span class="substitution-time">${esc(used.minute)}’</span>` : "";
             const state = used
               ? `<span class="sub-bench-used"><span class="substitution-arrow in" aria-hidden="true">↑</span>${minute}</span>`
@@ -1819,7 +1824,6 @@
               </div>`;
           }).join("")
         : "";
-
       const offStarterRows = starters.filter(row => Number.isFinite(Number(row.minute_off)) && Number(row.minute_off) > 0);
       const offStarterHtml = offStarterRows.length
         ? '<div class="sub-off-list">' + offStarterRows.map(row => `
