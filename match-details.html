@@ -1332,12 +1332,13 @@
         const minuteOff = Number(starter.minute_off);
         if (!key || !Number.isFinite(minuteOff) || minuteOff <= 0 || outgoingKeys.has(key)) return;
         const active = current[index];
-        if (!active || normalizePlayerKey(active.player_name) === key) {
+        if (!outgoingKeys.has(key)) {
           outgoingSubstitutions.push({
             ...starter,
-            _pitchSlot: active?._pitchSlot : resolvedSlots[index],
+            _pitchSlot: active?._pitchSlot || resolvedSlots[index],
             _minuteOff: minuteOff
           });
+          outgoingKeys.add(key);
         }
       });
 
