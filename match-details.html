@@ -1502,7 +1502,16 @@
 
         // Incoming players remain part of the current XI, but show no ON marker.
         // Only outgoing starters receive the red OFF arrow and minute.
-        const incomingBadge = ''; 
+        const incomingBadge = '';
+        const outgoingRow = (activeRows._outgoingSubstitutions || []).find(item =>
+          normalizePlayerKey(item.player_name) === normalizePlayerKey(displayName)
+        );
+        const offMinute = outgoingRow && Number.isFinite(Number(outgoingRow._minuteOff))
+          ? Number(outgoingRow._minuteOff)
+          : null;
+        const outgoingBadge = offMinute != null
+          ? '<span class="pitch-off-marker" aria-label="' + esc(String(displayName)) + ' substituted off at ' + esc(offMinute) + ' minutes">↓ ' + esc(offMinute) + '’</span>'
+          : '';
         return `<div class="player-marker" style="--x:${x}%;--y:${y}%;--depth:${depth}" title="${esc(displayName)} • #${esc(safeShirtNumber)}">
           <span class="player-ground-shadow"></span>
           <div class="kit-player" aria-label="${esc(displayName)} Arsenal home shirt number ${esc(safeShirtNumber)}">
@@ -1514,24 +1523,13 @@
                   <span class="kit-back-number">${esc(safeShirtNumber)}</span>
                 </span>`}
           </div>
-          <span class="player-name"><span class="player-name-first">${esc(String(displayName).trim().split(/\s+/)[0]||displayName)}</span><span class="player-name-last">${esc(String(displayName).trim().split(/\s+/).slice(1).join(" ")||"")}</span>${incomingBadge}</span>
+          <span class="player-name"><span class="player-name-first">${esc(String(displayName).trim().split(/\s+/)[0]||displayName)}</span><span class="player-name-last">${esc(String(displayName).trim().split(/\s+/).slice(1).join(" ")||"")}</span>${incomingBadge}${outgoingBadge}</span>
         </div>`;
       }).join('');
 
-      // Keep outgoing players visible at their original pitch slots.
-      const outgoingFigures = (activeRows._outgoingSubstitutions || []).map(row => {
-        const slot = row._pitchSlot || 'CM';
-        const [fallbackX,fallbackY] = PITCH_COORDS[slot] || PITCH_COORDS.CM;
-        const offMinute = Number.isFinite(Number(row._minuteOff)) ? Number(row._minuteOff) : null;
-        if (offMinute == null) return '';
-        // The Starting XI figure already renders the outgoing player's image and name.
-        // Render ONLY the red OFF marker here, so the player is never duplicated.
-        return '<span class="pitch-off-marker" style="--x:' + fallbackX + '%;--y:' + fallbackY + '%" title="' + esc(String(row.player_name || 'Arsenal')) + ' • OFF ' + esc(offMinute) + '’" aria-label="' + esc(String(row.player_name || 'Arsenal')) + ' substituted off at ' + esc(offMinute) + ' minutes">↓ ' + esc(offMinute) + '’</span>';
-      }).join('');
-      // Outgoing starters sit in a real absolute overlay above the active XI.
-      // This keeps the red OFF marker visible even when an incoming player
-      // occupies the same pitch slot.
-      els.starters.innerHTML = markings + '<div class="pitch-active-layer">' + figures + '</div>' + '<div class="pitch-outgoing-layer">' + outgoingFigures + '</div>';
+      // The OFF marker is rendered inside the outgoing starter's own name label.
+      // It therefore stays beside the player at every pitch size, including mobile.
+      els.starters.innerHTML = markings + '<div class="pitch-active-layer">' + figures + '</div>';
     }
 
     const ARSENAL_SQUAD_IMAGE_URLS = {
