@@ -1401,17 +1401,12 @@
           });
           outgoingKeys.add(outKey);
 
-          const source = starters.find(row => normalizePlayerKey(row.player_name) === inKey)
-            || {player_name:event.inPlayer,team_name:event.teamName,is_starter:false};
-
-          if (slotIndex >= 0) {
-            current[slotIndex] = {
-              ...source,
-              _pitchSlot:sourceOutgoing._pitchSlot || resolvedSlots[slotIndex],
-              _minuteOn:offMinute,
-              _cameOn:true
-            };
-          }
+          // Keep the original Starting XI on the pitch.
+          // Substituted-in players are deliberately NOT rendered as pitch
+          // figures. The starter stays in his original position and receives
+          // only the red OFF arrow + minute overlay.
+          // This keeps the pitch a true Starting XI view while still showing
+          // exactly who came off and when.
         });
 
       // Never lose an OFF player merely because BSD/event-name pairing differs.
