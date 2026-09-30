@@ -496,29 +496,30 @@
     try {
       let fixtures = [];
 
-      if (window.NL4Data && typeof window.NL4Data.fixtures === 'function') {
-        fixtures = await window.NL4Data.fixtures();
-      } else {
-        const client =
-          window.nl4Supabase ||
-          window.supabaseClient ||
-          window.NL4_SUPABASE ||
-          window.supabaseDb ||
-          window.db;
+      // Do not use NL4Data.fixtures() here: that helper is intentionally limited
+      // to the first 20 published fixtures across every competition. After the BSD
+      // migration those rows are dominated by early Carabao Cup fixtures, which
+      // can hide Arsenal's Premier League next match from this page.
+      const client =
+        window.nl4Supabase ||
+        window.supabaseClient ||
+        window.NL4_SUPABASE ||
+        window.supabaseDb ||
+        window.db;
 
-        if (!client || typeof client.from !== 'function') return;
+      if (!client || typeof client.from !== 'function') return;
 
-        const { data, error } = await client
-          .from('fixtures')
-          .select('*')
-          .eq('season','2026/27')
-          .eq('competition','Premier League')
-          .eq('is_published',true)
-          .order('matchday',{ ascending:true });
+      const { data, error } = await client
+        .from('fixtures')
+        .select('*')
+        .eq('season','2026/27')
+        .eq('competition','Premier League')
+        .eq('is_published',true)
+        .order('kickoff_at',{ ascending:true })
+        .limit(1000);
 
-        if (error) throw error;
-        fixtures = data || [];
-      }
+      if (error) throw error;
+      fixtures = data || [];
 
       const now = Date.now();
 
