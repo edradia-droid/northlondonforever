@@ -305,7 +305,17 @@
 
   function renderArsenalFormAndResults(fixtures) {
     const completed = (fixtures || [])
-      .filter(row => row && finishedStatus(row.status))
+      .filter(row => {
+        if (!row || !((row.home_team === 'Arsenal') || (row.away_team === 'Arsenal') || row.is_home === true)) return false;
+        const score = arsenalFixtureScore(row);
+        // BSD may briefly leave a fixture status as scheduled/other while the
+        // final score is already synced. A valid normalized score is therefore
+        // also authoritative for the public Last Five Results display.
+        return Boolean(score) && (
+          finishedStatus(row.status) ||
+          (Number.isFinite(Number(row.home_score)) && Number.isFinite(Number(row.away_score)))
+        );
+      })
       .map(row => ({ row, score: arsenalFixtureScore(row) }))
       .filter(item => item.score)
       .sort((a,b) => fixtureOrder(b.row) - fixtureOrder(a.row));
@@ -373,10 +383,12 @@
       const client = window.nl4Supabase || window.supabaseClient || window.NL4_SUPABASE || window.supabaseDb || window.db;
       if (!client || typeof client.from !== 'function') return;
       const { data, error } = await client.from('fixtures')
-        .select('home_team,away_team,is_home,opponent,home_score,away_score,arsenal_score,opponent_score,status,kickoff_at,matchday,competition,season')
+        .select('home_team,away_team,is_home,opponent,home_score,away_score,arsenal_score,opponent_score,status,kickoff_at,matchday,competition,season,is_published')
         .eq('season','2026/27')
         .eq('competition','Premier League')
-        .order('matchday',{ascending:true});
+        .or('home_team.eq.Arsenal,away_team.eq.Arsenal')
+        .order('matchday',{ascending:true})
+        .limit(38);
       if (error) throw error;
       renderArsenalFormAndResults(data || []);
     } catch (error) {
