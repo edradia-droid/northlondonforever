@@ -4466,16 +4466,14 @@
     }
 
     try{
-      const [standingsRes,arsenalRes,leagueRes,previousStandingsRes,secondPreviousStandingsRes]=await Promise.all([
+      const [standingsRes,fixturesRes,previousStandingsRes,secondPreviousStandingsRes]=await Promise.all([
         db.from('premier_league_standings')
           .select('position,club,played,wins,draws,losses,goals_for,goals_against,goal_difference,points')
           .eq('season',SEASON).order('position',{ascending:true}),
-        db.from('fixtures')
-          .select('home_team,away_team,is_home,opponent,arsenal_score,opponent_score,status,kickoff_at,matchday,competition,season,updated_at')
-          .eq('season',SEASON).eq('competition','Premier League'),
-        db.from('premier_league_matches')
-          .select('home_team,away_team,home_score,away_score,status,kickoff_at,matchday,season,updated_at')
-          .eq('season',SEASON),
+        db.from('premier_league_fixtures_canonical')
+          .select('id,home_team,away_team,home_score,away_score,status,kickoff_at,matchday,updated_at')
+          .eq('season',SEASON)
+          .order('kickoff_at',{ascending:true}),
         db.from('premier_league_standings')
           .select('position,club,played,wins,draws,losses,goals_for,goals_against,goal_difference,points')
           .eq('season',PREVIOUS_SEASON).order('position',{ascending:true}),
@@ -4485,8 +4483,7 @@
       ]);
 
       if(standingsRes.error)throw standingsRes.error;
-      if(arsenalRes.error)throw arsenalRes.error;
-      if(leagueRes.error)throw leagueRes.error;
+      if(fixturesRes.error)throw fixturesRes.error;
       if(previousStandingsRes.error){
         console.warn('NL4 V12.9 previous-season standings unavailable:',previousStandingsRes.error);
         buildPreviousSeasonProfiles([],[],standingsRes.data||[]);
@@ -4503,7 +4500,19 @@
       if(!standingsRes.data||standingsRes.data.length!==20)
         throw new Error(`The model needs all 20 clubs. Found ${standingsRes.data?.length||0}.`);
 
-      let fixtures=mergeFixtures(arsenalRes.data||[],leagueRes.data||[]);
+      // One canonical fixture universe now drives the model. The legacy
+      // premier_league_matches table is intentionally no longer merged here.
+      let fixtures=(fixturesRes.data||[]).map(r=>({
+        id:r.id,
+        home:norm(r.home_team),
+        away:norm(r.away_team),
+        status:r.status||'scheduled',
+        kickoff_at:r.kickoff_at||null,
+        matchday:r.matchday??null,
+        home_score:r.home_score,
+        away_score:r.away_score,
+        updated_at:r.updated_at||null
+      })).filter(x=>x.home&&x.away&&!ignored(x.status));
       const testDataset=readTestDataset();
       showTestModeBanner(testDataset);
 
