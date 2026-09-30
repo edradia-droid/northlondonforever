@@ -281,9 +281,11 @@
 
   function arsenalFixtureScore(row) {
     const isHome = row.home_team === 'Arsenal' || row.is_home === true;
-    const arsenalScore = Number(row.arsenal_score);
-    const opponentScore = Number(row.opponent_score);
-    if (!Number.isFinite(arsenalScore) || !Number.isFinite(opponentScore)) return null;
+    const homeScore = Number(row.home_score ?? row.arsenal_score);
+    const awayScore = Number(row.away_score ?? row.opponent_score);
+    if (!Number.isFinite(homeScore) || !Number.isFinite(awayScore)) return null;
+    const arsenalScore = isHome ? homeScore : awayScore;
+    const opponentScore = isHome ? awayScore : homeScore;
     return {
       isHome,
       arsenalScore,
@@ -371,7 +373,7 @@
       const client = window.nl4Supabase || window.supabaseClient || window.NL4_SUPABASE || window.supabaseDb || window.db;
       if (!client || typeof client.from !== 'function') return;
       const { data, error } = await client.from('fixtures')
-        .select('home_team,away_team,is_home,opponent,arsenal_score,opponent_score,status,kickoff_at,matchday,competition,season')
+        .select('home_team,away_team,is_home,opponent,home_score,away_score,arsenal_score,opponent_score,status,kickoff_at,matchday,competition,season')
         .eq('season','2026/27')
         .eq('competition','Premier League')
         .order('matchday',{ascending:true});
