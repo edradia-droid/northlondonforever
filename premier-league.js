@@ -401,24 +401,125 @@
         throw new Error('Supabase client not found.');
       }
 
-      const { data, error } = await client
-        .from('premier_league_standings')
-        .select('*')
+      // ROOT SOURCE OF TRUTH:
+      // Build the public Premier League table from canonical fixture results.
+      // We deliberately do not read premier_league_standings here because that
+      // snapshot can become partially updated and must never override results.
+      const { data: fixtures, error } = await client
+        .from('fixtures')
+        .select('id,season,competition,home_team,away_team,home_score,away_score,status')
         .eq('season','2026/27')
-        .order('position',{ ascending:true });
+        .eq('competition','Premier League');
 
       if (error) throw error;
 
-      if (!data || !data.length) {
-        renderEmptySeason();
-        return;
+      const aliases = {
+        'Liverpool FC':'Liverpool',
+        'Bournemouth':'AFC Bournemouth',
+        'Brighton':'Brighton & Hove Albion',
+        'Man City':'Manchester City',
+        'Man United':'Manchester United',
+        'Spurs':'Tottenham Hotspur'
+      };
+
+      const canonicalClub = value => {
+        const name = String(value || '').trim();
+        return aliases[name] || name;
+      };
+
+      const teams = new Map(
+        fallbackTeams.map(club => [club, {
+          position: 0,
+          club,
+          played: 0,
+          wins: 0,
+          draws: 0,
+          losses: 0,
+          goals_for: 0,
+          goals_against: 0,
+          goal_difference: 0,
+          points: 0
+        }])
+      );
+
+      const completed = (fixtures || []).filter(row => {
+        const homeScore = Number(row.home_score);
+        const awayScore = Number(row.away_score);
+        const status = String(row.status || '').trim().toLowerCase();
+        const statusComplete = ['fulltime','finished','ft','aet','pen'].includes(status);
+        return (
+          row &&
+          Number.isFinite(homeScore) &&
+          Number.isFinite(awayScore) &&
+          (statusComplete || status === '')
+        );
+      });
+
+      for (const row of completed) {
+        const home = canonicalClub(row.home_team);
+        const away = canonicalClub(row.away_team);
+        const homeScore = Number(row.home_score);
+        const awayScore = Number(row.away_score);
+
+        const homeTeam = teams.get(home);
+        const awayTeam = teams.get(away);
+
+        // Ignore unexpected/non-PL team names rather than contaminating the
+        // table with a 21st club or silently creating a partial standings set.
+        if (!homeTeam || !awayTeam) {
+          console.warn('NL4 standings skipped unexpected fixture teams:', home, away);
+          continue;
+        }
+
+        homeTeam.played += 1;
+        awayTeam.played += 1;
+        homeTeam.goals_for += homeScore;
+        homeTeam.goals_against += awayScore;
+        awayTeam.goals_for += awayScore;
+        awayTeam.goals_against += homeScore;
+
+        if (homeScore > awayScore) {
+          homeTeam.wins += 1;
+          homeTeam.points += 3;
+          awayTeam.losses += 1;
+        } else if (homeScore < awayScore) {
+          awayTeam.wins += 1;
+          awayTeam.points += 3;
+          homeTeam.losses += 1;
+        } else {
+          homeTeam.draws += 1;
+          awayTeam.draws += 1;
+          homeTeam.points += 1;
+          awayTeam.points += 1;
+        }
+      }
+
+      const standings = Array.from(teams.values())
+        .map(team => ({
+          ...team,
+          goal_difference: team.goals_for - team.goals_against,
+          gd: team.goals_for - team.goals_against
+        }))
+        .sort((a,b) =>
+          b.points - a.points ||
+          b.gd - a.gd ||
+          b.goals_for - a.goals_for ||
+          a.club.localeCompare(b.club)
+        )
+        .map((team, index) => ({
+          ...team,
+          position: index + 1
+        }));
+
+      if (standings.length !== 20) {
+        throw new Error(`Expected 20 Premier League clubs, got ${standings.length}.`);
       }
 
       renderStandings(
-        data,
-        'Live standings loaded from Supabase • 2026/27'
+        standings,
+        `Live table calculated from canonical fixtures • ${completed.length} completed matches • 2026/27`
       );
-      renderTitleRaceFromStandings(data);
+      renderTitleRaceFromStandings(standings);
     } catch (error) {
       console.warn('NL4 Premier League standings fallback:', error);
       renderEmptySeason();
