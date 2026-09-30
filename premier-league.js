@@ -279,19 +279,20 @@
     return ['fulltime','finished','ft','aet','pen'].includes(String(value || '').trim().toLowerCase());
   }
 
+  // Canonical source: Supabase view public.arsenal_premier_league_fixtures.
+  // The view owns Arsenal-vs-opponent orientation and completion state so every
+  // Premier League surface consumes the same normalized fixture record.
   function arsenalFixtureScore(row) {
-    const isHome = row.home_team === 'Arsenal' || row.is_home === true;
-    const homeScore = Number(row.home_score ?? row.arsenal_score);
-    const awayScore = Number(row.away_score ?? row.opponent_score);
-    if (!Number.isFinite(homeScore) || !Number.isFinite(awayScore)) return null;
-    const arsenalScore = isHome ? homeScore : awayScore;
-    const opponentScore = isHome ? awayScore : homeScore;
+    const isHome = row.home_team === 'Arsenal';
+    const arsenalScore = Number(row.arsenal_score);
+    const opponentScore = Number(row.opponent_score);
+    if (!Number.isFinite(arsenalScore) || !Number.isFinite(opponentScore)) return null;
     return {
       isHome,
       arsenalScore,
       opponentScore,
-      home: row.home_team || (isHome ? 'Arsenal' : row.opponent),
-      away: row.away_team || (isHome ? row.opponent : 'Arsenal'),
+      home: row.home_team,
+      away: row.away_team,
       opponent: row.opponent || (isHome ? row.away_team : row.home_team) || 'Opponent'
     };
   }
@@ -306,15 +307,9 @@
   function renderArsenalFormAndResults(fixtures) {
     const completed = (fixtures || [])
       .filter(row => {
-        if (!row || !((row.home_team === 'Arsenal') || (row.away_team === 'Arsenal') || row.is_home === true)) return false;
+        if (!row) return false;
         const score = arsenalFixtureScore(row);
-        // BSD may briefly leave a fixture status as scheduled/other while the
-        // final score is already synced. A valid normalized score is therefore
-        // also authoritative for the public Last Five Results display.
-        return Boolean(score) && (
-          finishedStatus(row.status) ||
-          (Number.isFinite(Number(row.home_score)) && Number.isFinite(Number(row.away_score)))
-        );
+        return Boolean(score) && row.is_completed === true;
       })
       .map(row => ({ row, score: arsenalFixtureScore(row) }))
       .filter(item => item.score)
@@ -382,11 +377,8 @@
     try {
       const client = window.nl4Supabase || window.supabaseClient || window.NL4_SUPABASE || window.supabaseDb || window.db;
       if (!client || typeof client.from !== 'function') return;
-      const { data, error } = await client.from('fixtures')
-        .select('home_team,away_team,is_home,opponent,home_score,away_score,arsenal_score,opponent_score,status,kickoff_at,matchday,competition,season,is_published')
-        .eq('season','2026/27')
-        .eq('competition','Premier League')
-        .or('home_team.eq.Arsenal,away_team.eq.Arsenal')
+      const { data, error } = await client.from('arsenal_premier_league_fixtures')
+        .select('id,external_fixture_id,season,competition,matchday,kickoff_at,venue,status,is_published,home_team,away_team,home_score,away_score,arsenal_score,opponent_score,opponent,is_home,is_completed')
         .order('matchday',{ascending:true})
         .limit(38);
       if (error) throw error;
@@ -508,10 +500,6 @@
     try {
       let fixtures = [];
 
-      // Do not use NL4Data.fixtures() here: that helper is intentionally limited
-      // to the first 20 published fixtures across every competition. After the BSD
-      // migration those rows are dominated by early Carabao Cup fixtures, which
-      // can hide Arsenal's Premier League next match from this page.
       const client =
         window.nl4Supabase ||
         window.supabaseClient ||
@@ -521,14 +509,13 @@
 
       if (!client || typeof client.from !== 'function') return;
 
+      // The canonical view contains only published Arsenal Premier League
+      // fixtures. This prevents cross-competition leakage and schema ambiguity.
       const { data, error } = await client
-        .from('fixtures')
+        .from('arsenal_premier_league_fixtures')
         .select('*')
-        .eq('season','2026/27')
-        .eq('competition','Premier League')
-        .eq('is_published',true)
         .order('kickoff_at',{ ascending:true })
-        .limit(1000);
+        .limit(38);
 
       if (error) throw error;
       fixtures = data || [];
@@ -540,7 +527,7 @@
           row &&
           row.season === '2026/27' &&
           row.competition === 'Premier League' &&
-          row.is_published !== false &&
+          row.is_published === true &&
           row.kickoff_at &&
           new Date(row.kickoff_at).getTime() >= now &&
           !['fulltime','ft','aet','pen','cancelled'].includes(
