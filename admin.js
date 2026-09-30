@@ -2772,8 +2772,8 @@ function nl4FormatSyncTime(value) {
   return d.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
 }
 
-function nl4SetSyncHealth(text, cls = "") {
-  const el = document.getElementById("apiSyncHealth");
+function nl4SetSyncHealth(id, text, cls = "") {
+  const el = document.getElementById(id);
   if (!el) return;
   el.textContent = text;
   el.classList.remove("api-sync-good", "api-sync-bad", "api-sync-warn");
@@ -2792,10 +2792,13 @@ async function loadFootballApiSyncStatus() {
     const liveHealthy = Boolean(s.liveCronActive) &&
       (!s.liveLastStatus || ["succeeded","running"].includes(String(s.liveLastStatus).toLowerCase()));
     const healthy = fullHealthy && liveHealthy;
-    nl4SetSyncHealth(healthy ? "BSD ONLINE" : "CHECK BSD", healthy ? "api-sync-good" : "api-sync-warn");
+    nl4SetSyncHealth("apiSyncFullHealth", fullHealthy ? "BSD ONLINE" : "CHECK BSD", fullHealthy ? "api-sync-good" : "api-sync-warn");
+    nl4SetSyncHealth("apiSyncLiveHealth", liveHealthy ? "BSD ONLINE" : "CHECK BSD", liveHealthy ? "api-sync-good" : "api-sync-warn");
 
-    document.getElementById("apiSyncCronState").textContent =
-      `Full sync: ${s.fullCronActive ? (s.fullSchedule || "*/30 * * * *") : "INACTIVE"} • Live checks: ${s.liveCronActive ? (s.liveSchedule || "30 seconds") : "INACTIVE"} • BSD calls throttled to ≥${s.liveRefreshThrottleSeconds || 90}s`;
+    document.getElementById("apiSyncFullDetail").textContent =
+      `Scheduler: ${s.fullCronActive ? (s.fullSchedule || "*/30 * * * *") : "INACTIVE"} • Last run: ${nl4FormatSyncTime(s.fullLastStart)}`;
+    document.getElementById("apiSyncLiveDetail").textContent =
+      `Scheduler: ${s.liveCronActive ? (s.liveSchedule || "30 seconds") : "INACTIVE"} • BSD gate: ≥${s.liveRefreshThrottleSeconds || 90}s`;
     document.getElementById("apiSyncLast").textContent = nl4FormatSyncTime(s.lastBsdUpdate);
     document.getElementById("apiSyncNext").textContent = s.liveCronActive ? "Every 30 seconds" : "LIVE JOB OFF";
     const leagueCount = Number(s.leagueFixtures || 0);
@@ -2818,7 +2821,8 @@ async function loadFootballApiSyncStatus() {
     if (message) setMessage(message, `BSD status refreshed ${new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})}.`, "success");
   } catch (error) {
     console.error("NL4 BSD sync status failed:", error);
-    nl4SetSyncHealth("STATUS UNAVAILABLE", "api-sync-bad");
+    nl4SetSyncHealth("apiSyncFullHealth", "STATUS UNAVAILABLE", "api-sync-bad");
+    nl4SetSyncHealth("apiSyncLiveHealth", "STATUS UNAVAILABLE", "api-sync-bad");
     if (message) setMessage(message, `Could not read BSD sync status: ${error.message}`, "error");
   }
 }
