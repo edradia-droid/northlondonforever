@@ -2598,7 +2598,7 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
 <script src="supabase-client.js?v=20260907-odegaard2"></script>
 <script src="nl4-data.js"></script>
 <script src="shared-sidebar.js"></script>
-<script src="premier-league.js?v=20260930-bsd-fixtures-v2"></script>
+<script src="premier-league.js?v=20260930-canonical-arsenal-fixtures-v1"></script>
 <script src="public-model.js?v=20260818-canonical-interpretation-bridge-v1"></script>
 <script>
   (function(){
@@ -2820,12 +2820,10 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
 
     async function loadLatestArsenalLineup(){
       const { data: fixtures, error: fixtureError } = await db
-        .from("fixtures")
-        .select("id,opponent,home_team,away_team,is_home,kickoff_at,venue,arsenal_score,opponent_score,status,competition,season,is_published")
-        .eq("season","2026/27")
-        .ilike("competition","%Premier%")
+        .from("arsenal_premier_league_fixtures")
+        .select("id,external_fixture_id,opponent,home_team,away_team,is_home,kickoff_at,venue,arsenal_score,opponent_score,status,competition,season,is_published,is_completed")
         .eq("is_published",true)
-        .in("status",["fulltime","finished","ft"])
+        .eq("is_completed",true)
         .order("kickoff_at",{ ascending:false })
         .limit(1);
 
