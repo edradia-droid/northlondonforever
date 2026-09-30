@@ -406,26 +406,26 @@
         <section id="apiSyncPanel" class="panel">
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">FOOTBALL-DATA.ORG • AUTOMATION</p>
-              <h2>API Sync Status</h2>
-              <p class="muted">Monitor the automatic Premier League data import. The scheduled job runs every 30 minutes; Sync Now uses the same protected importer.</p>
+              <p class="eyebrow">BSD / BESoccer • EPL AUTOMATION</p>
+              <h2>BSD API Sync Status</h2>
+              <p class="muted">Monitor the BeSoccer/BSD Premier League feed, the 30-minute full sync and the 30-second live refresh gate.</p>
             </div>
             <div class="api-sync-actions">
-              <button id="refreshApiSyncBtn" class="ghost-btn" type="button">↻ Refresh Status</button>
-              <button id="syncFootballDataNowBtn" class="primary-btn" type="button">⚡ Sync Now</button>
+              <button id="refreshApiSyncBtn" class="ghost-btn" type="button">↻ Refresh BSD Status</button>
+              <button id="syncFootballDataNowBtn" class="primary-btn" type="button">⚡ Sync BSD Now</button>
             </div>
           </div>
           <div class="api-sync-grid">
-            <article class="api-sync-card"><span>API STATUS</span><strong id="apiSyncHealth">CHECKING…</strong><small id="apiSyncCronState">Reading automation</small></article>
-            <article class="api-sync-card"><span>LAST API SYNC</span><strong id="apiSyncLast">—</strong><small>Latest football-data.org fixture update</small></article>
-            <article class="api-sync-card"><span>NEXT SYNC</span><strong id="apiSyncNext">—</strong><small>Automatic 30-minute schedule</small></article>
-            <article class="api-sync-card"><span>FIXTURE COVERAGE</span><strong id="apiSyncCoverage">—</strong><small id="apiSyncCoverageDetail">Premier League 2026/27</small></article>
-            <article class="api-sync-card"><span>ARSENAL FIXTURES</span><strong id="apiSyncArsenal">—</strong><small>Expected 38 league fixtures</small></article>
+            <article class="api-sync-card"><span>BSD API STATUS</span><strong id="apiSyncHealth">CHECKING…</strong><small id="apiSyncCronState">Reading BSD automation</small></article>
+            <article class="api-sync-card"><span>LAST BSD DATA UPDATE</span><strong id="apiSyncLast">—</strong><small>Latest BSD-sourced EPL fixture update</small></article>
+            <article class="api-sync-card"><span>LIVE REFRESH</span><strong id="apiSyncNext">—</strong><small>Scheduler checks every 30 seconds; BSD sync is gated</small></article>
+            <article class="api-sync-card"><span>BSD FIXTURE COVERAGE</span><strong id="apiSyncCoverage">—</strong><small id="apiSyncCoverageDetail">Premier League 2026/27</small></article>
+            <article class="api-sync-card"><span>ARSENAL BSD FIXTURES</span><strong id="apiSyncArsenal">—</strong><small>Expected 38 league fixtures</small></article>
             <article class="api-sync-card"><span>STANDINGS</span><strong id="apiSyncStandings">—</strong><small>Expected 20 clubs</small></article>
           </div>
           <div class="api-sync-log">
-            <div><span>CRON JOB</span><strong id="apiSyncJob">nl4-football-data-sync-30m</strong></div>
-            <div><span>LAST CRON RUN</span><strong id="apiSyncCronRun">—</strong></div>
+            <div><span>FULL SYNC JOB</span><strong id="apiSyncJob">nl4-football-data-sync-30m</strong></div>
+            <div><span>LAST SYNC RUNS</span><strong id="apiSyncCronRun">—</strong></div>
             <div><span>LAST ERROR</span><strong id="apiSyncError">None</strong></div>
           </div>
           <p id="apiSyncMessage" class="message" role="status"></p>
