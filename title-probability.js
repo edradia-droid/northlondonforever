@@ -500,34 +500,6 @@
     });
   }
 
-  function mergeFixtures(arsenalRows,leagueRows){
-    const map=new Map();
-
-    (leagueRows||[]).forEach(r=>{
-      if(!r.home_team||!r.away_team) return;
-      map.set(pairKey(r.home_team,r.away_team),{
-        home:norm(r.home_team),away:norm(r.away_team),status:r.status||'scheduled',
-        kickoff_at:r.kickoff_at||null,matchday:r.matchday??null,
-        home_score:r.home_score,away_score:r.away_score,updated_at:r.updated_at||null
-      });
-    });
-
-    (arsenalRows||[]).forEach(r=>{
-      const isHome=r.home_team==='Arsenal'||r.is_home===true;
-      const home=norm(r.home_team||(isHome?'Arsenal':r.opponent));
-      const away=norm(r.away_team||(isHome?r.opponent:'Arsenal'));
-      if(!home||!away) return;
-      map.set(pairKey(home,away),{
-        home,away,status:r.status||'scheduled',kickoff_at:r.kickoff_at||null,matchday:r.matchday??null,
-        home_score:isHome?r.arsenal_score:r.opponent_score,
-        away_score:isHome?r.opponent_score:r.arsenal_score,updated_at:r.updated_at||null
-      });
-    });
-
-    return [...map.values()].filter(x=>!ignored(x.status));
-  }
-
-
 
   function v1501Num(value,digits=1,fallback='N/A'){
     const n=Number(value);
