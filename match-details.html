@@ -1026,7 +1026,11 @@
   visibility:visible!important;
   overflow:visible!important;
 }
-</style></head>
+</style><style id="nl4-assist-display-v1">
+.event-assist{display:inline-block;margin-left:7px;color:#d8ad45;font-size:10px;font-weight:900;letter-spacing:.35px}
+@media(max-width:700px){.event-assist{display:block;margin:3px 0 0;font-size:9px}}
+</style>
+</head>
 
 <body class="nl4-unified-sidebar match-details-page">
   <button id="nl4MenuToggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation">☰</button>
@@ -1976,7 +1980,7 @@
           const minute = Number(ev.minute);
           const minuteText = Number.isFinite(minute) ? String(minute) + String.fromCharCode(39) : "—";
           const type = labels[ev.event_type] || String(ev.event_type || "EVENT").replace(/_/g," ");
-          const detail = ev.event_type === "substitution" && ev.related_player_name ? '<span class="substitution-arrow in" aria-hidden="true">↑</span>' + esc(ev.player_name || "Unknown") + ' <span class="substitution-label in">IN</span> • <span class="substitution-arrow out" aria-hidden="true">↓</span>' + esc(ev.related_player_name) + ' <span class="substitution-label out">OUT</span>' : esc(ev.player_name || "Match event");
+          const detail = ev.event_type === "substitution" && ev.related_player_name ? '<span class="substitution-arrow in" aria-hidden="true">↑</span>' + esc(ev.player_name || "Unknown") + ' <span class="substitution-label in">IN</span> • <span class="substitution-arrow out" aria-hidden="true">↓</span>' + esc(ev.related_player_name) + ' <span class="substitution-label out">OUT</span>' : ev.event_type === "goal" && ev.related_player_name ? '<strong>' + esc(ev.player_name || "Unknown") + '</strong> <span class="event-assist">ASSIST: ' + esc(ev.related_player_name) + '</span>' : esc(ev.player_name || "Match event");
           return "<div class=\"event-row\"><span class=\"event-minute\">" + minuteText + "</span><span class=\"event-type\">" + esc(type) + "</span><div>" + detail + "<span class=\"event-team\">" + esc(ev.team_name || "") + "</span></div></div>";
           }).join("");
           if (leagueStatusEl) leagueStatusEl.textContent = "BSD Match Centre • both teams • " + uniqueLeagueEvents.length + " events";
