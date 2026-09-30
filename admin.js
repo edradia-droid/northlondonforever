@@ -2764,7 +2764,7 @@ db.auth.onAuthStateChange((_event, session) => {
 })();
 
 
-// ===== NL4 FOOTBALL-DATA.ORG API SYNC STATUS =====
+// ===== NL4 BSD / BESoccer API SYNC STATUS =====
 function nl4FormatSyncTime(value) {
   if (!value) return "—";
   const d = new Date(value);
@@ -2787,26 +2787,39 @@ async function loadFootballApiSyncStatus() {
     const { data, error } = await db.rpc("nl4_football_api_sync_status");
     if (error) throw error;
     const s = data || {};
-    const healthy = Boolean(s.cronActive) && (!s.lastCronStatus || ["succeeded", "running"].includes(String(s.lastCronStatus).toLowerCase()));
-    nl4SetSyncHealth(healthy ? "ONLINE" : (s.cronActive ? "CHECK" : "INACTIVE"), healthy ? "api-sync-good" : "api-sync-bad");
-    document.getElementById("apiSyncCronState").textContent = s.cronActive ? `Cron active • ${s.schedule || "*/30 * * * *"}` : "Cron job inactive";
-    document.getElementById("apiSyncLast").textContent = nl4FormatSyncTime(s.lastApiSync);
-    document.getElementById("apiSyncNext").textContent = nl4FormatSyncTime(s.nextSync);
-    const leagueCount = Number(s.leagueMatches || 0);
-    document.getElementById("apiSyncCoverage").textContent = `${leagueCount}/380`;
-    document.getElementById("apiSyncCoverageDetail").textContent = `${leagueCount} total league fixtures • ${s.apiLinkedArsenal || 0}/38 Arsenal API-linked`;
-    document.getElementById("apiSyncArsenal").textContent = `${s.arsenalFixtures || 0}/38`;
-    document.getElementById("apiSyncStandings").textContent = `${s.standingsRows || 0}/20`;
-    document.getElementById("apiSyncJob").textContent = s.jobName || "nl4-football-data-sync-30m";
-    document.getElementById("apiSyncCronRun").textContent = `${s.lastCronStatus || "No run yet"}${s.lastCronStart ? ` • ${nl4FormatSyncTime(s.lastCronStart)}` : ""}`;
+    const fullHealthy = Boolean(s.fullCronActive) &&
+      (!s.fullLastStatus || ["succeeded","running"].includes(String(s.fullLastStatus).toLowerCase()));
+    const liveHealthy = Boolean(s.liveCronActive) &&
+      (!s.liveLastStatus || ["succeeded","running"].includes(String(s.liveLastStatus).toLowerCase()));
+    const healthy = fullHealthy && liveHealthy;
+    nl4SetSyncHealth(healthy ? "BSD ONLINE" : "CHECK BSD", healthy ? "api-sync-good" : "api-sync-warn");
+
+    document.getElementById("apiSyncCronState").textContent =
+      `Full sync: ${s.fullCronActive ? (s.fullSchedule || "*/30 * * * *") : "INACTIVE"} • Live checks: ${s.liveCronActive ? (s.liveSchedule || "30 seconds") : "INACTIVE"} • BSD calls throttled to ≥${s.liveRefreshThrottleSeconds || 90}s`;
+    document.getElementById("apiSyncLast").textContent = nl4FormatSyncTime(s.lastBsdUpdate);
+    document.getElementById("apiSyncNext").textContent = s.liveCronActive ? "Every 30 seconds" : "LIVE JOB OFF";
+    const leagueCount = Number(s.leagueFixtures || 0);
+    const bsdCount = Number(s.bsdFixtures || 0);
+    document.getElementById("apiSyncCoverage").textContent = `${bsdCount}/${leagueCount || 380}`;
+    document.getElementById("apiSyncCoverageDetail").textContent = `${bsdCount} EPL fixtures currently BSD-sourced`;
+    document.getElementById("apiSyncArsenal").textContent = `${Number(s.arsenalBsdFixtures || 0)}/38`;
+    document.getElementById("apiSyncStandings").textContent = `${Number(s.standingsRows || 0)}/20`;
+
+    document.getElementById("apiSyncJob").textContent =
+      `${s.fullJobName || "nl4-football-data-sync-30m"} • ${s.fullSchedule || "*/30 * * * *"}`;
+    document.getElementById("apiSyncCronRun").textContent =
+      `Full: ${s.fullLastStatus || "No run"} • ${nl4FormatSyncTime(s.fullLastStart)} | Live: ${s.liveLastStatus || "No run"} • ${nl4FormatSyncTime(s.liveLastStart)}`;
+
+    const errors = [s.fullLastError, s.liveLastError].filter(Boolean);
     const errorEl = document.getElementById("apiSyncError");
-    errorEl.textContent = s.lastCronMessage || "None";
-    errorEl.classList.toggle("api-sync-bad", Boolean(s.lastCronMessage));
-    if (message) setMessage(message, `Status refreshed ${new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})}.`, "success");
+    errorEl.textContent = errors.length ? errors.join(" • ") : "None";
+    errorEl.classList.toggle("api-sync-bad", errors.length > 0);
+
+    if (message) setMessage(message, `BSD status refreshed ${new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})}.`, "success");
   } catch (error) {
-    console.error("NL4 API sync status failed:", error);
-    nl4SetSyncHealth("UNAVAILABLE", "api-sync-bad");
-    if (message) setMessage(message, `Could not read API sync status: ${error.message}`, "error");
+    console.error("NL4 BSD sync status failed:", error);
+    nl4SetSyncHealth("STATUS UNAVAILABLE", "api-sync-bad");
+    if (message) setMessage(message, `Could not read BSD sync status: ${error.message}`, "error");
   }
 }
 
@@ -2816,19 +2829,21 @@ async function syncFootballDataNow() {
   if (!button || !db) return;
   const old = button.textContent;
   button.disabled = true;
-  button.textContent = "SYNCING…";
-  if (message) setMessage(message, "Running protected football-data.org sync…");
+  button.textContent = "SYNCING BSD…";
+  if (message) setMessage(message, "Running protected BSD / BeSoccer EPL sync…");
   try {
-    const { data, error } = await db.functions.invoke("sync-football-data", { body: { preview: false, source: "admin-sync-now" } });
+    const { data, error } = await db.functions.invoke("sync-football-data", {
+      body: { preview: false, source: "admin-sync-now" }
+    });
     if (error) throw error;
     if (data?.error) throw new Error(data.error);
-    if (message) setMessage(message, "Football data sync completed. Refreshing live status…", "success");
-    await new Promise(resolve => setTimeout(resolve, 900));
+    if (message) setMessage(message, "BSD sync accepted. Refreshing status…", "success");
+    await new Promise(resolve => setTimeout(resolve, 1200));
     await loadFootballApiSyncStatus();
     await loadAll();
   } catch (error) {
-    console.error("Manual football data sync failed:", error);
-    if (message) setMessage(message, `Sync failed: ${error.message}`, "error");
+    console.error("Manual BSD sync failed:", error);
+    if (message) setMessage(message, `BSD sync failed: ${error.message}`, "error");
     await loadFootballApiSyncStatus();
   } finally {
     button.disabled = false;
