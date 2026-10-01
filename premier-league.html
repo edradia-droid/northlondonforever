@@ -2173,6 +2173,31 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
 
 <script src="premier-league-final-squads-2026-27.js?v=20260905-final7"></script>
 <script src="nl4-current-squad-enforcer.js?v=20261001-stats-authority-v1"></script>
+<script>
+(function(){
+  function applyPlayerFilter(filter){
+    const body=document.getElementById('arsenalPlayerStatsBody');
+    const buttons=document.querySelectorAll('[data-player-filter]');
+    if(!body)return;
+    buttons.forEach(btn=>{
+      const active=btn.getAttribute('data-player-filter')===filter;
+      btn.classList.toggle('active',active);
+      btn.setAttribute('aria-pressed',active?'true':'false');
+    });
+    body.querySelectorAll('tr[data-position]').forEach(row=>{
+      row.hidden=filter!=='All' && row.getAttribute('data-position')!==filter;
+    });
+  }
+  window.nl4ApplyPlayerFilter=applyPlayerFilter;
+  document.addEventListener('click',function(event){
+    const btn=event.target.closest?.('[data-player-filter]');
+    if(!btn)return;
+    event.preventDefault();
+    applyPlayerFilter(btn.getAttribute('data-player-filter')||'All');
+  });
+  window.addEventListener('load',function(){setTimeout(()=>applyPlayerFilter('All'),1000);});
+})();
+</script>
 
 </body>
 </html>
