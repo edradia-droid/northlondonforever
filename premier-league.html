@@ -2676,109 +2676,30 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
 
 <script>
 (function(){
-  const season = "2026/27";
-  const db = window.nl4Supabase;
-  const grid = document.getElementById("arsenalTeamSeasonStatsGrid");
-  const status = document.getElementById("arsenalTeamSeasonStatsStatus");
-  if (!db || !grid || !status) return;
-
-  const isArsenal = value => String(value || "").trim().toLowerCase().includes("arsenal");
-  const number = value => Number.isFinite(Number(value)) ? Number(value) : 0;
-  const isCompleted = row => {
-    const s = String(row.status || "").toLowerCase().replace(/[\s_-]/g,"");
-    return ["fulltime","finished","completed","ft"].includes(s);
-  };
-
-  function setStat(name, value){
-    const el = grid.querySelector(`[data-team-stat="${name}"]`);
-    if (el) el.textContent = value;
-  }
-  function setAvg(name, total, matches){
-    const el = grid.querySelector(`[data-team-avg="${name}"]`);
-    if (el) el.textContent = `${matches ? (total / matches).toFixed(1) : "0.0"} / match`;
-  }
-
-  function arsenalSide(row, homeField, awayField){
-    if (isArsenal(row.home_team)) return number(row[homeField]);
-    if (isArsenal(row.away_team)) return number(row[awayField]);
-    if (row.is_home === true) return number(row[homeField]);
-    if (row.is_home === false) return number(row[awayField]);
-    return 0;
-  }
-
+  const season="2026/27";
+  const db=window.nl4Supabase;
+  const grid=document.getElementById("arsenalTeamSeasonStatsGrid");
+  const status=document.getElementById("arsenalTeamSeasonStatsStatus");
+  if(!db||!grid||!status)return;
+  function setStat(name,value){const el=grid.querySelector(`[data-team-stat="${name}"]`);if(el)el.textContent=value??0;}
+  function setAvg(name,total,matches){const el=grid.querySelector(`[data-team-avg="${name}"]`);if(el)el.textContent=`${matches?(Number(total)/matches).toFixed(1):"0.0"} / match`;}
   async function loadArsenalTeamSeasonStats(){
-    status.textContent = "Calculating Arsenal's 2026/27 Premier League team statistics…";
-
-    const [fixturesRes, playersRes] = await Promise.all([
-      db.from("fixtures")
-        .select("id,season,competition,status,home_team,away_team,is_home,home_possession,away_possession,home_shots,away_shots,home_shots_on_target,away_shots_on_target,home_corners,away_corners,home_corner_goals,away_corner_goals,home_fouls,away_fouls,home_offsides,away_offsides")
-        .eq("season", season),
-      db.from("premier_league_player_stats")
-        .select("yellow_cards,red_cards")
-        .eq("season", season)
-    ]);
-
-    if (fixturesRes.error) {
-      status.textContent = `Could not calculate team stats: ${fixturesRes.error.message}`;
-      return;
-    }
-    if (playersRes.error) {
-      status.textContent = `Could not calculate player cards: ${playersRes.error.message}`;
-      return;
-    }
-
-    const matches = (fixturesRes.data || []).filter(row => {
-      const comp = String(row.competition || "").toLowerCase();
-      return comp.includes("premier") && isCompleted(row) &&
-        (isArsenal(row.home_team) || isArsenal(row.away_team) || row.is_home === true || row.is_home === false);
-    });
-
-    const totals = {
-      possession:0, shots:0, shots_on_target:0, corners:0,
-      corner_goals:0, fouls:0, offsides:0
-    };
-    let possessionSamples = 0;
-
-    matches.forEach(row => {
-      const possession = arsenalSide(row,"home_possession","away_possession");
-      const rawPossession = isArsenal(row.home_team) || row.is_home === true ? row.home_possession : row.away_possession;
-      if (rawPossession !== null && rawPossession !== undefined && rawPossession !== "") {
-        totals.possession += possession;
-        possessionSamples += 1;
-      }
-      totals.shots += arsenalSide(row,"home_shots","away_shots");
-      totals.shots_on_target += arsenalSide(row,"home_shots_on_target","away_shots_on_target");
-      totals.corners += arsenalSide(row,"home_corners","away_corners");
-      totals.corner_goals += arsenalSide(row,"home_corner_goals","away_corner_goals");
-      totals.fouls += arsenalSide(row,"home_fouls","away_fouls");
-      totals.offsides += arsenalSide(row,"home_offsides","away_offsides");
-    });
-
-    const cards = (playersRes.data || []).reduce((acc,row) => {
-      acc.yellow += number(row.yellow_cards);
-      acc.red += number(row.red_cards);
-      return acc;
-    }, {yellow:0,red:0});
-
-    setStat("matches", matches.length);
-    setStat("possession", `${possessionSamples ? (totals.possession / possessionSamples).toFixed(1) : "0.0"}%`);
-    setStat("shots", totals.shots);
-    setStat("shots_on_target", totals.shots_on_target);
-    setStat("corners", totals.corners);
-    setStat("corner_goals", totals.corner_goals);
-    setStat("fouls", totals.fouls);
-    setStat("offsides", totals.offsides);
-    setStat("yellow_cards", cards.yellow);
-    setStat("red_cards", cards.red);
-
-    ["shots","shots_on_target","corners","fouls","offsides"].forEach(key => setAvg(key, totals[key], matches.length));
-
-    status.textContent = `${matches.length} completed Arsenal Premier League match${matches.length === 1 ? "" : "es"} aggregated automatically • cards synced from player stats`;
+    status.textContent="Loading canonical Arsenal 2026/27 Premier League team statistics…";
+    const {data,error}=await db.from("record_room_arsenal_team_stats").select("season,matches,avg_possession,total_shots,shots_on_target,corners,corner_goals,fouls,offsides,yellow_cards,red_cards,points,updated_at").eq("season",season).maybeSingle();
+    if(error){console.warn("NL4 canonical team stats:",error.message);status.textContent="Could not load canonical Arsenal team statistics.";return;}
+    if(!data){status.textContent="No canonical 2026/27 Arsenal Premier League team statistics are available yet.";return;}
+    const matches=Number(data.matches)||0;
+    setStat("matches",matches); setStat("possession",`${Number(data.avg_possession||0).toFixed(1)}%`);
+    setStat("shots",Number(data.total_shots)||0); setStat("shots_on_target",Number(data.shots_on_target)||0);
+    setStat("corners",Number(data.corners)||0); setStat("corner_goals",Number(data.corner_goals)||0);
+    setStat("fouls",Number(data.fouls)||0); setStat("offsides",Number(data.offsides)||0);
+    setStat("yellow_cards",Number(data.yellow_cards)||0); setStat("red_cards",Number(data.red_cards)||0);
+    [["shots","total_shots"],["shots_on_target","shots_on_target"],["corners","corners"],["fouls","fouls"],["offsides","offsides"]].forEach(([key,col])=>setAvg(key,data[col],matches));
+    status.textContent=`${matches} completed Arsenal Premier League match${matches===1?"":"es"} • canonical team statistics from Supabase`;
   }
-
-  window.nl4LoadArsenalTeamSeasonStats = loadArsenalTeamSeasonStats;
-  window.addEventListener("load", loadArsenalTeamSeasonStats);
-  setTimeout(loadArsenalTeamSeasonStats, 650);
+  window.nl4LoadArsenalTeamSeasonStats=loadArsenalTeamSeasonStats;
+  window.addEventListener("load",loadArsenalTeamSeasonStats);
+  setTimeout(loadArsenalTeamSeasonStats,650);
 })();
 </script>
 
