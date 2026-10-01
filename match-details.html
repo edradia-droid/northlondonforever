@@ -1631,13 +1631,49 @@
       const fixtureFields = "*";
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(fixtureId);
 
-      const fixtureRequest = db
-        .from("fixtures")
-        .select(fixtureFields);
+      // Match Details accepts both the stable Supabase fixture UUID and the
+      // legacy/BSD external fixture ID. Resolve the preferred identifier first,
+      // then fall back to the other form so older fixture links never break.
+      let fixture = null;
+      let fixtureError = null;
 
-      const { data: fixture, error: fixtureError } = isUuid
-        ? await fixtureRequest.eq("id", fixtureId).maybeSingle()
-        : await fixtureRequest.eq("external_fixture_id", fixtureId).maybeSingle();
+      if (isUuid) {
+        const result = await db
+          .from("fixtures")
+          .select(fixtureFields)
+          .eq("id", fixtureId)
+          .maybeSingle();
+        fixture = result.data;
+        fixtureError = result.error;
+
+        if (!fixture && !fixtureError) {
+          const fallback = await db
+            .from("fixtures")
+            .select(fixtureFields)
+            .eq("external_fixture_id", fixtureId)
+            .maybeSingle();
+          fixture = fallback.data;
+          fixtureError = fallback.error;
+        }
+      } else {
+        const result = await db
+          .from("fixtures")
+          .select(fixtureFields)
+          .eq("external_fixture_id", fixtureId)
+          .maybeSingle();
+        fixture = result.data;
+        fixtureError = result.error;
+
+        if (!fixture && !fixtureError && /^[0-9a-f-]{36}$/i.test(fixtureId)) {
+          const fallback = await db
+            .from("fixtures")
+            .select(fixtureFields)
+            .eq("id", fixtureId)
+            .maybeSingle();
+          fixture = fallback.data;
+          fixtureError = fallback.error;
+        }
+      }
 
       if (fixtureError) {
         showError(`Could not load match: ${fixtureError.message}`);
