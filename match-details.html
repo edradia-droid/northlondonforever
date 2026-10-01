@@ -1281,61 +1281,35 @@
       const template = [...FORMATION_SLOTS[normalizedFormation(formation)]];
       const used = new Set();
 
-      // Exact Arsenal tactical roles are preferred whenever Record Room has
-      // them. This prevents a left-sided player from ever being rendered in
-      // the corresponding right-sided slot.
-      const PLAYER_ROLE_OVERRIDES = {
-        'david raya':'GK',
-        'ben white':'RB',
-        'cristhian mosquera':'RCB',
-        'ezri konsa':'RCB',
-        'gabriel magalhães':'LCB',
-        'riccardo calafiori':'LB',
-        'declan rice':'LDM',
-        'myles lewis-skelly':'RDM',
-        'martin ødegaard':'CAM',
-        'bukayo saka':'RW',
-        'christos tzolis':'LW',
-        'kai havertz':'ST'
-      };
-
+      // BSD tactical metadata is the source of truth. The renderer must never
+      // identify a player's position from the player's name.
       return starters.map((row,index) => {
-        const nameKey = String(row.player_name || '').trim().toLowerCase();
         const rawPitch = String(row.pitch_slot ?? '').trim().toUpperCase();
         const rawPosition = String(row.position ?? '').trim().toUpperCase();
         const numeric = Number(rawPitch);
-
-        // 1. Specific tactical role stored by Record Room.
         let requested = (!Number.isInteger(numeric) && rawPitch) ? rawPitch : '';
+
         if (requested === 'AM') requested = 'CAM';
         if (requested === 'LAM') requested = 'LW';
         if (requested === 'RAM') requested = 'RW';
 
-        // 2. Exact Arsenal player-role safeguard for older Record Room rows
-        // that only contain broad DEF/MID/FWD labels or numeric pitch slots.
-        if (!requested || !template.includes(requested)) {
-          const playerRole = PLAYER_ROLE_OVERRIDES[nameKey];
-          if (playerRole && template.includes(playerRole)) requested = playerRole;
-        }
-
-        // 3. Exact position field if it is already tactical (LB/RB/LW/RW/etc).
         if ((!requested || !template.includes(requested)) &&
             rawPosition && template.includes(rawPosition)) {
           requested = rawPosition;
         }
 
-        // 4. Legacy numeric Record Room slot. This is only a fallback now.
         if ((!requested || !template.includes(requested)) &&
             Number.isInteger(numeric) && numeric >= 1 && numeric <= template.length) {
           requested = template[numeric - 1];
         }
 
-        // Never allow a duplicate role to push a player into the opposite side.
         if (requested && template.includes(requested) && !used.has(requested)) {
           used.add(requested);
           return requested;
         }
 
+        // Generic formation-order fallback only when BSD supplies no usable
+        // tactical slot. No player-specific or fixture-specific inference.
         const open = template.find(slot => !used.has(slot));
         const slot = open || template[index] || 'CM';
         used.add(slot);
@@ -1438,19 +1412,6 @@
     }
     function resolvedFormationSlotsForRender(starters, formation){
       return resolveFormationSlots(starters, formation);
-    }
-
-    function applyCoventryArsenalPitchSlots(starters, fixture){
-      const isCoventryMatch =
-        String(fixture?.season || '') === '2026/27' &&
-        sameTeamName(fixture?.home_team || '', 'Arsenal') &&
-        sameTeamName(fixture?.away_team || '', 'Coventry City');
-      if (!isCoventryMatch) return starters;
-      const slots = {'david raya':'GK','ben white':'RB','cristhian mosquera':'RCB','gabriel magalhães':'LCB','riccardo calafiori':'LB','declan rice':'LDM','myles lewis-skelly':'RDM','christos tzolis':'LW','martin ødegaard':'CAM','bukayo saka':'RW','kai havertz':'ST'};
-      return starters.map(row => {
-        const key = String(row.player_name || '').trim().toLowerCase();
-        return slots[key] ? {...row, pitch_slot:slots[key], position:slots[key]} : row;
-      });
     }
 
     function render3DPitch(starters, mediaMap = new Map(), fixtureFormation = '', substitutionRows = [], currentPitchLineup = null){
@@ -2117,44 +2078,41 @@
         return {};
       };
 
-            const correctedPitchStarters = applyCoventryArsenalPitchSlots(starters, fixture);
-      const currentPitchLineup = buildCurrentPitchLineup(correctedPitchStarters, pitchSubstitutionRows, normalizedFormation(fixture.lineup_formation || correctedPitchStarters.find(r => r.formation)?.formation || ({'bsd:209573':'4-2-3-1','bsd:209535':'4-2-3-1'})[String(fixture.external_fixture_id || '')] || '4-3-3'));
-      render3DPitch(correctedPitchStarters, playerMedia, fixture.lineup_formation, pitchSubstitutionRows, currentPitchLineup);
-
-      const usedNames = new Map(
-        pitchSubstitutionRows
-          .filter(row => row.inPlayer)
-          .map(row => [substitutionPlayerKey(row.inPlayer), row])
+      const fixtureFormation = fixture.lineup_formation
+        || starters.find(r => r.formation)?.formation
+        || '4-3-3';
+      const currentPitchLineup = buildCurrentPitchLineup(
+        starters,
+        pitchSubstitutionRows,
+        normalizedFormation(fixtureFormation)
+      );
+      render3DPitch(
+        starters,
+        playerMedia,
+        fixtureFormation,
+        pitchSubstitutionRows,
+        currentPitchLineup
       );
 
-      // Match Squad > Arsenal Substitutes is an IN-game list, not a full
-      // bench roster. Only players confirmed by BSD substitution events are
-      // rendered here. Record Room is deliberately excluded from this visible
-      // list so its historical/manual bench rows cannot appear as UNUSED or
-      // duplicate substitutions.
-      const actualSubstituteRows = (subs || [])
-        .filter((row, index, rows) => {
-          const key = normalizePlayerKey(row.player_name);
-          return key && rows.findIndex(other => normalizePlayerKey(other.player_name) === key) === index;
+      // Substituted players = players who actually entered, from BSD
+      // substitution incidents. The bench roster is not a substitution list.
+      const actualSubstituteRows = pitchSubstitutionRows
+        .filter(row => row && row.inPlayer && Number.isFinite(Number(row.minute)))
+        .filter((row,index,rows) => {
+          const key = normalizePlayerKey(row.inPlayer);
+          return key && rows.findIndex(other => normalizePlayerKey(other.inPlayer) === key) === index;
         });
 
       const completeBench = actualSubstituteRows.length
         ? actualSubstituteRows.map(row => {
-            const key = normalizePlayerKey(row.player_name);
-            const used = usedNames.get(key);
-            const minute = used ? `<span class="substitution-time">${esc(used.minute)}’</span>` : "";
+            const benchMedia = resolvePlayerMedia(row.inPlayer);
             return `
               <div class="broadcast-sub sub-bench-row">
                 <span class="sub-bench-player">
-                  ${(() => {
-                    const benchMedia = resolvePlayerMedia(row.player_name);
-                    return benchMedia.image
-                      ? '<img class="sub-bench-photo" src="' + esc(benchMedia.image) + '" alt="' + esc(row.player_name) + '" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden=true">'
-                      : '';
-                  })()}
-                  <span class="sub-name">${esc(row.player_name)}</span>
+                  ${benchMedia.image ? '<img class="sub-bench-photo" src="' + esc(benchMedia.image) + '" alt="' + esc(row.inPlayer) + '" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden=true">' : ''}
+                  <span class="sub-name">${esc(row.inPlayer)}</span>
                 </span>
-                <span class="sub-bench-used"><span class="substitution-arrow in" aria-hidden="true">↑</span>${minute}</span>
+                <span class="sub-bench-used"><span class="substitution-arrow in" aria-hidden="true">↑</span><span class="substitution-time">${esc(row.minute)}’</span></span>
               </div>`;
           }).join("")
         : "";
