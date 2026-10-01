@@ -1568,26 +1568,9 @@
         console.warn('NL4 squad image lookup unavailable:', error.message);
       }
 
-      try {
-        const { data: players, error: playersError } = await db
-          .from('players')
-          .select('name,image_url,shirt_number')
-          .in('name', names);
-
-        if (!playersError) {
-          (players || []).forEach(row => {
-            if (!row.name) return;
-            const key = String(row.name).trim().toLowerCase();
-            const current = map.get(key) || { image: '', shirt: '' };
-            if (!current.image && row.image_url) current.image = row.image_url;
-            if (row.shirt_number !== null && row.shirt_number !== undefined) current.shirt = row.shirt_number;
-            map.set(key, current);
-          });
-        }
-      } catch (error) {
-        console.warn('NL4 legacy player media unavailable:', error.message);
-      }
-
+      // Do not depend on the legacy public players table here. The current
+      // 2026/27 stats table and verified local cutouts are the Match Details
+      // media sources; the legacy table may legitimately contain no published rows.
       // Always use the verified local transparent Arsenal cutouts, matching the CL renderer.
       // This prevents older remote/stat-table images with black backgrounds from being used.
       names.forEach(name => {
@@ -2165,11 +2148,21 @@
         availabilityText;
     }
 
-    load();
+    const runMatchDetailsLoad = () => load().catch(error => {
+      console.error("[NL4 Match Details] Unhandled load error:", error);
+      const message = error?.message || String(error);
+      if (els.error) {
+        els.error.hidden = false;
+        els.error.textContent = "Match data could not finish loading: " + message;
+      }
+      if (els.status) els.status.textContent = "DATA LOAD ERROR";
+    });
+
+    runMatchDetailsLoad();
 
     setInterval(() => {
       if (document.visibilityState === "visible") {
-        load();
+        runMatchDetailsLoad();
       }
     }, 15000);
   })();
