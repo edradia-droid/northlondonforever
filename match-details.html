@@ -1272,9 +1272,23 @@
       '4-5-1':['GK','LB','LCB','RCB','RB','LDM','RDM','LW','CAM','RW','ST']
     };
 
-    function normalizedFormation(value){
+    function inferFormationFromLineup(starters){
+      const counts = starters.reduce((out,row) => {
+        const p = String(row.position || '').trim().toUpperCase();
+        if (p === 'G' || p === 'GK' || p.includes('GOALKEEP')) out.G++;
+        else if (p === 'D' || p.includes('DEF')) out.D++;
+        else if (p === 'M' || p.includes('MID')) out.M++;
+        else if (p === 'F' || p.includes('FORWARD') || p.includes('ATTACK')) out.F++;
+        return out;
+      }, {G:0,D:0,M:0,F:0});
+      const signature = [counts.G,counts.D,counts.M,counts.F].join('-');
+      return ({'1-4-5-1':'4-2-3-1','1-4-3-3':'4-3-3','1-4-4-2':'4-4-2','1-3-5-2':'3-5-2','1-3-4-3':'3-4-3'})[signature] || '';
+    }
+    function normalizedFormation(value, starters = []){
       const key = String(value || '').trim();
-      return FORMATION_SLOTS[key] ? key : '4-3-3';
+      if (FORMATION_SLOTS[key]) return key;
+      const inferred = inferFormationFromLineup(starters);
+      return FORMATION_SLOTS[inferred] ? inferred : '4-3-3';
     }
 
     function resolveFormationSlots(starters, formation){
@@ -1308,8 +1322,17 @@
           return requested;
         }
 
-        // Generic formation-order fallback only when BSD supplies no usable
-        // tactical slot. No player-specific or fixture-specific inference.
+        // BSD lineup arrays are delivered in tactical source order. Preserve
+        // that order whenever detailed pitch metadata is unavailable.
+        const sourceOrder = Number(row.source_order);
+        if (Number.isInteger(sourceOrder) && sourceOrder >= 0 && sourceOrder < template.length) {
+          const sourceSlot = template[sourceOrder];
+          if (!used.has(sourceSlot)) {
+            used.add(sourceSlot);
+            return sourceSlot;
+          }
+        }
+
         const open = template.find(slot => !used.has(slot));
         const slot = open || template[index] || 'CM';
         used.add(slot);
@@ -1423,7 +1446,7 @@
         els.formationBadge.textContent = 'TBC';
         return;
       }
-      const formation = normalizedFormation(fixtureFormation || starters.find(r => r.formation)?.formation);
+      const formation = normalizedFormation(fixtureFormation || starters.find(r => r.formation)?.formation, starters);
       els.formationBadge.textContent = formation;
       const activeRows = currentPitchLineup || buildCurrentPitchLineup(starters, substitutionRows, formation);
       const figures = activeRows.map((row,index) => {
@@ -1720,11 +1743,12 @@
 
       const { data: lineup, error: lineupError } = await db
         .from("match_lineups")
-        .select("player_name,position,formation,pitch_slot,position_x,position_y,is_starter,minute_on,minute_off,updated_at,team_name")
+        .select("player_name,position,formation,pitch_slot,position_x,position_y,source_order,is_starter,minute_on,minute_off,updated_at,team_name")
         .eq("fixture_id", fixture.id)
         .in("team_name", [home, away])
         .order("is_starter", { ascending:false })
-        .order("minute_on", { ascending:true });
+        .order("minute_on", { ascending:true })
+        .order("source_order", { ascending:true });
 
       // Record Room is the authoritative source for the complete named Arsenal bench.
       // Public match_lineups intentionally contains only starters + players who actually came on.
@@ -1798,8 +1822,10 @@
         const existing = rows[existingIndex];
         const richness = item =>
           (item.pitch_slot ? 4 : 0) +
+          (item.position_x != null && item.position_y != null ? 3 : 0) +
           (item.position ? 2 : 0) +
           (item.formation ? 1 : 0) +
+          (item.source_order != null ? 1 : 0) +
           (item.minute_on != null ? 1 : 0) +
           (item.minute_off != null ? 1 : 0);
         if (richness(row) > richness(existing) ||
