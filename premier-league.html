@@ -2633,8 +2633,7 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
       const { data, error } = await db
         .from("premier_league_player_stats")
         .select("*")
-        .eq("season", season)
-        .eq("club", "Arsenal");
+        .eq("season", season);
 
       if (error) {
         console.warn("NL4 player stats:", error.message);
