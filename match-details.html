@@ -1172,8 +1172,8 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
-  <script src="supabase-client.js"></script>
-  <script src="shared-sidebar.js"></script>
+  <script src="supabase-client.js?v=20261001-match-details-fix2"></script>
+  <script src="shared-sidebar.js?v=20261001-match-details-fix2"></script>
   <script>
   (function(){
     const db = window.nl4Supabase;
@@ -1819,9 +1819,16 @@
       }
 
       if (lineupError) {
-        els.starters.innerHTML = '<div class="empty">Could not load starting lineup.</div>';
-        els.subs.innerHTML = '<div class="empty">Could not load substitutions.</div>';
-        els.lineupStatus.textContent = lineupError.message;
+        console.warn("[NL4 Match Details] Lineup query failed:", lineupError);
+        // Do not abort the whole Match Details page. The fixture header,
+        // score, venue and statistics are already loaded; secondary lineup
+        // data may be temporarily unavailable because of a policy/network issue.
+        els.starters.innerHTML = '<div class="pitch-empty">Starting XI could not be loaded right now.</div>';
+        els.subs.innerHTML = '<div class="empty">Substitution data could not be loaded right now.</div>';
+        els.lineupStatus.textContent = "Match data loaded • lineup data temporarily unavailable";
+        if (document.getElementById("leagueWideTeams")) {
+          document.getElementById("leagueWideTeams").innerHTML = '<div class="empty">Lineup data could not be loaded right now.</div>';
+        }
         return;
       }
 
