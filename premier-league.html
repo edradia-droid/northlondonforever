@@ -2633,7 +2633,8 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
       const { data, error } = await db
         .from("premier_league_player_stats")
         .select("*")
-        .eq("season", season);
+        .eq("season", season)
+        .eq("club", "Arsenal");
 
       if (error) {
         console.warn("NL4 player stats:", error.message);
@@ -2819,7 +2820,7 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
   </script>
 
 <script src="premier-league-final-squads-2026-27.js?v=20260905-final7"></script>
-<script src="nl4-current-squad-enforcer.js?v=20260905-v2"></script>
+<script src="nl4-current-squad-enforcer.js?v=20261001-stats-authority-v1"></script>
 
 </body>
 </html>
