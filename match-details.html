@@ -1210,6 +1210,8 @@
       .replace(/[^a-z0-9]+/gi, '')
       .toLowerCase();
 
+    // Shared team-name comparator; declared before any renderer/helper can use it.\n    const sameTeamName = (a, b) => normalizePlayerKey(a) === normalizePlayerKey(b);
+
     const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({
       "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
     }[ch]));
@@ -1816,7 +1818,6 @@
       }
 
       // Header values are all Admin-driven: fixture.opponent, fixture.venue, and lineup formation.
-      const sameTeamName = (a,b) => normalizePlayerKey(a) === normalizePlayerKey(b);
       const pitchTeam = [home, away].some(team => sameTeamName(team, "Arsenal")) ? [home, away].find(team => sameTeamName(team, "Arsenal")) : home;
 
       // Canonicalize duplicate BSD lineup-name variants once for every renderer.
