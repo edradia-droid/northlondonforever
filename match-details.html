@@ -1818,7 +1818,35 @@
       // Header values are all Admin-driven: fixture.opponent, fixture.venue, and lineup formation.
       const sameTeamName = (a,b) => normalizePlayerKey(a) === normalizePlayerKey(b);
       const pitchTeam = [home, away].some(team => sameTeamName(team, "Arsenal")) ? [home, away].find(team => sameTeamName(team, "Arsenal")) : home;
-      const pitchLineup = (lineup || []).filter(row => sameTeamName(row.team_name, pitchTeam));
+
+      // Canonicalize duplicate BSD lineup-name variants once for every renderer.
+      const canonicalLineupRows = (lineup || []).reduce((rows, row) => {
+        const teamKey = normalizePlayerKey(row.team_name);
+        const playerKey = normalizePlayerKey(row.player_name);
+        if (!teamKey || !playerKey) return rows;
+        const key = teamKey + "|" + playerKey;
+        const existingIndex = rows.findIndex(item =>
+          normalizePlayerKey(item.team_name) + "|" + normalizePlayerKey(item.player_name) === key
+        );
+        if (existingIndex < 0) {
+          rows.push(row);
+          return rows;
+        }
+        const existing = rows[existingIndex];
+        const richness = item =>
+          (item.pitch_slot ? 4 : 0) +
+          (item.position ? 2 : 0) +
+          (item.formation ? 1 : 0) +
+          (item.minute_on != null ? 1 : 0) +
+          (item.minute_off != null ? 1 : 0);
+        if (richness(row) > richness(existing) ||
+            String(row.player_name || "").length > String(existing.player_name || "").length) {
+          rows[existingIndex] = row;
+        }
+        return rows;
+      }, []);
+
+      const pitchLineup = canonicalLineupRows.filter(row => sameTeamName(row.team_name, pitchTeam));
       const starters = pitchLineup.filter(row => row.is_starter);
       const subs = pitchLineup.filter(row => !row.is_starter);
 
@@ -1986,7 +2014,7 @@
       const leagueStatusEl = document.getElementById("leagueWideStatus");
       if (leagueTeamsEl) {
         leagueTeamsEl.innerHTML = [home, away].map(function(team) {
-          const rows = (lineup || []).filter(function(row) { return row.team_name === team; });
+          const rows = canonicalLineupRows.filter(function(row) { return sameTeamName(row.team_name, team); });
           const startersCount = rows.filter(function(row) { return row.is_starter; }).length;
           const benchCount = rows.filter(function(row) { return !row.is_starter; }).length;
           const html = rows.length ? rows.map(function(row) {
@@ -2080,10 +2108,6 @@
         .filter((row, index, rows) => {
           const key = substitutionPlayerKey(row.inPlayer);
           return rows.findIndex(other => substitutionPlayerKey(other.inPlayer) === key) === index;
-        })
-        .filter(row => {
-          const media = resolvePlayerMedia(row.inPlayer);
-          return Boolean(media.image);
         })
         .map(row => ({
           player_name: row.inPlayer,
