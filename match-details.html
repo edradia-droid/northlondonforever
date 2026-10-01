@@ -1437,6 +1437,19 @@
       return resolveFormationSlots(starters, formation);
     }
 
+    function applyCoventryArsenalPitchSlots(starters, fixture){
+      const isCoventryMatch =
+        String(fixture?.season || '') === '2026/27' &&
+        sameTeamName(fixture?.home_team || '', 'Arsenal') &&
+        sameTeamName(fixture?.away_team || '', 'Coventry City');
+      if (!isCoventryMatch) return starters;
+      const slots = {'david raya':'GK','ben white':'RB','cristhian mosquera':'RCB','gabriel magalhães':'LCB','riccardo calafiori':'LB','declan rice':'LDM','myles lewis-skelly':'RDM','christos tzolis':'LW','martin ødegaard':'CAM','bukayo saka':'RW','kai havertz':'ST'};
+      return starters.map(row => {
+        const key = String(row.player_name || '').trim().toLowerCase();
+        return slots[key] ? {...row, pitch_slot:slots[key], position:slots[key]} : row;
+      });
+    }
+
     function render3DPitch(starters, mediaMap = new Map(), fixtureFormation = '', substitutionRows = [], currentPitchLineup = null){
       const exportBoard = document.getElementById('lineupPhotoExport');
       if (exportBoard) exportBoard.classList.toggle('has-lineup', starters.length > 0);
@@ -2021,8 +2034,9 @@
         return {};
       };
 
-            const currentPitchLineup = buildCurrentPitchLineup(starters, pitchSubstitutionRows, normalizedFormation(fixture.lineup_formation || starters.find(r => r.formation)?.formation));
-      render3DPitch(starters, playerMedia, fixture.lineup_formation, pitchSubstitutionRows, currentPitchLineup);
+            const correctedPitchStarters = applyCoventryArsenalPitchSlots(starters, fixture);
+      const currentPitchLineup = buildCurrentPitchLineup(correctedPitchStarters, pitchSubstitutionRows, normalizedFormation(fixture.lineup_formation || correctedPitchStarters.find(r => r.formation)?.formation));
+      render3DPitch(correctedPitchStarters, playerMedia, fixture.lineup_formation, pitchSubstitutionRows, currentPitchLineup);
 
       const usedNames = new Map(
         pitchSubstitutionRows
