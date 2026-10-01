@@ -1998,12 +1998,12 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
     const targets=aliases(f);
     // 1. Exact canonical/display-name match.
     for(const t of targets){
-      const hit=rows.find(r=>[r.player_name,r.web_name,r.name].filter(Boolean).map(norm).includes(t));
+      const hit=rows.find(r=>[r.player_name,r.name].filter(Boolean).map(norm).includes(t));
       if(hit)return hit;
     }
     // 2. Stable identity match: full name ↔ short name/surname variants.
     for(const t of targets){
-      const hit=rows.find(r=>[r.player_name,r.web_name,r.name].filter(Boolean).some(n=>sameIdentity(t,norm(n))));
+      const hit=rows.find(r=>[r.player_name,r.name].filter(Boolean).some(n=>sameIdentity(t,norm(n))));
       if(hit)return hit;
     }
     return null;
@@ -2011,7 +2011,7 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
   function render(feed,rows){
     const order={Goalkeeper:1,Defender:2,Midfielder:3,Forward:4,Squad:5};
     // BSD is the canonical identity/display source for this table.
-    const current=(feed||[]).map(f=>{const s=findStat(f,rows);if(!s)return null;return{...s,name:s.player_name||s.web_name||f.name,position:positionLabel(s.position||f.position),number:f.number??"—"}}).filter(Boolean).sort((a,b)=>(order[a.position]||9)-(order[b.position]||9)||String(a.name).localeCompare(String(b.name)));
+    const current=(feed||[]).map(f=>{const s=findStat(f,rows);if(!s)return null;return{...s,name:s.player_name||f.name,position:positionLabel(s.position||f.position),number:f.number??"—"}}).filter(Boolean).sort((a,b)=>(order[a.position]||9)-(order[b.position]||9)||String(a.name).localeCompare(String(b.name)));
     tbody.innerHTML=current.length?current.map(p=>`<tr data-player="${esc(p.name)}" data-position="${esc(p.position)}"><td class="player-cell"><div class="pl-player-name"><span class="pl-player-number">${esc(p.number)}</span><span><strong>${esc(p.name)}</strong><small>${esc(p.position)}</small></span></div></div></td><td>${n(p.appearances)}</td><td>${n(p.starts)}</td><td>${n(p.minutes)}</td><td class="pl-stat-hot">${n(p.goals)}</td><td class="pl-stat-hot">${n(p.assists)}</td><td>${n(p.clean_sheets)}</td><td>${n(p.yellow_cards)}</td><td>${n(p.red_cards)}</td><td>${n(p.man_of_the_match)}</td><td>${n(p.shots)}</td><td>${n(p.shots_on_target)}</td><td>${n(p.chances_created)}</td><td>${n(p.tackles)}</td><td>${n(p.interceptions)}</td><td>${n(p.saves)}</td></tr>`).join(""):'<tr><td colspan="16">No Arsenal Premier League player statistics are available yet.</td></tr>';
     document.querySelectorAll("[data-player-filter]").forEach(btn=>btn.onclick=()=>{document.querySelectorAll("[data-player-filter]").forEach(x=>x.classList.remove("active"));btn.classList.add("active");const filter=btn.dataset.playerFilter;tbody.querySelectorAll("tr[data-position]").forEach(row=>row.hidden=filter!=="All"&&row.dataset.position!==filter)});
   }
@@ -2020,7 +2020,7 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
     if(!db){status.textContent="Supabase is not available.";return}
     if(!Array.isArray(feed)||!feed.length){status.textContent="Waiting for the authoritative Arsenal squad definition…";return}
     status.textContent="Loading canonical 2026/27 Arsenal player statistics from BSD-backed Supabase…";
-    const {data,error}=await db.from("premier_league_player_stats").select("player_name,web_name,position,appearances,starts,minutes,goals,assists,clean_sheets,yellow_cards,red_cards,man_of_the_match,shots,shots_on_target,chances_created,tackles,interceptions,saves,updated_at").eq("season",season);
+    const {data,error}=await db.from("premier_league_player_stats").select("player_name,position,appearances,starts,minutes,goals,assists,clean_sheets,yellow_cards,red_cards,man_of_the_match,shots,shots_on_target,chances_created,tackles,interceptions,saves,updated_at").eq("season",season);
     if(error){console.error("NL4 player stats:",error);status.textContent="Could not load canonical Arsenal player statistics.";return}
     const rows=data||[];render(feed,rows);
     const latest=rows.reduce((m,r)=>r.updated_at&&(!m||new Date(r.updated_at)>new Date(m))?r.updated_at:m,null);
