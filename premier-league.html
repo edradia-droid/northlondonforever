@@ -1988,7 +1988,11 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
     const overlap=aa.filter(x=>sb.has(x)).length;
     const surname=aa[aa.length-1]===bb[bb.length-1];
     const first=aa[0]===bb[0];
-    return (surname&&first)||(surname&&overlap>=2)||(overlap>=2&&Math.min(sa.size,sb.size)<=2);
+    // BSD may expose a shortened first name (Ben) while the authoritative
+    // squad feed exposes the full first name (Benjamin). A unique surname
+    // is therefore a valid identity bridge when either side is surname-only.
+    const surnameOnly=(aa.length===1||bb.length===1)&&surname;
+    return (surname&&first)||(surname&&overlap>=2)||surnameOnly||(overlap>=2&&Math.min(sa.size,sb.size)<=2);
   };
   function findStat(f,rows){
     const targets=aliases(f);
