@@ -174,22 +174,13 @@ function rebuildHydratedRecordRoom(){
 }
 
 function renderEplArsenal(){
-  const body=document.getElementById('arsenalPlayerStatsBody');const feed=FINAL.Arsenal;
-  if(!body||!Array.isArray(feed)||!feed.length)return false;
-  const oldRows=[...body.querySelectorAll('tr')].map(tr=>({tr,name:tr.dataset.player||tr.querySelector('strong')?.textContent?.trim()||'',position:tr.dataset.position||tr.querySelector('small')?.textContent?.trim()||'',number:tr.querySelector('.pl-player-number')?.textContent?.trim()||'—'}));
-  const used=new Set();
-  const statsFor=row=>{if(!row)return Array(15).fill('0');const cells=[...row.tr.querySelectorAll('td')].slice(1);return cells.map(td=>td.textContent.trim()||'0').concat(Array(15).fill('0')).slice(0,15)};
-  const rows=feed.map(f=>{
-    let best=null,bestS=0;for(const r of oldRows){if(used.has(r))continue;const s=Math.max(score(f.name,r.name),score(f.webName,r.name));if(s>bestS){bestS=s;best=r;}}
-    if(bestS<70)best=null;if(best)used.add(best);
-    const name=displayName(f,best);const position=f.position||best?.position||'Midfielder';const number=(best?.number&&best.number!=='—')?best.number:(f.number??'—');const vals=statsFor(best);
-    const keys=['appearances','starts','minutes','goals','assists','clean_sheets','yellow_cards','red_cards','man_of_the_match','shots','shots_on_target','chances_created','tackles','interceptions','saves'];
-    return `<tr data-player="${esc(name)}" data-position="${esc(position)}" data-final-name="${esc(f.name)}" data-web-name="${esc(f.webName||'')}"><td class="player-cell"><div class="pl-player-name"><span class="pl-player-number">${esc(number)}</span><span><strong>${esc(name)}</strong><small>${esc(position)}</small></span></div></td>${keys.map((k,i)=>`<td${k==='goals'||k==='assists'?' class="pl-stat-hot"':''} data-stat="${k}">${esc(vals[i]??0)}</td>`).join('')}</tr>`;
-  });
-  body.innerHTML=rows.join('');
-  const note=document.querySelector('#arsenalPlayerStats .pl-table-note');if(note)note.textContent='ARSENAL ONLY • CURRENT POST-WINDOW SQUAD';
-  const p=document.querySelector('#arsenalPlayerStats .pl-player-stats-toolbar p');if(p)p.textContent='Current registered Arsenal Premier League squad after the summer transfer window. Departed players remain only in historical match records.';
-  return true;
+  // PUBLIC STATS AUTHORITY: premier_league_player_stats is the sole source
+  // for season statistics. Do not reconstruct or copy values from the HTML
+  // placeholders here; doing so can overwrite hydrated Supabase values.
+  // This enforcer remains responsible for squad identity/metadata only.
+  const body=document.getElementById('arsenalPlayerStatsBody');
+  if(!body) return false;
+  return false;
 }
 function install(){
   if(document.getElementById('recordRoomPage')){
