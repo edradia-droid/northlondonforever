@@ -1966,51 +1966,39 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
   const tbody=document.getElementById("arsenalPlayerStatsBody");
   const status=document.getElementById("arsenalPlayerStatsStatus");
   if(!tbody||!status)return;
-  const db=window.nl4Supabase;
-  const positionLabel=p=>{
-    const v=String(p||"").toUpperCase();
-    if(v==="G"||v==="GK"||v.includes("GOALKEEPER"))return "Goalkeeper";
-    if(v==="D"||v==="DEF"||v.includes("DEFENDER"))return "Defender";
-    if(v==="M"||v==="MID"||v.includes("MIDFIELDER"))return "Midfielder";
-    if(v==="F"||v==="FWD"||v.includes("FORWARD"))return "Forward";
-    return p||"Squad";
-  };
+  const positionLabel=p=>{const v=String(p||"").toUpperCase();if(v==="G"||v==="GK"||v.includes("GOALKEEPER"))return"Goalkeeper";if(v==="D"||v==="DEF"||v.includes("DEFENDER"))return"Defender";if(v==="M"||v==="MID"||v.includes("MIDFIELDER"))return"Midfielder";if(v==="F"||v==="FWD"||v.includes("FORWARD"))return"Forward";return p||"Squad"};
+  const norm=v=>String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[Øø]/g,"o").replace(/[^a-z0-9]+/gi," ").trim().toLowerCase();
   const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
   const n=v=>Number(v)||0;
-  function render(rows){
-    const sorted=[...rows].sort((a,b)=>{
-      const order={Goalkeeper:1,Defender:2,Midfielder:3,Forward:4,Squad:5};
-      return (order[positionLabel(a.position)]||9)-(order[positionLabel(b.position)]||9) || String(a.player_name).localeCompare(String(b.player_name));
-    });
-    tbody.innerHTML=sorted.length?sorted.map(p=>`<tr data-player="${esc(p.player_name)}" data-position="${esc(positionLabel(p.position))}">
-      <td class="player-cell"><div class="pl-player-name"><span class="pl-player-number">—</span><span><strong>${esc(p.player_name)}</strong><small>${esc(positionLabel(p.position))}</small></span></div></td>
-      <td data-stat="appearances">${n(p.appearances)}</td><td data-stat="starts">${n(p.starts)}</td><td data-stat="minutes">${n(p.minutes)}</td>
-      <td class="pl-stat-hot" data-stat="goals">${n(p.goals)}</td><td class="pl-stat-hot" data-stat="assists">${n(p.assists)}</td>
-      <td data-stat="clean_sheets">${n(p.clean_sheets)}</td><td data-stat="yellow_cards">${n(p.yellow_cards)}</td><td data-stat="red_cards">${n(p.red_cards)}</td><td data-stat="man_of_the_match">${n(p.man_of_the_match)}</td>
-      <td data-stat="shots">${n(p.shots)}</td><td data-stat="shots_on_target">${n(p.shots_on_target)}</td><td data-stat="chances_created">${n(p.chances_created)}</td><td data-stat="tackles">${n(p.tackles)}</td><td data-stat="interceptions">${n(p.interceptions)}</td><td data-stat="saves">${n(p.saves)}</td>
-    </tr>`).join(""):'<tr><td colspan="16">No Arsenal Premier League player statistics are available yet.</td></tr>';
-    document.querySelectorAll("[data-player-filter]").forEach(btn=>{
-      btn.onclick=()=>{
-        document.querySelectorAll("[data-player-filter]").forEach(x=>x.classList.remove("active"));
-        btn.classList.add("active");
-        const filter=btn.dataset.playerFilter;
-        tbody.querySelectorAll("tr[data-position]").forEach(row=>row.hidden=filter!=="All"&&row.dataset.position!==filter);
-      };
-    });
+  const aliases=p=>[p.name,p.webName].filter(Boolean).map(norm).filter(Boolean);
+  function findStat(f,rows){
+    const targets=aliases(f);
+    let hit=rows.find(r=>targets.some(t=>[r.player_name,r.web_name].filter(Boolean).map(norm).includes(t)));
+    if(hit)return hit;
+    let best=null,bestScore=0;
+    for(const r of rows){for(const t of targets){for(const name of [r.player_name,r.web_name].filter(Boolean).map(norm)){const a=new Set(t.split(" ")),b=new Set(name.split(" "));let s=0;a.forEach(x=>b.has(x)&&s++);if(s>bestScore){bestScore=s;best=r}}}}
+    return bestScore>=2?best:null;
+  }
+  function render(feed,rows){
+    const order={Goalkeeper:1,Defender:2,Midfielder:3,Forward:4,Squad:5};
+    const current=(feed||[]).map(f=>{const s=findStat(f,rows)||{};return{name:f.name,position:positionLabel(f.position),number:f.number??"—",...s}}).sort((a,b)=>(order[a.position]||9)-(order[b.position]||9)||String(a.name).localeCompare(String(b.name)));
+    tbody.innerHTML=current.length?current.map(p=>`<tr data-player="${esc(p.name)}" data-position="${esc(p.position)}"><td class="player-cell"><div class="pl-player-name"><span class="pl-player-number">${esc(p.number)}</span><span><strong>${esc(p.name)}</strong><small>${esc(p.position)}</small></span></div></td><td>${n(p.appearances)}</td><td>${n(p.starts)}</td><td>${n(p.minutes)}</td><td class="pl-stat-hot">${n(p.goals)}</td><td class="pl-stat-hot">${n(p.assists)}</td><td>${n(p.clean_sheets)}</td><td>${n(p.yellow_cards)}</td><td>${n(p.red_cards)}</td><td>${n(p.man_of_the_match)}</td><td>${n(p.shots)}</td><td>${n(p.shots_on_target)}</td><td>${n(p.chances_created)}</td><td>${n(p.tackles)}</td><td>${n(p.interceptions)}</td><td>${n(p.saves)}</td></tr>`).join(""):'<tr><td colspan="16">No Arsenal Premier League player statistics are available yet.</td></tr>';
+    document.querySelectorAll("[data-player-filter]").forEach(btn=>btn.onclick=()=>{document.querySelectorAll("[data-player-filter]").forEach(x=>x.classList.remove("active"));btn.classList.add("active");const filter=btn.dataset.playerFilter;tbody.querySelectorAll("tr[data-position]").forEach(row=>row.hidden=filter!=="All"&&row.dataset.position!==filter)});
   }
   async function load(){
-    if(!db){status.textContent="Supabase is not available.";return;}
-    status.textContent="Loading canonical 2026/27 Arsenal player statistics from BSD…";
-    const {data,error}=await db.from("premier_league_player_stats").select("player_name,position,appearances,starts,minutes,goals,assists,clean_sheets,yellow_cards,red_cards,man_of_the_match,shots,shots_on_target,chances_created,tackles,interceptions,saves,updated_at").eq("season",season);
-    if(error){console.error("NL4 player stats:",error);status.textContent="Could not load canonical Arsenal player statistics.";return;}
-    const rows=data||[];
-    render(rows);
+    const db=window.nl4Supabase,feed=window.NL4_FINAL_PL_SQUADS?.Arsenal;
+    if(!db){status.textContent="Supabase is not available.";return}
+    if(!Array.isArray(feed)||!feed.length){status.textContent="Waiting for the authoritative Arsenal squad definition…";return}
+    status.textContent="Loading canonical 2026/27 Arsenal player statistics from BSD-backed Supabase…";
+    const {data,error}=await db.from("premier_league_player_stats").select("player_name,web_name,position,appearances,starts,minutes,goals,assists,clean_sheets,yellow_cards,red_cards,man_of_the_match,shots,shots_on_target,chances_created,tackles,interceptions,saves,updated_at").eq("season",season);
+    if(error){console.error("NL4 player stats:",error);status.textContent="Could not load canonical Arsenal player statistics.";return}
+    const rows=data||[];render(feed,rows);
     const latest=rows.reduce((m,r)=>r.updated_at&&(!m||new Date(r.updated_at)>new Date(m))?r.updated_at:m,null);
-    status.textContent=`${rows.length} Arsenal player stat record${rows.length===1?"":"s"} loaded from BSD-backed Supabase • updated ${latest?new Date(latest).toLocaleString():"—"}`;
+    status.textContent=`${feed.length} current Arsenal squad player records • BSD-backed Supabase • updated ${latest?new Date(latest).toLocaleString():"—"}`;
   }
   window.nl4LoadArsenalPlayerStats=load;
-  window.addEventListener("load",load);
-  setTimeout(load,400);
+  window.addEventListener("load",()=>setTimeout(load,850));
+  window.addEventListener("nl4:player-stats-synced",load);
 })();
 </script>
 
