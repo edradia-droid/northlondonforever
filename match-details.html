@@ -1210,7 +1210,8 @@
       .replace(/[^a-z0-9]+/gi, '')
       .toLowerCase();
 
-    // Shared team-name comparator; declared before any renderer/helper can use it.\n    const sameTeamName = (a, b) => normalizePlayerKey(a) === normalizePlayerKey(b);
+    // Shared team-name comparator; declared before any renderer/helper can use it.
+    const sameTeamName = (a, b) => normalizePlayerKey(a) === normalizePlayerKey(b);
 
     const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({
       "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
