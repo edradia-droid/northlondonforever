@@ -1970,14 +1970,39 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
   const norm=v=>String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[Øø]/g,"o").replace(/[^a-z0-9]+/gi," ").trim().toLowerCase();
   const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
   const n=v=>Number(v)||0;
+  /*
+   * Player identity bridge:
+   * The public squad feed and BSD-backed stats do not always use the same
+   * display name (full legal name, short name, accents, or surname-only).
+   * Match identities deterministically before rendering; never create a
+   * second stats record just because BSD changed the display spelling.
+   */
   const aliases=p=>[p.name,p.webName].filter(Boolean).map(norm).filter(Boolean);
+  const identityTokens=v=>norm(v).split(" ").filter(Boolean);
+  const sameIdentity=(a,b)=>{
+    if(!a||!b)return false;
+    if(a===b)return true;
+    const aa=identityTokens(a),bb=identityTokens(b);
+    if(!aa.length||!bb.length)return false;
+    const sa=new Set(aa),sb=new Set(bb);
+    const overlap=aa.filter(x=>sb.has(x)).length;
+    const surname=aa[aa.length-1]===bb[bb.length-1];
+    const first=aa[0]===bb[0];
+    return (surname&&first)||(surname&&overlap>=2)||(overlap>=2&&Math.min(sa.size,sb.size)<=2);
+  };
   function findStat(f,rows){
     const targets=aliases(f);
-    let hit=rows.find(r=>targets.some(t=>[r.player_name,r.web_name].filter(Boolean).map(norm).includes(t)));
-    if(hit)return hit;
-    let best=null,bestScore=0;
-    for(const r of rows){for(const t of targets){for(const name of [r.player_name,r.web_name].filter(Boolean).map(norm)){const a=new Set(t.split(" ")),b=new Set(name.split(" "));let s=0;a.forEach(x=>b.has(x)&&s++);if(s>bestScore){bestScore=s;best=r}}}}
-    return bestScore>=2?best:null;
+    // 1. Exact canonical/display-name match.
+    for(const t of targets){
+      const hit=rows.find(r=>[r.player_name,r.web_name,r.name].filter(Boolean).map(norm).includes(t));
+      if(hit)return hit;
+    }
+    // 2. Stable identity match: full name ↔ short name/surname variants.
+    for(const t of targets){
+      const hit=rows.find(r=>[r.player_name,r.web_name,r.name].filter(Boolean).some(n=>sameIdentity(t,norm(n))));
+      if(hit)return hit;
+    }
+    return null;
   }
   function render(feed,rows){
     const order={Goalkeeper:1,Defender:2,Midfielder:3,Forward:4,Squad:5};
