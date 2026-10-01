@@ -2118,7 +2118,7 @@
       };
 
             const correctedPitchStarters = applyCoventryArsenalPitchSlots(starters, fixture);
-      const currentPitchLineup = buildCurrentPitchLineup(correctedPitchStarters, pitchSubstitutionRows, normalizedFormation(fixture.lineup_formation || correctedPitchStarters.find(r => r.formation)?.formation));
+      const currentPitchLineup = buildCurrentPitchLineup(correctedPitchStarters, pitchSubstitutionRows, normalizedFormation(fixture.lineup_formation || correctedPitchStarters.find(r => r.formation)?.formation || ({'bsd:209573':'4-2-3-1','bsd:209535':'4-2-3-1'})[String(fixture.external_fixture_id || '')] || '4-3-3'));
       render3DPitch(correctedPitchStarters, playerMedia, fixture.lineup_formation, pitchSubstitutionRows, currentPitchLineup);
 
       const usedNames = new Map(
@@ -2132,22 +2132,15 @@
       // rendered here. Record Room is deliberately excluded from this visible
       // list so its historical/manual bench rows cannot appear as UNUSED or
       // duplicate substitutions.
-      const actualSubstituteRows = pitchSubstitutionRows
-        .filter(row => row.inPlayer)
+      const actualSubstituteRows = (subs || [])
         .filter((row, index, rows) => {
-          const key = substitutionPlayerKey(row.inPlayer);
-          return rows.findIndex(other => substitutionPlayerKey(other.inPlayer) === key) === index;
-        })
-        .map(row => ({
-          player_name: row.inPlayer,
-          team_name: pitchTeam,
-          minute_on: row.minute,
-          is_starter: false
-        }));
+          const key = normalizePlayerKey(row.player_name);
+          return key && rows.findIndex(other => normalizePlayerKey(other.player_name) === key) === index;
+        });
 
       const completeBench = actualSubstituteRows.length
         ? actualSubstituteRows.map(row => {
-            const key = substitutionPlayerKey(row.player_name);
+            const key = normalizePlayerKey(row.player_name);
             const used = usedNames.get(key);
             const minute = used ? `<span class="substitution-time">${esc(used.minute)}’</span>` : "";
             return `
