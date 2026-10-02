@@ -1142,7 +1142,7 @@
         </section>
 
         <p class="status-note" id="lineupStatus">
-          Starting XI appears as soon as it is entered in Admin. Substitutions update during the match as they are added.
+          Starting XI, benches and substitutions are synchronized from BSD match data.
         </p>
 
 <section class="match-panel leaguewide-panel" id="leagueWideMatchCentre"><div class="match-panel-head"><p>BSD MATCH CENTRE</p><h2>Both Teams • Lineups & Events</h2></div><div id="leagueWideTeams" class="leaguewide-teams"></div><div id="leagueWideEvents" class="events-list"></div><p class="status-note" id="leagueWideStatus">Loading league-wide match data…</p></section>
@@ -1164,7 +1164,7 @@
           </div>
 
           <p class="status-note" id="matchStatsStatus">
-            Statistics update from the selected fixture record in Admin.
+            Statistics update from the BSD-derived fixture record.
           </p>
         </section>
       </div>
@@ -1733,7 +1733,7 @@
             <span class="stats-value away">${esc(av)}</span>
           </div>`;
         }).join("");
-        els.statsStatus.textContent = "Live from Match Admin • This fixture only";
+        els.statsStatus.textContent = "Live from BSD Match Centre • This fixture only";
       } else {
         els.statsTable.innerHTML = '<div class="stats-empty">No match statistics have been entered yet.</div>';
         els.statsStatus.textContent = "Statistics will appear here as soon as they are saved in Admin.";
@@ -2203,7 +2203,7 @@
       } else if (["fulltime","finished","ft"].includes(status)) {
         availabilityText = "FULL TIME • Final lineup and substitutions";
       } else {
-        availabilityText = "Match lineup data from Admin";
+        availabilityText = "BSD match lineup data";
       }
 
       els.lineupStatus.textContent =
