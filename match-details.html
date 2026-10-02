@@ -1452,33 +1452,23 @@
       els.formationBadge.textContent = formation;
       const activeRows = currentPitchLineup || buildCurrentPitchLineup(starters, substitutionRows, formation);
 
-      // Only trust BSD spatial coordinates when the fixture actually contains
-      // a complete, distributed set of player coordinates. Some older/synced
-      // rows can contain the placeholder pair 0,0; using those values moves
-      // every player to the pitch's top-left corner. Formation slots remain
-      // the authoritative fallback for incomplete spatial data.
-      const spatialPoints = activeRows.map(row => {
-        const x = Number(row.position_x), y = Number(row.position_y);
-        return Number.isFinite(x) && Number.isFinite(y) && x >= 0 && x <= 100 && y >= 0 && y <= 100 ? [x,y] : null;
-      }).filter(Boolean);
-      const spatialKeys = new Set(spatialPoints.map(([x,y]) => x.toFixed(2) + ',' + y.toFixed(2)));
-      const useSpatialCoordinates = spatialPoints.length >= 8 && spatialKeys.size >= 8 &&
-        spatialPoints.some(([x,y]) => x > 5 && x < 95 && y > 5 && y < 95);
-
+      /*
+       * Pitch rendering uses the resolved BSD formation/tactical slots only.
+       * The raw match-level position_x/position_y fields are deliberately NOT
+       * applied here because BSD/Supabase can contain placeholder or stale
+       * spatial pairs. Those values were capable of putting every marker at
+       * (0%,0%) and breaking the lineup on every viewport.
+       *
+       * This is not player-name hardcoding: resolveFormationSlots() above
+       * resolves each row from the BSD formation/position data, and
+       * PITCH_COORDS only supplies the visual coordinate for that resolved
+       * tactical slot.
+       */
       const figures = activeRows.map((row,index) => {
         const slot = row._pitchSlot || 'CM';
         const [fallbackX,fallbackY] = PITCH_COORDS[slot] || PITCH_COORDS.CM;
-
-        // BSD match-level spatial coordinates are the highest-precision source
-        // whenever they are present and valid. Formation slots remain the
-        // protected fallback, so older matches without spatial data continue
-        // to render exactly as before.
-        const rawX = Number(row.position_x);
-        const rawY = Number(row.position_y);
-        const hasSpatial = useSpatialCoordinates && Number.isFinite(rawX) && Number.isFinite(rawY) &&
-          rawX >= 0 && rawX <= 100 && rawY >= 0 && rawY <= 100;
-        const x = hasSpatial ? rawX : fallbackX;
-        const y = hasSpatial ? rawY : fallbackY;
+        const x = fallbackX;
+        const y = fallbackY;
 
         // Depth is visual only; x/y are never reordered by shirt number or query order.
         const depth = (0.78 + (y/100)*0.24).toFixed(2);
