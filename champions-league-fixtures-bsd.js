@@ -3,7 +3,7 @@
 const clean=v=>String(v||'').replace(/\s+(FC|AFC)$/i,'').trim();
 const esc=v=>String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const BSD_TEAM_IDS=Object.freeze({"Arsenal":18,"SSC Napoli":62,"Lille":106,"FC Bayern München":79,"SK Slavia Praha":120,"Borussia Dortmund":92,"Real Madrid":57,"Real Betis":56,"Sabah FK":412});
-const crest=(name,url)=>{const cleanUrl=String(url||'').trim()||((BSD_TEAM_IDS[String(name||'').trim()])?('https://sports.bzzoiro.com/img/team/'+BSD_TEAM_IDS[String(name||'').trim()]+'/?bg=transparent'):'');return cleanUrl?'<img class="team-logo" src="'+esc(cleanUrl)+'" alt="'+esc(name)+' crest" loading="lazy" onerror="this.style.display=\'none\'">':'<span class="club-dot">'+esc(String(name||'').slice(0,3).toUpperCase())+'</span>';};
+const crest=(name,url)=>{const supplied=String(url||'').trim();const id=BSD_TEAM_IDS[String(name||'').trim()];const primary=supplied|| (id?'https://sports.bzzoiro.com/img/team/'+id+'/':'');const fallback=id?'https://sports.bzzoiro.com/img/team/'+id+'/?bg=transparent':'';if(!primary)return '<span class="club-dot">'+esc(String(name||'').slice(0,3).toUpperCase())+'</span>';return '<img class="team-logo" src="'+esc(primary)+'" data-bsd-fallback="'+esc(fallback)+'" alt="'+esc(name)+' crest" loading="eager" onerror="if(this.dataset.bsdFallback&&this.src!==this.dataset.bsdFallback){this.src=this.dataset.bsdFallback;this.dataset.bsdFallback=\'\';}else{this.style.display=\'none\';}">';};
 function statusOf(f){
  const s=String(f.status||'scheduled').toLowerCase();
  const kickoff=f.kickoff_at?new Date(f.kickoff_at):null;
