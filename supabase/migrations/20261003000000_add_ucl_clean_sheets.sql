@@ -83,6 +83,7 @@ clean_sheet_matches as (
   from lu l
   join fx f on f.id=l.fixture_id
   where l.appeared
+    and coalesce(l.position,'') in ('G','GK','Goalkeeper')
     and (
       (f.home_team='Arsenal' and coalesce(f.away_score,0)=0)
       or
