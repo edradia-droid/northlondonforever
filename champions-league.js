@@ -1,7 +1,7 @@
 const cleanTeam=team=>String(team||'').replace(/\\s+(FC|AFC)$/i,'').trim();
 const esc=v=>String(v??'').replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
 const logo=(team,url)=>url?'<img class="team-logo" src="'+esc(url)+'" alt="'+esc(team)+' crest" loading="lazy" onerror="this.style.display=\'none\'">':'<span class="club-dot">'+esc(String(team||'').slice(0,3).toUpperCase())+'</span>';
-const state=f=>{const s=String(f.status||'scheduled').toLowerCase(),has=Number.isFinite(Number(f.home_score))&&Number.isFinite(Number(f.away_score));if(['fulltime','finished','ft','aet','pen'].includes(s)||has)return{label:'FULL TIME',done:true,live:false};if(['live','1h','ht','2h','et'].includes(s))return{label:'LIVE',done:false,live:true};return{label:'SCHEDULED',done:false,live:false}};
+const state=f=>{const s=String(f.status||'scheduled').toLowerCase();if(['fulltime','finished','ft','aet','pen'].includes(s))return{label:'FULL TIME',done:true,live:false};if(['live','1h','ht','2h','et'].includes(s))return{label:'LIVE',done:false,live:true};return{label:'SCHEDULED',done:false,live:false}};
 let arsenalFixtures=[];
 function renderFixtures(){
  const el=document.getElementById('arsenalUclFixtures');if(!el)return;
