@@ -2,7 +2,7 @@
 'use strict';
 const clean=v=>String(v||'').replace(/\s+(FC|AFC)$/i,'').trim();
 const esc=v=>String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const crest=(name,url)=>url?'<img class="team-logo" src="'+esc(url)+'" alt="'+esc(name)+' crest" loading="lazy" onerror="this.style.display=\'none\'">':'<span class="club-dot">'+esc(String(name||'').slice(0,3).toUpperCase())+'</span>';
+const crest=(name,url)=>{const cleanUrl=String(url||'').trim();return cleanUrl?'<img class="team-logo" src="'+esc(cleanUrl)+'" alt="'+esc(name)+' crest" loading="lazy" onerror="this.style.display=\'none\'">':'<span class="club-dot">'+esc(String(name||'').slice(0,3).toUpperCase())+'</span>';};
 function statusOf(f){
  const s=String(f.status||'scheduled').toLowerCase();
  const kickoff=f.kickoff_at?new Date(f.kickoff_at):null;
