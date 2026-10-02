@@ -77,7 +77,7 @@
 
     const status = document.querySelector('.ucl-table-status');
     const lastSync = rows.map(r => r.source_updated_at).filter(Boolean).sort().pop();
-    if (status) status.textContent = lastSync ? `Live API table • updated ${new Date(lastSync).toLocaleString()}` : 'Live API table from football-data.org.';
+    if (status) status.textContent = lastSync ? `Live API table • updated ${new Date(lastSync).toLocaleString()}` : 'Live BSD table.';
   }
 
   window.NL4ReloadUclStandings = loadLiveStandings;
