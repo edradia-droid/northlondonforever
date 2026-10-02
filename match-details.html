@@ -1766,7 +1766,7 @@
         .from("match_lineups")
         .select("player_name,position,formation,pitch_slot,position_x,position_y,source_order,is_starter,minute_on,minute_off,updated_at,team_name")
         .eq("fixture_id", fixture.id)
-        .in("team_name", [home, away])
+        // Do not filter by display team names: BSD may use a canonical opponent label.
         .order("is_starter", { ascending:false })
         .order("minute_on", { ascending:true })
         .order("source_order", { ascending:true });
@@ -2035,8 +2035,15 @@
       const leagueEventsEl = document.getElementById("leagueWideEvents");
       const leagueStatusEl = document.getElementById("leagueWideStatus");
       if (leagueTeamsEl) {
-        leagueTeamsEl.innerHTML = [home, away].map(function(team) {
-          const rows = canonicalLineupRows.filter(function(row) { return sameTeamName(row.team_name, team); });
+        const arsenalRows = canonicalLineupRows.filter(function(row) { return sameTeamName(row.team_name, pitchTeam); });
+        const oppositionRows = canonicalLineupRows.filter(function(row) { return !sameTeamName(row.team_name, pitchTeam); });
+        const displayTeams = [
+          { name: home, rows: sameTeamName(home, pitchTeam) ? arsenalRows : oppositionRows },
+          { name: away, rows: sameTeamName(away, pitchTeam) ? arsenalRows : oppositionRows }
+        ];
+        leagueTeamsEl.innerHTML = displayTeams.map(function(teamData) {
+          const team = teamData.name;
+          const rows = teamData.rows;
           const startersCount = rows.filter(function(row) { return row.is_starter; }).length;
           const benchCount = rows.filter(function(row) { return !row.is_starter; }).length;
           const html = rows.length ? rows.map(function(row) {
