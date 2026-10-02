@@ -1418,7 +1418,11 @@
       starters.forEach((starter, index) => {
         const key = normalizePlayerKey(starter.player_name);
         const minuteOff = Number(starter.minute_off);
-        if (!key || !Number.isFinite(minuteOff) || minuteOff <= 0 || outgoingKeys.has(key)) return;
+        // BSD can use minute_off=90 for a player who completed the match.
+        // A completed 90 is not a substitution and must never create an OFF marker.
+        // Actual substitutions are sourced from substitution events above; the
+        // lineup minute_off fallback is used only when it is not exactly 90.
+        if (!key || !Number.isFinite(minuteOff) || minuteOff <= 0 || minuteOff === 90 || outgoingKeys.has(key)) return;
         const active = current[index];
         if (!outgoingKeys.has(key)) {
           outgoingSubstitutions.push({
