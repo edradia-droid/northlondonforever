@@ -23,7 +23,7 @@ function renderTable(rows){
 function styles(){const s=document.createElement('style');s.textContent='.ucl-fixture-bottom{display:block!important;padding-top:13px!important}.ucl-fixture-caption{display:flex;justify-content:space-between}.ucl-fixture-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.ucl-action{display:inline-flex;padding:8px 11px;border-radius:9px;text-decoration:none;font-size:9px;font-weight:1000}.ucl-action-details{color:#d8ad45;border:1px solid rgba(216,173,69,.38)}.fixture-status.fulltime{color:#8df0b2}.ucl-score{width:auto!important;padding:0 13px!important;border-radius:14px!important}@media(max-width:600px){.ucl-action{flex:1}}';document.head.appendChild(s)}
 async function sync(){
  const db=window.nl4Supabase;
- if(!db){console.warn('NL4 UCL: Supabase client unavailable');return;}
+ if(!db){console.warn('NL4 UCL: Supabase client unavailable; retrying after client load');setTimeout(sync,250);return;}
  try{
   const [fixturesResult,standingsResult]=await Promise.all([
    db.from('fixtures').select('id,matchday,status,kickoff_at,venue,home_team,away_team,home_score,away_score,home_crest_url,away_crest_url,source').eq('season','2026/27').eq('competition','UEFA Champions League').eq('source','BSD').order('matchday',{ascending:true}),
@@ -36,4 +36,4 @@ async function sync(){
   renderTable(standingsResult.data||[]);
  }catch(e){console.warn('NL4 UCL BSD data sync:',e)}
 }
-document.addEventListener('DOMContentLoaded',()=>{styles();sync()});
+document.addEventListener('DOMContentLoaded',()=>{styles();sync();setTimeout(sync,1000);setTimeout(sync,2500);});
