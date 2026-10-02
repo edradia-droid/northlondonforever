@@ -1424,6 +1424,8 @@
           outgoingSubstitutions.push({
             ...starter,
             _pitchSlot: active?._pitchSlot || resolvedSlots[index],
+            position_x: active?.position_x ?? starter.position_x ?? null,
+            position_y: active?.position_y ?? starter.position_y ?? null,
             _minuteOff: minuteOff
           });
           outgoingKeys.add(key);
@@ -1453,11 +1455,16 @@
         const slot = row._pitchSlot || 'CM';
         const [fallbackX,fallbackY] = PITCH_COORDS[slot] || PITCH_COORDS.CM;
 
-        // Record Room formation + tactical slot are the source of truth.
-        // Coordinates are always derived from the formation slot so players
-        // cannot appear in arbitrary/random pitch positions.
-        const x = fallbackX;
-        const y = fallbackY;
+        // BSD match-level spatial coordinates are the highest-precision source
+        // whenever they are present and valid. Formation slots remain the
+        // protected fallback, so older matches without spatial data continue
+        // to render exactly as before.
+        const rawX = Number(row.position_x);
+        const rawY = Number(row.position_y);
+        const hasSpatial = Number.isFinite(rawX) && Number.isFinite(rawY) &&
+          rawX >= 0 && rawX <= 100 && rawY >= 0 && rawY <= 100;
+        const x = hasSpatial ? rawX : fallbackX;
+        const y = hasSpatial ? rawY : fallbackY;
 
         // Depth is visual only; x/y are never reordered by shirt number or query order.
         const depth = (0.78 + (y/100)*0.24).toFixed(2);
@@ -1499,6 +1506,8 @@
             return {
               ...starters[starterIndex],
               _pitchSlot: resolvedFormationSlotsForRender(starters, formation)[starterIndex],
+              position_x: starters[starterIndex].position_x ?? null,
+              position_y: starters[starterIndex].position_y ?? null,
               _minuteOff: Number(event.minute)
             };
           }).filter(Boolean);
@@ -1506,11 +1515,17 @@
       const outgoingFigures = visibleOutgoing.map(row => {
         const slot = row._pitchSlot || 'CM';
         const [fallbackX,fallbackY] = PITCH_COORDS[slot] || PITCH_COORDS.CM;
+        const rawX = Number(row.position_x);
+        const rawY = Number(row.position_y);
+        const hasSpatial = Number.isFinite(rawX) && Number.isFinite(rawY) &&
+          rawX >= 0 && rawX <= 100 && rawY >= 0 && rawY <= 100;
+        const markerX = hasSpatial ? rawX : fallbackX;
+        const markerY = hasSpatial ? rawY : fallbackY;
         const offMinute = Number.isFinite(Number(row._minuteOff)) ? Number(row._minuteOff) : null;
         if (offMinute == null) return '';
         // The Starting XI figure already renders the outgoing player's image and name.
         // Render ONLY the red OFF marker here, so the player is never duplicated.
-        return '<span class="pitch-off-marker" style="--x:' + fallbackX + '%;--y:' + fallbackY + '%" title="' + esc(String(row.player_name || 'Arsenal')) + ' • OFF ' + esc(offMinute) + '’" aria-label="' + esc(String(row.player_name || 'Arsenal')) + ' substituted off at ' + esc(offMinute) + ' minutes">↓ ' + esc(offMinute) + '’</span>';
+        return '<span class="pitch-off-marker" style="--x:' + markerX + '%;--y:' + markerY + '%" title="' + esc(String(row.player_name || 'Arsenal')) + ' • OFF ' + esc(offMinute) + '’" aria-label="' + esc(String(row.player_name || 'Arsenal')) + ' substituted off at ' + esc(offMinute) + ' minutes">↓ ' + esc(offMinute) + '’</span>';
       }).join('');
       // Outgoing starters sit in a real absolute overlay above the active XI.
       // This keeps the red OFF marker visible even when an incoming player
