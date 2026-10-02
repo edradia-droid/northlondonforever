@@ -2,8 +2,8 @@
 'use strict';
 const db=()=>window.nl4Supabase;
 const p=new URLSearchParams(location.search);
-let idx=Number(p.get('match'));
-if(!Number.isInteger(idx)||idx<0||idx>7)idx=0;
+const requestedFixture=p.get('fixture');
+const requestedMatch=Number(p.get('match'));
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const aliases={
   'Arsenal':'Arsenal','Arsenal FC':'Arsenal',
@@ -69,7 +69,7 @@ function keepLive(box,markup){let restoring=false;const apply=()=>{if(restoring)
 async function load(){
   applyMatchHeaderFix();
   const client=db();if(!client)return;const box=document.getElementById('teamTotalsBox');if(!box)return;
-  const {data:f,error}=await client.from('fixtures').select('id,matchday,home_team,away_team,is_home,opponent,status,kickoff_at').eq('season','2026/27').eq('competition','UEFA Champions League').eq('matchday',idx+1).maybeSingle();
+  const {data:f,error}=await client.from('fixtures').select('id,matchday,home_team,away_team,is_home,opponent,status,kickoff_at').eq('season','2026/27').eq('competition','UEFA Champions League').eq('source','BSD').eq(requestedFixture?'id':'matchday',requestedFixture||((Number.isInteger(requestedMatch)&&requestedMatch>=0?requestedMatch+1:1))).maybeSingle();
   if(error||!f){if(error)console.warn('NL4 UCL fixture comparison:',error);return;}
   const home=f.home_team||(f.is_home?'Arsenal':f.opponent),away=f.away_team||(f.is_home?f.opponent:'Arsenal');
   const title=document.getElementById('title');if(title){title.innerHTML=`${esc(home)} <span style="text-transform:lowercase!important">vs</span> ${esc(away)}`;title.style.setProperty('text-transform','none','important');}
