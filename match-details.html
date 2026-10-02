@@ -1294,15 +1294,28 @@
     function resolveFormationSlots(starters, formation){
       const template = [...FORMATION_SLOTS[normalizedFormation(formation)]];
       const used = new Set();
+      const roleOf = row => {
+        const p = String(row.position ?? '').trim().toUpperCase();
+        if (p === 'G' || p === 'GK' || p.includes('GOALKEEP')) return 'GK';
+        if (p === 'D' || p.includes('DEF')) return 'D';
+        if (p === 'F' || p.includes('FORWARD') || p.includes('ATTACK')) return 'F';
+        if (p === 'M' || p.includes('MID')) return 'M';
+        return '';
+      };
+      const slotRole = slot => {
+        if (slot === 'GK') return 'GK';
+        if (/^(LB|LCB|CB|RCB|RB|LWB|RWB)$/.test(slot)) return 'D';
+        if (/^(LW|RW|ST|LST|RST)$/.test(slot)) return 'F';
+        return 'M';
+      };
 
-      // BSD tactical metadata is the source of truth. The renderer must never
-      // identify a player's position from the player's name.
-      return starters.map((row,index) => {
+      // First pass: use explicit BSD tactical metadata whenever it exists.
+      const resolved = new Array(starters.length).fill(null);
+      starters.forEach((row,index) => {
         const rawPitch = String(row.pitch_slot ?? '').trim().toUpperCase();
         const rawPosition = String(row.position ?? '').trim().toUpperCase();
         const numeric = Number(rawPitch);
         let requested = (!Number.isInteger(numeric) && rawPitch) ? rawPitch : '';
-
         if (requested === 'AM') requested = 'CAM';
         if (requested === 'LAM') requested = 'LW';
         if (requested === 'RAM') requested = 'RW';
@@ -1311,33 +1324,58 @@
             rawPosition && template.includes(rawPosition)) {
           requested = rawPosition;
         }
-
         if ((!requested || !template.includes(requested)) &&
             Number.isInteger(numeric) && numeric >= 1 && numeric <= template.length) {
           requested = template[numeric - 1];
         }
-
         if (requested && template.includes(requested) && !used.has(requested)) {
           used.add(requested);
-          return requested;
+          resolved[index] = requested;
         }
+      });
 
-        // BSD lineup arrays are delivered in tactical source order. Preserve
-        // that order whenever detailed pitch metadata is unavailable.
+      // Second pass: when BSD has only broad G/D/M/F roles, never let the
+      // database row order move a defender into midfield or a forward into
+      // defence. Allocate each broad role only to compatible formation slots.
+      const roleSlots = {
+        GK: template.filter(slot => slotRole(slot) === 'GK'),
+        D: template.filter(slot => slotRole(slot) === 'D'),
+        M: template.filter(slot => slotRole(slot) === 'M'),
+        F: template.filter(slot => slotRole(slot) === 'F')
+      };
+      const roleCursor = {GK:0,D:0,M:0,F:0};
+
+      starters.forEach((row,index) => {
+        if (resolved[index]) return;
+        const role = roleOf(row);
+        const candidates = roleSlots[role] || [];
+        while (roleCursor[role] < candidates.length && used.has(candidates[roleCursor[role]])) {
+          roleCursor[role]++;
+        }
+        if (roleCursor[role] < candidates.length) {
+          const slot = candidates[roleCursor[role]++];
+          used.add(slot);
+          resolved[index] = slot;
+        }
+      });
+
+      // Final pass: preserve an available formation slot for any unusually
+      // encoded BSD position rather than allowing a duplicate/overlap.
+      starters.forEach((row,index) => {
+        if (resolved[index]) return;
         const sourceOrder = Number(row.source_order);
-        if (Number.isInteger(sourceOrder) && sourceOrder >= 0 && sourceOrder < template.length) {
-          const sourceSlot = template[sourceOrder];
-          if (!used.has(sourceSlot)) {
-            used.add(sourceSlot);
-            return sourceSlot;
-          }
+        if (Number.isInteger(sourceOrder) && sourceOrder >= 0 && sourceOrder < template.length && !used.has(template[sourceOrder])) {
+          resolved[index] = template[sourceOrder];
+          used.add(template[sourceOrder]);
+          return;
         }
-
         const open = template.find(slot => !used.has(slot));
         const slot = open || template[index] || 'CM';
         used.add(slot);
-        return slot;
+        resolved[index] = slot;
       });
+
+      return resolved;
     }
 
     function playerInitials(name){
