@@ -48,7 +48,9 @@
     const { data, error } = await db
       .from('ucl_standings')
       .select('position,team_name,played,wins,draws,losses,goals_for,goals_against,goal_difference,points,source_updated_at')
-      .eq('season','2026/27')
+       .eq('season','2026/27')
+      .eq('stage','league-phase')
+      .eq('source','BSD')
       .order('position',{ascending:true});
 
     if (error) {
