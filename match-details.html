@@ -2190,8 +2190,8 @@
       const homeBenchHtml = renderTeamBench(home);
       const awayBenchHtml = renderTeamBench(away);
       els.subs.innerHTML =
-        '<div class="match-squad-team"><div class="match-squad-team-head"><strong>' + esc(home) + '</strong><span>BENCH</span></div><div class="sub-off-list">' + homeBenchHtml + '</div></div>' +
-        '<div class="match-squad-team"><div class="match-squad-team-head"><strong>' + esc(away) + '</strong><span>BENCH</span></div><div class="sub-off-list">' + awayBenchHtml + '</div></div>';
+        '<div class="leaguewide-team"><div class="leaguewide-team-head"><strong>' + esc(home) + '</strong><span>BENCH</span></div><div class="sub-off-list">' + homeBenchHtml + '</div></div>' +
+        '<div class="leaguewide-team"><div class="leaguewide-team-head"><strong>' + esc(away) + '</strong><span>BENCH</span></div><div class="sub-off-list">' + awayBenchHtml + '</div></div>';
 
       let availabilityText = "";
       if (status === "scheduled") {
