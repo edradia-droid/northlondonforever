@@ -1134,7 +1134,7 @@
         <section class="match-panel post-pitch-subs-panel" id="matchSubstitutionsPanel">
           <div class="match-panel-head">
             <p>MATCH SQUAD</p>
-            <h2>Arsenal Substitutes</h2>
+            <h2>Both Teams • Substitutes & Benches</h2>
           </div>
           <div class="broadcast-subs post-pitch-subs" id="substitutes">
             <div class="empty">Loading substitutes…</div>
@@ -2157,35 +2157,42 @@
           return key && rows.findIndex(other => normalizePlayerKey(other.inPlayer) === key) === index;
         });
 
-      const completeBench = actualSubstituteRows.length
-        ? actualSubstituteRows.map(row => {
-            const benchMedia = resolvePlayerMedia(row.inPlayer);
-            return `
-              <div class="broadcast-sub sub-bench-row">
-                <span class="sub-bench-player">
-                  ${benchMedia.image ? '<img class="sub-bench-photo" src="' + esc(benchMedia.image) + '" alt="' + esc(row.inPlayer) + '" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden=true">' : ''}
-                  <span class="sub-name">${esc(row.inPlayer)}</span>
-                </span>
-                <span class="sub-bench-used"><span class="substitution-arrow in" aria-hidden="true">↑</span><span class="substitution-time">${esc(row.minute)}’</span></span>
-              </div>`;
-          }).join("")
-        : "";
+      // Render the complete bench for BOTH teams. BSD match_lineups contains the
+      // named bench, while match_events supplies the exact ON minute for players
+      // who actually entered. This is the same data model used by the EPL centre.
+      const renderTeamBench = teamName => {
+        const teamRows = canonicalLineupRows
+          .filter(row => sameTeamName(row.team_name, teamName) && !row.is_starter)
+          .sort((a,b) => {
+            const aOn = Number(a.minute_on || 0), bOn = Number(b.minute_on || 0);
+            return (bOn > 0 ? 0 : 1) - (aOn > 0 ? 0 : 1) || aOn - bOn || String(a.player_name).localeCompare(String(b.player_name));
+          });
+        if (!teamRows.length) return '<div class="empty">No named bench data available.</div>';
+        return teamRows.map(row => {
+          const benchMedia = resolvePlayerMedia(row.player_name);
+          const usedEvent = uniqueSubstitutionRows.find(event =>
+            sameTeamName(event.teamName, teamName) &&
+            normalizePlayerKey(event.inPlayer) === normalizePlayerKey(row.player_name)
+          );
+          const minute = usedEvent ? Number(usedEvent.minute) : Number(row.minute_on || 0);
+          const used = Number.isFinite(minute) && minute > 0;
+          return '<div class="broadcast-sub sub-bench-row">' +
+            '<span class="sub-bench-player">' +
+            (benchMedia.image ? '<img class="sub-bench-photo" src="' + esc(benchMedia.image) + '" alt="' + esc(row.player_name) + '" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden=true">' : '') +
+            '<span class="sub-name">' + esc(row.player_name) + '</span></span>' +
+            (used
+              ? '<span class="sub-bench-used"><span class="substitution-arrow in" aria-hidden="true">↑</span><span class="substitution-time">' + esc(minute) + '’</span></span>'
+              : '<span class="sub-bench-unused">BENCH</span>') +
+            '</div>';
+        }).join('');
+      };
 
-      const offStarterRows = starters.filter(row => Number.isFinite(Number(row.minute_off)) && Number(row.minute_off) > 0 && Number(row.minute_off) !== 90);
-      const offStarterHtml = offStarterRows.length
-        ? '<div class="sub-off-list">' + offStarterRows.map(row => `
-            <div class="sub-off-row">
-              <span class="sub-name">${esc(row.player_name)}</span>
-              <span class="sub-bench-used sub-off-status"><span class="substitution-arrow out" aria-hidden="true">↓</span><span class="substitution-time">${esc(row.minute_off)}’</span></span>
-            </div>`).join("") + '</div>'
-        : "";
-      // Show each incoming substitute exactly once. The IN -> OUT substitution
-      // row already contains the outgoing player, so do not append the separate
-      // off-starter list here; that was causing every substitution to appear twice.
-      // One renderer only: Match Squad substitutes come exclusively from the
-      // de-duplicated BSD incoming-substitute list. Do not fall back to a second
-      // substitution renderer, which can make the same change appear twice.
-      els.subs.innerHTML = completeBench || '<div class="empty">No Arsenal substitutes with verified photos used in this match.</div>';
+      const homeBenchHtml = renderTeamBench(home);
+      const awayBenchHtml = renderTeamBench(away);
+      els.subs.innerHTML =
+        '<div class="match-squad-team"><div class="match-squad-team-head"><strong>' + esc(home) + '</strong><span>BENCH</span></div><div class="sub-off-list">' + homeBenchHtml + '</div></div>' +
+        '<div class="match-squad-team"><div class="match-squad-team-head"><strong>' + esc(away) + '</strong><span>BENCH</span></div><div class="sub-off-list">' + awayBenchHtml + '</div></div>';
+
       let availabilityText = "";
       if (status === "scheduled") {
         availabilityText = starters.length
