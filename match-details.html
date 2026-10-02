@@ -1517,14 +1517,12 @@
           }).filter(Boolean);
 
       const outgoingFigures = visibleOutgoing.map(row => {
+        // Keep the OFF marker locked to the exact same resolved tactical
+        // slot as the player figure. Do not use raw BSD spatial coordinates
+        // here, otherwise the marker can separate from the player after the
+        // pitch renderer falls back to formation coordinates.
         const slot = row._pitchSlot || 'CM';
-        const [fallbackX,fallbackY] = PITCH_COORDS[slot] || PITCH_COORDS.CM;
-        const rawX = Number(row.position_x);
-        const rawY = Number(row.position_y);
-        const hasSpatial = Number.isFinite(rawX) && Number.isFinite(rawY) &&
-          rawX >= 0 && rawX <= 100 && rawY >= 0 && rawY <= 100;
-        const markerX = hasSpatial ? rawX : fallbackX;
-        const markerY = hasSpatial ? rawY : fallbackY;
+        const [markerX,markerY] = PITCH_COORDS[slot] || PITCH_COORDS.CM;
         const offMinute = Number.isFinite(Number(row._minuteOff)) ? Number(row._minuteOff) : null;
         if (offMinute == null) return '';
         // The Starting XI figure already renders the outgoing player's image and name.
