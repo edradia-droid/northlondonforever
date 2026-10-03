@@ -380,12 +380,11 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
       .select('player_name,position,image_url')
       .eq('season','2026/27')
       .order('player_name');
+    // Player selection must remain available from the authoritative squad feed even
+    // if the optional stats enrichment query is unavailable.
     if(squadRes.error){
-      boot.textContent='PLAYER DATA LOAD FAILED • '+squadRes.error.message;
-      boot.className='status bad';
-      return;
+      console.warn('Optional player-stats enrichment unavailable:',squadRes.error.message);
     }
-
     const rows=squadRes.data||[];
     // The authoritative squad feed is the source of selectable players.
     // Stats rows are used when available for position/image metadata, but a missing
