@@ -88,6 +88,13 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
   color:#fff;font-weight:1000;font-size:13px;text-align:center;margin:0;
   display:inline-flex;align-items:center;gap:6px
 }
+.title-formation-row{
+  position:relative;display:flex;align-items:center;justify-content:center;min-height:28px
+}
+.title-formation-row .download-title{margin:0;width:100%}
+.title-formation-row .download-formation{
+  position:absolute;left:0;top:50%;transform:translateY(-50%)
+}
 .download-formation b{
   color:#fff;background:#173b73;border:1px solid rgba(255,255,255,.28);
   padding:5px 8px;border-radius:4px;line-height:1
@@ -168,8 +175,10 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
     <div class="fixture-heading-row">
       <div id="downloadFixture" class="download-fixture">ARSENAL VS OPPONENT</div>
     </div>
-    <div class="download-title">MY PREDICTED STARTING XI</div>
-    <div class="download-formation"><b id="downloadFormation">4-3-3</b></div>
+    <div class="title-formation-row">
+      <div class="download-formation"><b id="downloadFormation">4-3-3</b></div>
+      <div class="download-title">MY PREDICTED STARTING XI</div>
+    </div>
     <div id="downloadMeta" class="download-meta"></div>
   </div>
 
