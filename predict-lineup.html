@@ -85,9 +85,26 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
 .download-lineup .pitch-wrap{margin-top:0}
 .download-summary{padding:13px 4px 2px}
 .download-formation{
-  color:#fff;font-weight:1000;font-size:11px;text-align:center;margin-bottom:10px
+  color:#fff;font-weight:1000;font-size:13px;text-align:center;margin:0;
+  display:inline-flex;align-items:center;gap:6px
 }
-.download-formation b{color:#d8ad45}
+.download-formation b{
+  color:#fff;background:#173b73;border:1px solid rgba(255,255,255,.28);
+  padding:5px 8px;border-radius:4px;line-height:1
+}
+.fixture-heading-row{
+  display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:4px
+}
+.fixture-heading-row .download-fixture{margin:0}
+.fixture-heading-row .download-formation::before{
+  content:"FORMATION";font-size:8px;font-weight:1000;letter-spacing:1px;
+  color:#fff;background:#d71920;padding:4px 6px;border-radius:3px
+}
+@media(max-width:560px){
+  .fixture-heading-row{gap:7px}
+  .fixture-heading-row .download-fixture{font-size:14px}
+  .fixture-heading-row .download-formation{font-size:11px}
+}
 .download-subs-title{font-size:8px;font-weight:1000;color:#d8ad45;letter-spacing:1px;margin-bottom:5px}
 .download-subs-list{
   color:#fff;font-size:9px;font-weight:800;line-height:1.65;min-height:18px
@@ -148,7 +165,10 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
 <div id="lineupDownloadArea" class="downloadable-lineup">
   <div class="download-head">
     <img class="download-logo" src="https://i.postimg.cc/GhGgj8G7/75c7b198-597a-4288-abae-723c809c34fa.png" alt="NL4">
-    <div id="downloadFixture" class="download-fixture">ARSENAL VS OPPONENT</div>
+    <div class="fixture-heading-row">
+      <div id="downloadFixture" class="download-fixture">ARSENAL VS OPPONENT</div>
+      <div class="download-formation"><b id="downloadFormation">4-3-3</b></div>
+    </div>
     <div class="download-title">MY PREDICTED STARTING XI</div>
     <div id="downloadMeta" class="download-meta"></div>
   </div>
@@ -160,7 +180,6 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
   </div>
 
   <div class="download-summary">
-    <div class="download-formation">FORMATION • <b id="downloadFormation">4-3-3</b></div>
     <div class="download-subs-title">SUBSTITUTES</div>
     <div id="downloadSubs" class="download-subs-list">No substitutes selected yet.</div>
   </div>
