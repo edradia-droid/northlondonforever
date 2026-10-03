@@ -33,7 +33,7 @@ jobs:
           from rembg import remove, new_session
 
           source_url = "https://assets.arsenal.com/prod/images/large_landscape/dd168c02d4e3-arsenalmenssquad26278martin-odegaard.jpg"
-          url = "https://images.weserv.nl/?url=" + source_url
+          from urllib.parse import quote\n          url = "https://images.weserv.nl/?url=" + quote(source_url, safe="")
           raw = "/tmp/martin-odegaard.jpg"
           dest = Path("assets/player-cutouts/player-15.png")
           dest.parent.mkdir(parents=True, exist_ok=True)
