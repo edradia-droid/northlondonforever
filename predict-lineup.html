@@ -56,8 +56,15 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
 .slot select{font-size:7px;padding:6px 3px;background:rgba(5,5,5,.92)}
 .subs-title{margin:14px 0 7px;color:#d8ad45;font-size:8px;font-weight:1000}
 .subs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-height:220px;overflow:auto}
-.sub{display:flex;gap:6px;align-items:center;background:#151515;border:1px solid #292929;border-radius:8px;padding:7px;font-size:8px}
-.sub input{accent-color:#d8ad45}
+.sub{display:flex;gap:7px;align-items:center;background:#151515;border:1px solid #292929;border-radius:8px;padding:7px;font-size:8px;min-width:0;cursor:pointer;transition:border-color .15s,background .15s}
+.sub:hover{border-color:#d8ad45;background:#191919}
+.sub:has(input:checked){border-color:rgba(216,173,69,.8);background:#1b1810}
+.sub input{accent-color:#d8ad45;flex:0 0 auto}
+.sub-photo{width:34px;height:42px;object-fit:contain;object-position:center bottom;flex:0 0 34px;filter:drop-shadow(0 3px 3px rgba(0,0,0,.45))}
+.sub-photo.placeholder{width:30px;height:30px;border-radius:50%;background:rgba(5,5,5,.75);border:1px solid rgba(255,255,255,.55);display:grid;place-items:center;font-size:8px;font-weight:1000;color:#fff}
+.sub-info{min-width:0;line-height:1.25}
+.sub-name{display:block;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sub-pos{display:block;color:#777;font-size:7px;margin-top:2px}
 .msg{display:block;margin-top:8px;font-size:9px;color:#aaa;white-space:pre-wrap}
 .good{color:#8fe19f} .bad{color:#ff8d8d}
 @media(max-width:850px){.grid{grid-template-columns:1fr} .pitch-wrap{min-height:560px} .subs{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -236,7 +243,16 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
     if(exportName) exportName.textContent=player?.name || 'SELECT PLAYER';
   }
   function renderSubs(){
-    document.getElementById('subs').innerHTML=players.map(p=>`<label class="sub"><input type="checkbox" value="${esc(p.name)}" data-sub><span>${esc(p.name)} <small>• ${esc(p.pos)}</small></span></label>`).join('');
+    document.getElementById('subs').innerHTML=players.map(p=>{
+      const photo=p.image_url
+        ? `<img class="sub-photo" src="${esc(p.image_url)}" alt="${esc(p.name)}" referrerpolicy="no-referrer" loading="eager">`
+        : `<span class="sub-photo placeholder">${esc(initials(p.name))}</span>`;
+      return `<label class="sub">
+        <input type="checkbox" value="${esc(p.name)}" data-sub>
+        ${photo}
+        <span class="sub-info"><span class="sub-name">${esc(p.name)}</span><span class="sub-pos">${esc(p.pos)}</span></span>
+      </label>`;
+    }).join('');
   }
   function setMsg(id,text,good=false){
     const e=document.getElementById(id); e.textContent=text; e.className='msg '+(good?'good':'bad');
