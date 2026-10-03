@@ -2212,12 +2212,10 @@
 
       // Substituted players = players who actually entered, from BSD
       // substitution incidents. The bench roster is not a substitution list.
-      const actualSubstituteRows = pitchSubstitutionRows
-        .filter(row => row && row.inPlayer && Number.isFinite(Number(row.minute)))
-        .filter((row,index,rows) => {
-          const key = normalizePlayerKey(row.inPlayer);
-          return key && rows.findIndex(other => normalizePlayerKey(other.inPlayer) === key) === index;
-        });
+      // Substitutes are match-wide: use the canonical BSD substitution list,
+      // not pitchSubstitutionRows (which is intentionally Arsenal-only).
+      const actualSubstituteRows = uniqueSubstitutionRows
+        .filter(row => row && row.inPlayer && Number.isFinite(Number(row.minute)));
 
       // Render the complete bench for BOTH teams. BSD match_lineups contains the
       // named bench, while match_events supplies the exact ON minute for players
