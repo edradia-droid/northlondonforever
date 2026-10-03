@@ -32,7 +32,8 @@ jobs:
           from PIL import Image
           from rembg import remove, new_session
 
-          url = "https://assets.arsenal.com//prod/images/large_landscape/dd168c02d4e3-arsenalmenssquad26278martin-odegaard.jpg"
+          source_url = "https://assets.arsenal.com/prod/images/large_landscape/dd168c02d4e3-arsenalmenssquad26278martin-odegaard.jpg"
+          url = "https://images.weserv.nl/?url=" + source_url
           raw = "/tmp/martin-odegaard.jpg"
           dest = Path("assets/player-cutouts/player-15.png")
           dest.parent.mkdir(parents=True, exist_ok=True)
@@ -49,6 +50,11 @@ jobs:
               "-H","Sec-Fetch-Site","same-site",
               "-o",raw,url
           ], check=True)
+
+          # Refuse to process an HTML/error response masquerading as an image.
+          with Image.open(raw) as downloaded:
+              downloaded.verify()
+          print(f"Downloaded source image: {raw}")
 
           session = new_session("isnet-general-use")
 
