@@ -387,15 +387,22 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
     }
 
     const rows=squadRes.data||[];
+    // The authoritative squad feed is the source of selectable players.
+    // Stats rows are used when available for position/image metadata, but a missing
+    // stats row must never remove a registered Arsenal player from the selector.
     players=squadFeed.map(feedPlayer=>{
       const stat=findStat(feedPlayer,rows);
-      if(!stat)return null;
+      const playerName=String(feedPlayer.name||stat?.player_name||'').trim();
       return {
-        name:String(stat.player_name||feedPlayer.name||'').trim(),
-        pos:String(stat.position||feedPlayer.position||'Player'),
-        webName:String(stat.player_name||feedPlayer.webName||'').trim(),
-        feedName:String(feedPlayer.name||'').trim(),
-        image_url:playerPhotoUrl({name:stat.player_name,webName:feedPlayer.webName,feedName:feedPlayer.name})
+        name:playerName,
+        pos:String(stat?.position||feedPlayer.position||'Player'),
+        webName:String(feedPlayer.webName||stat?.player_name||'').trim(),
+        feedName:playerName,
+        image_url:playerPhotoUrl({
+          name:playerName,
+          webName:feedPlayer.webName,
+          feedName:playerName
+        }) || String(stat?.image_url||'').trim()
       };
     }).filter(player=>player.name);
 
