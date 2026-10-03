@@ -1,6 +1,4 @@
 name: Fix Odegaard cutout
-# Trigger repair execution after PL Match Details asset verification
-
 on:
   push:
     paths:
@@ -21,106 +19,94 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgl1
 
-      - name: Rebuild only Odegaard cutout
+      - name: Rebuild only Odegaard cutout from the existing asset
         env:
           PYTHONUNBUFFERED: "1"
         run: |
           python - <<'PY'
-          import subprocess
           from collections import deque
           from pathlib import Path
           from PIL import Image
           from rembg import remove, new_session
 
-          source_url = "https://assets.arsenal.com/prod/images/large_landscape/dd168c02d4e3-arsenalmenssquad26278martin-odegaard.jpg"
-          from urllib.parse import quote
-          url = "https://images.weserv.nl/?url=" + quote(source_url, safe="")
-          raw = "/tmp/martin-odegaard.jpg"
           dest = Path("assets/player-cutouts/player-15.png")
-          dest.parent.mkdir(parents=True, exist_ok=True)
-
-          subprocess.run([
-              "curl","-L","--fail","--retry","5","--retry-delay","3","--http1.1",
-              "-A","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/142.0 Safari/537.36",
-              "-e","https://www.arsenal.com/",
-              "-H","Origin: https://www.arsenal.com",
-              "-H","Accept","image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-              "-H","Accept-Language","en-US,en;q=0.9",
-              "-H","Sec-Fetch-Dest","image",
-              "-H","Sec-Fetch-Mode","no-cors",
-              "-H","Sec-Fetch-Site","same-site",
-              "-o",raw,url
-          ], check=True)
-
-          # Refuse to process an HTML/error response masquerading as an image.
-          with Image.open(raw) as downloaded:
-              downloaded.verify()
-          print(f"Downloaded source image: {raw}")
+          if not dest.exists():
+              raise FileNotFoundError(dest)
 
           session = new_session("isnet-general-use")
 
           def connected_dark_border(img, threshold=95):
               rgba = img.convert("RGBA")
               px = rgba.load()
-              w,h = rgba.size
-              seen = bytearray(w*h)
+              w, h = rgba.size
+              seen = bytearray(w * h)
               q = deque()
 
-              def seed(x,y):
-                  i=y*w+x
-                  if seen[i]: return
-                  r,g,b,a=px[x,y]
-                  if a == 0 or max(r,g,b) <= threshold:
-                      seen[i]=1
-                      q.append((x,y))
+              def seed(x, y):
+                  i = y * w + x
+                  if seen[i]:
+                      return
+                  r, g, b, a = px[x, y]
+                  if a == 0 or max(r, g, b) <= threshold:
+                      seen[i] = 1
+                      q.append((x, y))
 
               for x in range(w):
-                  seed(x,0); seed(x,h-1)
+                  seed(x, 0)
+                  seed(x, h - 1)
               for y in range(h):
-                  seed(0,y); seed(w-1,y)
+                  seed(0, y)
+                  seed(w - 1, y)
 
               while q:
-                  x,y=q.popleft()
-                  r,g,b,a=px[x,y]
-                  px[x,y]=(r,g,b,0)
-                  if x: seed(x-1,y)
-                  if x+1<w: seed(x+1,y)
-                  if y: seed(x,y-1)
-                  if y+1<h: seed(x,y+1)
+                  x, y = q.popleft()
+                  r, g, b, a = px[x, y]
+                  px[x, y] = (r, g, b, 0)
+                  if x:
+                      seed(x - 1, y)
+                  if x + 1 < w:
+                      seed(x + 1, y)
+                  if y:
+                      seed(x, y - 1)
+                  if y + 1 < h:
+                      seed(x, y + 1)
               return rgba
 
-          with Image.open(raw) as src:
-              src=src.convert("RGB")
-              result=remove(
+          with Image.open(dest) as src:
+              src = src.convert("RGBA")
+              print(f"Existing Odegaard asset: {src.size}, mode={src.mode}")
+              result = remove(
                   src,
                   session=session,
                   alpha_matting=True,
                   alpha_matting_foreground_threshold=250,
-                  alpha_matting_background_threshold=5,
+                  alpha_matting_background_threshold=10,
                   alpha_matting_erode_size=15,
               )
-              result=connected_dark_border(result,95)
-              result.save(dest,"PNG",optimize=True)
+              result = connected_dark_border(result, 95)
+              result.save(dest, "PNG", optimize=True)
 
           with Image.open(dest) as im:
-              im=im.convert("RGBA")
-              alpha=im.getchannel("A")
-              lo,hi=alpha.getextrema()
-              hist=alpha.histogram()
-              transparent=sum(hist[:10])
-              total=im.width*im.height
-              corners=[
-                  alpha.getpixel((0,0)),alpha.getpixel((im.width-1,0)),
-                  alpha.getpixel((0,im.height-1)),alpha.getpixel((im.width-1,im.height-1))
+              im = im.convert("RGBA")
+              alpha = im.getchannel("A")
+              lo, hi = alpha.getextrema()
+              hist = alpha.histogram()
+              transparent = sum(hist[:10])
+              total = im.width * im.height
+              corners = [
+                  alpha.getpixel((0, 0)),
+                  alpha.getpixel((im.width - 1, 0)),
+                  alpha.getpixel((0, im.height - 1)),
+                  alpha.getpixel((im.width - 1, im.height - 1)),
               ]
               print(f"ODEGAARD alpha range: {lo}-{hi}")
               print(f"ODEGAARD transparent pixels (<10 alpha): {transparent}/{total} = {transparent/total:.2%}")
               print(f"ODEGAARD corners: {corners}")
               assert lo == 0, "No fully transparent pixels were produced"
-              assert corners == [0,0,0,0], f"Opaque corner remains: {corners}"
-              assert transparent/total > 0.05, "Transparency is implausibly low; refusing to commit"
+              assert corners == [0, 0, 0, 0], f"Opaque corner remains: {corners}"
+              assert transparent / total > 0.05, "Transparency is implausibly low; refusing to commit"
 
-          print(f"Validated {dest}")
+          print(f"Validated transparent Odegaard asset: {dest}")
           PY
 
       - name: Commit transparent cutout and remove one-time workflow
