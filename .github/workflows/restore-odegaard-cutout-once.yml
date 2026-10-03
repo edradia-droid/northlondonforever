@@ -1,0 +1,33 @@
+name: Restore known-good Odegaard cutout
+
+on:
+  push:
+    paths:
+      - ".github/workflows/restore-odegaard-cutout-once.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Restore the exact transparent cutout from the known-good commit
+        run: |
+          git show b06fcee3b69c59992370300ba1da3ea0299be98b:assets/player-cutouts/player-15.png > assets/player-cutouts/player-15.png
+          file assets/player-cutouts/player-15.png
+          test -s assets/player-cutouts/player-15.png
+
+      - name: Remove this one-time workflow and commit the restored asset
+        run: |
+          rm .github/workflows/restore-odegaard-cutout-once.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/player-cutouts/player-15.png .github/workflows/restore-odegaard-cutout-once.yml
+          git commit -m "Restore known-good transparent Odegaard cutout"
+          git push
