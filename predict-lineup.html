@@ -217,7 +217,7 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
     const player=findPlayer(select.value);
     if(visual){
       visual.innerHTML=player?.image_url
-        ? `<img class="player-photo" src="${esc(player.image_url)}" alt="${esc(player.name)}" crossorigin="anonymous" referrerpolicy="no-referrer">`
+        ? `<img class="player-photo" src="${esc(player.image_url)}" alt="${esc(player.name)}" referrerpolicy="no-referrer" loading="eager">`
         : `<span class="player-photo placeholder">${esc(initials(player?.name))}</span>`;
     }
     if(exportName) exportName.textContent=player?.name || 'SELECT PLAYER';
