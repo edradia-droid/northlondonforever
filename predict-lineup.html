@@ -215,6 +215,39 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
   function initials(name){
     return String(name||'').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase() || '?';
   }
+  const PLAYER_PHOTOS = {
+    "david raya martin":"assets/player-cutouts/player-01.png","david raya":"assets/player-cutouts/player-01.png","raya":"assets/player-cutouts/player-01.png",
+    "kepa arrizabalaga revuelta":"assets/player-cutouts/player-02.png","kepa arrizabalaga":"assets/player-cutouts/player-02.png","arrizabalaga":"assets/player-cutouts/player-02.png",
+    "illan meslier":"assets/player-cutouts/player-03.png","meslier":"assets/player-cutouts/player-03.png",
+    "tommy setford":"assets/player-cutouts/player-04.png",
+    "william saliba":"assets/player-cutouts/player-05.png","saliba":"assets/player-cutouts/player-05.png",
+    "cristhian mosquera":"assets/player-cutouts/player-06.png","mosquera":"assets/player-cutouts/player-06.png",
+    "benjamin white":"assets/player-cutouts/player-07.png","ben white":"assets/player-cutouts/player-07.png","white":"assets/player-cutouts/player-07.png",
+    "piero hincapie":"assets/player-cutouts/player-08.png","hincapie":"assets/player-cutouts/player-08.png",
+    "gabriel dos santos magalhaes":"assets/player-cutouts/player-09.png","gabriel magalhaes":"assets/player-cutouts/player-09.png","gabriel":"assets/player-cutouts/player-09.png",
+    "jurrien timber":"assets/player-cutouts/player-10.png","jurriën timber":"assets/player-cutouts/player-10.png","j timber":"assets/player-cutouts/player-10.png",
+    "ezri konsa ngoyo":"assets/player-cutouts/player-11.png","ezri konsa":"assets/player-cutouts/player-11.png","konsa":"assets/player-cutouts/player-11.png",
+    "riccardo calafiori":"assets/player-cutouts/player-12.png","calafiori":"assets/player-cutouts/player-12.png",
+    "declan rice":"assets/player-cutouts/player-13.png","rice":"assets/player-cutouts/player-13.png",
+    "bruno guimaraes rodriguez moura":"assets/player-cutouts/player-14.png","bruno guimaraes":"assets/player-cutouts/player-14.png","bruno g":"assets/player-cutouts/player-14.png",
+    "martin odegaard":"assets/player-cutouts/player-15.png","odegaard":"assets/player-cutouts/player-15.png",
+    "martin zubimendi ibanez":"assets/player-cutouts/player-16.png","martin zubimendi":"assets/player-cutouts/player-16.png","zubimendi":"assets/player-cutouts/player-16.png",
+    "mikel merino zazon":"assets/player-cutouts/player-17.png","mikel merino":"assets/player-cutouts/player-17.png","merino":"assets/player-cutouts/player-17.png",
+    "myles lewis skelly":"assets/player-cutouts/player-18.png","lewis skelly":"assets/player-cutouts/player-18.png",
+    "eberechi eze":"assets/player-cutouts/player-19.png","eze":"assets/player-cutouts/player-19.png",
+    "ethan nwaneri":"assets/player-cutouts/player-20.png","nwaneri":"assets/player-cutouts/player-20.png",
+    "max dowman":"assets/player-cutouts/player-21.png","dowman":"assets/player-cutouts/player-21.png",
+    "christos tzolis":"assets/player-cutouts/player-22.png","tzolis":"assets/player-cutouts/player-22.png",
+    "bukayo saka":"assets/player-cutouts/player-23.png","saka":"assets/player-cutouts/player-23.png",
+    "noni madueke":"assets/player-cutouts/player-24.png","madueke":"assets/player-cutouts/player-24.png",
+    "kai havertz":"assets/player-cutouts/player-25.png","havertz":"assets/player-cutouts/player-25.png",
+    "viktor gyokeres":"assets/player-cutouts/player-26.png","gyokeres":"assets/player-cutouts/player-26.png"
+  };
+  function playerPhotoUrl(player){
+    const keyCandidates=[player?.name,player?.webName,player?.feedName].filter(Boolean).map(norm);
+    const file=keyCandidates.map(k=>PLAYER_PHOTOS[k]).find(Boolean);
+    return file ? new URL(file,document.baseURI).href : '';
+  }
   function renderPitch(){
     const slots=formations[document.getElementById('formation').value]||formations['4-3-3'];
     document.getElementById('pitch').innerHTML='<span class="goal top" aria-hidden="true"></span><span class="goal bottom" aria-hidden="true"></span><span class="circle"></span><span class="box top"></span><span class="box bottom"></span><span class="goal-area top"></span><span class="goal-area bottom"></span><span class="penalty-arc top"></span><span class="penalty-arc bottom"></span>'+
@@ -226,8 +259,8 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
       </label>`).join('');
   }
   function findPlayer(name){
-    const target=String(name||'').trim().toLowerCase();
-    return players.find(p=>String(p.name||'').trim().toLowerCase()===target) || null;
+    const target=norm(name);
+    return players.find(p=>norm(p.name)===target) || null;
   }
   function updatePlayerVisual(select){
     const slot=select.closest('.slot');
@@ -248,8 +281,9 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
   }
   function renderSubs(){
     document.getElementById('subs').innerHTML=players.map(p=>{
-      const photo=p.image_url
-        ? `<img class="sub-photo" src="${esc(p.image_url)}" alt="${esc(p.name)}" referrerpolicy="no-referrer" loading="eager">`
+      const src=p.image_url || playerPhotoUrl(p);
+      const photo=src
+        ? `<img class="sub-photo" src="${esc(src)}" alt="${esc(p.name)}" referrerpolicy="no-referrer" loading="eager" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'sub-photo placeholder',textContent:'${esc(initials(p.name))}'}))">`
         : `<span class="sub-photo placeholder">${esc(initials(p.name))}</span>`;
       return `<label class="sub">
         <input type="checkbox" value="${esc(p.name)}" data-sub>
@@ -352,17 +386,6 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
       return;
     }
 
-    const ARSENAL_SQUAD_CUTOUTS = {
-      "david raya":"assets/player-cutouts/player-01.png","kepa arrizabalaga":"assets/player-cutouts/player-02.png","illan meslier":"assets/player-cutouts/player-03.png","tommy setford":"assets/player-cutouts/player-04.png",
-      "william saliba":"assets/player-cutouts/player-05.png","cristhian mosquera":"assets/player-cutouts/player-06.png","ben white":"assets/player-cutouts/player-07.png","piero hincapie":"assets/player-cutouts/player-08.png",
-      "gabriel magalhaes":"assets/player-cutouts/player-09.png","jurrien timber":"assets/player-cutouts/player-10.png","ezri konsa":"assets/player-cutouts/player-11.png","riccardo calafiori":"assets/player-cutouts/player-12.png",
-      "declan rice":"assets/player-cutouts/player-13.png","bruno guimaraes":"assets/player-cutouts/player-14.png","martin ødegaard":"assets/player-cutouts/player-15.png","martin odegaard":"assets/player-cutouts/player-15.png","martin degaard":"assets/player-cutouts/player-15.png",
-      "martín zubimendi":"assets/player-cutouts/player-16.png","martin zubimendi":"assets/player-cutouts/player-16.png","mikel merino":"assets/player-cutouts/player-17.png",
-      "myles lewis-skelly":"assets/player-cutouts/player-18.png","miles lewis-skelly":"assets/player-cutouts/player-18.png","myles lewis skelly":"assets/player-cutouts/player-18.png","miles lewis skelly":"assets/player-cutouts/player-18.png","eberechi eze":"assets/player-cutouts/player-19.png","ethan nwaneri":"assets/player-cutouts/player-20.png",
-      "max dowman":"assets/player-cutouts/player-21.png","christos tzolis":"assets/player-cutouts/player-22.png","bukayo saka":"assets/player-cutouts/player-23.png","noni madueke":"assets/player-cutouts/player-24.png",
-      "kai havertz":"assets/player-cutouts/player-25.png","viktor gyökeres":"assets/player-cutouts/player-26.png","viktor gyokeres":"assets/player-cutouts/player-26.png"
-    };
-
     const rows=squadRes.data||[];
     players=squadFeed.map(feedPlayer=>{
       const stat=findStat(feedPlayer,rows);
@@ -370,7 +393,9 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
       return {
         name:String(stat.player_name||feedPlayer.name||'').trim(),
         pos:String(stat.position||feedPlayer.position||'Player'),
-        image_url:String(ARSENAL_SQUAD_CUTOUTS[norm(stat.player_name)] || ARSENAL_SQUAD_CUTOUTS[norm(feedPlayer.name)] || ARSENAL_SQUAD_CUTOUTS[norm(feedPlayer.webName)] || '').trim()
+        webName:String(stat.player_name||feedPlayer.webName||'').trim(),
+        feedName:String(feedPlayer.name||'').trim(),
+        image_url:playerPhotoUrl({name:stat.player_name,webName:feedPlayer.webName,feedName:feedPlayer.name})
       };
     }).filter(player=>player.name);
 
