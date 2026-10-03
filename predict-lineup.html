@@ -52,7 +52,7 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
 .player-photo{width:72px;height:82px;object-fit:contain;object-position:center bottom;border-radius:0;background:transparent;display:block;filter:drop-shadow(0 7px 6px rgba(0,0,0,.5))}
 .player-photo.placeholder{width:50px;height:58px;border-radius:50%;background:rgba(5,5,5,.75);border:2px solid rgba(255,255,255,.7);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:1000}
 .shirt-number{display:none!important}
-.slot-name{font-size:7px;font-weight:1000;text-shadow:0 2px 3px #000;margin-bottom:2px}
+.slot-name{font-size:7px;font-weight:1000;text-shadow:0 2px 3px #000;margin-bottom:2px}.selected-player-photo{width:30px;height:34px;object-fit:contain;object-position:center bottom;vertical-align:middle;margin-right:3px;filter:drop-shadow(0 3px 3px rgba(0,0,0,.45))}.selected-player-photo.placeholder{display:inline-grid;place-items:center;border-radius:50%;background:rgba(5,5,5,.75);border:1px solid rgba(255,255,255,.55);font-size:7px;font-weight:1000;color:#fff}
 .slot select{font-size:7px;padding:6px 3px;background:rgba(5,5,5,.92)}
 .subs-title{margin:14px 0 7px;color:#d8ad45;font-size:8px;font-weight:1000}
 .subs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-height:220px;overflow:auto}
@@ -241,6 +241,10 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
         : `<span class="player-photo placeholder">${esc(initials(player?.name))}</span>`;
     }
     if(exportName) exportName.textContent=player?.name || 'SELECT PLAYER';
+    const selectedPhoto=slot.querySelector('[data-selected-player-photo]');
+    if(selectedPhoto) selectedPhoto.innerHTML=player?.image_url
+      ? `<img class="selected-player-photo" src="${esc(player.image_url)}" alt="${esc(player.name)}" referrerpolicy="no-referrer" loading="eager">`
+      : (player ? `<span class="selected-player-photo placeholder">${esc(initials(player.name))}</span>` : '');
   }
   function renderSubs(){
     document.getElementById('subs').innerHTML=players.map(p=>{
@@ -354,7 +358,7 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
       "gabriel magalhaes":"assets/player-cutouts/player-09.png","jurrien timber":"assets/player-cutouts/player-10.png","ezri konsa":"assets/player-cutouts/player-11.png","riccardo calafiori":"assets/player-cutouts/player-12.png",
       "declan rice":"assets/player-cutouts/player-13.png","bruno guimaraes":"assets/player-cutouts/player-14.png","martin ødegaard":"assets/player-cutouts/player-15.png","martin odegaard":"assets/player-cutouts/player-15.png","martin degaard":"assets/player-cutouts/player-15.png",
       "martín zubimendi":"assets/player-cutouts/player-16.png","martin zubimendi":"assets/player-cutouts/player-16.png","mikel merino":"assets/player-cutouts/player-17.png",
-      "myles lewis-skelly":"assets/player-cutouts/player-18.png","miles lewis-skelly":"assets/player-cutouts/player-18.png","eberechi eze":"assets/player-cutouts/player-19.png","ethan nwaneri":"assets/player-cutouts/player-20.png",
+      "myles lewis-skelly":"assets/player-cutouts/player-18.png","miles lewis-skelly":"assets/player-cutouts/player-18.png","myles lewis skelly":"assets/player-cutouts/player-18.png","miles lewis skelly":"assets/player-cutouts/player-18.png","eberechi eze":"assets/player-cutouts/player-19.png","ethan nwaneri":"assets/player-cutouts/player-20.png",
       "max dowman":"assets/player-cutouts/player-21.png","christos tzolis":"assets/player-cutouts/player-22.png","bukayo saka":"assets/player-cutouts/player-23.png","noni madueke":"assets/player-cutouts/player-24.png",
       "kai havertz":"assets/player-cutouts/player-25.png","viktor gyökeres":"assets/player-cutouts/player-26.png","viktor gyokeres":"assets/player-cutouts/player-26.png"
     };
