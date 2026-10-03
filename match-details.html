@@ -12,36 +12,15 @@
   <style>
     body.match-details-page{
       color:#fff;
-      background:
-        radial-gradient(circle at 50% 8%, rgba(46,112,255,.30), transparent 34%),
-        radial-gradient(circle at 10% 80%, rgba(0,184,255,.13), transparent 28%),
-        radial-gradient(circle at 90% 75%, rgba(90,60,255,.16), transparent 30%),
-        linear-gradient(135deg,#020817 0%,#06183a 46%,#010611 100%);
+      background:#030508;
       background-attachment:fixed;
       position:relative;
+      visibility:hidden;
     }
-    body.match-details-page::before{
-      content:"";
-      position:fixed;
-      inset:0;
-      z-index:-1;
-      pointer-events:none;
-      opacity:.12;
-      background:
-        url("assets/champions-league-trophy.png") center 72px / min(620px,70vw) auto no-repeat,
-        radial-gradient(circle at 50% 20%,rgba(255,255,255,.16) 0 1px,transparent 1.5px);
-      background-size:min(620px,70vw) auto, 7px 7px;
-      mix-blend-mode:screen;
-    }
+    body.match-details-page.match-details-ready{visibility:visible}
+    body.match-details-page::before,
     body.match-details-page::after{
-      content:"";
-      position:fixed;
-      inset:0;
-      z-index:-2;
-      pointer-events:none;
-      background:
-        linear-gradient(115deg,transparent 0 38%,rgba(72,157,255,.07) 44%,transparent 50%),
-        linear-gradient(65deg,transparent 0 52%,rgba(255,255,255,.045) 57%,transparent 63%);
+      background:none;
     }
     .match-details-main{min-height:100vh;padding:38px 28px 70px}
     .match-back{display:inline-flex;align-items:center;gap:8px;color:#d8ad45;text-decoration:none;font-weight:900;margin-bottom:24px}
@@ -1763,10 +1742,13 @@
       const awayScore = fixture.is_home ? fixture.opponent_score : fixture.arsenal_score;
 
       els.competition.textContent = `${fixture.competition || "MATCH"} • ${fixture.season || ""}`.replace(/\s+•\s*$/, "");
-      document.body.classList.toggle(
-        'cl-match-details-page',
-        String(fixture.competition || '').toLowerCase().includes('champions league')
-      );
+      const competitionName = String(fixture.competition || '').toLowerCase();
+      const isChampionsLeague = competitionName.includes('champions league');
+      const isPremierLeague = competitionName.includes('premier league');
+      document.body.classList.toggle('cl-match-details-page', isChampionsLeague);
+      document.body.classList.toggle('pl-match-details-page', isPremierLeague);
+      // Do not expose the page until the competition-specific background is selected.
+      document.body.classList.add('match-details-ready');
       els.heading.textContent = `${home} vs ${away}`;
       if (els.broadcastMatchup) els.broadcastMatchup.textContent = `ARSENAL VS ${String(fixture.opponent || (home === "Arsenal" ? away : home) || "OPPONENT").toUpperCase()}`;
       if (els.broadcastVenue) els.broadcastVenue.textContent = (fixture.venue || "VENUE TBC").toUpperCase();
@@ -2746,7 +2728,7 @@
 
 <style id="nl4-premier-league-match-branding-v1">
 /* Premier League match-details identity: official Premier League Purple + white negative logo. */
-body.match-details-page{
+body.match-details-page.pl-match-details-page{
   background:
     radial-gradient(circle at 50% -10%,rgba(55,0,60,.72),transparent 42%),
     linear-gradient(180deg,#09000b 0%,#050507 58%,#030304 100%)!important;
@@ -2920,6 +2902,12 @@ body.match-details-page.cl-match-details-page::before{
   background-size:min(620px,70vw) auto,7px 7px;
   opacity:.12;
 }
+body.match-details-page.cl-match-details-page::after{
+  background:
+    linear-gradient(115deg,transparent 0 38%,rgba(72,157,255,.07) 44%,transparent 50%),
+    linear-gradient(65deg,transparent 0 52%,rgba(255,255,255,.045) 57%,transparent 63%);
+}
+</style>
 <style id="nl4-cl-score-lineup-theme-v1">
 /* Extend the Champions League identity into the score and lineup sections. */
 body.match-details-page.cl-match-details-page .match-hero-card,
