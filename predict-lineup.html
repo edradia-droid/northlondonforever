@@ -243,6 +243,16 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
     "kai havertz":"assets/player-cutouts/player-25.png","havertz":"assets/player-cutouts/player-25.png",
     "viktor gyokeres":"assets/player-cutouts/player-26.png","gyokeres":"assets/player-cutouts/player-26.png"
   };
+  function norm(value){return String(value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();}
+  function seedPlayersFromAuthoritativeSquad(){
+    const squad=window.NL4_FINAL_PL_SQUADS?.Arsenal;
+    if(!Array.isArray(squad)||!squad.length)return false;
+    players=squad.map(p=>{
+      const name=String(p.name||'').trim();
+      return {name,pos:String(p.position||'Player'),webName:String(p.webName||'').trim(),feedName:name,image_url:playerPhotoUrl({name,webName:p.webName,feedName:name})};
+    }).filter(p=>p.name);
+    return players.length>0;
+  }
   function playerPhotoUrl(player){
     const keyCandidates=[player?.name,player?.webName,player?.feedName].filter(Boolean).map(norm);
     const file=keyCandidates.map(k=>PLAYER_PHOTOS[k]).find(Boolean);
@@ -296,7 +306,8 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
     const e=document.getElementById(id); e.textContent=text; e.className='msg '+(good?'good':'bad');
   }
 
-  // Render useful UI immediately, before any network call.
+  // Seed the selector immediately from the authoritative squad.
+  seedPlayersFromAuthoritativeSquad();
   renderPitch(); renderSubs();
   const initialFormation=document.getElementById('downloadFormation');
   if(initialFormation)initialFormation.textContent=document.getElementById('formation').value;
