@@ -2249,11 +2249,34 @@
         }).join('');
       };
 
-      const homeBenchHtml = renderTeamBench(home);
-      const awayBenchHtml = renderTeamBench(away);
+      // The Substitutes panel is strictly for players who actually entered the match.
+      // Unused bench players belong only to the complete lineup data.
+      const renderActualSubstitutes = teamName => {
+        const rows = actualSubstituteRows
+          .filter(row => sameTeamName(row.teamName, teamName))
+          .sort((a,b) => Number(a.minute) - Number(b.minute) || String(a.inPlayer).localeCompare(String(b.inPlayer)));
+
+        if (!rows.length) return '<div class="empty">No substitutions made.</div>';
+
+        return rows.map(row => {
+          const media = resolvePlayerMedia(row.inPlayer);
+          const outHtml = row.outPlayer
+            ? '<span class="substitution-separator"> • </span><span class="sub-bench-out">OUT: ' + esc(row.outPlayer) + '</span>'
+            : '';
+          return '<div class="broadcast-sub sub-bench-row">' +
+            '<span class="sub-bench-player">' +
+            (media.image ? '<img class="sub-bench-photo" src="' + esc(media.image) + '" alt="' + esc(row.inPlayer) + '" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden=true">' : '') +
+            '<span class="sub-name">' + esc(row.inPlayer) + outHtml + '</span></span>' +
+            '<span class="sub-bench-used"><span class="substitution-arrow in" aria-hidden="true">↑</span><span class="substitution-time">' + esc(row.minute) + '’</span></span>' +
+            '</div>';
+        }).join('');
+      };
+
+      const homeSubstitutesHtml = renderActualSubstitutes(home);
+      const awaySubstitutesHtml = renderActualSubstitutes(away);
       els.subs.innerHTML =
-        '<div class="leaguewide-team"><div class="leaguewide-team-head"><strong>' + esc(home) + '</strong><span>BENCH</span></div><div class="sub-off-list">' + homeBenchHtml + '</div></div>' +
-        '<div class="leaguewide-team"><div class="leaguewide-team-head"><strong>' + esc(away) + '</strong><span>BENCH</span></div><div class="sub-off-list">' + awayBenchHtml + '</div></div>';
+        '<div class="leaguewide-team"><div class="leaguewide-team-head"><strong>' + esc(home) + '</strong><span>SUBSTITUTES USED</span></div><div class="sub-off-list">' + homeSubstitutesHtml + '</div></div>' +
+        '<div class="leaguewide-team"><div class="leaguewide-team-head"><strong>' + esc(away) + '</strong><span>SUBSTITUTES USED</span></div><div class="sub-off-list">' + awaySubstitutesHtml + '</div></div>';
 
       let availabilityText = "";
       if (status === "scheduled") {
