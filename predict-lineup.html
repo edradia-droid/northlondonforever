@@ -210,7 +210,7 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
   }
   function renderPitch(){
     const slots=formations[document.getElementById('formation').value]||formations['4-3-3'];
-    document.getElementById('pitch').innerHTML='<span class="circle"></span><span class="box top"></span><span class="box bottom"></span>'+
+    document.getElementById('pitch').innerHTML='<span class="goal top" aria-hidden="true"></span><span class="goal bottom" aria-hidden="true"></span><span class="circle"></span><span class="box top"></span><span class="box bottom"></span><span class="goal-area top"></span><span class="goal-area bottom"></span><span class="penalty-arc top"></span><span class="penalty-arc bottom"></span>'+
       slots.map(([slot,x,y])=>`<label class="slot" style="left:${x}%;top:${y}%">
         <div class="shirt" data-player-visual><span class="player-photo placeholder">+</span></div>
         <div class="slot-name">${esc(slot)}</div>
