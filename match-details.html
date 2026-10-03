@@ -1763,6 +1763,10 @@
       const awayScore = fixture.is_home ? fixture.opponent_score : fixture.arsenal_score;
 
       els.competition.textContent = `${fixture.competition || "MATCH"} • ${fixture.season || ""}`.replace(/\s+•\s*$/, "");
+      document.body.classList.toggle(
+        'cl-match-details-page',
+        String(fixture.competition || '').toLowerCase().includes('champions league')
+      );
       els.heading.textContent = `${home} vs ${away}`;
       if (els.broadcastMatchup) els.broadcastMatchup.textContent = `ARSENAL VS ${String(fixture.opponent || (home === "Arsenal" ? away : home) || "OPPONENT").toUpperCase()}`;
       if (els.broadcastVenue) els.broadcastVenue.textContent = (fixture.venue || "VENUE TBC").toUpperCase();
@@ -2896,6 +2900,25 @@ body.match-details-page{
 }
 @media(max-width:700px){
   #lineupPhotoExport .pitch-off-marker{min-width:28px!important;padding:2px 4px!important;font-size:9px!important}
+}
+</style>
+<!-- NL4 Champions League match-details background override -->
+<style id="nl4-cl-match-details-background-v1">
+/* Champions League background is applied only when the loaded fixture is a Champions League match. */
+body.match-details-page.cl-match-details-page{
+  background:
+    radial-gradient(circle at 50% 8%,rgba(46,112,255,.30),transparent 34%),
+    radial-gradient(circle at 10% 80%,rgba(0,184,255,.13),transparent 28%),
+    radial-gradient(circle at 90% 75%,rgba(90,60,255,.16),transparent 30%),
+    linear-gradient(135deg,#020817 0%,#06183a 46%,#010611 100%)!important;
+  background-attachment:fixed!important;
+}
+body.match-details-page.cl-match-details-page::before{
+  background:
+    url("assets/champions-league-trophy.png") center 72px / min(620px,70vw) auto no-repeat,
+    radial-gradient(circle at 50% 20%,rgba(255,255,255,.16) 0 1px,transparent 1.5px);
+  background-size:min(620px,70vw) auto,7px 7px;
+  opacity:.12;
 }
 </style>
 </html>
