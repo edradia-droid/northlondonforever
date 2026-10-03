@@ -1,4 +1,5 @@
 name: Fix Odegaard cutout
+# Trigger repair execution after PL Match Details asset verification
 
 on:
   push:
