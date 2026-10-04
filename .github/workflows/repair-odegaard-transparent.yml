@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - ".github/workflows/repair-odegaard-transparent.yml"
+      - "match-details.html"
 
 permissions:
   contents: write
