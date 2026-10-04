@@ -286,51 +286,67 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
   // The source PNG is loaded normally, then its border-connected background is made transparent in a same-origin canvas.
   function nl4RemoveOdegaardBackground(img){
     if(!img || !img.classList.contains('odegaard-photo') || img.dataset.nl4BgCleaned) return;
-    img.dataset.nl4BgCleaned='1';
     const run=()=>{
       try{
         const w=img.naturalWidth,h=img.naturalHeight;
         if(!w || !h) return;
-        const c=document.createElement('canvas'); c.width=w; c.height=h;
-        const ctx=c.getContext('2d',{willReadFrequently:true});
+        const canvas=document.createElement('canvas');
+        canvas.width=w; canvas.height=h;
+        const ctx=canvas.getContext('2d',{willReadFrequently:true});
         ctx.drawImage(img,0,0,w,h);
         const im=ctx.getImageData(0,0,w,h), d=im.data;
-        const samples=[];
-        const add=(x,y)=>{const i=(y*w+x)*4;if(d[i+3]>0)samples.push([d[i],d[i+1],d[i+2]]);};
-        const step=Math.max(1,Math.floor(Math.min(w,h)/32));
-        for(let x=0;x<w;x+=step){add(x,0);add(x,h-1)}
-        for(let y=0;y<h;y+=step){add(0,y);add(w-1,y)}
-        if(!samples.length) return;
-        const bg=(p)=>{let best=1e9;for(const q of samples){const dr=p[0]-q[0],dg=p[1]-q[1],db=p[2]-q[2];const z=dr*dr+dg*dg+db*db;if(z<best)best=z}return best};
-        const seen=new Uint8Array(w*h), qx=new Int32Array(w*h), qy=new Int32Array(w*h);
+        const seen=new Uint8Array(w*h);
+        const qx=new Int32Array(w*h), qy=new Int32Array(w*h);
         let head=0,tail=0;
-        const push=(x,y)=>{const k=y*w+x;if(seen[k])return;seen[k]=1;qx[tail]=x;qy[tail]=y;tail++};
-        for(let x=0;x<w;x+=step){
-          let k=x*4;if(bg([d[k],d[k+1],d[k+2]])<55*55)push(x,0);
-          k=((h-1)*w+x)*4;if(bg([d[k],d[k+1],d[k+2]])<55*55)push(x,h-1);
+        const green=[37,127,63];
+
+        // Treat only dark, low-saturation pixels connected to the image edge as
+        // background. This protects the face, hair, shirt and other player detail.
+        const isBg=(i)=>{
+          const r=d[i],g=d[i+1],b=d[i+2],a=d[i+3];
+          if(a<10) return true;
+          const max=Math.max(r,g,b), min=Math.min(r,g,b);
+          const saturation=max-min;
+          const luminance=0.299*r+0.587*g+0.114*b;
+          return luminance<125 && saturation<42;
+        };
+        const push=(x,y)=>{
+          const k=y*w+x;
+          if(seen[k]) return;
+          seen[k]=1; qx[tail]=x; qy[tail]=y; tail++;
+        };
+
+        for(let x=0;x<w;x++){
+          if(isBg(x*4)) push(x,0);
+          if(isBg(((h-1)*w+x)*4)) push(x,h-1);
         }
-        for(let y=0;y<h;y+=step){
-          let k=(y*w)*4;if(bg([d[k],d[k+1],d[k+2]])<55*55)push(0,y);
-          k=(y*w+w-1)*4;if(bg([d[k],d[k+1],d[k+2]])<55*55)push(w-1,y);
+        for(let y=0;y<h;y++){
+          if(isBg((y*w)*4)) push(0,y);
+          if(isBg((y*w+w-1)*4)) push(w-1,y);
         }
+
         const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
         while(head<tail){
-          const x=qx[head],y=qy[head++],i=(y*w+x)*4;
-          d[i]=37; d[i+1]=127; d[i+2]=63; d[i+3]=255;
+          const x=qx[head],y=qy[head++],k=y*w+x,i=k*4;
+          d[i]=green[0]; d[i+1]=green[1]; d[i+2]=green[2]; d[i+3]=255;
           for(const [dx,dy] of dirs){
             const nx=x+dx,ny=y+dy;
-            if(nx<0||ny<0||nx>=w||ny>=h)continue;
-            const ni=(ny*w+nx)*4;
-            if(seen[ny*w+nx]||d[ni+3]===0)continue;
-            if(bg([d[ni],d[ni+1],d[ni+2]])<55*55)push(nx,ny);
+            if(nx<0||ny<0||nx>=w||ny>=h) continue;
+            const nk=ny*w+nx;
+            if(seen[nk]) continue;
+            if(isBg(nk*4)) push(nx,ny);
           }
         }
+
         ctx.putImageData(im,0,0);
-        img.src=c.toDataURL('image/png');
+        img.src=canvas.toDataURL('image/png');
         img.dataset.nl4BgCleaned='done';
-      }catch(e){console.warn('NL4 Ødegaard background cleanup skipped',e);}
+      }catch(e){
+        console.warn('NL4 Odegaard green-background replacement skipped',e);
+      }
     };
-    if(img.complete)run();else img.addEventListener('load',run,{once:true});
+    if(img.complete) run();
+    else img.addEventListener('load',run,{once:true});
   }
 
   // Expose the cleanup handler globally because the rendered player <img> uses an inline onload handler.
@@ -378,7 +394,7 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
     document.getElementById('subs').innerHTML=players.map(p=>{
       const src=playerPhotoUrl(p) || p.image_url || '';
       const photo=src
-        ? `<img class="sub-photo${norm(p.name)==='martin odegaard'?' odegaard-photo':''}" src="${esc(src)}" alt="${esc(p.name)}" referrerpolicy="no-referrer" loading="eager" decoding="async" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'sub-photo placeholder',textContent:'${esc(initials(p.name))}'}))">`
+        ? `<img class="sub-photo${norm(p.name)==='martin odegaard'?' odegaard-photo':''}" src="${esc(src)}" alt="${esc(p.name)}" referrerpolicy="no-referrer" loading="eager" decoding="async" onload="nl4RemoveOdegaardBackground(this)" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'sub-photo placeholder',textContent:'${esc(initials(p.name))}'}))">`
         : `<span class="sub-photo placeholder">${esc(initials(p.name))}</span>`;
       return `<label class="sub">
         <input type="checkbox" value="${esc(p.name)}" data-sub>
