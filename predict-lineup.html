@@ -796,15 +796,33 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
       });
 
       /*
-       * On mobile the board is already rendered at its actual on-screen
-       * width. Keep that exact appearance. Do not stretch or reflow it.
+       * The live board is captured at its real on-screen geometry.
+       * On mobile only the FINISHED BITMAP is widened to the phone viewport.
+       * This preserves every pitch coordinate and player size proportionally
+       * while giving the downloaded image the requested full-screen width.
        */
+      let downloadCanvas=canvas;
+      if(window.matchMedia('(max-width:520px)').matches){
+        const targetCssWidth=Math.max(document.documentElement.clientWidth,window.innerWidth);
+        const targetWidth=Math.max(1,Math.round(targetCssWidth*pixelRatio));
+        const targetHeight=Math.max(1,Math.round(canvas.height*(targetWidth/canvas.width)));
+        const scaled=document.createElement('canvas');
+        scaled.width=targetWidth;
+        scaled.height=targetHeight;
+        const ctx=scaled.getContext('2d');
+        if(!ctx) throw new Error('Could not create the mobile download canvas.');
+        ctx.imageSmoothingEnabled=true;
+        ctx.imageSmoothingQuality='high';
+        ctx.drawImage(canvas,0,0,targetWidth,targetHeight);
+        downloadCanvas=scaled;
+      }
+
       const fixture=(document.getElementById('downloadFixture')?.textContent||'arsenal-predicted-xi')
         .replace(/[^A-Za-z0-9\-]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase();
 
       const link=document.createElement('a');
       link.download=(fixture || 'arsenal-predicted-xi')+'-my-predicted-xi.png';
-      link.href=canvas.toDataURL('image/png',1);
+      link.href=downloadCanvas.toDataURL('image/png',1);
       document.body.appendChild(link);
       link.click();
       link.remove();
