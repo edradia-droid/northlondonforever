@@ -31,6 +31,8 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
   box-shadow:inset 0 0 70px rgba(0,0,0,.16)}
 .pitch:before{content:"";position:absolute;inset:5%;border:2px solid rgba(255,255,255,.9);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
 .pitch:after{content:"";position:absolute;left:5%;right:5%;top:50%;height:2px;background:rgba(255,255,255,.92);transform:translateY(-1px)}
+.pitch-watermark{position:absolute;left:50%;top:50%;width:150px;height:150px;object-fit:contain;transform:translate(-50%,-50%);opacity:.10;z-index:2;pointer-events:none;user-select:none;filter:grayscale(1) brightness(1.45);}
+@media(max-width:520px){.pitch-watermark{width:112px;height:112px;opacity:.085}}
 .circle{position:absolute;left:50%;top:50%;width:105px;height:105px;border:2px solid rgba(255,255,255,.9);border-radius:50%;transform:translate(-50%,-50%)}
 .circle:after{content:"";position:absolute;left:50%;top:50%;width:7px;height:7px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);box-shadow:0 0 0 1px rgba(0,0,0,.18)}
 .box{position:absolute;left:50%;width:48%;height:17%;border:2px solid rgba(255,255,255,.9);transform:translateX(-50%)}
@@ -196,6 +198,7 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
 
   <div class="pitch-wrap">
     <div id="pitch" class="pitch">
+      <img class="pitch-watermark" src="https://i.postimg.cc/GhGgj8G7/75c7b198-597a-4288-abae-723c809c34fa.png" alt="" aria-hidden="true" draggable="false">
       <span class="goal top" aria-hidden="true"></span><span class="goal bottom" aria-hidden="true"></span><span class="circle"></span><span class="box top"></span><span class="box bottom"></span><span class="goal-area top"></span><span class="goal-area bottom"></span><span class="penalty-arc top"></span><span class="penalty-arc bottom"></span>
     </div>
   </div>
