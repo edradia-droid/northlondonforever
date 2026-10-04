@@ -13,44 +13,58 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Download Odegaard image supplied by user
+        run: |
+          python - <<'PY'
+          import re, html, urllib.request
+          page = "https://postimg.cc/ppw3MHJh"
+          req = urllib.request.Request(page, headers={"User-Agent":"Mozilla/5.0"})
+          data = urllib.request.urlopen(req, timeout=30).read().decode("utf-8", "ignore")
+          m = re.search(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)', data, re.I)
+          if not m:
+              m = re.search(r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:image["\']', data, re.I)
+          if not m:
+              raise SystemExit("Could not find og:image on supplied Postimages page")
+          image_url = html.unescape(m.group(1))
+          print("Resolved image:", image_url)
+          urllib.request.urlretrieve(image_url, "/tmp/odegaard-source")
+          PY
+
       - name: Install image tools
         run: python -m pip install --disable-pip-version-check pillow numpy opencv-python-headless
-      - name: Remove only connected black background from Odegaard
+
+      - name: Install supplied image as Odegaard cutout
         shell: python
         run: |
-          import cv2, numpy as np
           from PIL import Image
           from pathlib import Path
-          p=Path("assets/player-cutouts/player-15.png")
-          im=cv2.imread(str(p),cv2.IMREAD_UNCHANGED)
-          if im is None: raise SystemExit("player-15.png not found")
-          if im.shape[2]==3:
-              bgr=im; alpha=np.full(im.shape[:2],255,np.uint8)
-          else:
-              bgr=im[:,:,:3]; alpha=im[:,:,3]
-          rgb=cv2.cvtColor(bgr,cv2.COLOR_BGR2RGB)
-          mx=rgb.max(axis=2).astype(np.int16); mn=rgb.min(axis=2).astype(np.int16)
-          lum=0.299*rgb[:,:,0]+0.587*rgb[:,:,1]+0.114*rgb[:,:,2]
-          bg=((lum<115)&((mx-mn)<48)&(alpha>0)).astype(np.uint8)
-          mask=np.zeros(bg.shape,np.uint8)
-          n,labels,stats,_=cv2.connectedComponentsWithStats(bg,8)
-          for i in range(1,n):
-              x,y,w,h,area=stats[i]
-              if x==0 or y==0 or x+w==bg.shape[1] or y+h==bg.shape[0]:
-                  mask[labels==i]=255
-          dist=cv2.distanceTransform(255-mask,cv2.DIST_L2,3)
-          feather=np.clip(dist/2.0,0,1)
-          alpha=(alpha.astype(np.float32)*feather).astype(np.uint8)
-          Image.fromarray(np.dstack([rgb,alpha]),"RGBA").save(p)
-          print("transparent pixels:",int((alpha==0).sum()))
+          src=Path("/tmp/odegaard-source")
+          out=Path("assets/player-cutouts/player-15.png")
+          im=Image.open(src).convert("RGBA")
+          print("Supplied image size:", im.size)
+          print("Supplied image alpha range:", im.getchannel("A").getextrema())
+          im.save(out)
+
+      - name: Verify the supplied image is not an opaque black rectangle
+        shell: python
+        run: |
+          from PIL import Image
+          import numpy as np
+          im=np.array(Image.open("assets/player-cutouts/player-15.png").convert("RGBA"))
+          a=im[:,:,3]
+          corners=[a[0,0],a[0,-1],a[-1,0],a[-1,-1]]
+          print("Corner alpha:", corners)
+          print("Transparent pixels:", int((a==0).sum()), "/", a.size)
+          # Do not reject a legitimate image solely because it has a small opaque margin.
+          # Reject only if it is effectively a fully opaque image with all four corners opaque.
+          if a.min()==255 and all(x==255 for x in corners):
+              raise SystemExit("Supplied Postimages image is fully opaque; refusing to publish it as a cutout")
+
       - name: Commit only the Odegaard cutout
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add assets/player-cutouts/player-15.png
-          if git diff --cached --quiet; then
-            echo "No image change generated"
-          else
-            git commit -m "Make Odegaard prediction cutout transparent"
-            git push
-          fi
+          git commit -m "Use user supplied Odegaard prediction cutout" || echo "No image change generated"
+          git push || true
