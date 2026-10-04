@@ -626,15 +626,22 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
     renderPitch();
 
     const newSlots=[...document.querySelectorAll('[data-slot]')];
+    /*
+     * Do not call the fixture-local norm() helper here. It is declared inside
+     * init(), so using it from this event handler would throw after renderPitch()
+     * and leave the newly-created selectors empty.
+     */
+    const playerKey=value=>String(value||'').trim().toLowerCase();
+
     const bySlot=new Map(previousSelections.map(item=>[item.slot,item.player]));
     const used=new Set();
 
     // Keep players in the same semantic slot where that slot still exists.
     newSlots.forEach(select=>{
       const player=bySlot.get(select.dataset.slot);
-      if(player && !used.has(norm(player))){
+      if(player && !used.has(playerKey(player))){
         select.value=player;
-        used.add(norm(player));
+        used.add(playerKey(player));
       }
     });
 
@@ -642,14 +649,14 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
     // selected player by carrying them into the remaining empty positions.
     const remaining=previousSelections
       .map(item=>item.player)
-      .filter(player=>!used.has(norm(player)));
+      .filter(player=>!used.has(playerKey(player)));
 
     newSlots.forEach(select=>{
       if(select.value) return;
-      const next=remaining.find(player=>!used.has(norm(player)));
+      const next=remaining.find(player=>!used.has(playerKey(player)));
       if(!next) return;
       select.value=next;
-      used.add(norm(next));
+      used.add(playerKey(next));
     });
 
     newSlots.forEach(select=>updatePlayerVisual(select));
