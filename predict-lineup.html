@@ -742,12 +742,38 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
         throw new Error('The visible lineup board has no measurable size.');
       }
 
+      const isMobile=window.matchMedia('(max-width:520px)').matches;
+
+      // On mobile, capture the REAL board at the full viewport width.
+      // The board is restored immediately after capture, so the live page
+      // does not remain changed.
+      const originalBoardStyle=isMobile ? {
+        width:board.style.width,
+        maxWidth:board.style.maxWidth,
+        minWidth:board.style.minWidth,
+        marginLeft:board.style.marginLeft,
+        marginRight:board.style.marginRight,
+        position:board.style.position,
+        left:board.style.left
+      } : null;
+
+      if(isMobile){
+        board.style.width='100vw';
+        board.style.maxWidth='100vw';
+        board.style.minWidth='100vw';
+        board.style.marginLeft='calc((100% - 100vw) / 2)';
+        board.style.marginRight='0';
+        board.style.position='relative';
+        board.style.left='0';
+      }
+
       // Temporarily hide only controls that must not appear in the download.
       captureState={
         controls:[],
         exportOnly:[],
         scrollX:window.scrollX,
-        scrollY:window.scrollY
+        scrollY:window.scrollY,
+        originalBoardStyle
       };
 
       board.querySelectorAll('select,input,button,.screen-only').forEach(el=>{
@@ -795,27 +821,9 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
         logging:false
       });
 
-      /*
-       * The live board is captured at its real on-screen geometry.
-       * On mobile only the FINISHED BITMAP is widened to the phone viewport.
-       * This preserves every pitch coordinate and player size proportionally
-       * while giving the downloaded image the requested full-screen width.
-       */
-      let downloadCanvas=canvas;
-      if(window.matchMedia('(max-width:520px)').matches){
-        const targetCssWidth=Math.max(document.documentElement.clientWidth,window.innerWidth);
-        const targetWidth=Math.max(1,Math.round(targetCssWidth*pixelRatio));
-        const targetHeight=Math.max(1,Math.round(canvas.height*(targetWidth/canvas.width)));
-        const scaled=document.createElement('canvas');
-        scaled.width=targetWidth;
-        scaled.height=targetHeight;
-        const ctx=scaled.getContext('2d');
-        if(!ctx) throw new Error('Could not create the mobile download canvas.');
-        ctx.imageSmoothingEnabled=true;
-        ctx.imageSmoothingQuality='high';
-        ctx.drawImage(canvas,0,0,targetWidth,targetHeight);
-        downloadCanvas=scaled;
-      }
+      // The board was already captured at the correct viewport width.
+      // Do not apply a second bitmap stretch.
+      const downloadCanvas=canvas;
 
       const fixture=(document.getElementById('downloadFixture')?.textContent||'arsenal-predicted-xi')
         .replace(/[^A-Za-z0-9\-]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase();
