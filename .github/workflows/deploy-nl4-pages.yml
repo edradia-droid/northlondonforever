@@ -41,6 +41,29 @@ jobs:
           mkdir -p _arena_source
           git archive origin/3d-arena-publish index.html arena.css arena.js README.md | tar -x -C _arena_source
 
+      - name: Use user supplied Odegaard cutout
+        run: |
+          python - <<'PY'
+          import re, html, urllib.request
+          page = "https://postimg.cc/ppw3MHJh"
+          req = urllib.request.Request(page, headers={"User-Agent":"Mozilla/5.0"})
+          data = urllib.request.urlopen(req, timeout=30).read().decode("utf-8", "ignore")
+          m = re.search(r'<meta[^>]+property=["\\']og:image["\\'][^>]+content=["\\']([^"\\']+)', data, re.I)
+          if not m:
+              m = re.search(r'<meta[^>]+content=["\\']([^"\\']+)["\\'][^>]+property=["\\']og:image["\\']', data, re.I)
+          if not m:
+              raise SystemExit("Could not resolve image from https://postimg.cc/ppw3MHJh")
+          image_url = html.unescape(m.group(1))
+          print("Resolved Odegaard image:", image_url)
+          urllib.request.urlretrieve(image_url, "/tmp/odegaard-source")
+          from PIL import Image
+          from pathlib import Path
+          out=Path("assets/player-cutouts/player-15.png")
+          Image.open("/tmp/odegaard-source").convert("RGBA").save(out)
+          with Image.open(out) as im:
+              print("Odegaard supplied image:", im.size, "alpha:", im.getchannel("A").getextrema())
+          PY
+
       - name: Prepare NL4 Pages site
         run: |
           rm -rf _site
