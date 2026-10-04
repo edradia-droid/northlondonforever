@@ -14,11 +14,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Playwright
+      - name: Install Playwright and image verification tools
         run: |
           npm init -y >/dev/null 2>&1
           npm install --no-save playwright
           npx playwright install --with-deps chromium
+          python -m pip install --disable-pip-version-check pillow
 
       - name: Render Match Details player image in the real lineup styling
         run: |
