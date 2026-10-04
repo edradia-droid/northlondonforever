@@ -66,6 +66,21 @@ jobs:
           ])
           a[a < 40] = 0
 
+          # Remove any residual dark background that remains connected to the image border.
+          # This is intentionally limited to border-connected near-black pixels so dark Arsenal kit
+          # areas on the player are not globally deleted.
+          rgb = np.asarray(src, dtype=np.uint8)
+          dark_bg = (a > 40) & (rgb.max(axis=2) <= 65)
+          dark_labels, dark_n = ndimage.label(dark_bg)
+          if dark_n:
+              border_labels = np.unique(np.concatenate([
+                  dark_labels[0, :], dark_labels[-1, :],
+                  dark_labels[:, 0], dark_labels[:, -1]
+              ]))
+              border_labels = border_labels[border_labels != 0]
+              if border_labels.size:
+                  a[np.isin(dark_labels, border_labels)] = 0
+
           mask = a > 40
           labels, n = ndimage.label(mask)
           sizes = np.bincount(labels.ravel())
