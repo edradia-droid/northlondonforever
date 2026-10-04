@@ -31,11 +31,11 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
   box-shadow:inset 0 0 70px rgba(0,0,0,.16)}
 .pitch:before{content:"";position:absolute;inset:5%;border:2px solid rgba(255,255,255,.9);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
 .pitch:after{content:"";position:absolute;left:5%;right:5%;top:50%;height:2px;background:rgba(255,255,255,.92);transform:translateY(-1px)}
-.pitch-watermark-wrap{position:absolute;left:50%;top:50%;width:150px;height:150px;transform:translate(-50%,-50%);z-index:2;pointer-events:none;user-select:none;display:grid;place-items:center;}
+.pitch-watermark-wrap{position:absolute;left:50%;top:50%;width:450px;height:450px;transform:translate(-50%,-50%);z-index:2;pointer-events:none;user-select:none;display:grid;place-items:center;}
 .pitch-watermark{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:.16;filter:grayscale(1) brightness(1.45);}
 .pitch-watermark-fallback{position:absolute;inset:0;display:grid;place-items:center;border:4px solid rgba(255,255,255,.16);border-radius:50%;font-weight:1000;font-size:58px;letter-spacing:-4px;color:rgba(255,255,255,.14);font-family:Arial,sans-serif;line-height:1;}
 .pitch-watermark-wrap.has-logo .pitch-watermark-fallback{display:none;}
-@media(max-width:520px){.pitch-watermark-wrap{width:112px;height:112px}.pitch-watermark{opacity:.14}.pitch-watermark-fallback{font-size:44px;border-width:3px}}
+@media(max-width:520px){.pitch-watermark-wrap{width:336px;height:336px}.pitch-watermark{opacity:.14}.pitch-watermark-fallback{font-size:44px;border-width:3px}}
 .circle{position:absolute;left:50%;top:50%;width:105px;height:105px;border:2px solid rgba(255,255,255,.9);border-radius:50%;transform:translate(-50%,-50%)}
 .circle:after{content:"";position:absolute;left:50%;top:50%;width:7px;height:7px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);box-shadow:0 0 0 1px rgba(0,0,0,.18)}
 .box{position:absolute;left:50%;width:48%;height:17%;border:2px solid rgba(255,255,255,.9);transform:translateX(-50%)}
