@@ -22,8 +22,8 @@ jobs:
 
       - name: Render Match Details player image in the real lineup styling
         run: |
-          cat > /tmp/render-check.js <<'JS'
-          const { chromium } = require('playwright');
+          cat > render-check.js <<'JS'
+          const { chromium } = require('./node_modules/playwright');
           const fs = require('fs');
 
           (async () => {
@@ -72,7 +72,7 @@ jobs:
             await browser.close();
           })().catch(err => { console.error(err); process.exit(1); });
           JS
-          node /tmp/render-check.js
+          node render-check.js
 
       - name: Verify rendered corners show through to the pitch
         run: |
@@ -84,9 +84,6 @@ jobs:
           box = json.load(open('/tmp/odegaard-box.json'))
           x,y,w,h = [int(round(box[k])) for k in ('x','y','width','height')]
 
-          # Compare each image-box corner against the immediately adjacent pitch pixel.
-          # If the PNG has an opaque rectangular background, these values diverge sharply;
-          # if the PNG is transparent, the pitch remains visible through the corner.
           checks = []
           for px, py, ox, oy in [
               (x, y, x-2, y),
@@ -99,7 +96,6 @@ jobs:
               dist = sum(abs(a[i]-b[i]) for i in range(3))
               checks.append((a,b,dist))
           print('rendered corner checks:', checks)
-          # At least three corners must visually match the surrounding pitch closely.
           close = sum(1 for _,_,dist in checks if dist <= 45)
           if close < 3:
               raise SystemExit(f'Render verification failed: only {close}/4 image corners match the surrounding pitch.')
