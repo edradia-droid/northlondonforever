@@ -289,7 +289,7 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
 
   function restoreDraft(){
     const draft=loadDraft();
-    if(!draft) return;
+    if(!draft) return false;
 
     if(formations[draft.formation]){
       document.getElementById('formation').value=draft.formation;
@@ -321,6 +321,7 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
     applyDisplayMode();
     updateDownloadSubs();
     saveDraft();
+    return true;
   }
   function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
   function voterKey(){
@@ -471,9 +472,11 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
 
   // Seed the selector immediately from the authoritative squad.
   seedPlayersFromAuthoritativeSquad();
-  restoreDraft();
-  renderPitch();
-  renderSubs();
+  const restoredDraft=restoreDraft();
+  if(!restoredDraft){
+    renderPitch();
+    renderSubs();
+  }
   const kitControl=document.getElementById('kit');
   document.body.dataset.kit=kitControl?.value==='away'?'away':'home';
   applyDisplayMode();
