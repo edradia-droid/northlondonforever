@@ -333,7 +333,7 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
     if(img.complete)run();else img.addEventListener('load',run,{once:true});
   }
 
-  function playerPhotoUrl(player){
+  // Expose the cleanup handler globally because the rendered player <img> uses an inline onload handler.\n  window.nl4RemoveOdegaardBackground=nl4RemoveOdegaardBackground;\n\n  function playerPhotoUrl(player){
     const keyCandidates=[player?.name,player?.webName,player?.feedName].filter(Boolean).map(norm);
     const file=keyCandidates.map(k=>PLAYER_PHOTOS[k]).find(Boolean);
     return file ? new URL(file,document.baseURI).href : '';
