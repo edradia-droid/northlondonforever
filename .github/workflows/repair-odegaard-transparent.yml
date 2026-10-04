@@ -21,7 +21,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgl1
 
-      - name: Rebuild only Odegaard cutout from the repository asset
+      - name: Download the same canonical Premier League Odegaard image used by Match Details
+        run: |
+          curl -L --fail --retry 3 --retry-delay 2 \
+            "https://assets.arsenal.com//prod/images/large_landscape/dd168c02d4e3-arsenalmenssquad26278martin-odegaard.jpg" \
+            -o /tmp/odegaard-source.jpg
+          test -s /tmp/odegaard-source.jpg
+
+      - name: Rebuild only Odegaard cutout from the canonical Premier League source
         shell: python
         run: |
           from pathlib import Path
@@ -31,7 +38,7 @@ jobs:
           from scipy import ndimage
 
           src_path = Path("assets/player-cutouts/player-15.png")
-          src = Image.open(src_path).convert("RGB")
+          src = Image.open("/tmp/odegaard-source.jpg").convert("RGB")
 
           biref = remove(
               src,
