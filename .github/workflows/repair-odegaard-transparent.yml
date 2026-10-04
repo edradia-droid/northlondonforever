@@ -32,7 +32,7 @@ jobs:
           src_path = Path("assets/player-cutouts/player-15.png")
           src = Image.open(src_path).convert("RGB")
 
-          human = remove(src, session=new_session("u2net_human_seg"),
+          biref = remove(src, session=new_session("birefnet-general"),\n                          alpha_matting=True,\n                          alpha_matting_foreground_threshold=245,\n                          alpha_matting_background_threshold=8,\n                          alpha_matting_erode_size=16).convert("RGBA")\n\n          human = remove(src, session=new_session("u2net_human_seg"),
                          alpha_matting=True,
                          alpha_matting_foreground_threshold=240,
                          alpha_matting_background_threshold=10,
@@ -61,7 +61,7 @@ jobs:
           a[:, :3] = 0
           a[:, -3:] = 0
 
-          out = np.asarray(general).copy()
+          out = np.asarray(biref).copy()
           out[:, :, 3] = a
           rgba = Image.fromarray(out, "RGBA")
           rgba.putalpha(rgba.getchannel("A").filter(ImageFilter.GaussianBlur(0.3)))
@@ -91,5 +91,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add assets/player-cutouts/player-15.png
-          git diff --cached --quiet || git commit -m "Repair Odegaard transparent player cutout"
+          git diff --cached --quiet || git commit -m "Strengthen Odegaard background removal"
           git push
