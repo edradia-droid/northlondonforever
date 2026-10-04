@@ -355,20 +355,35 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
       ? `<img class="selected-player-photo${norm(player.name)==="martin odegaard"?" odegaard-photo":""}" src="${esc(imageSrc)}" alt="${esc(player.name)}" referrerpolicy="no-referrer" loading="eager" decoding="async" onload="nl4RemoveOdegaardBackground(this)">`
       : (player ? `<span class="selected-player-photo placeholder">${esc(initials(player.name))}</span>` : '');
   }
+  function starterNamesSet(){
+    return new Set([...document.querySelectorAll('[data-slot]')]
+      .map(select=>norm(select.value))
+      .filter(Boolean));
+  }
+  function selectedSubNamesSet(){
+    return new Set([...document.querySelectorAll('[data-sub]:checked')]
+      .map(input=>norm(input.value))
+      .filter(Boolean));
+  }
   function renderSubs(){
-    document.getElementById('subs').innerHTML=players.map(p=>{
-      const src=playerPhotoUrl(p) || p.image_url || '';
-      const photo=displayMode==='initials'
-        ? `<span class="sub-initials" aria-label="${esc(p.name)} initials">${esc(initials(p.name))}</span>`
-        : (src
-          ? `<img class="sub-photo${norm(p.name)==='martin odegaard'?' odegaard-photo':''}" src="${esc(src)}" alt="${esc(p.name)}" referrerpolicy="no-referrer" loading="eager" decoding="async" onload="nl4RemoveOdegaardBackground(this)" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'sub-photo placeholder',textContent:'${esc(initials(p.name))}'}))">`
-          : `<span class="sub-photo placeholder">${esc(initials(p.name))}</span>`);
-      return `<label class="sub">
-        <input type="checkbox" value="${esc(p.name)}" data-sub>
-        ${photo}
-        <span class="sub-info"><span class="sub-name">${esc(p.name)}</span><span class="sub-pos">${esc(p.pos)}</span></span>
-      </label>`;
-    }).join('');
+    const starters=starterNamesSet();
+    const previouslySelected=selectedSubNamesSet();
+    document.getElementById('subs').innerHTML=players
+      .filter(p=>!starters.has(norm(p.name)))
+      .map(p=>{
+        const src=playerPhotoUrl(p) || p.image_url || '';
+        const checked=previouslySelected.has(norm(p.name)) ? ' checked' : '';
+        const photo=displayMode==='initials'
+          ? `<span class="sub-initials" aria-label="${esc(p.name)} initials">${esc(initials(p.name))}</span>`
+          : (src
+            ? `<img class="sub-photo${norm(p.name)==='martin odegaard'?' odegaard-photo':''}" src="${esc(src)}" alt="${esc(p.name)}" referrerpolicy="no-referrer" loading="eager" decoding="async" onload="nl4RemoveOdegaardBackground(this)" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'sub-photo placeholder',textContent:'${esc(initials(p.name))}'}))">`
+            : `<span class="sub-photo placeholder">${esc(initials(p.name))}</span>`);
+        return `<label class="sub">
+          <input type="checkbox" value="${esc(p.name)}" data-sub${checked}>
+          ${photo}
+          <span class="sub-info"><span class="sub-name">${esc(p.name)}</span><span class="sub-pos">${esc(p.pos)}</span></span>
+        </label>`;
+      }).join('');
   }
   function setMsg(id,text,good=false){
     const e=document.getElementById(id); e.textContent=text; e.className='msg '+(good?'good':'bad');
@@ -514,7 +529,11 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
     if(f)f.textContent=document.getElementById('formation').value;
   });
   document.getElementById('pitch').addEventListener('change',e=>{
-    if(e.target.matches('[data-slot]')) updatePlayerVisual(e.target);
+    if(e.target.matches('[data-slot]')){
+      updatePlayerVisual(e.target);
+      renderSubs();
+      updateDownloadSubs();
+    }
   });
   function updateDownloadSubs(){
     const checked=[...document.querySelectorAll('[data-sub]:checked')].map(x=>x.value);
