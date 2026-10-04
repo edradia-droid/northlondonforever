@@ -472,11 +472,8 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
 
   // Seed the selector immediately from the authoritative squad.
   seedPlayersFromAuthoritativeSquad();
-  const restoredDraft=restoreDraft();
-  if(!restoredDraft){
-    renderPitch();
-    renderSubs();
-  }
+  renderPitch();
+  renderSubs();
   const kitControl=document.getElementById('kit');
   document.body.dataset.kit=kitControl?.value==='away'?'away':'home';
   applyDisplayMode();
@@ -589,8 +586,14 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
       };
     }).filter(player=>player.name);
 
-    renderPitch();renderSubs();
-    applyDisplayMode();
+    // The authoritative squad is now available. Restore the draft AFTER rendering
+    // the player selectors, otherwise the async squad load would overwrite it.
+    const restoredDraft=restoreDraft();
+    if(!restoredDraft){
+      renderPitch();
+      renderSubs();
+      applyDisplayMode();
+    }
     boot.textContent=`READY • ${players.length} current EPL squad players loaded • fixture resolved`;
     boot.className='status good';
 
