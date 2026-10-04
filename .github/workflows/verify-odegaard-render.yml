@@ -54,8 +54,9 @@ jobs:
 
             const box = await img.boundingBox();
             if (!box) throw new Error('Odegaard image did not render a bounding box.');
-            const png = await page.screenshot({path:'/tmp/odegaard-render.png', fullPage:false});
-            fs.writeFileSync('/tmp/odegaard-render.png', png);
+            await page.screenshot({path:'/tmp/odegaard-render.png', fullPage:false});
+            await page.screenshot({path:'/tmp/odegaard-image-box.png', clip:box});
+            fs.writeFileSync('/tmp/odegaard-box.json', JSON.stringify(box));
 
             const metrics = await img.evaluate(el => ({
               src: el.getAttribute('src'),
@@ -68,22 +69,41 @@ jobs:
             if (!metrics.src.includes('assets/player-cutouts/player-15.png')) throw new Error('Rendered image is not player-15.png');
             if (!metrics.naturalWidth || !metrics.naturalHeight) throw new Error('Rendered image has no natural dimensions.');
 
-            // The real .kit-player-photo has a transparent image box. Sample the
-            // four corners of that rendered box and ensure they are not a solid
-            // rectangular image background; the pitch must remain visible there.
-            const samples = await page.evaluate(({x,y,w,h}) => {
-              const canvas = document.createElement('canvas');
-              canvas.width = Math.ceil(w); canvas.height = Math.ceil(h);
-              const ctx = canvas.getContext('2d');
-              ctx.drawImage(document.documentElement, 0, 0);
-              return {x,y,w,h};
-            }, box);
-            console.log('render verification box:', JSON.stringify(samples));
-
             await browser.close();
           })().catch(err => { console.error(err); process.exit(1); });
           JS
           node /tmp/render-check.js
+
+      - name: Verify rendered corners show through to the pitch
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          import json
+
+          full = Image.open('/tmp/odegaard-render.png').convert('RGB')
+          box = json.load(open('/tmp/odegaard-box.json'))
+          x,y,w,h = [int(round(box[k])) for k in ('x','y','width','height')]
+
+          # Compare each image-box corner against the immediately adjacent pitch pixel.
+          # If the PNG has an opaque rectangular background, these values diverge sharply;
+          # if the PNG is transparent, the pitch remains visible through the corner.
+          checks = []
+          for px, py, ox, oy in [
+              (x, y, x-2, y),
+              (x+w-1, y, x+w+1, y),
+              (x, y+h-1, x-2, y+h-1),
+              (x+w-1, y+h-1, x+w+1, y+h-1),
+          ]:
+              a = full.getpixel((max(0,px), max(0,py)))
+              b = full.getpixel((max(0,min(full.width-1,ox)), max(0,min(full.height-1,oy))))
+              dist = sum(abs(a[i]-b[i]) for i in range(3))
+              checks.append((a,b,dist))
+          print('rendered corner checks:', checks)
+          # At least three corners must visually match the surrounding pitch closely.
+          close = sum(1 for _,_,dist in checks if dist <= 45)
+          if close < 3:
+              raise SystemExit(f'Render verification failed: only {close}/4 image corners match the surrounding pitch.')
+          PY
 
       - name: Verify asset alpha independently
         run: |
@@ -100,4 +120,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: odegaard-render-verification
-          path: /tmp/odegaard-render.png
+          path: |
+            /tmp/odegaard-render.png
+            /tmp/odegaard-image-box.png
