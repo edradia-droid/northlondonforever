@@ -1,0 +1,69 @@
+name: Fix Odegaard transparent cutout
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix-and-verify:
+    if: ${{ !contains(github.event.head_commit.message, '[odegaard-cutout]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install background-removal tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "rembg[cpu]" pillow
+
+      - name: Remove Odegaard image background
+        run: |
+          python - <<'PY'
+          from rembg import remove
+          from PIL import Image
+          from pathlib import Path
+
+          path = Path('assets/player-cutouts/player-15.png')
+          original = Image.open(path).convert('RGBA')
+          result = remove(original)
+          if result.mode != 'RGBA':
+              result = result.convert('RGBA')
+          result.save(path, format='PNG', optimize=True)
+          print(f'Wrote {path}: {result.size}, mode={result.mode}')
+          PY
+
+      - name: Verify genuine alpha transparency
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+
+          path = Path('assets/player-cutouts/player-15.png')
+          im = Image.open(path).convert('RGBA')
+          alpha = im.getchannel('A')
+          extrema = alpha.getextrema()
+          transparent = sum(1 for a in alpha.getdata() if a == 0)
+          partial = sum(1 for a in alpha.getdata() if 0 < a < 255)
+          total = im.width * im.height
+          print(f'alpha extrema={extrema}; transparent={transparent}/{total}; partial={partial}/{total}')
+          if extrema[0] != 0 or transparent == 0:
+              raise SystemExit('Verification failed: player-15.png has no genuinely transparent pixels.')
+          PY
+
+      - name: Commit transparent asset
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/player-cutouts/player-15.png
+          if git diff --cached --quiet; then
+            echo "No asset change to commit."
+          else
+            git commit -m "Fix Martin Odegaard transparent cutout [odegaard-cutout]"
+            git push
+          fi
