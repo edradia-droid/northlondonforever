@@ -5,6 +5,7 @@ on:
     paths:
       - ".github/workflows/repair-odegaard-transparent.yml"
       - "match-details.html"
+      - "assets/player-cutouts/player-15.png"
 
 permissions:
   contents: write
