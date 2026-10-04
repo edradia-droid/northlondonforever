@@ -398,13 +398,24 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
   }
   function renderPitch(){
     const slots=formations[document.getElementById('formation').value]||formations['4-3-3'];
-    document.getElementById('pitch').innerHTML='<span class="goal top" aria-hidden="true"></span><span class="goal bottom" aria-hidden="true"></span><span class="circle"></span><span class="box top"></span><span class="box bottom"></span><span class="goal-area top"></span><span class="goal-area bottom"></span><span class="penalty-arc top"></span><span class="penalty-arc bottom"></span>'+
+    const pitch=document.getElementById('pitch');
+    pitch.innerHTML='<span class="goal top" aria-hidden="true"></span><span class="goal bottom" aria-hidden="true"></span><span class="circle"></span><span class="box top"></span><span class="box bottom"></span><span class="goal-area top"></span><span class="goal-area bottom"></span><span class="penalty-arc top"></span><span class="penalty-arc bottom"></span>'+
       slots.map(([slot,x,y])=>`<label class="slot" style="left:${x}%;top:${y}%">
         <div class="shirt" data-player-visual><span class="player-photo placeholder">+</span></div>
         <div class="slot-name">${esc(slot)}</div>
         <select class="screen-only" data-slot="${esc(slot)}">${options()}</select>
         <div class="export-player-name export-only" data-export-name>SELECT PLAYER</div>
       </label>`).join('');
+
+    // renderPitch rebuilds the pitch HTML, so the watermark must be rebuilt
+    // here as well. Keeping it in this function prevents formation changes,
+    // draft restoration, or refresh initialization from removing it.
+    pitch.insertAdjacentHTML('afterbegin',
+      '<span class="pitch-watermark-wrap" aria-hidden="true">'+
+        '<span class="pitch-watermark-fallback">NL4</span>'+
+        '<img class="pitch-watermark" src="https://i.postimg.cc/GhGgj8G7/75c7b198-597a-4288-abae-723c809c34fa.png" alt="" aria-hidden="true" draggable="false" onload="this.closest(\'.pitch-watermark-wrap\').classList.add(\'has-logo\')" onerror="this.style.display=\'none\'">'+
+      '</span>'
+    );
   }
   function findPlayer(name){
     const target=norm(name);
