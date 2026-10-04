@@ -54,6 +54,8 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
 /* Odegaard: source PNG is already transparent, so it renders like every other player photo. */
 .odegaard-photo{mix-blend-mode:normal;background:transparent;}
 .player-photo.placeholder{width:50px;height:58px;border-radius:50%;background:rgba(5,5,5,.75);border:2px solid rgba(255,255,255,.7);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:1000}
+.player-initials{width:58px;height:58px;margin:0 auto 8px;border-radius:50%;background:#050505;border:2px solid rgba(255,255,255,.82);box-shadow:0 7px 9px rgba(0,0,0,.48);display:grid;place-items:center;color:#fff;font-size:15px;font-weight:1000;letter-spacing:.3px;text-shadow:0 1px 2px #000}
+@media(max-width:520px){.player-initials{width:48px;height:48px;font-size:12px;margin-bottom:8px}}
 .shirt-number{display:none!important}
 .slot-name{font-size:7px;font-weight:1000;text-shadow:0 2px 3px #000;margin-bottom:2px}.selected-player-photo{width:30px;height:34px;object-fit:contain;object-position:center bottom;vertical-align:middle;margin-right:3px;filter:drop-shadow(0 3px 3px rgba(0,0,0,.45))}.selected-player-photo.placeholder{display:inline-grid;place-items:center;border-radius:50%;background:rgba(5,5,5,.75);border:1px solid rgba(255,255,255,.55);font-size:7px;font-weight:1000;color:#fff}
 .slot select{font-size:7px;padding:6px 3px;background:rgba(5,5,5,.92)}
@@ -204,6 +206,7 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
 <div class="lineup-controls-lower">
   <div class="controls">
     <label>FORMATION<select id="formation"><option>4-3-3</option><option>4-2-3-1</option><option>4-4-2</option><option>3-4-3</option><option>3-5-2</option><option>4-1-4-1</option></select></label>
+    <label>PLAYER DISPLAY<select id="displayMode"><option value="photos">Photos</option><option value="initials">Initials</option></select></label>
     <label>SHIRT<select id="kit"><option value="home">Home • Red/White</option><option value="away">Away</option></select></label>
   </div>
 
@@ -316,6 +319,13 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
     const target=norm(name);
     return players.find(p=>norm(p.name)===target) || null;
   }
+  let displayMode=localStorage.getItem('nl4_predict_lineup_display_mode') || 'photos';
+  function applyDisplayMode(){
+    const control=document.getElementById('displayMode');
+    if(control)control.value=displayMode;
+    document.body.dataset.lineupDisplay=displayMode;
+    document.querySelectorAll('[data-slot]').forEach(select=>updatePlayerVisual(select));
+  }
   function updatePlayerVisual(select){
     const slot=select.closest('.slot');
     if(!slot)return;
@@ -325,9 +335,13 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
     const localPhoto=playerPhotoUrl(player);
     const imageSrc=localPhoto || player?.image_url || '';
     if(visual){
-      visual.innerHTML=imageSrc
-        ? `<img class="player-photo${norm(player.name)==="martin odegaard"?" odegaard-photo":""}" src="${esc(imageSrc)}" alt="${esc(player.name)}" referrerpolicy="no-referrer" loading="eager" decoding="async" onload="nl4RemoveOdegaardBackground(this)" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'player-photo placeholder',textContent:'${esc(initials(player.name))}'}))">`
-        : `<span class="player-photo placeholder">${esc(initials(player?.name))}</span>`;
+      if(displayMode==='initials'){
+        visual.innerHTML=player ? `<span class="player-initials" aria-label="${esc(player.name)} initials">${esc(initials(player.name))}</span>` : '<span class="player-photo placeholder">+</span>';
+      }else{
+        visual.innerHTML=imageSrc
+          ? `<img class="player-photo${norm(player.name)==="martin odegaard"?" odegaard-photo":""}" src="${esc(imageSrc)}" alt="${esc(player.name)}" referrerpolicy="no-referrer" loading="eager" decoding="async" onload="nl4RemoveOdegaardBackground(this)" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'player-photo placeholder',textContent:'${esc(initials(player.name))}'}))">`
+          : `<span class="player-photo placeholder">${esc(initials(player?.name))}</span>`;
+      }
     }
     if(exportName) exportName.textContent=player?.name || 'SELECT PLAYER';
     const selectedPhoto=slot.querySelector('[data-selected-player-photo]');
@@ -355,6 +369,7 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
   // Seed the selector immediately from the authoritative squad.
   seedPlayersFromAuthoritativeSquad();
   renderPitch(); renderSubs();
+  applyDisplayMode();
   // Also process any Odegaard image after the first render, so this is not dependent on inline onload timing.
   setTimeout(()=>document.querySelectorAll('.odegaard-photo').forEach(nl4RemoveOdegaardBackground),0);
   const initialFormation=document.getElementById('downloadFormation');
@@ -465,6 +480,7 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
     }).filter(player=>player.name);
 
     renderPitch();renderSubs();
+    applyDisplayMode();
     boot.textContent=`READY • ${players.length} current EPL squad players loaded • fixture resolved`;
     boot.className='status good';
 
@@ -472,8 +488,14 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
     if(closed){document.getElementById('saveScore').disabled=true;document.getElementById('saveLineup').disabled=true;setMsg('scoreMsg','Predictions are closed.');setMsg('lineupMsg','Predictions are closed.');}
   }
 
+  document.getElementById('displayMode').addEventListener('change',e=>{
+    displayMode=e.target.value==='initials'?'initials':'photos';
+    localStorage.setItem('nl4_predict_lineup_display_mode',displayMode);
+    applyDisplayMode();
+  });
   document.getElementById('formation').addEventListener('change',()=>{
     renderPitch();
+    applyDisplayMode();
     const f=document.getElementById('downloadFormation');
     if(f)f.textContent=document.getElementById('formation').value;
   });
