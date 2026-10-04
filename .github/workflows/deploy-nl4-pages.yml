@@ -44,20 +44,24 @@ jobs:
       - name: Use user supplied Odegaard cutout
         run: |
           python - <<'PY'
-          import re, html, urllib.request
+          import html, re, urllib.request
+          from pathlib import Path
+          from PIL import Image
           page = "https://postimg.cc/ppw3MHJh"
           req = urllib.request.Request(page, headers={"User-Agent":"Mozilla/5.0"})
           data = urllib.request.urlopen(req, timeout=30).read().decode("utf-8", "ignore")
-          m = re.search(r'<meta[^>]+property=["\\']og:image["\\'][^>]+content=["\\']([^"\\']+)', data, re.I)
-          if not m:
-              m = re.search(r'<meta[^>]+content=["\\']([^"\\']+)["\\'][^>]+property=["\\']og:image["\\']', data, re.I)
-          if not m:
-              raise SystemExit("Could not resolve image from https://postimg.cc/ppw3MHJh")
-          image_url = html.unescape(m.group(1))
+          image_url = None
+          for tag in re.findall(r'<meta\\b[^>]*>', data, flags=re.I):
+              if re.search(r'property\\s*=\\s*["\']og:image["\']', tag, re.I):
+                  m = re.search(r'content\\s*=\\s*["\']([^"\']+)', tag, re.I)
+                  if m: image_url = html.unescape(m.group(1)); break
+              if re.search(r'property\\s*=\\s*["\']og:image["\']', tag, re.I):
+                  m = re.search(r'content\\s*=\\s*["\']([^"\']+)', tag, re.I)
+                  if m: image_url = html.unescape(m.group(1)); break
+          if not image_url:
+              raise SystemExit("Could not resolve the actual image from https://postimg.cc/ppw3MHJh")
           print("Resolved Odegaard image:", image_url)
           urllib.request.urlretrieve(image_url, "/tmp/odegaard-source")
-          from PIL import Image
-          from pathlib import Path
           out=Path("assets/player-cutouts/player-15.png")
           Image.open("/tmp/odegaard-source").convert("RGBA").save(out)
           with Image.open(out) as im:
