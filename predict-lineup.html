@@ -730,63 +730,47 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
     btn.disabled=true;
     btn.textContent='…';
 
-    let host=null;
+    let captureState=null;
     try{
-      /* Capture the board at its exact live size first. Scale only the finished
-         bitmap so the downloaded pitch cannot be re-laid out or clipped. */
+      /*
+       * The live DOM is now the ONLY source for the downloaded image.
+       * We do not clone, resize, transform or re-layout the pitch.
+       * html2canvas captures the exact element currently visible to the user.
+       */
       const liveRect=board.getBoundingClientRect();
-      const liveWidth=Math.round(liveRect.width);
-      const liveHeight=Math.round(liveRect.height);
-      if(liveWidth<=0||liveHeight<=0) throw new Error('The lineup board has no measurable size.');
+      if(liveRect.width<=0||liveRect.height<=0){
+        throw new Error('The visible lineup board has no measurable size.');
+      }
 
-      const isMobile=window.matchMedia('(max-width:520px)').matches;
-      const exportWidth=Math.round(isMobile
-        ? Math.max(document.documentElement.clientWidth,window.innerWidth)
-        : liveWidth);
-      const exportScale=exportWidth/liveWidth;
+      // Temporarily hide only controls that must not appear in the download.
+      captureState={
+        controls:[],
+        exportOnly:[],
+        scrollX:window.scrollX,
+        scrollY:window.scrollY
+      };
 
-      host=document.createElement('div');
-      host.style.position='fixed';
-      host.style.left='-100000px';
-      host.style.top='0';
-      host.style.width=liveWidth+'px';
-      host.style.height=liveHeight+'px';
-      host.style.margin='0';
-      host.style.padding='0';
-      host.style.overflow='visible';
-      host.style.background='#080808';
+      board.querySelectorAll('select,input,button,.screen-only').forEach(el=>{
+        captureState.controls.push({el,display:el.style.display});
+        el.style.display='none';
+      });
 
-      const clone=board.cloneNode(true);
-      clone.classList.add('nl4-exporting');
-      clone.style.width=liveWidth+'px';
-      clone.style.maxWidth='none';
-      clone.style.minWidth='0';
-      clone.style.height=liveHeight+'px';
-      clone.style.maxHeight='none';
-      clone.style.minHeight='0';
-      clone.style.margin='0';
-      clone.style.transform='none';
-      clone.style.transformOrigin='top left';
-      clone.style.position='relative';
-      clone.style.left='0';
-      clone.style.top='0';
+      // Show the already-rendered export names without changing pitch geometry.
+      board.querySelectorAll('.export-only').forEach(el=>{
+        captureState.exportOnly.push({el,display:el.style.display});
+        el.style.display='block';
+      });
 
-      clone.querySelectorAll('select,input,button').forEach(el=>el.remove());
-      clone.querySelectorAll('.screen-only').forEach(el=>el.remove());
-      clone.querySelectorAll('.export-only').forEach(el=>el.style.display='block');
-
+      // Ensure export names reflect the actual live selections.
       const liveSlots=[...board.querySelectorAll('.slot')];
-      const cloneSlots=[...clone.querySelectorAll('.slot')];
-      liveSlots.forEach((liveSlot,i)=>{
-        const selected=liveSlot.querySelector('[data-slot]')?.value?.trim()||'';
-        const target=cloneSlots[i]?.querySelector('[data-export-name]');
+      liveSlots.forEach(slot=>{
+        const selected=slot.querySelector('[data-slot]')?.value?.trim()||'';
+        const target=slot.querySelector('[data-export-name]');
         if(target) target.textContent=selected;
       });
 
-      host.appendChild(clone);
-      document.body.appendChild(host);
-
-      const images=[...clone.querySelectorAll('img')];
+      // Wait for all visible board images to be ready before capture.
+      const images=[...board.querySelectorAll('img')];
       await Promise.all(images.map(img=>{
         if(img.complete){
           return img.decode ? img.decode().catch(()=>{}) : Promise.resolve();
@@ -798,37 +782,29 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
         });
       }));
 
+      /*
+       * Capture the REAL live board dimensions. No custom width, height,
+       * transform, viewport width, clone, or export layout is supplied.
+       */
       const pixelRatio=Math.min(2,Math.max(1,window.devicePixelRatio||1.5));
-      const sourceCanvas=await html2canvas(clone,{
+      const canvas=await html2canvas(board,{
         backgroundColor:'#080808',
         scale:pixelRatio,
-        width:liveWidth,
-        height:liveHeight,
-        windowWidth:Math.max(document.documentElement.clientWidth,window.innerWidth),
-        windowHeight:Math.max(document.documentElement.clientHeight,window.innerHeight),
         useCORS:true,
         allowTaint:false,
         logging:false
       });
 
-      const outputWidth=Math.max(1,Math.round(liveWidth*exportScale*pixelRatio));
-      const outputHeight=Math.max(1,Math.round(liveHeight*exportScale*pixelRatio));
-      const outputCanvas=document.createElement('canvas');
-      outputCanvas.width=outputWidth;
-      outputCanvas.height=outputHeight;
-
-      const ctx=outputCanvas.getContext('2d');
-      if(!ctx) throw new Error('Could not create the download canvas.');
-      ctx.imageSmoothingEnabled=true;
-      ctx.imageSmoothingQuality='high';
-      ctx.drawImage(sourceCanvas,0,0,outputWidth,outputHeight);
-
+      /*
+       * On mobile the board is already rendered at its actual on-screen
+       * width. Keep that exact appearance. Do not stretch or reflow it.
+       */
       const fixture=(document.getElementById('downloadFixture')?.textContent||'arsenal-predicted-xi')
         .replace(/[^A-Za-z0-9\-]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase();
 
       const link=document.createElement('a');
       link.download=(fixture || 'arsenal-predicted-xi')+'-my-predicted-xi.png';
-      link.href=outputCanvas.toDataURL('image/png',1);
+      link.href=canvas.toDataURL('image/png',1);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -836,7 +812,11 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
       console.error('Predicted lineup download failed:',err);
       alert('Could not create your predicted lineup image. Please try again.');
     }finally{
-      if(host)host.remove();
+      if(captureState){
+        captureState.controls.forEach(item=>item.el.style.display=item.display);
+        captureState.exportOnly.forEach(item=>item.el.style.display=item.display);
+        window.scrollTo(captureState.scrollX,captureState.scrollY);
+      }
       btn.disabled=false;
       btn.textContent=oldText;
     }
