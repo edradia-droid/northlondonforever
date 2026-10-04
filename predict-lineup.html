@@ -316,7 +316,7 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
         const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
         while(head<tail){
           const x=qx[head],y=qy[head++],i=(y*w+x)*4;
-          d[i+3]=0;
+          d[i]=37; d[i+1]=127; d[i+2]=63; d[i+3]=255;
           for(const [dx,dy] of dirs){
             const nx=x+dx,ny=y+dy;
             if(nx<0||ny<0||nx>=w||ny>=h)continue;
