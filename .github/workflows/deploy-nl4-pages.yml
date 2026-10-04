@@ -151,6 +151,9 @@ jobs:
           }
           NODE
 
+      - name: Install Pillow for asset verification
+        run: python -m pip install --disable-pip-version-check pillow
+
       - name: Verify Odegaard transparent asset in Pages artifact
         run: |
           python - <<'PY'
