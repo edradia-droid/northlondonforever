@@ -125,7 +125,6 @@ jobs:
       - name: Verify transparent cutout
         shell: python
         run: |
-          python - <<'PY'
           from PIL import Image
           import numpy as np
           p = "assets/player-cutouts/player-15.png"
@@ -142,7 +141,6 @@ jobs:
               print("transparent_pct:", transparent_pct)
               assert max(corners) <= 2
               assert transparent_pct >= 10
-          PY
 
       - name: Commit only Odegaard image
         run: |
