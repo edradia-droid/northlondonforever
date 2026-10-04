@@ -150,9 +150,9 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
   .download-logo{width:64px;height:64px}
   .download-fixture{font-size:14px}
   .downloadable-lineup{padding:10px}
-  /* Downloaded lineup: use the full phone viewport, not the narrower card width. */
-  .nl4-exporting{width:100vw!important;max-width:none!important;margin-left:0!important;margin-right:0!important;border-radius:0!important}
-  .nl4-exporting .pitch-wrap{width:100%!important}
+  /* The downloaded image is scaled after capture, so export CSS never changes
+     the live pitch geometry. */
+  .nl4-exporting{max-width:none!important;margin-left:0!important;margin-right:0!important}
 }
 
 </style>
