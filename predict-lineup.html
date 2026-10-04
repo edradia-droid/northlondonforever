@@ -69,6 +69,9 @@ body[data-kit="away"] .player-initials{--lineup-circle-color:#13294b;color:#fff;
 .sub input{accent-color:#d8ad45;flex:0 0 auto}
 .sub-photo{width:34px;height:42px;object-fit:contain;object-position:center bottom;flex:0 0 34px;filter:drop-shadow(0 3px 3px rgba(0,0,0,.45))}
 .sub-photo.placeholder{width:30px;height:30px;border-radius:50%;background:rgba(5,5,5,.75);border:1px solid rgba(255,255,255,.55);display:grid;place-items:center;font-size:8px;font-weight:1000;color:#fff}
+.sub-initials{width:30px;height:30px;flex:0 0 30px;border-radius:50%;background:var(--lineup-circle-color,#e30613);border:1px solid rgba(255,255,255,.7);display:grid;place-items:center;color:#fff;font-size:8px;font-weight:1000;letter-spacing:.2px;text-shadow:0 1px 2px #000}
+body[data-kit="home"] .sub-initials{--lineup-circle-color:#e30613;color:#fff}
+body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
 .sub-info{min-width:0;line-height:1.25}
 .sub-name{display:block;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sub-pos{display:block;color:#777;font-size:7px;margin-top:2px}
@@ -327,6 +330,7 @@ body[data-kit="away"] .player-initials{--lineup-circle-color:#13294b;color:#fff;
     if(control)control.value=displayMode;
     document.body.dataset.lineupDisplay=displayMode;
     document.querySelectorAll('[data-slot]').forEach(select=>updatePlayerVisual(select));
+    renderSubs();
   }
   function updatePlayerVisual(select){
     const slot=select.closest('.slot');
@@ -354,9 +358,11 @@ body[data-kit="away"] .player-initials{--lineup-circle-color:#13294b;color:#fff;
   function renderSubs(){
     document.getElementById('subs').innerHTML=players.map(p=>{
       const src=playerPhotoUrl(p) || p.image_url || '';
-      const photo=src
-        ? `<img class="sub-photo${norm(p.name)==='martin odegaard'?' odegaard-photo':''}" src="${esc(src)}" alt="${esc(p.name)}" referrerpolicy="no-referrer" loading="eager" decoding="async" onload="nl4RemoveOdegaardBackground(this)" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'sub-photo placeholder',textContent:'${esc(initials(p.name))}'}))">`
-        : `<span class="sub-photo placeholder">${esc(initials(p.name))}</span>`;
+      const photo=displayMode==='initials'
+        ? `<span class="sub-initials" aria-label="${esc(p.name)} initials">${esc(initials(p.name))}</span>`
+        : (src
+          ? `<img class="sub-photo${norm(p.name)==='martin odegaard'?' odegaard-photo':''}" src="${esc(src)}" alt="${esc(p.name)}" referrerpolicy="no-referrer" loading="eager" decoding="async" onload="nl4RemoveOdegaardBackground(this)" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'sub-photo placeholder',textContent:'${esc(initials(p.name))}'}))">`
+          : `<span class="sub-photo placeholder">${esc(initials(p.name))}</span>`);
       return `<label class="sub">
         <input type="checkbox" value="${esc(p.name)}" data-sub>
         ${photo}
@@ -499,6 +505,7 @@ body[data-kit="away"] .player-initials{--lineup-circle-color:#13294b;color:#fff;
   });
   document.getElementById('kit').addEventListener('change',e=>{
     document.body.dataset.kit=e.target.value==='away'?'away':'home';
+    applyDisplayMode();
   });
   document.getElementById('formation').addEventListener('change',()=>{
     renderPitch();
