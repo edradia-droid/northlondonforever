@@ -54,8 +54,7 @@ jobs:
 
             const box = await img.boundingBox();
             if (!box) throw new Error('Odegaard image did not render a bounding box.');
-            await page.screenshot({path:'/tmp/odegaard-render.png', fullPage:false});
-            await page.screenshot({path:'/tmp/odegaard-image-box.png', clip:box});
+            await page.screenshot({path:'/tmp/odegaard-render.png', fullPage:true});
             fs.writeFileSync('/tmp/odegaard-box.json', JSON.stringify(box));
 
             const metrics = await img.evaluate(el => ({
@@ -83,6 +82,8 @@ jobs:
           full = Image.open('/tmp/odegaard-render.png').convert('RGB')
           box = json.load(open('/tmp/odegaard-box.json'))
           x,y,w,h = [int(round(box[k])) for k in ('x','y','width','height')]
+          if x+w > full.width or y+h > full.height:
+              raise SystemExit(f'Rendered image box {box} falls outside full screenshot {full.size}.')
 
           checks = []
           for px, py, ox, oy in [
@@ -116,6 +117,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: odegaard-render-verification
-          path: |
-            /tmp/odegaard-render.png
-            /tmp/odegaard-image-box.png
+          path: /tmp/odegaard-render.png
