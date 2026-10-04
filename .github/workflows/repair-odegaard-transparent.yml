@@ -1,0 +1,167 @@
+name: Repair Odegaard transparent cutout
+
+on:
+  push:
+    paths:
+      - ".github/workflows/repair-odegaard-transparent.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install image tools
+        run: |
+          python -m pip install --disable-pip-version-check "rembg[cpu]" pillow scipy
+          sudo apt-get update
+          sudo apt-get install -y libgl1
+
+      - name: Rebuild only Odegaard cutout
+        shell: python
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: |
+          import subprocess
+          from collections import deque
+          from pathlib import Path
+          import numpy as np
+          from PIL import Image, ImageFilter
+          from rembg import remove, new_session
+
+          url = "https://assets.arsenal.com//prod/images/large_landscape/dd168c02d4e3-arsenalmenssquad26278martin-odegaard.jpg"
+          raw = Path("/tmp/odegaard.jpg")
+          dest = Path("assets/player-cutouts/player-15.png")
+          dest.parent.mkdir(parents=True, exist_ok=True)
+
+          subprocess.run([
+              "curl","-L","--fail","--retry","5","--retry-delay","3","--http1.1",
+              "-A","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/142.0 Safari/537.36",
+              "-e","https://www.arsenal.com/","-H","Origin: https://www.arsenal.com",
+              "-H","Accept","image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+              "-H","Accept-Language","en-US,en;q=0.9",
+              "-o",str(raw),url
+          ], check=True)
+
+          src = Image.open(raw).convert("RGB")
+
+          # Human-specific segmentation is used first; IS-Net is a second
+          # independent segmentation pass. Taking the stricter mask prevents
+          # a residual studio/background halo from surviving.
+          human = remove(src, session=new_session("u2net_human_seg"),
+                         alpha_matting=True,
+                         alpha_matting_foreground_threshold=240,
+                         alpha_matting_background_threshold=10,
+                         alpha_matting_erode_size=10).convert("RGBA")
+          general = remove(src, session=new_session("isnet-general-use"),
+                           alpha_matting=True,
+                           alpha_matting_foreground_threshold=250,
+                           alpha_matting_background_threshold=5,
+                           alpha_matting_erode_size=15).convert("RGBA")
+
+          a1 = np.asarray(human.getchannel("A"), dtype=np.uint8)
+          a2 = np.asarray(general.getchannel("A"), dtype=np.uint8)
+          alpha = np.minimum(a1, a2)
+
+          # Suppress weak segmentation residue, then retain only substantial
+          # foreground connected to the central player region.
+          alpha[alpha < 32] = 0
+          mask = alpha > 32
+          h,w = mask.shape
+          seen = np.zeros(mask.shape, dtype=bool)
+          components = []
+          for y in range(h):
+              for x in range(w):
+                  if not mask[y,x] or seen[y,x]:
+                      continue
+                  q = [(x,y)]
+                  seen[y,x] = True
+                  pts = []
+                  while q:
+                      px,py = q.pop()
+                      pts.append((px,py))
+                      for nx,ny in ((px-1,py),(px+1,py),(px,py-1),(px,py+1)):
+                          if 0 <= nx < w and 0 <= ny < h and mask[ny,nx] and not seen[ny,nx]:
+                              seen[ny,nx] = True
+                              q.append((nx,ny))
+                  components.append(pts)
+
+          # Keep the substantial central human component(s); tiny detached
+          # specks and backdrop islands are discarded.
+          keep = np.zeros(mask.shape, dtype=bool)
+          min_area = max(150, int(h*w*0.00025))
+          cx0, cx1 = int(w*0.15), int(w*0.85)
+          cy0, cy1 = int(h*0.02), int(h*0.98)
+          for pts in components:
+              if len(pts) < min_area:
+                  continue
+              xs=[p[0] for p in pts]; ys=[p[1] for p in pts]
+              touches_center = max(xs) >= cx0 and min(xs) <= cx1 and max(ys) >= cy0 and min(ys) <= cy1
+              if touches_center:
+                  for x,y in pts: keep[y,x] = True
+
+          alpha[~keep] = 0
+          # Preserve strong interior pixels while removing the visible halo.
+          alpha = np.minimum(alpha, np.asarray(general.getchannel("A"), dtype=np.uint8))
+          out = np.asarray(general, dtype=np.uint8).copy()
+          out[:,:,3] = alpha
+
+          # Make all four outer borders transparent and remove any connected
+          # near-black fringe that survived segmentation.
+          rgba = Image.fromarray(out, "RGBA")
+          px = rgba.load()
+          w,h = rgba.size
+          seen = bytearray(w*h)
+          q = deque()
+          threshold = 90
+          def add(x,y):
+              i=y*w+x
+              if seen[i]: return
+              seen[i]=1
+              r,g,b,a=px[x,y]
+              if a > 0 and max(r,g,b) <= threshold:
+                  q.append((x,y))
+          for x in range(w):
+              add(x,0); add(x,h-1)
+          for y in range(h):
+              add(0,y); add(w-1,y)
+          while q:
+              x,y=q.popleft()
+              r,g,b,a=px[x,y]
+              px[x,y]=(r,g,b,0)
+              for nx,ny in ((x-1,y),(x+1,y),(x,y-1),(x,y+1)):
+                  if 0<=nx<w and 0<=ny<h: add(nx,ny)
+
+          # Tiny feathering makes the edge clean without restoring a background.
+          alpha_img = rgba.getchannel("A").filter(ImageFilter.GaussianBlur(0.35))
+          rgba.putalpha(alpha_img)
+          rgba.save(dest, "PNG", optimize=True)
+
+          print("Saved", dest, "size=", rgba.size, "alpha=", rgba.getchannel("A").getextrema())
+
+      - name: Verify Odegaard image
+        shell: python
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          p="assets/player-cutouts/player-15.png"
+          with Image.open(p) as im:
+              assert im.mode == "RGBA"
+              a=im.getchannel("A")
+              print("alpha range:", a.getextrema())
+              corners=[a.getpixel((0,0)),a.getpixel((im.width-1,0)),a.getpixel((0,im.height-1)),a.getpixel((im.width-1,im.height-1))]
+              print("corners:",corners)
+              assert max(corners) <= 2, corners
+              assert a.getextrema()[1] > 0, "player mask is empty"
+          PY
+
+      - name: Commit only Odegaard image
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/player-cutouts/player-15.png
+          git diff --cached --quiet || git commit -m "Rebuild Odegaard cutout with stricter human mask"
+          git push
