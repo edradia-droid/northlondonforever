@@ -612,9 +612,52 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
     saveDraft();
   });
   document.getElementById('formation').addEventListener('change',()=>{
+    /*
+     * Changing formation rebuilds the pitch selectors. Preserve the user's
+     * selected players while changing only their available positions.
+     */
+    const previousSelections=[...document.querySelectorAll('[data-slot]')]
+      .map(select=>({
+        slot:select.dataset.slot,
+        player:String(select.value||'').trim()
+      }))
+      .filter(item=>item.player);
+
     renderPitch();
+
+    const newSlots=[...document.querySelectorAll('[data-slot]')];
+    const bySlot=new Map(previousSelections.map(item=>[item.slot,item.player]));
+    const used=new Set();
+
+    // Keep players in the same semantic slot where that slot still exists.
+    newSlots.forEach(select=>{
+      const player=bySlot.get(select.dataset.slot);
+      if(player && !used.has(norm(player))){
+        select.value=player;
+        used.add(norm(player));
+      }
+    });
+
+    // If the new formation has different slot names, keep every remaining
+    // selected player by carrying them into the remaining empty positions.
+    const remaining=previousSelections
+      .map(item=>item.player)
+      .filter(player=>!used.has(norm(player)));
+
+    newSlots.forEach(select=>{
+      if(select.value) return;
+      const next=remaining.find(player=>!used.has(norm(player)));
+      if(!next) return;
+      select.value=next;
+      used.add(norm(next));
+    });
+
+    newSlots.forEach(select=>updatePlayerVisual(select));
+    renderSubs();
     applyDisplayMode();
+    updateDownloadSubs();
     saveDraft();
+
     const f=document.getElementById('downloadFormation');
     if(f)f.textContent=document.getElementById('formation').value;
   });
