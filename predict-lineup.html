@@ -285,7 +285,7 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
   // Ødegaard-only background cleanup for Predict Lineup. Match Details remains unchanged.
   // The source PNG is loaded normally, then its border-connected background is made transparent in a same-origin canvas.
   function nl4RemoveOdegaardBackground(img){
-    if(!img || img.dataset.nl4BgCleaned==='1') return;
+    if(!img || !img.classList.contains('odegaard-photo') || img.dataset.nl4BgCleaned) return;
     img.dataset.nl4BgCleaned='1';
     const run=()=>{
       try{
@@ -327,7 +327,7 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
         }
         ctx.putImageData(im,0,0);
         img.src=c.toDataURL('image/png');
-        img.dataset.nl4BgCleaned='2';
+        img.dataset.nl4BgCleaned='done';
       }catch(e){console.warn('NL4 Ødegaard background cleanup skipped',e);}
     };
     if(img.complete)run();else img.addEventListener('load',run,{once:true});
