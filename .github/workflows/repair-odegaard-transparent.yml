@@ -32,20 +32,38 @@ jobs:
           src_path = Path("assets/player-cutouts/player-15.png")
           src = Image.open(src_path).convert("RGB")
 
-          biref = remove(src, session=new_session("birefnet-general"),\n                          alpha_matting=True,\n                          alpha_matting_foreground_threshold=245,\n                          alpha_matting_background_threshold=8,\n                          alpha_matting_erode_size=16).convert("RGBA")\n\n          human = remove(src, session=new_session("u2net_human_seg"),
-                         alpha_matting=True,
-                         alpha_matting_foreground_threshold=240,
-                         alpha_matting_background_threshold=10,
-                         alpha_matting_erode_size=12).convert("RGBA")
+          biref = remove(
+              src,
+              session=new_session("birefnet-general"),
+              alpha_matting=True,
+              alpha_matting_foreground_threshold=245,
+              alpha_matting_background_threshold=8,
+              alpha_matting_erode_size=16
+          ).convert("RGBA")
 
-          general = remove(src, session=new_session("isnet-general-use"),
-                           alpha_matting=True,
-                           alpha_matting_foreground_threshold=250,
-                           alpha_matting_background_threshold=5,
-                           alpha_matting_erode_size=18).convert("RGBA")
+          human = remove(
+              src,
+              session=new_session("u2net_human_seg"),
+              alpha_matting=True,
+              alpha_matting_foreground_threshold=240,
+              alpha_matting_background_threshold=10,
+              alpha_matting_erode_size=12
+          ).convert("RGBA")
 
-          a = np.minimum(np.asarray(human.getchannel("A"), dtype=np.uint8),
-                         np.asarray(general.getchannel("A"), dtype=np.uint8))
+          general = remove(
+              src,
+              session=new_session("isnet-general-use"),
+              alpha_matting=True,
+              alpha_matting_foreground_threshold=250,
+              alpha_matting_background_threshold=5,
+              alpha_matting_erode_size=18
+          ).convert("RGBA")
+
+          a = np.minimum.reduce([
+              np.asarray(biref.getchannel("A"), dtype=np.uint8),
+              np.asarray(human.getchannel("A"), dtype=np.uint8),
+              np.asarray(general.getchannel("A"), dtype=np.uint8)
+          ])
           a[a < 40] = 0
 
           mask = a > 40
@@ -54,8 +72,6 @@ jobs:
           keep_labels = np.where(sizes >= max(300, int(mask.size * 0.0003)))[0]
           a[~np.isin(labels, keep_labels)] = 0
 
-          # Force the outermost 3 pixels transparent. This removes any background
-          # touching the image boundary without altering the player interior.
           a[:3, :] = 0
           a[-3:, :] = 0
           a[:, :3] = 0
