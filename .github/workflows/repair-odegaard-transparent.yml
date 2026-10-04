@@ -13,11 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Install image tools
         run: |
           python -m pip install --disable-pip-version-check "rembg[cpu]" pillow scipy
           sudo apt-get update
           sudo apt-get install -y libgl1
+
       - name: Rebuild only Odegaard cutout from the repository asset
         shell: python
         run: |
@@ -25,44 +27,65 @@ jobs:
           import numpy as np
           from PIL import Image, ImageFilter
           from rembg import remove, new_session
-          src_path=Path("assets/player-cutouts/player-15.png")
-          dest=src_path
-          src=Image.open(src_path).convert("RGB")
-          human=remove(src,session=new_session("u2net_human_seg"),alpha_matting=True,alpha_matting_foreground_threshold=240,alpha_matting_background_threshold=10,alpha_matting_erode_size=12).convert("RGBA")
-          general=remove(src,session=new_session("isnet-general-use"),alpha_matting=True,alpha_matting_foreground_threshold=250,alpha_matting_background_threshold=5,alpha_matting_erode_size=18).convert("RGBA")
-          a=np.minimum(np.asarray(human.getchannel("A"),dtype=np.uint8),np.asarray(general.getchannel("A"),dtype=np.uint8))
-          a[a<40]=0
-          # Remove all pixels outside the main foreground bounding component(s).
           from scipy import ndimage
-          mask=a>40
-          labels,n=ndimage.label(mask)
-          sizes=np.bincount(labels.ravel())
-          keep_labels=np.where(sizes>=max(300,int(mask.size*0.0003)))[0]
-          keep=np.isin(labels,keep_labels)
-          a[~keep]=0
-          out=np.asarray(general).copy()
-          out[:,:,3]=a
-          rgba=Image.fromarray(out,"RGBA")
+
+          src_path = Path("assets/player-cutouts/player-15.png")
+          src = Image.open(src_path).convert("RGB")
+
+          human = remove(
+              src,
+              session=new_session("u2net_human_seg"),
+              alpha_matting=True,
+              alpha_matting_foreground_threshold=240,
+              alpha_matting_background_threshold=10,
+              alpha_matting_erode_size=12
+          ).convert("RGBA")
+
+          general = remove(
+              src,
+              session=new_session("isnet-general-use"),
+              alpha_matting=True,
+              alpha_matting_foreground_threshold=250,
+              alpha_matting_background_threshold=5,
+              alpha_matting_erode_size=18
+          ).convert("RGBA")
+
+          a = np.minimum(
+              np.asarray(human.getchannel("A"), dtype=np.uint8),
+              np.asarray(general.getchannel("A"), dtype=np.uint8)
+          )
+          a[a < 40] = 0
+
+          mask = a > 40
+          labels, n = ndimage.label(mask)
+          sizes = np.bincount(labels.ravel())
+          keep_labels = np.where(sizes >= max(300, int(mask.size * 0.0003)))[0]
+          keep = np.isin(labels, keep_labels)
+          a[~keep] = 0
+
+          out = np.asarray(general).copy()
+          out[:, :, 3] = a
+          rgba = Image.fromarray(out, "RGBA")
           rgba.putalpha(rgba.getchannel("A").filter(ImageFilter.GaussianBlur(0.3)))
-          rgba.save(dest,"PNG",optimize=True)
-          print("saved",dest,"alpha",rgba.getchannel("A").getextrema())
+          rgba.save(src_path, "PNG", optimize=True)
+
+          print("saved", src_path, "alpha", rgba.getchannel("A").getextrema())
+
       - name: Verify
         shell: python
         run: |
-          python - <<'PY'
           from PIL import Image
-          p="assets/player-cutouts/player-15.png"
+
+          p = "assets/player-cutouts/player-15.png"
           with Image.open(p) as im:
-              assert im.mode=="RGBA"
-              a=im.getchannel("A")
-              print("alpha:",a.getextrema())
-              print("corners:",[a.getpixel(x) for x in [(0,0),(im.width-1,0),(0,im.height-1),(im.width-1,im.height-1)]])
-              assert max(a.getpixel(x) for x in [(0,0),(im.width-1,0),(0,im.height-1),(im.width-1,im.height-1)])<=2
-          PY
-      - name: Commit only Odegaard image
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/player-cutouts/player-15.png
-          git diff --cached --quiet || git commit -m "Repair Odegaard cutout from existing asset"
-          git push
+              assert im.mode == "RGBA"
+              a = im.getchannel("A")
+              corners = [
+                  a.getpixel((0, 0)),
+                  a.getpixel((im.width - 1, 0)),
+                  a.getpixel((0, im.height - 1)),
+                  a.getpixel((im.width - 1, im.height - 1))
+              ]
+              print("alpha:", a.getextrema())
+              print("corners:", corners)
+              assert max(corners) <= 2
