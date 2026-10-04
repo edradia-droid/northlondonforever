@@ -151,6 +151,9 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
   .download-logo{width:64px;height:64px}
   .download-fixture{font-size:14px}
   .downloadable-lineup{padding:10px}
+  /* Downloaded lineup: use the full phone viewport, not the narrower card width. */
+  .nl4-exporting{width:100vw!important;max-width:none!important;margin-left:0!important;margin-right:0!important;border-radius:0!important}
+  .nl4-exporting .pitch-wrap{width:100%!important}
 }
 
 </style>
@@ -643,7 +646,10 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
       host.style.position='fixed';
       host.style.left='-100000px';
       host.style.top='0';
-      host.style.width=Math.max(board.scrollWidth,board.getBoundingClientRect().width)+'px';
+      const exportWidth=window.matchMedia('(max-width:520px)').matches
+        ? Math.max(document.documentElement.clientWidth,window.innerWidth)
+        : Math.max(board.scrollWidth,board.getBoundingClientRect().width);
+      host.style.width=exportWidth+'px';
       host.style.background='#080808';
 
       const clone=board.cloneNode(true);
