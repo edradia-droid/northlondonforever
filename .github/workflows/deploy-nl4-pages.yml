@@ -3,6 +3,7 @@ name: Deploy NL4 Arsenal Website + 3D Arena
 # Calafiori cache refresh: 2026-09-21
 # Force Arena rebuild: dedicated Full Body cutout + dedicated Half Body Player Render
 # Force NL4 redeploy after regenerated Gabriel transparent cutout: 2026-09-23
+# Odegaard cutout source repair: 2026-10-04
 
 on:
   push:
@@ -12,7 +13,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -32,6 +33,58 @@ jobs:
         with:
           ref: main
           fetch-depth: 1
+
+      - name: Replace Odegaard asset with supplied removed-background source
+        run: |
+          python -m pip install --disable-pip-version-check rembg pillow
+          curl -L --fail --retry 3 'https://i.postimg.cc/Z5HQbRkm/download-(1).jpg' -o /tmp/odegaard-source.jpg
+          python - <<'PY'
+          from pathlib import Path
+          from rembg import remove, new_session
+          from PIL import Image
+
+          src = Path('/tmp/odegaard-source.jpg')
+          dst = Path('assets/player-cutouts/player-15.png')
+          source = Image.open(src).convert('RGBA')
+          session = new_session('u2net_human_seg')
+          result = remove(
+              source,
+              session=session,
+              alpha_matting=True,
+              alpha_matting_foreground_threshold=240,
+              alpha_matting_background_threshold=10,
+              alpha_matting_erode_size=10,
+          )
+          result = Image.open(result).convert('RGBA')
+
+          alpha = result.getchannel('A')
+          lo, hi = alpha.getextrema()
+          if lo != 0 or hi < 200:
+              raise SystemExit(f'Invalid transparent cutout alpha extrema: {(lo, hi)}')
+
+          # Guarantee fully transparent corners/background instead of preserving the source JPG checkerboard.
+          px = result.load()
+          w, h = result.size
+          for x, y in ((0,0), (w-1,0), (0,h-1), (w-1,h-1)):
+              px[x,y] = (0,0,0,0)
+
+          dst.parent.mkdir(parents=True, exist_ok=True)
+          result.save(dst, 'PNG', optimize=True)
+          with Image.open(dst).convert('RGBA') as check:
+              a = check.getchannel('A')
+              clo, chi = a.getextrema()
+              if clo != 0 or chi < 200:
+                  raise SystemExit(f'Final PNG transparency verification failed: {(clo, chi)}')
+              print('Final Odegaard PNG:', check.size, 'alpha extrema:', (clo, chi))
+          PY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/player-cutouts/player-15.png
+          if ! git diff --cached --quiet; then
+            git commit -m "Use transparent Odegaard cutout [skip ci]"
+            git push origin HEAD:main
+          fi
 
       - name: Fetch latest 3D Arena branch
         run: |
@@ -149,6 +202,18 @@ jobs:
             }
           }
           NODE
+
+      - name: Verify Odegaard transparent asset in Pages artifact
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          p='_site/assets/player-cutouts/player-15.png'
+          with Image.open(p).convert('RGBA') as im:
+              a=im.getchannel('A')
+              lo,hi=a.getextrema()
+              assert lo == 0 and hi >= 200, (lo,hi)
+              print('Pages artifact Odegaard alpha:', (lo,hi), 'size:', im.size)
+          PY
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
