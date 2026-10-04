@@ -145,7 +145,6 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
 .nl4-exporting .export-only{display:block}
 .nl4-exporting .screen-only{display:none!important}
 .nl4-exporting .slot select{display:none!important}
-.nl4-exporting .slot{width:112px}
 .nl4-exporting .export-player-name{display:block!important}
 @media(max-width:520px){
   .download-logo{width:64px;height:64px}
@@ -752,20 +751,18 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
 
       const clone=board.cloneNode(true);
       clone.classList.add('nl4-exporting');
-      clone.style.width=exportWidth+'px';
-      clone.style.maxWidth='none';
-      clone.style.marginLeft='0';
-      clone.style.marginRight='0';
+
+      // Preserve the live board's exact layout and scale the complete board
+      // as one unit. This keeps player sizes, coordinates, pitch markings and
+      // spacing identical to what the user sees before downloading.
       if(liveRect.width>0 && liveRect.height>0){
-        clone.style.height=(liveRect.height*exportScale)+'px';
-      }
-      if(livePitch && livePitch.width>0 && livePitch.height>0){
-        const clonePitch=clone.querySelector('.pitch-wrap');
-        if(clonePitch){
-          clonePitch.style.width='100%';
-          clonePitch.style.height=(livePitch.height*exportScale)+'px';
-          clonePitch.style.minHeight='0';
-        }
+        clone.style.width=liveRect.width+'px';
+        clone.style.maxWidth='none';
+        clone.style.marginLeft='0';
+        clone.style.marginRight='0';
+        clone.style.height=liveRect.height+'px';
+        clone.style.transformOrigin='top left';
+        clone.style.transform='scale('+exportScale+')';
       }
 
       // Remove all form controls from the downloaded image.
@@ -787,11 +784,9 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
 
       const canvas=await html2canvas(clone,{
         backgroundColor:'#080808',
-        // Capture the clone at its actual exported dimensions. Its internal
-        // pitch geometry has already been scaled proportionally from the live board.
         scale:Math.min(2,window.devicePixelRatio||1.5),
-        width:exportWidth,
-        height:clone.getBoundingClientRect().height,
+        width:liveRect.width,
+        height:liveRect.height,
         useCORS:true,
         allowTaint:false,
         logging:false
