@@ -245,6 +245,83 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
   let fixtureUuid=null;
   let players=[];
   let db=null;
+
+  // Persist the fan's working lineup locally, per fixture.
+  // This is a draft only: it does not submit anything to Supabase.
+  const draftStorageKey=()=>`nl4-predict-lineup-draft:${fixtureRef || 'general'}`;
+
+  function saveDraft(){
+    try{
+      const starters={};
+      document.querySelectorAll('[data-slot]').forEach(select=>{
+        const value=String(select.value || '').trim();
+        if(value) starters[select.dataset.slot]=value;
+      });
+      const substitutes=[...document.querySelectorAll('[data-sub]:checked')]
+        .map(input=>String(input.value || '').trim())
+        .filter(Boolean);
+
+      localStorage.setItem(draftStorageKey(),JSON.stringify({
+        version:1,
+        formation:document.getElementById('formation')?.value || '4-3-3',
+        displayMode:document.getElementById('displayMode')?.value || 'photos',
+        kit:document.getElementById('kit')?.value || 'home',
+        starters,
+        substitutes,
+        savedAt:new Date().toISOString()
+      }));
+    }catch(error){
+      console.warn('NL4 lineup draft could not be saved:',error);
+    }
+  }
+
+  function loadDraft(){
+    try{
+      const raw=localStorage.getItem(draftStorageKey());
+      if(!raw) return null;
+      const data=JSON.parse(raw);
+      return data && typeof data==='object' ? data : null;
+    }catch(error){
+      console.warn('NL4 lineup draft could not be restored:',error);
+      return null;
+    }
+  }
+
+  function restoreDraft(){
+    const draft=loadDraft();
+    if(!draft) return;
+
+    if(formations[draft.formation]){
+      document.getElementById('formation').value=draft.formation;
+    }
+    if(['photos','initials'].includes(draft.displayMode)){
+      displayMode=draft.displayMode;
+    }
+    if(['home','away'].includes(draft.kit)){
+      document.getElementById('kit').value=draft.kit;
+      document.body.dataset.kit=draft.kit;
+    }
+
+    // renderPitch() creates the slot selectors, so restore their values after it runs.
+    renderPitch();
+    const starterMap=draft.starters && typeof draft.starters==='object' ? draft.starters : {};
+    document.querySelectorAll('[data-slot]').forEach(select=>{
+      select.value=starterMap[select.dataset.slot] || '';
+    });
+
+    renderSubs();
+
+    const substituteSet=new Set(
+      Array.isArray(draft.substitutes) ? draft.substitutes.map(norm) : []
+    );
+    document.querySelectorAll('[data-sub]').forEach(input=>{
+      input.checked=substituteSet.has(norm(input.value));
+    });
+
+    applyDisplayMode();
+    updateDownloadSubs();
+    saveDraft();
+  }
   function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
   function voterKey(){
     let k=localStorage.getItem('nl4_fan_voter_key');
@@ -394,7 +471,9 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
 
   // Seed the selector immediately from the authoritative squad.
   seedPlayersFromAuthoritativeSquad();
-  renderPitch(); renderSubs();
+  restoreDraft();
+  renderPitch();
+  renderSubs();
   const kitControl=document.getElementById('kit');
   document.body.dataset.kit=kitControl?.value==='away'?'away':'home';
   applyDisplayMode();
@@ -520,14 +599,17 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
     displayMode=e.target.value==='initials'?'initials':'photos';
     localStorage.setItem('nl4_predict_lineup_display_mode',displayMode);
     applyDisplayMode();
+    saveDraft();
   });
   document.getElementById('kit').addEventListener('change',e=>{
     document.body.dataset.kit=e.target.value==='away'?'away':'home';
     applyDisplayMode();
+    saveDraft();
   });
   document.getElementById('formation').addEventListener('change',()=>{
     renderPitch();
     applyDisplayMode();
+    saveDraft();
     const f=document.getElementById('downloadFormation');
     if(f)f.textContent=document.getElementById('formation').value;
   });
@@ -536,6 +618,7 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
       updatePlayerVisual(e.target);
       renderSubs();
       updateDownloadSubs();
+      saveDraft();
     }
   });
   function updateDownloadSubs(){
@@ -553,6 +636,7 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
       setMsg('lineupMsg','Maximum 9 substitutes.');
     }
     updateDownloadSubs();
+    saveDraft();
   });
 
   function scoreLockKey(){
@@ -607,6 +691,7 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
     const starters=[...document.querySelectorAll('[data-slot]')].map(s=>({slot:s.dataset.slot,player_name:s.value.trim()}));
     if(starters.some(x=>!x.player_name)) return setMsg('lineupMsg','Choose all 11 starters first.');
     if(new Set(starters.map(x=>x.player_name.toLowerCase())).size!==11) return setMsg('lineupMsg','Each starter must be a different player.');
+    saveDraft();
     const subs=[...document.querySelectorAll('[data-sub]:checked')].map(x=>x.value);
     const starterSet=new Set(starters.map(x=>x.player_name.toLowerCase()));
     if(subs.some(x=>starterSet.has(x.toLowerCase()))) return setMsg('lineupMsg','A starter cannot also be a substitute.');
@@ -700,6 +785,9 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
   }
 
   document.getElementById('downloadPredictionBtn')?.addEventListener('click',downloadPredictedLineup);
+
+  window.addEventListener('pagehide',saveDraft);
+  window.addEventListener('beforeunload',saveDraft);
 
   init().catch(err=>{const boot=document.getElementById('bootStatus');if(boot){boot.textContent='PAGE ERROR • '+err.message;boot.className='status bad';}console.error(err);});
 })();
