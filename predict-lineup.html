@@ -785,8 +785,8 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
       const canvas=await html2canvas(clone,{
         backgroundColor:'#080808',
         scale:Math.min(2,window.devicePixelRatio||1.5),
-        width:liveRect.width,
-        height:liveRect.height,
+        width:exportWidth,
+        height:liveRect.height*exportScale,
         useCORS:true,
         allowTaint:false,
         logging:false
