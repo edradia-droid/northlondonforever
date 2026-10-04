@@ -1,4 +1,5 @@
 name: Fix Martin Odegaard Match Details Cutout
+# 2026-10-04 execution trigger: use supplied removed-background source and refresh only Odegaard asset/cache.
 
 on:
   push:
