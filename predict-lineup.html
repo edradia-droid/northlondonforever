@@ -282,6 +282,57 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
     }).filter(p=>p.name);
     return players.length>0;
   }
+  // Ødegaard-only background cleanup for Predict Lineup. Match Details remains unchanged.
+  // The source PNG is loaded normally, then its border-connected background is made transparent in a same-origin canvas.
+  function nl4RemoveOdegaardBackground(img){
+    if(!img || img.dataset.nl4BgCleaned==='1') return;
+    img.dataset.nl4BgCleaned='1';
+    const run=()=>{
+      try{
+        const w=img.naturalWidth,h=img.naturalHeight;
+        if(!w || !h) return;
+        const c=document.createElement('canvas'); c.width=w; c.height=h;
+        const ctx=c.getContext('2d',{willReadFrequently:true});
+        ctx.drawImage(img,0,0,w,h);
+        const im=ctx.getImageData(0,0,w,h), d=im.data;
+        const samples=[];
+        const add=(x,y)=>{const i=(y*w+x)*4;if(d[i+3]>0)samples.push([d[i],d[i+1],d[i+2]]);};
+        const step=Math.max(1,Math.floor(Math.min(w,h)/32));
+        for(let x=0;x<w;x+=step){add(x,0);add(x,h-1)}
+        for(let y=0;y<h;y+=step){add(0,y);add(w-1,y)}
+        if(!samples.length) return;
+        const bg=(p)=>{let best=1e9;for(const q of samples){const dr=p[0]-q[0],dg=p[1]-q[1],db=p[2]-q[2];const z=dr*dr+dg*dg+db*db;if(z<best)best=z}return best};
+        const seen=new Uint8Array(w*h), qx=new Int32Array(w*h), qy=new Int32Array(w*h);
+        let head=0,tail=0;
+        const push=(x,y)=>{const k=y*w+x;if(seen[k])return;seen[k]=1;qx[tail]=x;qy[tail]=y;tail++};
+        for(let x=0;x<w;x+=step){
+          let k=x*4;if(bg([d[k],d[k+1],d[k+2]])<55*55)push(x,0);
+          k=((h-1)*w+x)*4;if(bg([d[k],d[k+1],d[k+2]])<55*55)push(x,h-1);
+        }
+        for(let y=0;y<h;y+=step){
+          let k=(y*w)*4;if(bg([d[k],d[k+1],d[k+2]])<55*55)push(0,y);
+          k=(y*w+w-1)*4;if(bg([d[k],d[k+1],d[k+2]])<55*55)push(w-1,y);
+        }
+        const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+        while(head<tail){
+          const x=qx[head],y=qy[head++],i=(y*w+x)*4;
+          d[i+3]=0;
+          for(const [dx,dy] of dirs){
+            const nx=x+dx,ny=y+dy;
+            if(nx<0||ny<0||nx>=w||ny>=h)continue;
+            const ni=(ny*w+nx)*4;
+            if(seen[ny*w+nx]||d[ni+3]===0)continue;
+            if(bg([d[ni],d[ni+1],d[ni+2]])<55*55)push(nx,ny);
+          }
+        }
+        ctx.putImageData(im,0,0);
+        img.src=c.toDataURL('image/png');
+        img.dataset.nl4BgCleaned='2';
+      }catch(e){console.warn('NL4 Ødegaard background cleanup skipped',e);}
+    };
+    if(img.complete)run();else img.addEventListener('load',run,{once:true});
+  }
+
   function playerPhotoUrl(player){
     const keyCandidates=[player?.name,player?.webName,player?.feedName].filter(Boolean).map(norm);
     const file=keyCandidates.map(k=>PLAYER_PHOTOS[k]).find(Boolean);
@@ -311,13 +362,13 @@ h1{margin:6px 0;font-size:28px} h2{margin:6px 0 10px;font-size:18px}
     const imageSrc=localPhoto || player?.image_url || '';
     if(visual){
       visual.innerHTML=imageSrc
-        ? `<img class="player-photo${norm(player.name)==="martin odegaard"?" odegaard-photo":""}" src="${esc(imageSrc)}" alt="${esc(player.name)}" referrerpolicy="no-referrer" loading="eager" decoding="async" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'player-photo placeholder',textContent:'${esc(initials(player.name))}'}))">`
+        ? `<img class="player-photo${norm(player.name)==="martin odegaard"?" odegaard-photo":""}" src="${esc(imageSrc)}" alt="${esc(player.name)}" referrerpolicy="no-referrer" loading="eager" decoding="async" onload="nl4RemoveOdegaardBackground(this)" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'player-photo placeholder',textContent:'${esc(initials(player.name))}'}))">`
         : `<span class="player-photo placeholder">${esc(initials(player?.name))}</span>`;
     }
     if(exportName) exportName.textContent=player?.name || 'SELECT PLAYER';
     const selectedPhoto=slot.querySelector('[data-selected-player-photo]');
     if(selectedPhoto) selectedPhoto.innerHTML=imageSrc
-      ? `<img class="selected-player-photo${norm(player.name)==="martin odegaard"?" odegaard-photo":""}" src="${esc(imageSrc)}" alt="${esc(player.name)}" referrerpolicy="no-referrer" loading="eager" decoding="async">`
+      ? `<img class="selected-player-photo${norm(player.name)==="martin odegaard"?" odegaard-photo":""}" src="${esc(imageSrc)}" alt="${esc(player.name)}" referrerpolicy="no-referrer" loading="eager" decoding="async" onload="nl4RemoveOdegaardBackground(this)">`
       : (player ? `<span class="selected-player-photo placeholder">${esc(initials(player.name))}</span>` : '');
   }
   function renderSubs(){
