@@ -841,6 +841,16 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
       if(captureState){
         captureState.controls.forEach(item=>item.el.style.display=item.display);
         captureState.exportOnly.forEach(item=>item.el.style.display=item.display);
+        if(captureState.originalBoardStyle){
+          const s=captureState.originalBoardStyle;
+          board.style.width=s.width;
+          board.style.maxWidth=s.maxWidth;
+          board.style.minWidth=s.minWidth;
+          board.style.marginLeft=s.marginLeft;
+          board.style.marginRight=s.marginRight;
+          board.style.position=s.position;
+          board.style.left=s.left;
+        }
         window.scrollTo(captureState.scrollX,captureState.scrollY);
       }
       btn.disabled=false;
