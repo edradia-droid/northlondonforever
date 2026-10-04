@@ -743,8 +743,30 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
       host.style.width=exportWidth+'px';
       host.style.background='#080808';
 
+      // Keep the exported board geometrically identical to the live board.
+      // The mobile full-width requirement is achieved by proportional scaling,
+      // not by changing slot sizes or pitch coordinates.
+      const liveRect=board.getBoundingClientRect();
+      const livePitch=board.querySelector('.pitch-wrap')?.getBoundingClientRect();
+      const exportScale=liveRect.width>0 ? exportWidth/liveRect.width : 1;
+
       const clone=board.cloneNode(true);
       clone.classList.add('nl4-exporting');
+      clone.style.width=exportWidth+'px';
+      clone.style.maxWidth='none';
+      clone.style.marginLeft='0';
+      clone.style.marginRight='0';
+      if(liveRect.width>0 && liveRect.height>0){
+        clone.style.height=(liveRect.height*exportScale)+'px';
+      }
+      if(livePitch && livePitch.width>0 && livePitch.height>0){
+        const clonePitch=clone.querySelector('.pitch-wrap');
+        if(clonePitch){
+          clonePitch.style.width='100%';
+          clonePitch.style.height=(livePitch.height*exportScale)+'px';
+          clonePitch.style.minHeight='0';
+        }
+      }
 
       // Remove all form controls from the downloaded image.
       clone.querySelectorAll('select,input,button').forEach(el=>el.remove());
@@ -765,7 +787,11 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
 
       const canvas=await html2canvas(clone,{
         backgroundColor:'#080808',
+        // Capture the clone at its actual exported dimensions. Its internal
+        // pitch geometry has already been scaled proportionally from the live board.
         scale:Math.min(2,window.devicePixelRatio||1.5),
+        width:exportWidth,
+        height:clone.getBoundingClientRect().height,
         useCORS:true,
         allowTaint:false,
         logging:false
