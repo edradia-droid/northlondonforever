@@ -45,7 +45,7 @@ body.h2h-page{background:#090909;color:#fff}.h2h-page .app-shell>.main{min-heigh
   function currentStart(){const d=new Date();return d.getUTCMonth()>=6?d.getUTCFullYear():d.getUTCFullYear()-1}
   function seasonStart(s){const m=String(s||'').match(/^(\d{4})\//);return m?Number(m[1]):null}
   function allowed(s,n){if(n==='all')return true;const y=seasonStart(s);return y!==null&&y>=currentStart()-Number(n)+1&&y<=currentStart()}
-  function done(f){const a=f.home_score,b=f.away_score;if(a==null||b==null)return false;return ['fulltime','ft','finished','aet','pen'].includes(String(f.status||'').toLowerCase())||new Date(f.kickoff_at).getTime()<Date.now()}
+  function done(f){const a=f.home_score,b=f.away_score;if(a==null||b==null)return false;return new Date(f.kickoff_at).getTime()<=Date.now()}
   function opponent(f){return f.home_team==='Arsenal'?f.away_team:(f.away_team==='Arsenal'?f.home_team:f.opponent)}
   function logo(f,t){const u=t==='Arsenal'?(f.home_team==='Arsenal'?f.home_crest_url:f.away_crest_url):(f.home_team===t?f.home_crest_url:f.away_crest_url);return u?'<img src="'+esc(u)+'" alt="'+esc(t)+' crest" loading="lazy" referrerpolicy="no-referrer">':esc(String(t||'').slice(0,3).toUpperCase())}
   function records(items){const r={matches:0,wins:0,draws:0,losses:0,gf:0,ga:0,points:0,home:0,away:0,latest:null};items.forEach(f=>{if(!done(f))return;const ah=f.home_team==='Arsenal',ag=Number(ah?f.home_score:f.away_score),og=Number(ah?f.away_score:f.home_score);r.matches++;r.gf+=ag;r.ga+=og;r.points+=ag>og?3:ag===og?1:0;r.wins+=ag>og?1:0;r.draws+=ag===og?1:0;r.losses+=ag<og?1:0;r[ah?'home':'away']++;if(!r.latest||new Date(f.kickoff_at)>new Date(r.latest.kickoff_at))r.latest=f});return r}
