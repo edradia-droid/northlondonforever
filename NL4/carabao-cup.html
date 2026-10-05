@@ -123,7 +123,7 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
 .match-tab{border:0;background:transparent;color:#737b77;padding:11px 7px 10px;font-size:8px;font-weight:900;letter-spacing:1px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent}
 .match-tab.active{color:#fff;border-bottom-color:var(--green)}
 .match-pane{min-height:120px}
-.match-prediction-action{display:flex;justify-content:center;margin-top:16px}.carabao-prediction-link{display:inline-flex;align-items:center;justify-content:center;padding:11px 18px;border:1px solid rgba(232,245,239,.35);border-radius:10px;background:linear-gradient(135deg,rgba(0,143,94,.32),rgba(0,88,59,.22));color:#fff;text-decoration:none;font-size:11px;font-weight:1000;letter-spacing:1px;box-shadow:0 8px 22px rgba(0,0,0,.24)}.carabao-prediction-link:hover{background:linear-gradient(135deg,rgba(0,143,94,.48),rgba(0,88,59,.34));transform:translateY(-1px)}
+.match-prediction-action{display:flex;justify-content:center;margin-top:16px}.next-cup-prediction{display:flex;justify-content:center;margin-top:16px}.next-cup-prediction .carabao-prediction-link{width:100%;max-width:320px}.carabao-prediction-link{display:inline-flex;align-items:center;justify-content:center;padding:11px 18px;border:1px solid rgba(232,245,239,.35);border-radius:10px;background:linear-gradient(135deg,rgba(0,143,94,.32),rgba(0,88,59,.22));color:#fff;text-decoration:none;font-size:11px;font-weight:1000;letter-spacing:1px;box-shadow:0 8px 22px rgba(0,0,0,.24)}.carabao-prediction-link:hover{background:linear-gradient(135deg,rgba(0,143,94,.48),rgba(0,88,59,.34));transform:translateY(-1px)}
 .match-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .match-summary-item{border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:11px;background:rgba(255,255,255,.025)}
 .match-summary-item span{display:block;color:#707a75;font-size:8px;font-weight:800;letter-spacing:.8px}.match-summary-item b{display:block;margin-top:5px;font-size:11px}
@@ -257,7 +257,7 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
 <section class="section">
 <div class="section-head"><div><p class="eyebrow">ARSENAL MATCH CENTRE</p><h2>NEXT CUP TEST</h2></div></div>
 <div class="info-grid">
-<div class="info-card"><h3>Fleetwood Town <span style="color:#777">vs</span> Arsenal</h3><div class="next-match"><div class="club"><small>HOME</small><strong>FLEETWOOD TOWN</strong></div><div class="vs">VS</div><div class="club"><small>AWAY</small><strong>ARSENAL</strong></div></div><div class="match-date">TUESDAY • 27 OCTOBER 2026 • 20:00</div></div>
+<div class="info-card"><h3>Fleetwood Town <span style="color:#777">vs</span> Arsenal</h3><div class="next-match"><div class="club"><small>HOME</small><strong>FLEETWOOD TOWN</strong></div><div class="vs">VS</div><div class="club"><small>AWAY</small><strong>ARSENAL</strong></div></div><div class="match-date">TUESDAY • 27 OCTOBER 2026 • 20:00</div><div id="nextCupPredictionAction" class="next-cup-prediction"></div></div>
 <div class="info-card"><h3>Competition</h3><div class="fact-list"><div class="fact"><span>Round</span><b>Fourth Round</b></div><div class="fact"><span>Venue</span><b>Highbury Stadium</b></div><div class="fact"><span>Format</span><b>Knockout</b></div><div class="fact"><span>Final</span><b>21 March 2027</b></div></div></div>
 </div>
 </section>
@@ -358,6 +358,30 @@ function renderPane(key,pane){
   } else {
     box.innerHTML=d.lineupsHtml||'<div class="match-empty">'+d.lineups+'</div>';
   }
+}
+
+function updateNextCupPredictionLink(fixtures){
+  const host=document.getElementById("nextCupPredictionAction");
+  if(!host)return;
+  const now=Date.now();
+  const next=(fixtures||[])
+    .filter(f=>(f.home_team==="Arsenal"||f.away_team==="Arsenal")&&fixtureRoundKey(f))
+    .filter(f=>{
+      const kickoff=f?.kickoff_at?new Date(f.kickoff_at).getTime():NaN;
+      const status=String(f?.status||"").toLowerCase();
+      const live=["live","1h","ht","2h","et","inprogress","in_progress"].includes(status);
+      return !fixtureIsPlayed(f)&&!live&&(!Number.isFinite(kickoff)||kickoff>now);
+    })
+    .sort((a,b)=>{
+      const ak=a?.kickoff_at?new Date(a.kickoff_at).getTime():Infinity;
+      const bk=b?.kickoff_at?new Date(b.kickoff_at).getTime():Infinity;
+      return ak-bk;
+    })[0];
+  if(!next?.id){
+    host.innerHTML="";
+    return;
+  }
+  host.innerHTML='<a class="carabao-prediction-link" href="../predict-lineup.html?competition=carabao&fixture='+encodeURIComponent(next.id)+'">PREDICT SCORES/LINEUP →</a>';
 }
 
 function updateMatchCentre(key){
@@ -866,6 +890,7 @@ async function hydrateCarabaoFromSupabase(){
     if(fr.error)throw fr.error;
     const fixtures=fr.data||[];
     const arsenalFixtures=fixtures.filter(f=>f.home_team==="Arsenal"||f.away_team==="Arsenal");
+    updateNextCupPredictionLink(arsenalFixtures);
     Object.keys(ARSENAL_FIXTURES).forEach(k=>delete ARSENAL_FIXTURES[k]);
     arsenalFixtures.forEach(f=>{ARSENAL_FIXTURES[f.id]=f;buildFixtureDetails(f);});
     paintBracketFromFixtures(fixtures);
@@ -923,6 +948,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   setInterval(()=>{
     const activeRound=document.querySelector(".round-nav button.active")?.dataset.round;
     if(activeRound && MATCH_DETAILS[activeRound]) renderPane(activeRound,"overview");
+    updateNextCupPredictionLink(Object.values(ARSENAL_FIXTURES));
   },1000);
 });
 
