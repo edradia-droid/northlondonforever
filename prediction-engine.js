@@ -309,7 +309,31 @@
     if(dlMeta) dlMeta.textContent=fixtureDate;
 
     const squadSource=window[predictionConfig.squadGlobal];
-    const squadFeed=squadSource?.Arsenal;
+    let squadFeed=squadSource?.Arsenal;
+
+    // Champions League player pool is sourced from the existing BSD-derived
+    // UCL player statistics table. Carabao uses the shared current Arsenal
+    // squad feed; no competition player list is hardcoded here.
+    if((!Array.isArray(squadFeed)||!squadFeed.length) && predictionConfig.key==='cl'){
+      const uclSquadResult=await db.from('ucl_player_stats')
+        .select('player_name,position')
+        .eq('season','2026/27')
+        .eq('team_name','Arsenal')
+        .order('player_name');
+      if(uclSquadResult.error){
+        boot.textContent='AUTHORITATIVE ARSENAL CHAMPIONS LEAGUE SQUAD FEED UNAVAILABLE';
+        boot.className='status bad';
+        return;
+      }
+      squadFeed=(uclSquadResult.data||[]).map(player=>({
+        name:player.player_name,
+        webName:player.player_name,
+        position:player.position||'',
+        number:null,
+        fplId:null
+      }));
+    }
+
     if(!Array.isArray(squadFeed)||!squadFeed.length){
       boot.textContent=`AUTHORITATIVE ARSENAL ${predictionConfig.name.toUpperCase()} SQUAD FEED UNAVAILABLE`;
       boot.className='status bad';
