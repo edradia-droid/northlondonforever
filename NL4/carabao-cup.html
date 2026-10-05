@@ -123,6 +123,7 @@ a{color:inherit}.topline{height:5px;background:linear-gradient(90deg,var(--green
 .match-tab{border:0;background:transparent;color:#737b77;padding:11px 7px 10px;font-size:8px;font-weight:900;letter-spacing:1px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent}
 .match-tab.active{color:#fff;border-bottom-color:var(--green)}
 .match-pane{min-height:120px}
+.match-prediction-action{display:flex;justify-content:center;margin-top:16px}.carabao-prediction-link{display:inline-flex;align-items:center;justify-content:center;padding:11px 18px;border:1px solid rgba(232,245,239,.35);border-radius:10px;background:linear-gradient(135deg,rgba(0,143,94,.32),rgba(0,88,59,.22));color:#fff;text-decoration:none;font-size:11px;font-weight:1000;letter-spacing:1px;box-shadow:0 8px 22px rgba(0,0,0,.24)}.carabao-prediction-link:hover{background:linear-gradient(135deg,rgba(0,143,94,.48),rgba(0,88,59,.34));transform:translateY(-1px)}
 .match-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .match-summary-item{border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:11px;background:rgba(255,255,255,.025)}
 .match-summary-item span{display:block;color:#707a75;font-size:8px;font-weight:800;letter-spacing:.8px}.match-summary-item b{display:block;margin-top:5px;font-size:11px}
@@ -339,7 +340,12 @@ function renderRoundTracker(){
 
 function renderPane(key,pane){
   const d=MATCH_DETAILS[key],box=document.querySelector("#matchPane"); if(!d||!box)return;
-  if(pane==="overview")box.innerHTML='<div class="match-summary-grid">'+d.overview.map(x=>'<div class="match-summary-item"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join("")+'</div>';
+  if(pane==="overview"){
+    const predictionLink=d.fixtureId
+      ? '<div class="match-prediction-action"><a class="carabao-prediction-link" href="../predict-lineup.html?competition=carabao&fixture='+encodeURIComponent(d.fixtureId)+'">PREDICT LINEUP →</a></div>'
+      : '';
+    box.innerHTML='<div class="match-summary-grid">'+d.overview.map(x=>'<div class="match-summary-item"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join("")+'</div>'+predictionLink;
+  }
   else if(pane==="events"){
     box.innerHTML=d.eventsHtml||'<div class="match-empty">'+d.events+'</div>';
   } else if(pane==="stats") {
