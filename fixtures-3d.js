@@ -191,7 +191,7 @@
             <div class="unified-card-bottom">
               <span>MATCH ${String(match.matchday || '').padStart(2,'0')} / 38</span>
               <div class="fixture-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-                ${predictionClosed ? '' : `<a class="predict-lineup-link details-link" href="predict-lineup.html?fixture=${encodeURIComponent(match.id)}">Predict Lineup</a>`}
+                ${predictionClosed ? '' : `<a class="predict-lineup-link details-link" href="predict-lineup.html?fixture=${encodeURIComponent(match.id)}">Predict Scores/Lineup</a>`}
                 <a class="details-link" href="match-details.html?fixture=${encodeURIComponent(match.id)}">More Details →</a>
               </div>
             </div>
