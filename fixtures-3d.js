@@ -286,4 +286,7 @@
   }
 
   loadFixtures();
+  // Re-render periodically so the prediction action disappears at kickoff
+  // even when the Fixtures page remains open.
+  setInterval(loadFixtures,30000);
 })();
