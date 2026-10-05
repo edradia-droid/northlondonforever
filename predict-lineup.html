@@ -235,6 +235,7 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
 <script src="supabase-client.js?v=20260817-predict-fix"></script>
 <script src="premier-league-final-squads-2026-27.js"></script>
+<script src="prediction-config.js"></script>
 <script>
 (function(){
   const formations={
@@ -253,11 +254,7 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
   const params=new URLSearchParams(location.search);
   const fixtureRef=params.get('fixture') || '';
   const competition=(params.get('competition') || 'pl').toLowerCase();
-  const predictionConfig={
-    pl:{key:'pl',name:'Premier League',squadGlobal:'NL4_FINAL_PL_SQUADS'},
-    cl:{key:'cl',name:'Champions League',squadGlobal:'NL4_FINAL_CL_SQUADS'},
-    fa:{key:'fa',name:'FA Cup',squadGlobal:'NL4_FINAL_FA_SQUADS'}
-  }[competition] || {key:'pl',name:'Premier League',squadGlobal:'NL4_FINAL_PL_SQUADS'};
+  const predictionConfig=(window.NL4_PREDICTION_CONFIG?.[competition]) || window.NL4_PREDICTION_CONFIG.pl;
   let fixtureUuid=null;
   let players=[];
   let db=null;
