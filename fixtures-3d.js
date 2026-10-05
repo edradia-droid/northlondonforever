@@ -115,6 +115,10 @@
     };
   }
 
+  const h2hFixtureStyle=document.createElement('style');
+  h2hFixtureStyle.textContent='.h2h-fixture-link{border-color:rgba(216,173,69,.34)!important;color:#d8ad45!important}.h2h-fixture-link:hover{background:rgba(216,173,69,.08)}';
+  document.head.appendChild(h2hFixtureStyle);
+
   function applyTilt() {
     if (!window.matchMedia('(pointer:fine)').matches ||
         window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
@@ -192,6 +196,7 @@
               <span>MATCH ${String(match.matchday || '').padStart(2,'0')} / 38</span>
               <div class="fixture-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                 ${predictionClosed ? '' : `<a class="predict-lineup-link details-link" href="predict-lineup.html?fixture=${encodeURIComponent(match.id)}">Predict Scores/Lineup</a>`}
+                <a class="details-link h2h-fixture-link" href="head-to-head.html?opponent=${encodeURIComponent(match.home === 'Arsenal' ? match.away : match.home)}">H2H vs ${escapeHtml(match.home === 'Arsenal' ? match.away : match.home)} →</a>
                 <a class="details-link" href="match-details.html?fixture=${encodeURIComponent(match.id)}">More Details →</a>
               </div>
             </div>
