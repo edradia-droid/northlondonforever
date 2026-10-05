@@ -341,8 +341,11 @@ function renderRoundTracker(){
 function renderPane(key,pane){
   const d=MATCH_DETAILS[key],box=document.querySelector("#matchPane"); if(!d||!box)return;
   if(pane==="overview"){
-    const predictionLink=d.fixtureId
-      ? '<div class="match-prediction-action"><a class="carabao-prediction-link" href="../predict-lineup.html?competition=carabao&fixture='+encodeURIComponent(d.fixtureId)+'">PREDICT LINEUP →</a></div>'
+    const kickoffMs=Number(d.predictionKickoffAt)||NaN;
+    const liveStatus=['live','1h','ht','2h','et','inprogress','in_progress'].includes(String(d.predictionStatus||'').toLowerCase());
+    const predictionOpen=d.fixtureId && !d.predictionClosed && !liveStatus && (!Number.isFinite(kickoffMs)||kickoffMs>Date.now());
+    const predictionLink=predictionOpen
+      ? '<div class="match-prediction-action"><a class="carabao-prediction-link" href="../predict-lineup.html?competition=carabao&fixture='+encodeURIComponent(d.fixtureId)+'">PREDICT SCORES/LINEUP →</a></div>'
       : '';
     box.innerHTML='<div class="match-summary-grid">'+d.overview.map(x=>'<div class="match-summary-item"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join("")+'</div>'+predictionLink;
   }
@@ -714,6 +717,9 @@ function buildFixtureDetails(f){
   const badgeClass=state==="upcoming"?"upcoming":state==="completed"?"":"locked";
   const scoreText=fixtureDisplayScore(f);
   const next=nextRoundFor(key);
+  const kickoffMs=f?.kickoff_at?new Date(f.kickoff_at).getTime():NaN;
+  const predictionStatus=String(f?.status||'').toLowerCase();
+  const predictionClosed=fixtureIsPlayed(f)||['live','1h','ht','2h','et','inprogress','in_progress'].includes(predictionStatus)||(Number.isFinite(kickoffMs)&&kickoffMs<=Date.now());
   MATCH_DETAILS[key]={
     ...(MATCH_DETAILS[key]||{}),
     kicker:roundName(key).toUpperCase()+" • "+(state==="completed"?"RESULT":state==="upcoming"?"UPCOMING":"LOCKED"),
@@ -737,7 +743,10 @@ function buildFixtureDetails(f){
     nextLabel:next?"ROAD AHEAD":"",
     nextButton:next?"VIEW "+roundName(next).toUpperCase():"",
     nextRound:next,
-    fixtureId:f.id
+    fixtureId:f.id,
+    predictionKickoffAt:kickoffMs,
+    predictionStatus,
+    predictionClosed
   };
   if(ROUND_DATA[key]){
     ROUND_DATA[key].state=state;
