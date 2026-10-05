@@ -245,8 +245,19 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
     '3-5-2':[['GK',50,90],['LCB',27,72],['CB',50,74],['RCB',73,72],['LWB',14,50],['LCM',34,51],['CAM',50,38],['RCM',66,51],['RWB',86,50],['LST',39,19],['RST',61,19]],
     '4-1-4-1':[['GK',50,90],['LB',15,72],['LCB',38,72],['RCB',62,72],['RB',85,72],['DM',50,59],['LM',16,42],['LCM',38,43],['RCM',62,43],['RM',84,42],['ST',50,16]]
   };
+  /*
+   * Shared NL4 prediction configuration.
+   * Competition pages can load this same prediction UI with a different
+   * competition key without duplicating the prediction engine.
+   */
   const params=new URLSearchParams(location.search);
   const fixtureRef=params.get('fixture') || '';
+  const competition=(params.get('competition') || 'pl').toLowerCase();
+  const predictionConfig={
+    pl:{key:'pl',name:'Premier League',squadGlobal:'NL4_FINAL_PL_SQUADS'},
+    cl:{key:'cl',name:'Champions League',squadGlobal:'NL4_FINAL_CL_SQUADS'},
+    fa:{key:'fa',name:'FA Cup',squadGlobal:'NL4_FINAL_FA_SQUADS'}
+  }[competition] || {key:'pl',name:'Premier League',squadGlobal:'NL4_FINAL_PL_SQUADS'};
   let fixtureUuid=null;
   let players=[];
   let db=null;
@@ -539,9 +550,10 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
     if(dlFixture) dlFixture.textContent=`${home} vs ${away}`;
     if(dlMeta) dlMeta.textContent=fixtureDate;
 
-    const squadFeed=window.NL4_FINAL_PL_SQUADS?.Arsenal;
+    const squadSource=window[predictionConfig.squadGlobal];
+    const squadFeed=squadSource?.Arsenal;
     if(!Array.isArray(squadFeed)||!squadFeed.length){
-      boot.textContent='AUTHORITATIVE ARSENAL SQUAD FEED UNAVAILABLE';
+      boot.textContent=`AUTHORITATIVE ARSENAL ${predictionConfig.name.toUpperCase()} SQUAD FEED UNAVAILABLE`;
       boot.className='status bad';
       return;
     }
@@ -610,7 +622,7 @@ body[data-kit="away"] .sub-initials{--lineup-circle-color:#13294b;color:#fff}
       renderSubs();
       applyDisplayMode();
     }
-    boot.textContent=`READY • ${players.length} current EPL squad players loaded • fixture resolved`;
+    boot.textContent=`READY • ${players.length} current ${predictionConfig.name} squad players loaded • fixture resolved`;
     boot.className='status good';
 
     const closed=new Date(f.kickoff_at)<=new Date() || ['live','1h','ht','2h','et','fulltime','finished','ft','aet','pen','played'].includes(String(f.status||'').toLowerCase());
