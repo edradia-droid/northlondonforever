@@ -22,6 +22,12 @@
       name:'FA Cup',
       shortName:'FA',
       squadGlobal:'NL4_FINAL_FA_SQUADS'
+    },
+    carabao:{
+      key:'carabao',
+      name:'Carabao Cup',
+      shortName:'CARABAO',
+      squadGlobal:'NL4_FINAL_PL_SQUADS'
     }
   };
 })();
