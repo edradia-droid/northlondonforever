@@ -919,6 +919,11 @@ document.addEventListener("DOMContentLoaded",()=>{
     });
   }
   hydrateCarabaoFromSupabase();
+  // Keep the Overview action synchronized with kickoff while the Match Centre stays open.
+  setInterval(()=>{
+    const activeRound=document.querySelector(".round-nav button.active")?.dataset.round;
+    if(activeRound && MATCH_DETAILS[activeRound]) renderPane(activeRound,"overview");
+  },1000);
 });
 
 </script>
