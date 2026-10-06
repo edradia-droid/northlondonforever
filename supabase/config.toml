@@ -1,0 +1,6 @@
+[functions.sync-arsenal-pl-history]
+verify_jwt = false
+
+[functions.sync-football-data]
+verify_jwt = false
+import_map = true
