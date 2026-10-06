@@ -197,7 +197,7 @@
               <span>MATCH ${String(match.matchday || '').padStart(2,'0')} / 38</span>
               <div class="fixture-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                 ${predictionClosed ? '' : `<a class="predict-lineup-link details-link" href="predict-lineup.html?fixture=${encodeURIComponent(match.id)}">Predict Scores/Lineup</a>`}
-                <a class="details-link h2h-fixture-link" href="head-to-head.html?opponent=${encodeURIComponent(match.home === 'Arsenal' ? match.awayTeamId : match.homeTeamId)}">H2H vs ${escapeHtml(match.home === 'Arsenal' ? match.away : match.home)} →</a>
+                <a class="details-link h2h-fixture-link" href="head-to-head.html?opponent=${encodeURIComponent((match.home === 'Arsenal' ? match.awayTeamId : match.homeTeamId) ?? (match.home === 'Arsenal' ? match.away : match.home))}">H2H vs ${escapeHtml(match.home === 'Arsenal' ? match.away : match.home)} →</a>
                 <a class="details-link" href="match-details.html?fixture=${encodeURIComponent(match.id)}">More Details →</a>
               </div>
             </div>
