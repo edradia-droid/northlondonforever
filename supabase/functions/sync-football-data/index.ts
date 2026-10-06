@@ -31,7 +31,7 @@ function seasonItems(x:any){
   return [];
 }
 const nm=(x:any)=>typeof x==='string'?x:(x?.name??x?.short_name??null);
-const id=(x:any)=>x?.id??x?.event_id??x?.fixture_id??null;
+const id=(x:any)=>x?.id??x?.team_id??x?.event_id??x?.fixture_id??x?.team?.id??x?.club?.id??null;
 const num=(x:any)=>x==null||x===''?null:Number(x);
 function canonicalPlayerName(x:any){
  const s=String(x??'').trim();
