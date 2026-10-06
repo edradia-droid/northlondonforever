@@ -102,6 +102,7 @@
       matchday: row.matchday,
       home, away,
       homeCode: teamCode(home), awayCode: teamCode(away),
+      homeTeamId: row.home_team_id ?? null, awayTeamId: row.away_team_id ?? null,
       homeLogo: teamLogo(home), awayLogo: teamLogo(away),
       venue: row.venue || 'Venue TBC',
       kickoffAt: row.kickoff_at,
@@ -196,7 +197,7 @@
               <span>MATCH ${String(match.matchday || '').padStart(2,'0')} / 38</span>
               <div class="fixture-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                 ${predictionClosed ? '' : `<a class="predict-lineup-link details-link" href="predict-lineup.html?fixture=${encodeURIComponent(match.id)}">Predict Scores/Lineup</a>`}
-                <a class="details-link h2h-fixture-link" href="head-to-head.html?opponent=${encodeURIComponent(match.home === 'Arsenal' ? match.away : match.home)}">H2H vs ${escapeHtml(match.home === 'Arsenal' ? match.away : match.home)} →</a>
+                <a class="details-link h2h-fixture-link" href="head-to-head.html?opponent=${encodeURIComponent(match.home === 'Arsenal' ? match.awayTeamId : match.homeTeamId)}">H2H vs ${escapeHtml(match.home === 'Arsenal' ? match.away : match.home)} →</a>
                 <a class="details-link" href="match-details.html?fixture=${encodeURIComponent(match.id)}">More Details →</a>
               </div>
             </div>
@@ -224,7 +225,7 @@
 
       const request = client
         .from('fixtures')
-        .select('id,opponent,competition,venue,kickoff_at,arsenal_score,opponent_score,status,is_published,season,matchday,is_home,home_team,away_team,external_fixture_id,kickoff_confirmed')
+        .select('id,opponent,competition,venue,kickoff_at,arsenal_score,opponent_score,status,is_published,season,matchday,is_home,home_team,away_team,home_team_id,away_team_id,external_fixture_id,kickoff_confirmed')
         .eq('season','2026/27')
         .eq('competition','Premier League')
         .eq('is_published',true)
