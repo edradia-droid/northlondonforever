@@ -16,6 +16,8 @@ function serverKey(){
 }
 function json(x:any,s=200){ return new Response(JSON.stringify(x),{status:s,headers:{...corsHeaders,'Content-Type':'application/json'}}); }
 async function bsdLegacy(path:string,key:string){const r=await fetch(BSD_LEGACY+path,{headers:{Authorization:'Token '+key,Accept:'application/json'}});const txt=await r.text();let body:any;try{body=JSON.parse(txt)}catch{throw new Error('BSD returned non-JSON '+r.status)}if(!r.ok)throw new Error('BSD '+r.status+': '+JSON.stringify(body));return body;}
+const teamIdCache=new Map<string,number|null>();
+async function resolveTeamId(teamName:string,key:string){const k=String(teamName||'').trim().toLowerCase();if(!k)return null;if(teamIdCache.has(k))return teamIdCache.get(k)??null;try{const rows=arr(await bsd('/teams/?name='+encodeURIComponent(teamName)+'&limit=20&offset=0',key));const exact=rows.find((t:any)=>{const n=name(t);return n&&String(n).trim().toLowerCase()===k})??rows.find((t:any)=>name(t));const v=exact?num(id(exact)):null;teamIdCache.set(k,v);return v}catch{teamIdCache.set(k,null);return null}}
 async function bsd(path:string,key:string){
   const r=await fetch(BSD+path,{headers:{Authorization:'Token '+key,Accept:'application/json'}});
   const txt=await r.text();
