@@ -2837,7 +2837,7 @@ async function syncFootballDataNow() {
   if (message) setMessage(message, "Running protected BSD / BeSoccer EPL sync…");
   try {
     const { data, error } = await db.functions.invoke("sync-football-data", {
-      body: { preview: false, source: "admin-sync-now" }
+      body: { preview: false, source: "admin-sync-now", history: true }
     });
     if (error) throw error;
     if (data?.error) throw new Error(data.error);
