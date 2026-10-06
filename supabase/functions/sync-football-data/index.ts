@@ -5,6 +5,7 @@ import { corsHeaders } from 'npm:@supabase/supabase-js@2.112.3/cors';
 const BSD='https://sports.bzzoiro.com/api/v2';
 const BSD_LEGACY='https://sports.bzzoiro.com/api';
 const LEAGUE_ID=1;
+// Team IDs are preserved from BSD event team objects for stable H2H routing.
 const SEASON_ID=1058;
 const SEASON='2026/27';
 
