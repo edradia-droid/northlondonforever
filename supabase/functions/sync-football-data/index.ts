@@ -17,7 +17,37 @@ function serverKey(){
 function json(x:any,s=200){ return new Response(JSON.stringify(x),{status:s,headers:{...corsHeaders,'Content-Type':'application/json'}}); }
 async function bsdLegacy(path:string,key:string){const r=await fetch(BSD_LEGACY+path,{headers:{Authorization:'Token '+key,Accept:'application/json'}});const txt=await r.text();let body:any;try{body=JSON.parse(txt)}catch{throw new Error('BSD returned non-JSON '+r.status)}if(!r.ok)throw new Error('BSD '+r.status+': '+JSON.stringify(body));return body;}
 const teamIdCache=new Map<string,number|null>();
-async function resolveTeamId(teamName:string,key:string){const k=String(teamName||'').trim().toLowerCase();if(!k)return null;if(teamIdCache.has(k))return teamIdCache.get(k)??null;try{const rows=arr(await bsd('/teams/?name='+encodeURIComponent(teamName)+'&limit=20&offset=0',key));const exact=rows.find((t:any)=>{const n=nm(t);return n&&String(n).trim().toLowerCase()===k})??rows.find((t:any)=>nm(t));const v=exact?num(id(exact)):null;teamIdCache.set(k,v);return v}catch{teamIdCache.set(k,null);return null}}
+function normalizeTeamName(x:any){return String(x??'').trim().toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/\\b(?:a?fc|football club)\\b/g,'').replace(/[^a-z0-9]+/g,' ').trim();}
+async function resolveTeamId(teamName:string,key:string){
+  const k=normalizeTeamName(teamName);
+  if(!k)return null;
+  if(teamIdCache.has(k))return teamIdCache.get(k)??null;
+  try{
+    const rows=arr(await bsd('/teams/?name='+encodeURIComponent(teamName)+'&limit=20&offset=0',key));
+    const exact=rows.find((t:any)=>{const n=nm(t);return n&&normalizeTeamName(n)===k});
+    const candidate=exact??(rows.length===1?rows[0]:null);
+    const v=candidate?num(id(candidate)):null;
+    teamIdCache.set(k,v);
+    return v;
+  }catch{teamIdCache.set(k,null);return null}
+}
+async function backfillHistoricalFixtureTeamIds(db:any,key:string){
+  const q=await db.from('fixtures').select('id,home_team,away_team,home_team_id,away_team_id').eq('competition','Premier League').eq('is_published',true);
+  if(q.error)throw q.error;
+  const rows=(q.data??[]).filter((r:any)=>r.home_team==='Arsenal'||r.away_team==='Arsenal').filter((r:any)=>r.home_team_id==null||r.away_team_id==null);
+  const names=new Set<string>();
+  for(const r of rows){if(r.home_team_id==null&&r.home_team)names.add(String(r.home_team));if(r.away_team_id==null&&r.away_team)names.add(String(r.away_team));}
+  const ids=new Map<string,number>();
+  for(const n of names){const v=await resolveTeamId(n,key);if(v!=null)ids.set(normalizeTeamName(n),Number(v));}
+  let updated=0,unresolved=0;
+  for(const r of rows){
+    const patch:any={};
+    if(r.home_team_id==null){const v=ids.get(normalizeTeamName(r.home_team));if(v!=null)patch.home_team_id=v;else unresolved++;}
+    if(r.away_team_id==null){const v=ids.get(normalizeTeamName(r.away_team));if(v!=null)patch.away_team_id=v;else unresolved++;}
+    if(Object.keys(patch).length){const u=await db.from('fixtures').update(patch).eq('id',r.id);if(u.error)throw u.error;updated++;}
+  }
+  return {examined:rows.length,updated,unresolved,teamsResolved:ids.size};
+}
 async function bsd(path:string,key:string){
   const r=await fetch(BSD+path,{headers:{Authorization:'Token '+key,Accept:'application/json'}});
   const txt=await r.text();
@@ -542,6 +572,8 @@ async function run(reqUrl=new URL('https://local.invalid')){
       if(mapped.length){ const {error}=await db.from('match_events').upsert(mapped,{onConflict:'external_event_id'}); if(error) throw error; incidents+=mapped.length; }
     }
   }
+
+  const teamIdBackfill=await backfillHistoricalFixtureTeamIds(db,key);
 
   // Reconcile season player statistics; lineups are accepted only with exactly 11 starters.\n  const lineupResult=await syncArsenalLineups(db,events,key);\n  const teamStatsUpdated=await syncArsenalTeamStatsCanonical(db);\n  const playerStatsUpdated=await syncRootPlayerStats(db,arsenalId,key);\n  const participationResult=await reconcileParticipationFromLineups(db);\n  const goalkeeperSavesUpdated=await syncGoalkeeperSavesV2(db,arsenalId,key);\n  const cleanSheetResult=await syncCleanSheetsV2(db,arsenalId,key);\n  return {ok:true,source:'BSD',season:SEASON,arsenalTeamId:arsenalId,fixtures,incidents,statsUpdated,teamStatsUpdated,playerStatsUpdated,lineupResult,participationResult,goalkeeperSavesUpdated,cleanSheetResult,historicalStandings,syncedAt:new Date().toISOString()};
 }
