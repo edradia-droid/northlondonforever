@@ -8,7 +8,7 @@ function json(x:any,s=200){return new Response(JSON.stringify(x),{status:s,heade
 function arr(x:any){return Array.isArray(x)?x:(x?.standings??x?.results??x?.events??x?.seasons??x?.data??[])}
 function seasonItems(x:any){if(Array.isArray(x))return x;for(const c of [x?.seasons,x?.results?.seasons,x?.data?.seasons,x?.league?.seasons,x?.data,x?.results])if(Array.isArray(c)&&c.length)return c;return []}
 function name(x:any){return typeof x==="string"?x:(x?.name??x?.short_name??x?.season_name??x?.team_name??x?.club_name??x?.team?.name??x?.team?.short_name??x?.club?.name??x?.club?.short_name??null)}
-function id(x:any){return x?.id??x?.event_id??x?.fixture_id??x?.season_id??null}
+function id(x:any){return x?.id??x?.team_id??x?.event_id??x?.fixture_id??x?.season_id??x?.team?.id??x?.club?.id??null}
 function num(x:any){return x==null||x===""?null:Number(x)}
 async function bsd(path:string,key:string){const r=await fetch(BSD+path,{headers:{Authorization:"Token "+key,Accept:"application/json"}});const txt=await r.text();let body:any;try{body=JSON.parse(txt)}catch{throw new Error("BSD returned non-JSON "+r.status)}if(!r.ok)throw new Error("BSD "+r.status+": "+JSON.stringify(body));return body}
 async function sha256Hex(v:string){const h=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,"0")).join("")}
