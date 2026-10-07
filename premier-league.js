@@ -399,7 +399,9 @@
         .from('fixtures')
         .select('id,season,competition,home_team,away_team,home_score,away_score,status')
         .eq('season','2026/27')
-        .eq('competition','Premier League');
+        .eq('competition','Premier League')
+        .order('id',{ascending:true})
+        .limit(500);
 
       if (error) throw error;
 
