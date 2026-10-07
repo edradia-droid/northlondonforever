@@ -1,9 +1,10 @@
 // NL4 Supabase browser client\n// Deployment refresh: 2026-10-07 — ensure latest browser Supabase client is published.
-// Safe for frontend use: this is the low-privilege browser API key.
+// Safe for frontend use: this is the low-privilege legacy anon browser key.
 // Never place a Supabase secret/service_role key in browser files.
+// Legacy anon remains active for this browser client while Supabase's new API-key migration is phased in.
 
 const NL4_SUPABASE_URL = "https://vrjxejuyiynllygiozhs.supabase.co";
-const NL4_SUPABASE_PUBLISHABLE_KEY = "sb_publishable__esNlSYCC7dc4Cbn1yFZ4w_ttag7wqw";
+const NL4_SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyanhlanV5aW5sbHlnaW96aHMiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc4NjY0OTU4NywiZXhwIjoyMTAyMjI1NTg3fQ.4TJLwF0FjDvTj0ZwlzPJoUJF-pP655hz-ROCnHJcStw";
 
 if (!window.supabase) throw new Error("Supabase JS library was not loaded.");
 window.nl4Supabase = window.supabase.createClient(
@@ -11,18 +12,6 @@ window.nl4Supabase = window.supabase.createClient(
   NL4_SUPABASE_PUBLISHABLE_KEY,
   {
     auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},
-    global:{
-      fetch:(input,init={})=>{
-        // Supabase publishable keys are opaque API keys, not JWTs. Keep the
-        // required apikey header, but do not send the publishable key itself
-        // as Authorization: Bearer, which the API gateway rejects as a JWT.
-        const headers=new Headers(input instanceof Request ? input.headers : undefined);
-        new Headers(init.headers || {}).forEach((value,key)=>headers.set(key,value));
-        if(headers.get('Authorization')===('Bearer '+NL4_SUPABASE_PUBLISHABLE_KEY)){
-          headers.delete('Authorization');
-        }
-        return fetch(input,{...init,headers});
-      }
     }
   }
 );
