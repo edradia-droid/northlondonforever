@@ -15,6 +15,9 @@ const SEASON='2026/27';
 // the sole source of truth.
 const squadRequestCache=new Map<string,any[]>();
 const playerStatsRequestCache=new Map<string,any[]>();
+// Player profiles are reused across multiple fixture lineups within one sync.
+// Keep this cache invocation-scoped so positions remain fresh on the next sync.
+const playerProfileRequestCache=new Map<string,any>();
 
 function serverKey(){
   const raw=Deno.env.get('SUPABASE_SECRET_KEYS');
@@ -487,11 +490,18 @@ const legacyNormalizeTacticalPosition=(value:any)=>{
       )));
       const playerProfiles=new Map<string,any>();
       await Promise.all(playerIds.map(async(pid:string)=>{
+        if(playerProfileRequestCache.has(pid)){
+          const cached=playerProfileRequestCache.get(pid);
+          if(cached) playerProfiles.set(pid,cached);
+          return;
+        }
         try{
           const body=await bsd('/players/'+encodeURIComponent(pid)+'/',key);
           const profile=body?.player??body;
+          playerProfileRequestCache.set(pid,profile??null);
           if(profile) playerProfiles.set(pid,profile);
         }catch(error){
+          playerProfileRequestCache.set(pid,null);
           console.log('BSD_PLAYER_PROFILE_LOOKUP_FAILED',JSON.stringify({playerId:pid,error:String(error)}));
         }
       }));
@@ -641,6 +651,7 @@ async function run(reqUrl=new URL('https://local.invalid')){
   // request's BSD data, so a later sync always starts from fresh source data.
   squadRequestCache.clear();
   playerStatsRequestCache.clear();
+  playerProfileRequestCache.clear();
   const db=createClient(Deno.env.get('SUPABASE_URL')!,serverKey(),{auth:{persistSession:false,autoRefreshToken:false}});
 
   const teams=arr(await bsd('/teams/?name=Arsenal&limit=20&offset=0',key));
