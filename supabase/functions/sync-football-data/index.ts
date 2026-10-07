@@ -547,7 +547,13 @@ async function syncArsenalTeamStatsCanonical(db:any){
  if(u.error)throw u.error;return {matches:m,avg_possession:Number(avg.toFixed(1)),total_shots:total('home_shots','away_shots'),shots_on_target:total('home_shots_on_target','away_shots_on_target'),corners:total('home_corners','away_corners'),fouls:total('home_fouls','away_fouls'),offsides:total('home_offsides','away_offsides'),points};
 }
 async function syncGoalkeeperSavesV2(db:any,arsenalId:any,key:string){
- const squad=arr(await bsd(`/teams/${arsenalId}/squad/`,key));
+ const squadKey=String(arsenalId);
+ let squad=squadRequestCache.get(squadKey);
+ if(!squad){
+  const squadBody=await bsd(`/teams/${arsenalId}/squad/`,key);
+  squad=arr(squadBody);
+  squadRequestCache.set(squadKey,squad);
+ }
  const gks=squad.map((q:any)=>{const p=q?.player??q;return {id:p?.id,name:nm(p)??q?.player_name,position:String(p?.position??q?.position??'').toUpperCase()}}).filter((p:any)=>p.id&&p.name&&(p.position==='GK'||p.position==='G'||p.position.includes('GOALKEEPER')));
  if(!gks.length) throw new Error('BSD v2 returned no Arsenal goalkeepers');
 
@@ -560,7 +566,12 @@ async function syncGoalkeeperSavesV2(db:any,arsenalId:any,key:string){
 
  const results:any[]=[];
  for(const g of gks){
-  const rows=arr(await bsd(`/players/${g.id}/stats/?season_id=${SEASON_ID}&team_id=${arsenalId}&league_id=${LEAGUE_ID}&limit=200&offset=0`,key));
+  const playerKey=String(g.id);
+  let rows=playerStatsRequestCache.get(playerKey);
+  if(!rows){
+   rows=arr(await bsd(`/players/${g.id}/stats/?season_id=${SEASON_ID}&team_id=${arsenalId}&league_id=${LEAGUE_ID}&limit=200&offset=0`,key));
+   playerStatsRequestCache.set(playerKey,rows);
+  }
   const seen=new Set<string>(); let saves=0,played=0,evidence=0;
   for(const r of rows){
     const eid=r?.event?.id??r?.event_id??r?.match_id??r?.fixture_id;
