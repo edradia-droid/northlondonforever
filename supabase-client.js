@@ -1,4 +1,4 @@
-// NL4 Supabase browser client
+// NL4 Supabase browser client\n// Deployment refresh: 2026-10-07 — ensure latest browser Supabase client is published.
 // Safe for frontend use: this is the low-privilege browser API key.
 // Never place a Supabase secret/service_role key in browser files.
 
