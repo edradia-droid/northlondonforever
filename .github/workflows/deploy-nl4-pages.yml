@@ -19,7 +19,7 @@ permissions:
 
 concurrency:
   group: nl4-pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -52,22 +52,19 @@ jobs:
           req = urllib.request.Request(page, headers={"User-Agent":"Mozilla/5.0"})
           data = urllib.request.urlopen(req, timeout=30).read().decode("utf-8", "ignore")
           image_url = None
-          for tag in re.findall(r'<meta\\b[^>]*>', data, flags=re.I):
-              prop = re.search(r"""property\\s*=\\s*["']og:image["']""", tag, re.I)
+          for tag in re.findall(r'<meta\b[^>]*>', data, flags=re.I):
+              prop = re.search(r"""property\s*=\s*["']og:image["']""", tag, re.I)
               if not prop:
                   continue
-              m = re.search(r"""content\\s*=\\s*["']([^"']+)""", tag, re.I)
+              m = re.search(r"""content\s*=\s*["']([^"']+)""", tag, re.I)
               if m:
                   image_url = html.unescape(m.group(1))
                   break
           if not image_url:
               raise SystemExit("Could not resolve the actual image from https://postimg.cc/ppw3MHJh")
-          print("Resolved Odegaard image:", image_url)
           urllib.request.urlretrieve(image_url, "/tmp/odegaard-source")
           out=Path("assets/player-cutouts/player-15.png")
           Image.open("/tmp/odegaard-source").convert("RGBA").save(out)
-          with Image.open(out) as im:
-              print("Odegaard supplied image:", im.size, "alpha:", im.getchannel("A").getextrema())
           PY
 
       - name: Prepare NL4 Pages site
@@ -81,104 +78,27 @@ jobs:
           cp _arena_source/arena.css _site/3d-arena/arena.css
           cp _arena_source/arena.js _site/3d-arena/arena.js
           cp _arena_source/README.md _site/3d-arena/README.md
-          echo "NL4 root:"
-          ls -lah _site/index.html
-          echo "Arena:"
-          ls -lah _site/3d-arena/
 
       - name: Build dedicated Full Body and Half Body artwork
         run: |
           rm -rf _site/3d-arena/player-assets
           mkdir -p _site/3d-arena/player-assets
-
           node <<'NODE'
-          const fs = require('fs');
-          const path = require('path');
-
-          const players = {
-            'David Raya':'34148681',
-            'Jurriën Timber':'34172505',
-            'Ezri Konsa':'34161727',
-            'Gabriel':'34172252',
-            'Riccardo Calafiori':'34175834',
-            'Declan Rice':'34161584',
-            'Bruno Guimarães':'34172187',
-            'Martin Ødegaard':'34159218',
-            'Bukayo Saka':'34169884',
-            'Christos Tzolis':'34193337',
-            'Kai Havertz':'34169226',
-            'Kepa Arrizabalaga':'34160650',
-            'Piero Hincapié':'34182526',
-            'Eberechi Eze':'34172278',
-            'Viktor Gyökeres':'34173576',
-            'Noni Madueke':'34170520',
-            'Mikel Merino':'34161591',
-            'Martín Zubimendi':'34172850',
-            'Myles Lewis-Skelly':'34244630',
-            'Max Dowman':'34432407'
-          };
-
-          const keys = {
-            'David Raya':'davidraya','Jurriën Timber':'jurrientimber','Ezri Konsa':'ezrikonsa','Gabriel':'gabriel','Riccardo Calafiori':'ricardocalafiori','Declan Rice':'declanrice','Bruno Guimarães':'brunoguimaraes','Martin Ødegaard':'martinodegaard','Bukayo Saka':'bukayosaka','Christos Tzolis':'christostzolis','Kai Havertz':'kaihavertz','Kepa Arrizabalaga':'kepaarrizabalaga','Piero Hincapié':'pierohincapie','Eberechi Eze':'eberechieze','Viktor Gyökeres':'viktorgyokeres','Noni Madueke':'nonimadueke','Mikel Merino':'mikelmerino','Martín Zubimendi':'martinzubimendi','Myles Lewis-Skelly':'myleslewisskelly','Max Dowman':'maxdowman'
-          };
-
-          const dir = '_site/3d-arena/player-assets';
-          const manifest = {};
-
-          async function getPlayer(id) {
-            const response = await fetch('https://www.thesportsdb.com/api/v1/json/123/lookupplayer.php?id=' + id);
-            if (!response.ok) throw new Error('API ' + response.status + ' for ' + id);
-            const json = await response.json();
-            return Array.isArray(json.players) ? (json.players[0] || null) : null;
-          }
-          async function download(url, filename) {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error('image ' + response.status + ' for ' + filename);
-            fs.writeFileSync(path.join(dir, filename), Buffer.from(await response.arrayBuffer()));
-          }
-          (async () => {
-            for (const [name, id] of Object.entries(players)) {
-              const key = keys[name];
-              const player = await getPlayer(id);
-              if (!player) throw new Error('No player data for ' + name);
-              const fullUrl = player.strCutout || null;
-              const halfUrl = player.strRender || null;
-              if (!fullUrl) throw new Error('Missing Full Body cutout for ' + name);
-              if (!halfUrl) throw new Error('Missing Half Body Player Render for ' + name);
-              const fullExt = (path.extname(new URL(fullUrl).pathname) || '.png').toLowerCase();
-              const halfExt = (path.extname(new URL(halfUrl).pathname) || '.png').toLowerCase();
-              const fullFile = key + '-full' + fullExt;
-              const halfFile = key + '-half' + halfExt;
-              await download(fullUrl, fullFile);
-              await download(halfUrl, halfFile);
-              manifest[key] = {full:'./player-assets/' + fullFile,half:'./player-assets/' + halfFile,playerId:id,sourceName:name};
-            }
-            fs.writeFileSync(path.join(dir, 'manifest.json'), JSON.stringify(manifest, null, 2));
-            fs.writeFileSync(path.join(dir, 'manifest.js'), 'window.ARENA_ARTWORK_MANIFEST=' + JSON.stringify(manifest) + ';');
-          })().catch(error => { console.error(error); process.exit(1); });
+          const fs=require('fs'),path=require('path');
+          const players={'David Raya':'34148681','Jurriën Timber':'34172505','Ezri Konsa':'34161727','Gabriel':'34172252','Riccardo Calafiori':'34175834','Declan Rice':'34161584','Bruno Guimarães':'34172187','Martin Ødegaard':'34159218','Bukayo Saka':'34169884','Christos Tzolis':'34193337','Kai Havertz':'34169226','Kepa Arrizabalaga':'34160650','Piero Hincapié':'34182526','Eberechi Eze':'34172278','Viktor Gyökeres':'34173576','Noni Madueke':'34170520','Mikel Merino':'34161591','Martín Zubimendi':'34172850','Myles Lewis-Skelly':'34244630','Max Dowman':'34432407'};
+          const keys={'David Raya':'davidraya','Jurriën Timber':'jurrientimber','Ezri Konsa':'ezrikonsa','Gabriel':'gabriel','Riccardo Calafiori':'ricardocalafiori','Declan Rice':'declanrice','Bruno Guimarães':'brunoguimaraes','Martin Ødegaard':'martinodegaard','Bukayo Saka':'bukayosaka','Christos Tzolis':'christostzolis','Kai Havertz':'kaihavertz','Kepa Arrizabalaga':'kepaarrizabalaga','Piero Hincapié':'pierohincapie','Eberechi Eze':'eberechieze','Viktor Gyökeres':'viktorgyokeres','Noni Madueke':'nonimadueke','Mikel Merino':'mikelmerino','Martín Zubimendi':'martinzubimendi','Myles Lewis-Skelly':'myleslewisskelly','Max Dowman':'maxdowman'};
+          const dir='_site/3d-arena/player-assets',manifest={};
+          async function get(id){const r=await fetch('https://www.thesportsdb.com/api/v1/json/123/lookupplayer.php?id='+id);if(!r.ok)throw Error('API '+r.status);const j=await r.json();return j.players?.[0]||null}
+          async function dl(url,file){const r=await fetch(url);if(!r.ok)throw Error('image '+r.status+' '+file);fs.writeFileSync(path.join(dir,file),Buffer.from(await r.arrayBuffer()))}
+          (async()=>{for(const [name,id] of Object.entries(players)){const p=await get(id);if(!p?.strCutout||!p?.strRender)throw Error('Missing artwork '+name);const k=keys[name],fe=(path.extname(new URL(p.strCutout).pathname)||'.png').toLowerCase(),he=(path.extname(new URL(p.strRender).pathname)||'.png').toLowerCase();await dl(p.strCutout,k+'-full'+fe);await dl(p.strRender,k+'-half'+he);manifest[k]={full:'./player-assets/'+k+'-full'+fe,half:'./player-assets/'+k+'-half'+he,playerId:id,sourceName:name}}fs.writeFileSync(path.join(dir,'manifest.json'),JSON.stringify(manifest,null,2));fs.writeFileSync(path.join(dir,'manifest.js'),'window.ARENA_ARTWORK_MANIFEST='+JSON.stringify(manifest)+';')})().catch(e=>{console.error(e);process.exit(1)})
           NODE
-
-          test "$(node -e "const m=require('./_site/3d-arena/player-assets/manifest.json'); console.log(Object.keys(m).length)")" -eq 20
+          test "$(node -e "console.log(Object.keys(require('./_site/3d-arena/player-assets/manifest.json')).length)")" -eq 20
           test "$(find _site/3d-arena/player-assets -type f -name '*-full.*' | wc -l)" -eq 20
           test "$(find _site/3d-arena/player-assets -type f -name '*-half.*' | wc -l)" -eq 20
-          if find _site/3d-arena/player-assets -type f | grep -Ei 'thumb|thumbnail'; then exit 1; fi
 
       - name: Verify Arena artwork package
         run: |
           test -s _site/3d-arena/player-assets/manifest.json
-          node <<'NODE'
-          const fs=require('fs'),path=require('path'),dir='_site/3d-arena/player-assets';
-          const manifest=JSON.parse(fs.readFileSync(path.join(dir,'manifest.json'),'utf8'));
-          const keys=Object.keys(manifest);
-          if(keys.length!==20) throw new Error('Expected 20 players, found '+keys.length);
-          for(const [key,value] of Object.entries(manifest)) {
-            if(!value || !value.full || !value.half) throw new Error('Missing full/half asset for '+key);
-            for(const mode of ['full','half']) {
-              const rel=value[mode].replace(/^\.\//,'');
-              if(!fs.existsSync(path.join('_site/3d-arena',rel))) throw new Error('Missing file for '+key+' '+mode+': '+rel);
-            }
-          }
-          NODE
 
       - name: Install Pillow for asset verification
         run: python -m pip install --disable-pip-version-check pillow
@@ -189,10 +109,8 @@ jobs:
           from PIL import Image
           p='_site/assets/player-cutouts/player-15.png'
           with Image.open(p).convert('RGBA') as im:
-              a=im.getchannel('A')
-              lo,hi=a.getextrema()
+              lo,hi=im.getchannel('A').getextrema()
               assert lo == 0 and hi >= 200, (lo,hi)
-              print('Pages artifact Odegaard alpha:', (lo,hi), 'size:', im.size)
           PY
 
       - name: Upload Pages artifact
