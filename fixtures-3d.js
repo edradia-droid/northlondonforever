@@ -196,7 +196,7 @@
             <div class="unified-card-bottom">
               <span>MATCH ${String(match.matchday || '').padStart(2,'0')} / 38</span>
               <div class="fixture-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-                ${predictionClosed ? '' : `<a class="predict-lineup-link details-link" href="predict-lineup.html?fixture=${encodeURIComponent(match.id)}">Predict Scores/Lineup</a>`}
+                ${predictionClosed ? '' : `<a class="predict-lineup-link details-link" data-prediction-action data-kickoff="${escapeHtml(match.kickoffAt || '')}" href="predict-lineup.html?fixture=${encodeURIComponent(match.id)}">Predict Scores/Lineup</a>`}
                 <a class="details-link h2h-fixture-link" href="head-to-head.html?opponent=${encodeURIComponent((match.home === 'Arsenal' ? match.awayTeamId : match.homeTeamId) ?? (match.home === 'Arsenal' ? match.away : match.home))}">H2H vs ${escapeHtml(match.home === 'Arsenal' ? match.away : match.home)} →</a>
                 <a class="details-link" href="match-details.html?fixture=${encodeURIComponent(match.id)}">More Details →</a>
               </div>
@@ -290,9 +290,15 @@
       }
     }
   }
+  function refreshPredictionActions() {
+    const now = Date.now();
+    document.querySelectorAll('[data-prediction-action]').forEach(link => {
+      const kickoff = Date.parse(link.getAttribute('data-kickoff') || '');
+      if (Number.isFinite(kickoff) && kickoff <= now) link.style.display = 'none';
+    });
+  }
 
   loadFixtures();
-  // Re-render periodically so the prediction action disappears at kickoff
-  // even when the Fixtures page remains open.
-  setInterval(loadFixtures,30000);
+  // Check kickoff visibility without refetching or rebuilding the fixtures.
+  setInterval(refreshPredictionActions,30000);
 })();
