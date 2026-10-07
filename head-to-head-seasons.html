@@ -34,10 +34,10 @@ body.h2h-page{background:#090909;color:#fff}.h2h-wrap{max-width:1380px;margin:au
    if(!db){E.note.textContent='Supabase client is unavailable.';return}
    const s=await db.from('premier_league_standings').select('season,position').eq('club','Arsenal');
    if(!s.error)(s.data||[]).forEach(x=>positions[x.season]=Number(x.position));
-   const r=await db.from('fixtures').select('season,home_team,away_team,home_score,away_score,kickoff_at').eq('competition','Premier League').eq('is_published',true).or('home_team.eq.Arsenal,away_team.eq.Arsenal').order('kickoff_at',{ascending:false});
+   const r=await db.from('fixtures').select('season,home_team,away_team,home_score,away_score,kickoff_at').eq('competition','Premier League').eq('is_published',true).order('kickoff_at',{ascending:false});
    if(r.error){E.note.textContent='Could not load the NL4 Premier League fixture archive.';return}
    const map=new Map();
-   (r.data||[]).filter(done).forEach(f=>{if(!map.has(f.season))map.set(f.season,[]);map.get(f.season).push(f)});
+   (r.data||[]).filter(f=>(f.home_team==='Arsenal'||f.away_team==='Arsenal')&&done(f)).forEach(f=>{if(!map.has(f.season))map.set(f.season,[]);map.get(f.season).push(f)});
    const seasons=Array.from(map.entries()).sort((a,b)=>start(b[0])-start(a[0]));
    E.grid.innerHTML=seasons.length?seasons.map(([season,fs])=>{
     let w=0,d=0,l=0,gf=0,ga=0;fs.forEach(f=>{const home=f.home_team==='Arsenal',ag=Number(home?f.home_score:f.away_score),og=Number(home?f.away_score:f.home_score);gf+=ag;ga+=og;if(ag>og)w++;else if(ag===og)d++;else l++});
