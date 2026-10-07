@@ -30,9 +30,9 @@ body.h2h-page{margin:0;background:#f4f4f4;color:#151515;min-height:100vh}
 .h2h-panel{border:1px solid #e1e1e1;border-radius:15px;background:#fff;overflow:hidden;box-shadow:0 9px 25px rgba(0,0,0,.08);margin-top:20px}
 .h2h-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 20px;background:#15171b;color:#fff;border-bottom:4px solid #d8001f}
 .h2h-panel-head h2{margin:0;font-size:13px;letter-spacing:1px}.h2h-panel-head span{font-size:9px;color:#aaa}
-.h2h-opponents{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:#e5e5e5}
-.h2h-opponent{min-height:72px;display:grid;grid-template-columns:46px 1fr auto;align-items:center;gap:13px;padding:13px 16px;background:#fff;color:#171717;text-decoration:none;transition:.15s ease}
-.h2h-opponent:hover{background:#fff5f6;transform:translateX(2px)}
+.h2h-opponents{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:16px;background:#f4f4f4}
+.h2h-opponent{min-height:105px;display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:12px;padding:15px;border:1px solid #dedede;border-top:3px solid #d8001f;border-radius:12px;background:#fff;color:#171717;text-decoration:none;box-shadow:0 5px 0 #ddd,0 10px 20px rgba(0,0,0,.07);transition:.16s ease}
+.h2h-opponent:hover{background:#fff;transform:translateY(-3px);box-shadow:0 8px 0 #ddd,0 14px 24px rgba(0,0,0,.1)}
 .h2h-crest{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#f4f4f4;border:1px solid #ddd;overflow:hidden;font-size:9px;font-weight:1000;color:#777}
 .h2h-crest img{width:31px;height:31px;object-fit:contain}
 .h2h-opponent strong{display:block;font-size:12px}.h2h-opponent span>small{display:block;margin-top:4px;color:#999;font-size:8px}.h2h-record{text-align:right}.h2h-record b{display:block;color:#d8001f;font-size:13px}.h2h-record small{color:#999;font-size:7px}
@@ -44,6 +44,7 @@ body.h2h-page{margin:0;background:#f4f4f4;color:#151515;min-height:100vh}
 .h2h-empty{padding:42px 20px;text-align:center;color:#888}.h2h-empty strong{display:block;color:#555;margin-bottom:5px}
 .h2h-season,.h2h-season-summary,.h2h-season-grid{display:none}
 @media(max-width:1050px){.h2h-toolbar{grid-template-columns:1fr 1fr}.h2h-season-record-link{grid-column:1/-1}.h2h-stat-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:1000px){.h2h-opponents{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.h2h-wrap{padding:15px 10px 40px}.h2h-hero{padding:28px 19px 22px}.h2h-toolbar{grid-template-columns:1fr}.h2h-season-record-link{grid-column:auto}.h2h-stat-grid{grid-template-columns:1fr 1fr}.h2h-opponents{grid-template-columns:1fr}.h2h-record-grid{grid-template-columns:repeat(4,1fr)}.h2h-detail-hero{grid-template-columns:1fr 55px 1fr}}
 @media(max-width:430px){.h2h-stat-grid{grid-template-columns:1fr 1fr}.h2h-stat{padding:15px}.h2h-stat strong{font-size:25px}.h2h-opponent{grid-template-columns:40px 1fr auto;padding:11px}.h2h-crest{width:38px;height:38px}.h2h-record-grid{grid-template-columns:repeat(2,1fr)}}
 </style></head>
