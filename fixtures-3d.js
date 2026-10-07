@@ -117,7 +117,7 @@
   }
 
   const h2hFixtureStyle=document.createElement('style');
-  h2hFixtureStyle.textContent='.h2h-fixture-link{border-color:rgba(216,173,69,.34)!important;color:#d8ad45!important}.h2h-fixture-link:hover{background:rgba(216,173,69,.08)}';
+  h2hFixtureStyle.textContent='.h2h-fixture-link{border:1px solid rgba(255,255,255,.16)!important;border-radius:8px!important;background:linear-gradient(145deg,#5a1263,#3a0641)!important;color:#fff!important;box-shadow:0 4px 0 #210024,0 7px 14px rgba(0,0,0,.24)!important;padding:9px 12px!important;font-weight:1000!important;text-decoration:none!important;transition:.16s ease}.h2h-fixture-link:hover{background:linear-gradient(145deg,#6b1b75,#47084f)!important;border-color:#00d2be!important;color:#fff!important;transform:translateY(-2px);box-shadow:0 6px 0 #210024,0 10px 18px rgba(0,0,0,.3)!important}';
   document.head.appendChild(h2hFixtureStyle);
 
   function applyTilt() {
