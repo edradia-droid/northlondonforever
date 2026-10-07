@@ -1,9 +1,9 @@
 // NL4 Supabase browser client
-// Safe for frontend use: this is the low-privilege publishable key.
+// Safe for frontend use: this is the low-privilege browser API key.
 // Never place a Supabase secret/service_role key in browser files.
 
 const NL4_SUPABASE_URL = "https://vrjxejuyiynllygiozhs.supabase.co";
-const NL4_SUPABASE_PUBLISHABLE_KEY = "sb_publishable__esNlSYCC7dc4Cbn1yFZ4w_ttag7wqw";
+const NL4_SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyanhlanV5aW5sbHlnZ2lvemhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDk1ODcsImV4cCI6MjEwMjIyNTU4N30.4TJLwF0FjDvTj0ZwlzPJoUJF-pP655hz-ROCnHJcStw";
 
 if (!window.supabase) throw new Error("Supabase JS library was not loaded.");
 window.nl4Supabase = window.supabase.createClient(
