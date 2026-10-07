@@ -172,24 +172,14 @@
     tableStatus.textContent = sourceLabel;
   }
 
-  function renderEmptySeason() {
-    const empty = fallbackTeams.map((club, index) => ({
-      position:index + 1,
-      club,
-      played:0,
-      wins:0,
-      draws:0,
-      losses:0,
-      goals_for:0,
-      goals_against:0,
-      goal_difference:0,
-      points:0
-    }));
-
-    renderStandings(
-      empty,
-      'Standings table is ready. Add rows to Supabase table "premier_league_standings" to make it live.'
-    );
+  function renderStandingsUnavailable(message='Premier League standings are temporarily unavailable.') {
+    // Never invent a league position when the canonical fixture query fails.
+    // Keeping the previous valid DOM values is safer than falling back to the
+    // fallbackTeams array, whose ordering is not a league table.
+    if (tableBody && !tableBody.querySelector('.arsenal-row')) {
+      tableBody.innerHTML = '<tr class="loading-row"><td colspan="10">Premier League standings temporarily unavailable.</td></tr>';
+    }
+    if (tableStatus) tableStatus.textContent = message;
   }
 
 
@@ -522,7 +512,7 @@
       renderTitleRaceFromStandings(standings);
     } catch (error) {
       console.warn('NL4 Premier League standings fallback:', error);
-      renderEmptySeason();
+      renderStandingsUnavailable('Could not load the canonical Premier League standings. Retaining the last valid position.');
     }
   }
 
