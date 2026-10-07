@@ -63,15 +63,7 @@ body.h2h-page:before{
 .h2h-panel-head span{color:#fff;font-size:10px;font-weight:900;opacity:.8}
 .h2h-season-summary{padding:22px;background:radial-gradient(circle at 50% 0,rgba(216,0,31,.08),transparent 45%)}
 .h2h-season-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
-.h2h-season{
- position:relative;min-height:225px;padding:19px;border:1px solid rgba(255,255,255,.16);border-top:4px solid #fff;
- border-radius:17px;background:
- linear-gradient(145deg,rgba(255,255,255,.98),rgba(246,246,246,.96) 48%,#ddd 100%);
- color:#17181b;overflow:hidden;
- box-shadow:0 12px 0 rgba(100,0,14,.78),0 20px 28px rgba(0,0,0,.34),inset 0 1px #fff;
- transform:perspective(900px) rotateX(1deg);transition:transform .2s ease,box-shadow .2s ease
-}
-.h2h-season:before{
+ .h2h-season{position:relative;min-height:225px;padding:19px;border:1px solid rgba(255,255,255,.34);border-top:4px solid #fff;border-radius:17px;background:linear-gradient(145deg,#e30620,#b40018 58%,#870012 100%);color:#fff;overflow:hidden;box-shadow:0 12px 0 rgba(255,255,255,.92),0 22px 34px rgba(255,255,255,.18),inset 0 1px rgba(255,255,255,.4);transform:perspective(900px) rotateX(1deg);transition:transform .2s ease,box-shadow .2s ease}.h2h-season:before{
  content:"";position:absolute;inset:0;pointer-events:none;
  background:linear-gradient(135deg,rgba(216,0,31,.10),transparent 32%,rgba(0,0,0,.045) 70%),repeating-linear-gradient(135deg,transparent 0 9px,rgba(216,0,31,.035) 9px 11px)
 }
@@ -81,21 +73,15 @@ body.h2h-page:before{
 }
 .h2h-season:hover{transform:perspective(900px) rotateX(0) translateY(-5px) rotateZ(-.2deg);box-shadow:0 17px 0 rgba(100,0,14,.78),0 27px 34px rgba(0,0,0,.4),inset 0 1px #fff}
 .h2h-season>*{position:relative;z-index:1}
-.h2h-season strong{display:block;font-size:19px;letter-spacing:-.3px;color:var(--arsenal-red-dark)}
-.h2h-season small{display:block;color:#666;font-size:8px;margin-top:5px;font-weight:900;letter-spacing:.7px}
-.h2h-season-position{display:flex;align-items:center;gap:8px;margin-top:12px;color:var(--arsenal-red-dark);font-size:10px;font-weight:1000;text-transform:uppercase}
-.h2h-season-position b{font-size:21px;color:var(--arsenal-red)}
+.h2h-season strong{display:block;font-size:19px;letter-spacing:-.3px;color:#fff;text-shadow:0 2px 0 rgba(255,255,255,.35)}
+.h2h-season small{display:block;color:rgba(255,255,255,.82);font-size:8px;margin-top:5px;font-weight:900;letter-spacing:.7px}
+.h2h-season-position{display:flex;align-items:center;gap:8px;margin-top:12px;color:#fff;font-size:10px;font-weight:1000;text-transform:uppercase}
+.h2h-season-position b{font-size:21px;color:#fff;text-shadow:0 2px 0 rgba(255,255,255,.35)}
 .h2h-season-record{display:flex;justify-content:space-between;gap:8px;margin-top:11px;padding-top:8px;border-top:1px solid rgba(0,0,0,.08);font-size:10px}
-.h2h-season-record b{color:#141519}.h2h-season-record span{color:#777;font-weight:800}
-.h2h-season-bar{margin-top:13px;height:6px;border-radius:99px;background:#cfcfd1;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.18)}
-.h2h-season-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--arsenal-red-dark),var(--arsenal-red));box-shadow:0 0 8px rgba(216,0,31,.3)}
-.h2h-season.champion{
- border-color:rgba(245,215,123,.9);border-top-color:var(--gold);color:#271d0b;
- background:
- linear-gradient(145deg,rgba(255,247,207,.98),rgba(221,174,66,.98) 52%,#9b6b16 100%);
- box-shadow:0 12px 0 #6b4710,0 22px 32px rgba(104,70,12,.42),inset 0 1px rgba(255,255,255,.8),inset 0 -20px 35px rgba(89,54,0,.18)
-}
-.h2h-season.champion:before{
+.h2h-season-record b{color:#fff;text-shadow:0 1px 0 rgba(255,255,255,.3)}.h2h-season-record span{color:rgba(255,255,255,.76);font-weight:800}
+.h2h-season-bar{margin-top:13px;height:6px;border-radius:99px;background:rgba(255,255,255,.25);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.18)}
+.h2h-season-bar i{display:block;height:100%;background:#fff;box-shadow:0 0 10px rgba(255,255,255,.8)}
+.h2h-season.champion{border-color:rgba(255,255,255,.75);border-top-color:#fff;color:#3b2704;background:linear-gradient(145deg,#fff1a6,#d8ad45 52%,#9b6b16 100%);box-shadow:0 12px 0 #fff,0 22px 34px rgba(255,255,255,.2),inset 0 1px rgba(255,255,255,.85),inset 0 -20px 35px rgba(89,54,0,.18)}.h2h-season.champion:before{
  background:linear-gradient(135deg,rgba(255,255,255,.34),transparent 35%,rgba(92,56,0,.12) 80%),repeating-linear-gradient(135deg,transparent 0 8px,rgba(255,255,255,.08) 8px 10px)
 }
 .h2h-season.champion:after{background:radial-gradient(circle,rgba(255,255,255,.35),transparent 68%)}
