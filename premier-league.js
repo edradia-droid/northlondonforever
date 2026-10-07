@@ -135,7 +135,8 @@
   function renderStandings(rows, sourceLabel) {
     const standings = rows
       .map(normalizeStanding)
-      .sort((a,b) => a.position - b.position);
+      .sort((a,b) => b.points - a.points || b.gd - a.gd || b.gf - a.gf || a.club.localeCompare(b.club))
+      .map((team,index) => ({...team,position:index + 1}));
 
     tableBody.innerHTML = standings.map(team => {
       const arsenal = team.club.toLowerCase() === 'arsenal';
