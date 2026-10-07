@@ -4,18 +4,29 @@
 // Legacy anon remains active for this browser client while Supabase's new API-key migration is phased in.
 
 const NL4_SUPABASE_URL = "https://vrjxejuyiynllygiozhs.supabase.co";
-const NL4_SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyanhlanV5aW5sbHlnaW96aHMiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc4NjY0OTU4NywiZXhwIjoyMTAyMjI1NTg3fQ.4TJLwF0FjDvTj0ZwlzPJoUJF-pP655hz-ROCnHJcStw";
+const NL4_SUPABASE_PUBLISHABLE_KEY = "sb_publishable__esNlSYCC7dc4Cbn1yFZ4w_ttag7wqw";
 
 if (!window.supabase) throw new Error("Supabase JS library was not loaded.");
+
+// Supabase's modern publishable key is an API key, not a JWT. Authenticate it
+// through the apikey header only; do not send it as Authorization: Bearer.
+const nl4SupabaseFetch = (input, init = {}) => {
+  const url = typeof input === "string" ? input : input?.url || "";
+  if (!url.startsWith(NL4_SUPABASE_URL)) return window.fetch(input, init);
+
+  const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
+  headers.delete("Authorization");
+  return window.fetch(input, {...init, headers});
+};
+
 window.nl4Supabase = window.supabase.createClient(
   NL4_SUPABASE_URL,
   NL4_SUPABASE_PUBLISHABLE_KEY,
   {
-    auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},
-    }
+    global:{fetch:nl4SupabaseFetch},
+    auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
   }
 );
-
 const NL4_IS_RECORD_ROOM = !!document.getElementById('recordRoomPage') || /(?:^|\/)record-room(?:\.html)?\/?$/i.test(location.pathname);
 
 // Guard the authoritative 2026/27 Arsenal squad against accidental omission of
