@@ -641,4 +641,9 @@
   loadStandings();
   loadArsenalResults();
   loadNextFixture();
+
+  // Final page-load reconciliation: run after every other page script has loaded.
+  // This keeps the displayed position tied to the canonical fixture-derived table
+  // even if another public-page module finishes later and touches the same summary.
+  window.addEventListener('load', () => setTimeout(loadStandings, 1200));
 })();
