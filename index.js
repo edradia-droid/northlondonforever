@@ -530,10 +530,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const hasPlayersArea = document.querySelector("#players, .players-grid, .player-grid, .player-card") || path.includes("player");
   const hasNewsArea = document.querySelector("#news, .news-grid, .news-card") || path.includes("news") || path.endsWith("/") || path.includes("index.html");
   const hasFixturesArea = document.querySelector("#fixtures, .fixtures, .fixture-card") || path.includes("fixture");
+  // fixtures.html has its own authoritative 2026/27 Arsenal fixture loader.
+  // Do not start the generic 20-fixture loader here, otherwise the page makes
+  // a second Supabase request and can surface a misleading API-key error.
+  const isDedicatedFixturesPage = /(?:^|\/)fixtures\.html$/i.test(path);
 
   if (hasPlayersArea) loadNL4Players();
   if (hasNewsArea) loadNL4News();
-  if (hasFixturesArea) loadNL4Fixtures();
+  if (hasFixturesArea && !isDedicatedFixturesPage) loadNL4Fixtures();
 
   // Make loaders available if another page/script wants to refresh data manually.
   window.loadNL4Players = loadNL4Players;
