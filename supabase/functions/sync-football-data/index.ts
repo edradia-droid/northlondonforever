@@ -9,6 +9,13 @@ const LEAGUE_ID=1;
 const SEASON_ID=1058;
 const SEASON='2026/27';
 
+// Per-invocation BSD request cache. The sync can reuse the same squad/player-stat
+// responses across its reconciliation stages without retaining stale data between
+// separate sync requests. This reduces duplicate BSD calls while preserving BSD as
+// the sole source of truth.
+const squadRequestCache=new Map<string,any[]>();
+const playerStatsRequestCache=new Map<string,any[]>();
+
 function serverKey(){
   const raw=Deno.env.get('SUPABASE_SECRET_KEYS');
   if(raw){ try{ const p=JSON.parse(raw); if(p?.default) return p.default; }catch{} }
@@ -230,7 +237,13 @@ async function syncHistoricalStandings(db:any,key:string){
 }
 
 async function syncRootPlayerStats(db:any,arsenalId:any,key:string){
-  const squadBody=await bsd(`/teams/${arsenalId}/squad/`,key),squad=arr(squadBody);
+  const squadKey=String(arsenalId);
+  let squad=squadRequestCache.get(squadKey);
+  if(!squad){
+    const squadBody=await bsd(`/teams/${arsenalId}/squad/`,key);
+    squad=arr(squadBody);
+    squadRequestCache.set(squadKey,squad);
+  }
   const players=squad.map((q:any)=>{const p=q?.player??q;return{id:p?.id??q?.player_id,name:canonicalPlayerName(nm(p)??q?.player_name??q?.name),position:p?.position??q?.position??null,image_url:p?.image_url??q?.image_url??null,profile_url:p?.profile_url??q?.profile_url??null};}).filter((p:any)=>p.id&&p.name);
   if(players.length<15)return 0;
   const existing=await db.from('premier_league_player_stats').select('player_name,position,image_url,profile_url,appearances,starts,minutes,clean_sheets').eq('season',SEASON);if(existing.error)throw existing.error;
@@ -251,7 +264,12 @@ async function syncRootPlayerStats(db:any,arsenalId:any,key:string){
   const canonicalEventIds=new Set((completedForStats.data??[]).map((r:any)=>String(r.external_fixture_id).replace(/^bsd:/,'')));
   const byPlayer=new Map<string,any>();
   for(const p of players){
-    const rows=arr(await bsd(`/players/${p.id}/stats/?season_id=${SEASON_ID}&league_id=${LEAGUE_ID}&team_id=${arsenalId}&limit=200&offset=0`,key));
+    const playerKey=String(p.id);
+    let rows=playerStatsRequestCache.get(playerKey);
+    if(!rows){
+      rows=arr(await bsd(`/players/${p.id}/stats/?season_id=${SEASON_ID}&league_id=${LEAGUE_ID}&team_id=${arsenalId}&limit=200&offset=0`,key));
+      playerStatsRequestCache.set(playerKey,rows);
+    }
     const existingMeta=metaFor(p.name);
     const a:any={player_name:p.name,position:p.position,image_url:p.image_url,profile_url:p.profile_url,
       appearances:0,starts:0,minutes:0,
@@ -608,6 +626,10 @@ async function syncCleanSheetsV2(db:any,arsenalId:any,key:string){
 
 async function run(reqUrl=new URL('https://local.invalid')){
   const key=Deno.env.get('BSD_API_KEY'); if(!key) throw new Error('Missing BSD_API_KEY');
+  // Caches are deliberately scoped to this sync invocation. Never reuse a prior
+  // request's BSD data, so a later sync always starts from fresh source data.
+  squadRequestCache.clear();
+  playerStatsRequestCache.clear();
   const db=createClient(Deno.env.get('SUPABASE_URL')!,serverKey(),{auth:{persistSession:false,autoRefreshToken:false}});
 
   const teams=arr(await bsd('/teams/?name=Arsenal&limit=20&offset=0',key));
@@ -642,6 +664,7 @@ async function run(reqUrl=new URL('https://local.invalid')){
 
   const squadBody=await bsd(`/teams/${arsenalId}/squad/`,key);
   const squad=arr(squadBody);
+  squadRequestCache.set(String(arsenalId),squad);
   if(reqUrl.searchParams.get('probe_lineup')==='1') {
     const eid=reqUrl.searchParams.get('event_id');
     if(!eid) return json({ok:false,error:'event_id required'},400);
