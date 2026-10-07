@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="NL4 Arsenal Premier League season-by-season record.">
+<title>Season-by-Season Record | NL4 Arsenal Fan Hub</title>
+<link href="styles.css" rel="stylesheet"><link href="shared-sidebar.css" rel="stylesheet"><link href="sidebar-toggle-fix.css" rel="stylesheet">
+<style>
+body.h2h-page{background:#090909;color:#fff}.h2h-wrap{max-width:1380px;margin:auto;padding:34px 28px 60px}
+.h2h-hero{border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:34px;background:linear-gradient(135deg,rgba(216,0,31,.16),rgba(10,10,10,.94) 48%,rgba(216,173,69,.08))}
+.h2h-kicker{margin:0 0 8px;color:#d8ad45;font-size:11px;font-weight:1000;letter-spacing:1.4px}.h2h-hero h1{margin:0;font-size:clamp(30px,5vw,60px);line-height:.95;letter-spacing:-2px}.h2h-hero h1 span{color:#d8001f}.h2h-hero p{max-width:760px;color:#a8a8a8;line-height:1.7;margin:17px 0 0}
+.h2h-panel{margin-top:18px;border:1px solid rgba(255,255,255,.09);border-radius:20px;background:rgba(12,12,12,.9);overflow:hidden}.h2h-panel-head{display:flex;justify-content:space-between;gap:15px;align-items:center;padding:17px 19px;border-bottom:1px solid rgba(255,255,255,.08)}.h2h-panel-head h2{margin:0;font-size:15px}.h2h-panel-head span{color:#777;font-size:10px}
+.h2h-season-summary{padding:15px}.h2h-season-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.h2h-season{border:1px solid rgba(255,255,255,.07);border-radius:12px;background:#111;padding:14px}.h2h-season strong{display:block;font-size:13px}.h2h-season small{display:block;color:#777;font-size:8px;margin-top:4px}.h2h-season-position{display:flex;align-items:center;gap:7px;margin-top:9px;color:#d8ad45;font-size:10px;font-weight:1000}.h2h-season-position b{font-size:17px;color:#d8ad45}.h2h-season.champion{border:1px solid rgba(216,173,69,.92);border-top:3px solid #d8ad45;background:linear-gradient(145deg,rgba(216,173,69,.24),rgba(216,173,69,.09) 34%,#111 72%);box-shadow:0 0 0 1px rgba(216,173,69,.16),0 8px 24px rgba(216,173,69,.12),inset 0 0 34px rgba(216,173,69,.08)}.h2h-season.champion .h2h-season-position,.h2h-season.champion .h2h-season-position b{color:#f0cf72}.h2h-season-record{display:flex;justify-content:space-between;gap:8px;margin-top:10px;font-size:10px}.h2h-season-record b{color:#fff}.h2h-season-record span{color:#777}.h2h-season-bar{margin-top:9px;height:4px;border-radius:99px;background:#222;overflow:hidden}.h2h-season-bar i{display:block;height:100%;background:#d8001f}.h2h-note{margin-top:12px;padding:12px 14px;border-left:3px solid #d8ad45;background:rgba(216,173,69,.045);color:#888;font-size:10px;line-height:1.6}.h2h-back{display:inline-flex;margin-top:18px;padding:10px 14px;border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#d8ad45;text-decoration:none;font-size:10px;font-weight:1000}
+.h2h-empty{padding:35px 20px;text-align:center;color:#777}
+@media(max-width:1050px){.h2h-season-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:720px){.h2h-wrap{padding:18px 12px 40px}.h2h-hero{padding:25px 19px}.h2h-season-grid{grid-template-columns:1fr 1fr}}@media(max-width:480px){.h2h-season-grid{grid-template-columns:1fr}}
+</style></head>
+<body class="nl4-unified-sidebar h2h-page">
+<button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button>
+<div class="app-shell"><aside class="sidebar" id="sidebar"><div class="sidebar-top"><a class="logo" href="index.html"><span class="logo-box nl4-logo-box"><img alt="NL4" src="https://i.postimg.cc/GhGgj8G7/75c7b198-597a-4288-abae-723c809c34fa.png"></span><span class="nl4-brand-text"><b>NORTH LONDON</b><small>FOREVER</small></span></a></div>
+<nav class="side-nav" id="sideNav"><p class="nav-label">FAN HUB</p><a class="nav-link" href="index.html"><span>⌂</span> Home</a><a class="nav-link" href="fixtures.html"><span>◷</span> Fixtures</a><a class="nav-link active" href="head-to-head.html"><span>↔</span> Head-to-Head</a><a class="nav-link" href="index.html#calendar"><span>▣</span> Calendar</a><p class="nav-label">COMPETITIONS</p><a class="nav-link" href="index.html#premier-league"><span>🏆</span> Premier League</a><a class="nav-link" href="index.html#champions-league"><span>★</span> Champions League</a><a class="nav-link" href="index.html#fa-cup"><span>🏆</span> FA Cup</a><a class="nav-link" href="index.html#carabao-cup"><span>🏆</span> Carabao Cup</a><p class="nav-label">TEAM</p><a class="nav-link" href="index.html#lineup"><span>⚽</span> Lineup</a><a class="nav-link" href="index.html#news"><span>▤</span> Latest News</a><div class="nav-divider"></div><a class="treasure-link" href="trophies.html"><span>🔐</span><b>Treasure Room</b><small>Explore Arsenal history</small></a></nav><div class="sidebar-bottom"><span>COYG</span><span>1886 • FOREVER</span></div></aside><div class="mobile-overlay" id="overlay"></div>
+<main class="main"><div class="h2h-wrap"><section class="h2h-hero"><p class="h2h-kicker">NL4 • PREMIER LEAGUE HISTORY</p><h1>SEASON-BY-<span>SEASON RECORD</span></h1><p>Arsenal's Premier League record by season, calculated from the completed NL4 fixture archive.</p><a class="h2h-back" href="head-to-head.html">← BACK TO HEAD-TO-HEAD</a></section>
+<section class="h2h-panel"><div class="h2h-panel-head"><h2>SEASON-BY-SEASON RECORD</h2><span>W • D • L • GF • GA • PTS</span></div><div class="h2h-season-summary"><div class="h2h-season-grid" id="seasonGrid"><div class="h2h-empty">Loading season records…</div></div></div></section>
+<div class="h2h-note" id="dataNote">Loading the NL4 Premier League fixture archive…</div></div></main></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script><script src="supabase-client.js"></script><script src="shared-sidebar.js"></script>
+<script>
+(function(){
+ const db=window.nl4Supabase,E={grid:document.getElementById('seasonGrid'),note:document.getElementById('dataNote')};let positions={};
+ const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+ const start=s=>{const m=String(s||'').match(/^(\d{4})\//);return m?Number(m[1]):0};
+ const current=()=>{const d=new Date();return d.getUTCMonth()>=6?d.getUTCFullYear():d.getUTCFullYear()-1};
+ const label=()=>{const y=current();return y+'/'+String(y+1).slice(-2)};
+ const done=f=>f.home_score!=null&&f.away_score!=null&&new Date(f.kickoff_at).getTime()<=Date.now();
+ async function load(){
+  try{
+   if(!db){E.note.textContent='Supabase client is unavailable.';return}
+   const s=await db.from('premier_league_standings').select('season,position').eq('club','Arsenal');
+   if(!s.error)(s.data||[]).forEach(x=>positions[x.season]=Number(x.position));
+   const r=await db.from('fixtures').select('season,home_team,away_team,home_score,away_score,kickoff_at').eq('competition','Premier League').eq('is_published',true).or('home_team.eq.Arsenal,away_team.eq.Arsenal').order('kickoff_at',{ascending:false});
+   if(r.error){E.note.textContent='Could not load the NL4 Premier League fixture archive.';return}
+   const map=new Map();
+   (r.data||[]).filter(done).forEach(f=>{if(!map.has(f.season))map.set(f.season,[]);map.get(f.season).push(f)});
+   const seasons=Array.from(map.entries()).sort((a,b)=>start(b[0])-start(a[0]));
+   E.grid.innerHTML=seasons.length?seasons.map(([season,fs])=>{
+    let w=0,d=0,l=0,gf=0,ga=0;fs.forEach(f=>{const home=f.home_team==='Arsenal',ag=Number(home?f.home_score:f.away_score),og=Number(home?f.away_score:f.home_score);gf+=ag;ga+=og;if(ag>og)w++;else if(ag===og)d++;else l++});
+    const matches=fs.length,pts=w*3+d,pct=matches?Math.round(w/matches*100):0,pos=positions[season],isCurrent=season===label(),champion=!isCurrent&&pos===1,ord=pos?(pos===1?'1st':pos===2?'2nd':pos===3?'3rd':pos+'th'):'';
+    return '<article class="h2h-season '+(champion?'champion':'')+'"><strong>'+esc(season)+'</strong><small>'+matches+' COMPLETED MATCHES</small><div class="h2h-season-position">'+(pos?'<b>'+ord+'</b><span>'+(champion?'CHAMPIONS':pos===2?'RUNNER-UP':ord)+(isCurrent?' • CURRENT POSITION':'')+'</span>':'<span>POSITION NOT YET SYNCED</span>')+'</div><div class="h2h-season-record"><span>W-D-L</span><b>'+w+'-'+d+'-'+l+'</b></div><div class="h2h-season-record"><span>GF-GA</span><b>'+gf+'-'+ga+'</b></div><div class="h2h-season-record"><span>POINTS</span><b>'+pts+'</b></div><div class="h2h-season-record"><span>GD</span><b>'+((gf-ga)>0?'+':'')+(gf-ga)+'</b></div><div class="h2h-season-bar"><i style="width:'+pct+'%"></i></div></article>'
+   }).join(''):'<div class="h2h-empty">No completed season records are currently available.</div>';
+   E.note.textContent=seasons.length+' seasons available. Completed results only are used.';
+  }catch(err){console.error(err);E.note.textContent='Could not load the NL4 Premier League season records. Please refresh and try again.'}
+ }
+ load();
+})();
+</script></body></html>
