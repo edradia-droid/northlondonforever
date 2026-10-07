@@ -9,7 +9,22 @@ if (!window.supabase) throw new Error("Supabase JS library was not loaded.");
 window.nl4Supabase = window.supabase.createClient(
   NL4_SUPABASE_URL,
   NL4_SUPABASE_PUBLISHABLE_KEY,
-  {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}
+  {
+    auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},
+    global:{
+      fetch:(input,init={})=>{
+        // Supabase publishable keys are opaque API keys, not JWTs. Keep the
+        // required apikey header, but do not send the publishable key itself
+        // as Authorization: Bearer, which the API gateway rejects as a JWT.
+        const headers=new Headers(input instanceof Request ? input.headers : undefined);
+        new Headers(init.headers || {}).forEach((value,key)=>headers.set(key,value));
+        if(headers.get('Authorization')===('Bearer '+NL4_SUPABASE_PUBLISHABLE_KEY)){
+          headers.delete('Authorization');
+        }
+        return fetch(input,{...init,headers});
+      }
+    }
+  }
 );
 
 const NL4_IS_RECORD_ROOM = !!document.getElementById('recordRoomPage') || /(?:^|\/)record-room(?:\.html)?\/?$/i.test(location.pathname);
