@@ -1,29 +1,20 @@
 // NL4 Supabase browser client\n// Deployment refresh: 2026-10-07 — ensure latest browser Supabase client is published.
-// Safe for frontend use: this is the low-privilege legacy anon browser key.
+// Safe for frontend use: this is the low-privilege Supabase publishable browser key.
 // Never place a Supabase secret/service_role key in browser files.
-// Legacy anon remains active for this browser client while Supabase's new API-key migration is phased in.
 
 const NL4_SUPABASE_URL = "https://vrjxejuyiynllygiozhs.supabase.co";
 const NL4_SUPABASE_PUBLISHABLE_KEY = "sb_publishable__esNlSYCC7dc4Cbn1yFZ4w_ttag7wqw";
 
 if (!window.supabase) throw new Error("Supabase JS library was not loaded.");
 
-// Supabase's modern publishable key is an API key, not a JWT. Authenticate it
-// through the apikey header only; do not send it as Authorization: Bearer.
-const nl4SupabaseFetch = (input, init = {}) => {
-  const url = typeof input === "string" ? input : input?.url || "";
-  if (!url.startsWith(NL4_SUPABASE_URL)) return window.fetch(input, init);
-
-  const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
-  headers.delete("Authorization");
-  return window.fetch(input, {...init, headers});
-};
-
+// Use Supabase's publishable key normally. The Supabase client sends the
+// publishable key as "apikey" and, when a user is signed in, sends that
+// user's Auth JWT as "Authorization: Bearer ...". Never strip Authorization:
+// RLS and the NL4 admin membership check depend on that user JWT.
 window.nl4Supabase = window.supabase.createClient(
   NL4_SUPABASE_URL,
   NL4_SUPABASE_PUBLISHABLE_KEY,
   {
-    global:{fetch:nl4SupabaseFetch},
     auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
   }
 );
