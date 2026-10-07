@@ -16,21 +16,46 @@ async function bsd(path:string,key:string){const r=await fetch(BSD+path,{headers
 async function sha256Hex(v:string){const h=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,"0")).join("")}
 function seasonLabel(s:any){const start=s?.start_year??s?.year??s?.season_year;if(start!=null&&/^20\d{2}$/.test(String(start)))return String(start)+"/"+String(Number(start)+1).slice(-2);const v=name(s);if(v){const m=String(v).match(/(20\d{2})\s*\/\s*(\d{2})/);if(m)return m[1]+"/"+m[2]}return null}
 function statusOf(e:any){const r=String(e?.status??e?.event_status??e?.state??"").toLowerCase();if(r.includes("finish")||r==="ft"||r.includes("complete"))return"fulltime";if(r.includes("live")||r.includes("progress"))return"live";if(r.includes("postpon"))return"postponed";if(r.includes("cancel"))return"cancelled";return"scheduled"}
-async function syncStandings(db:any,season:any,key:string){
+async function fetchSeasonEvents(season:any,key:string){
+const out:any[]=[];
+for(let offset=0;;offset+=200){const body=await bsd(`/events/?league_id=${LEAGUE_ID}&season_id=${season.id}&limit=200&offset=${offset}`,key),page=arr(body);out.push(...page);if(page.length<200)break;if(offset>1000)throw new Error("BSD event pagination exceeded safety limit");}
+return out;
+}
+function deriveStandingsFromEvents(events:any[]){
+const teams=new Map<string,any>();
+const seen=new Set<string>();
+for(const e of events){
+const eid=String(id(e)||"");if(eid&&seen.has(eid))continue;if(eid)seen.add(eid);
+const homeObj=e?.home_team??e?.home??e?.teams?.home,awayObj=e?.away_team??e?.away??e?.teams?.away;
+const home=name(homeObj),away=name(awayObj);if(!home||!away)continue;
+const ensure=(club:string)=>{const k=club.trim().toLowerCase();if(!teams.has(k))teams.set(k,{club:club.trim(),played:0,wins:0,draws:0,losses:0,goals_for:0,goals_against:0,goal_difference:0,points:0});return teams.get(k)};
+ensure(home);ensure(away);
+const status=statusOf(e),hs=num(e?.home_score??e?.score?.home??e?.scores?.home),as=num(e?.away_score??e?.score?.away??e?.scores?.away);
+if(status!=="fulltime"||hs==null||as==null)continue;
+const h=ensure(home),a=ensure(away);h.played++;a.played++;h.goals_for+=hs;h.goals_against+=as;a.goals_for+=as;a.goals_against+=hs;
+if(hs>as){h.wins++;h.points+=3;a.losses++;}else if(hs<as){a.wins++;a.points+=3;h.losses++;}else{h.draws++;a.draws++;h.points++;a.points++;}
+}
+if(teams.size!==20)throw new Error("BSD event standings validation failed: expected 20 unique clubs, got "+teams.size);
+const rows=[...teams.values()].map((r:any)=>({...r,goal_difference:r.goals_for-r.goals_against})).sort((x:any,y:any)=>y.points-x.points||y.goal_difference-x.goal_difference||y.goals_for-x.goals_for||y.wins-x.wins||x.club.localeCompare(y.club)).map((r:any,i:number)=>({...r,position:i+1}));
+return rows;
+}
+async function syncStandings(db:any,season:any,key:string,deriveFromEvents=false){
 let arsenalPosition:number|null=null;
 try{
-
+let rows:any[];
+if(deriveFromEvents){rows=deriveStandingsFromEvents(await fetchSeasonEvents(season,key));}
+else{
 const standingBody=await bsd(`/leagues/${LEAGUE_ID}/standings/?season_id=${season.id}`,key),rawRows=arr(standingBody);
-const rows=rawRows.map((x:any)=>({position:num(x?.position??x?.rank??x?.place),club:name(x?.team??x?.club??x),played:num(x?.played??x?.matches_played??x?.games_played),wins:num(x?.wins??x?.won),draws:num(x?.draws),losses:num(x?.losses??x?.lost),goals_for:num(x?.goals_for??x?.gf??x?.goals_scored),goals_against:num(x?.goals_against??x?.ga??x?.goals_conceded),goal_difference:num(x?.goal_difference??x?.gd),points:num(x?.points??x?.pts)})).filter((x:any)=>x.position!=null&&x.club);
+rows=rawRows.map((x:any)=>({position:num(x?.position??x?.rank??x?.place),club:name(x?.team??x?.club??x),played:num(x?.played??x?.matches_played??x?.games_played),wins:num(x?.wins??x?.won),draws:num(x?.draws),losses:num(x?.losses??x?.lost),goals_for:num(x?.goals_for??x?.gf??x?.goals_scored),goals_against:num(x?.goals_against??x?.ga??x?.goals_conceded),goal_difference:num(x?.goal_difference??x?.gd),points:num(x?.points??x?.pts)})).filter((x:any)=>x.position!=null&&x.club);
 const positions=new Set(rows.map((x:any)=>Number(x.position))),clubs=new Set(rows.map((x:any)=>String(x.club).trim().toLowerCase()));
 if(rows.length!==20||positions.size!==20||![...positions].every((n:any)=>n>=1&&n<=20)||clubs.size!==20)throw new Error("BSD standings validation failed: expected 20 unique clubs/positions, got "+rows.length);
+}
 const seasonKey=String(season.label),existing=await db.from("premier_league_standings").select("id,season,position,club").eq("season",seasonKey);if(existing.error)throw existing.error;const old=existing.data??[];
 for(let i=0;i<old.length;i++){const q=await db.from("premier_league_standings").update({position:-1000000-i}).eq("id",old[i].id);if(q.error)throw q.error}
 const byClub=new Map(old.map((x:any)=>[String(x.club).trim().toLowerCase(),x.id])),kept=new Set<string>();
 for(const r of rows){const data:any={season:seasonKey,position:Number(r.position),club:String(r.club).trim(),played:r.played??0,wins:r.wins??0,draws:r.draws??0,losses:r.losses??0,goals_for:r.goals_for??0,goals_against:r.goals_against??0,goal_difference:r.goal_difference??0,points:r.points??0,updated_at:new Date().toISOString()},eid=byClub.get(data.club.toLowerCase());if(eid){const q=await db.from("premier_league_standings").update(data).eq("id",eid);if(q.error)throw q.error;kept.add(String(eid))}else{const q=await db.from("premier_league_standings").insert(data).select("id").single();if(q.error)throw q.error;kept.add(String(q.data.id))}}
 for(const o of old)if(!kept.has(String(o.id))){const q=await db.from("premier_league_standings").delete().eq("id",o.id);if(q.error)throw q.error}
 const ar=rows.find((x:any)=>/^arsenal(?: fc)?$/i.test(String(x.club).trim()));if(!ar)throw new Error("Validated BSD table for "+seasonKey+" does not contain Arsenal");arsenalPosition=ar.position;
-
 }catch(e){throw new Error("BSD standings sync failed for "+String(season.label)+": "+errorText(e))}
 return arsenalPosition;
 }
@@ -52,13 +77,14 @@ const unique=new Map<string,any>();for(const s of allSeasons)unique.set(String(s
 const seasons=[...unique.values()].sort((a,b)=>String(b.label).localeCompare(String(a.label))).slice(seasonStart,seasonStart+requested);
 if(!seasons.length)throw new Error("BSD returned no recognizable Premier League seasons; keys="+Object.keys(seasonBody||{}).join(",")+" count="+rawSeasons.length+" sample="+JSON.stringify(rawSeasons.slice(0,3)).slice(0,5000));
 const teams=arr(await bsd("/teams/?name=Arsenal&limit=20&offset=0",key)),arsenal=teams.find((t:any)=>name(t)==="Arsenal"||name(t?.team)==="Arsenal")??teams[0],arsenalId=id(arsenal);if(!arsenalId)throw new Error("Could not resolve Arsenal BSD team id");
+const currentSeasonLabel=String([...unique.values()].sort((a,b)=>String(b.label).localeCompare(String(a.label)))[0]?.label||"");
 const synced:any[]=[];
 for(const season of seasons){
 let arsenalPosition:number|null=null;
 const events=arr(await bsd(`/events/?league_id=${LEAGUE_ID}&season_id=${season.id}&team_id=${arsenalId}&limit=200&offset=0`,key));let seasonFixtures=0;
 for(const e of events){const eid=String(id(e)||"");if(!eid)continue;const homeObj=e?.home_team??e?.home??e?.teams?.home,awayObj=e?.away_team??e?.away??e?.teams?.away;
 const home=name(homeObj),away=name(awayObj),homeId=num(id(homeObj))??await resolveTeamId(home,key),awayId=num(id(awayObj))??await resolveTeamId(away,key);if(!home||!away||(home!=="Arsenal"&&away!=="Arsenal"))continue;const ih=home==="Arsenal",op=ih?away:home,hs=num(e?.home_score??e?.score?.home??e?.scores?.home),as=num(e?.away_score??e?.score?.away??e?.scores?.away),kick=e?.event_date??e?.start_time??e?.kickoff_at??e?.date??null,row:any={opponent:op,competition:"Premier League",kickoff_at:kick,is_home:ih,home_team:home,away_team:away,external_fixture_id:"bsd:"+eid,source:"BSD",season:String(season.label),home_team_id:homeId,away_team_id:awayId,status:statusOf(e),is_published:true,kickoff_confirmed:Boolean(kick),arsenal_score:ih?hs:as,opponent_score:ih?as:hs,home_score:hs,away_score:as,source_updated_at:new Date().toISOString(),updated_at:new Date().toISOString()},ex=await db.from("fixtures").select("id").eq("external_fixture_id","bsd:"+eid).maybeSingle();if(ex.error)throw ex.error;if(ex.data?.id){const q=await db.from("fixtures").update(row).eq("id",ex.data.id);if(q.error)throw q.error}else{const q=await db.from("fixtures").insert(row).select("id").single();if(q.error)throw q.error}seasonFixtures++}
-arsenalPosition=await syncStandings(db,season,key);
+arsenalPosition=await syncStandings(db,season,key,String(season.label)===currentSeasonLabel);
 synced.push({season:String(season.label),bsdSeasonId:season.id,fixtures:seasonFixtures,arsenalPosition});
 }
 return json({ok:true,source:"BSD",competition:"Premier League",arsenalTeamId:arsenalId,seasons:synced,totalFixtures:synced.reduce((n:any,x:any)=>n+x.fixtures,0),syncedAt:new Date().toISOString()});
