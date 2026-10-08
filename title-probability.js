@@ -469,7 +469,11 @@
 
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const setText=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  const norm=v=>String(v||'').trim().replace(/\s+/g,' ');
+  const CLUB_ALIASES={'bournemouth':'AFC Bournemouth','liverpool fc':'Liverpool'};
+  const norm=v=>{
+    const cleaned=String(v||'').trim().replace(/\s+/g,' ');
+    return CLUB_ALIASES[cleaned.toLowerCase()]||cleaned;
+  };
   const finished=s=>['fulltime','finished','ft','aet','pen'].includes(String(s||'').toLowerCase());
   const ignored=s=>['cancelled','postponed'].includes(String(s||'').toLowerCase());
   const pairKey=(h,a)=>`${norm(h).toLowerCase()}__${norm(a).toLowerCase()}`;
@@ -488,16 +492,31 @@
   }
 
   function normalizeStandings(rows){
-    return rows.map((r,i)=>{
+    const byClub=new Map();
+    (rows||[]).forEach((r,i)=>{
+      const club=norm(r.club);
+      if(!club)return;
       const played=Number(r.played||0),gf=Number(r.goals_for||0),ga=Number(r.goals_against||0);
       const pts=Number(r.points||0),gd=Number(r.goal_difference??(gf-ga));
-      return {
-        club:norm(r.club),position:Number(r.position||i+1),played,
+      const candidate={
+        club,position:Number(r.position||i+1),played,
         wins:Number(r.wins||0),draws:Number(r.draws||0),losses:Number(r.losses||0),
         gf,ga,gd,points:pts,remaining:Math.max(0,38-played),
         ppg:played?pts/played:1.35,gfpg:played?gf/played:1.35,gapg:played?ga/played:1.35
       };
+      const existing=byClub.get(club);
+      // Source feeds sometimes publish aliases as separate rows (e.g. Bournemouth /
+      // AFC Bournemouth and Liverpool FC / Liverpool). Keep the strongest populated
+      // source row; never count an alias as an extra Premier League club.
+      const score=x=>[x.played,x.points,x.gf,x.gd,-x.position];
+      const better=!existing||score(candidate).some((v,j)=>{
+        const old=score(existing);
+        for(let k=0;k<j;k++)if(score(candidate)[k]!==old[k])return false;
+        return v>old[j];
+      });
+      if(better)byClub.set(club,candidate);
     });
+    return [...byClub.values()].sort((a,b)=>a.position-b.position);
   }
 
 
@@ -4469,8 +4488,9 @@
           standingsRes.data||[]
         );
       }
-      if(!standingsRes.data||standingsRes.data.length!==20)
-        throw new Error(`The model needs all 20 clubs. Found ${standingsRes.data?.length||0}.`);
+      const uniqueCurrentClubs=new Set((standingsRes.data||[]).map(r=>norm(r.club)).filter(Boolean));
+      if(uniqueCurrentClubs.size!==20)
+        throw new Error(`The model needs 20 distinct Premier League clubs after alias normalization. Found ${uniqueCurrentClubs.size}.`);
 
       // One canonical fixture universe now drives the model. The legacy
       // premier_league_matches table is intentionally no longer merged here.
