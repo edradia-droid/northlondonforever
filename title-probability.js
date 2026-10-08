@@ -5,7 +5,8 @@
   const SIMULATIONS=25000;
   const COUNTERFACTUAL_SIMULATIONS=8000;
   const TOTAL_FIXTURES=380;
-  const MAX_SCORE=7;
+  // Scores 0–13 are represented explicitly; the remaining Poisson tail is tiny at the model's capped lambdas (<=4.2) and is grouped at 14.
+  const MAX_SCORE=14;
   const ELO_BASE=1500;
   const ELO_K_EARLY=34;
   const ELO_K_MATURE=22;
@@ -107,7 +108,8 @@
       return recent*.55+older*.25+longTerm*.20;
     }
     if(Number.isFinite(recent)){
-      return recent*.65+longTerm*.35;
+      // The older-season 25% weight transfers to the long-term anchor when unavailable.
+      return recent*.55+longTerm*.45;
     }
     return longTerm;
   }
@@ -4533,8 +4535,10 @@
           .eq('season',SECOND_PREVIOUS_SEASON).order('position',{ascending:true})
       ]);
 
-      if(standingsRes.error)throw standingsRes.error;
       if(fixturesRes.error)throw fixturesRes.error;
+      if(standingsRes.error){
+        console.warn('NL4 model: current standings table unavailable; live table will be derived from canonical fixtures.',standingsRes.error);
+      }
 
       // Canonical fixtures are the authoritative live season state. The
       // standings table is retained for historical seasons, but its current
@@ -4569,7 +4573,7 @@
 
       // Compare source standings with the fixture-derived table for diagnostics.
       // A stale current standings table must never override verified fixture results.
-      const sourceRows=normalizeStandings(standingsRes.data||[]);
+      const sourceRows=normalizeStandings(standingsRes.error?[]:(standingsRes.data||[]));
       const derivedRows=normalizeStandings(derivedCurrentRows);
       const sourceByClub=new Map(sourceRows.map(r=>[r.club,r]));
       const discrepancies=derivedRows.filter(r=>{
