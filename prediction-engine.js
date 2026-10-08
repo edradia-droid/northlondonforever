@@ -249,8 +249,6 @@
   const kitControl=document.getElementById('kit');
   document.body.dataset.kit=kitControl?.value==='away'?'away':'home';
   applyDisplayMode();
-  // Also process any Odegaard image after the first render, so this is not dependent on inline onload timing.
-  setTimeout(()=>document.querySelectorAll('.odegaard-photo').forEach(nl4RemoveOdegaardBackground),0);
   const initialFormation=document.getElementById('downloadFormation');
   if(initialFormation)initialFormation.textContent=document.getElementById('formation').value;
   updateDownloadSubs?.();
