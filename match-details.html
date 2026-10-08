@@ -1640,7 +1640,9 @@
         const key = String(name).trim().toLowerCase();
         const normalized = normalizePlayerKey(name);
         const localKey = Object.keys(ARSENAL_SQUAD_IMAGE_URLS).find(candidate => normalizePlayerKey(candidate) === normalized);
-        const source = ARSENAL_SQUAD_IMAGE_URLS[key] || (localKey ? ARSENAL_SQUAD_IMAGE_URLS[localKey] : '');
+        const source = normalized === 'martinodegaard'
+          ? ARSENAL_SQUAD_IMAGE_URLS['martin odegaard']
+          : (ARSENAL_SQUAD_IMAGE_URLS[key] || (localKey ? ARSENAL_SQUAD_IMAGE_URLS[localKey] : ''));
         if (!source) return;
         const current = map.get(key) || { image:'', shirt:'' };
         current.image = source;
@@ -2173,6 +2175,12 @@
       const resolvePlayerMedia = playerName => {
         const key = normalizePlayerKey(playerName);
         if (!key) return {};
+        // Ødegaard is a protected canonical asset. Never allow an upstream
+        // BSD/Supabase image_url to replace the verified transparent cutout.
+        if (key === 'martinodegaard') {
+          const canonical = ARSENAL_SQUAD_IMAGE_URLS['martin odegaard'];
+          if (canonical) return {image:canonical, shirt:''};
+        }
         const direct = playerMedia.get(key) || playerMedia.get(String(playerName || '').trim().toLowerCase());
         if (direct?.image) return direct;
 
