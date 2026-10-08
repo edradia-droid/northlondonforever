@@ -340,7 +340,7 @@
       return;
     }
 
-    const norm=value=>String(value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();
+    const norm=value=>String(value||'').toLowerCase().replace(/[ø]/g,'o').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();
     const identityTokens=value=>norm(value).split(' ').filter(Boolean);
     const sameIdentity=(a,b)=>{
       if(!a||!b)return false;
