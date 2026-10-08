@@ -1155,6 +1155,56 @@
     };
   }
 
+  // Premier League ranking: points, goal difference and goals scored first.
+  // If those are identical, compare the clubs' mini-table from their head-to-head fixtures.
+  function addHeadToHeadResult(season,homeClub,awayClub,homeGoals,awayGoals){
+    const home=season.get(homeClub),away=season.get(awayClub);
+    if(!home||!away||!Number.isFinite(Number(homeGoals))||!Number.isFinite(Number(awayGoals)))return;
+    const ensure=(row,opponent)=>{
+      if(!(row.h2h instanceof Map))row.h2h=new Map();
+      if(!row.h2h.has(opponent))row.h2h.set(opponent,{points:0,gf:0,ga:0,gd:0});
+      return row.h2h.get(opponent);
+    };
+    const hg=Number(homeGoals),ag=Number(awayGoals);
+    const h=ensure(home,awayClub),a=ensure(away,homeClub);
+    h.gf+=hg;h.ga+=ag;h.gd+=hg-ag;
+    a.gf+=ag;a.ga+=hg;a.gd+=ag-hg;
+    if(hg>ag)h.points+=3;
+    else if(ag>hg)a.points+=3;
+    else{h.points++;a.points++;}
+  }
+
+  function rankLeagueTable(inputRows){
+    const baseCompare=(a,b)=>Number(b.points||0)-Number(a.points||0)||Number(b.gd||0)-Number(a.gd||0)||Number(b.gf||0)-Number(a.gf||0);
+    const rows=inputRows.slice().sort((a,b)=>baseCompare(a,b)||String(a.club).localeCompare(String(b.club)));
+    for(let start=0;start<rows.length;){
+      let end=start+1;
+      while(end<rows.length&&baseCompare(rows[start],rows[end])===0)end++;
+      if(end-start>1){
+        const tied=rows.slice(start,end);
+        const tiedNames=new Set(tied.map(row=>row.club));
+        const mini=new Map(tied.map(row=>[row.club,{points:0,gd:0,gf:0}]));
+        for(const row of tied){
+          if(!(row.h2h instanceof Map))continue;
+          for(const [opponent,record] of row.h2h){
+            if(!tiedNames.has(opponent))continue;
+            const aggregate=mini.get(row.club);
+            aggregate.points+=Number(record.points||0);
+            aggregate.gd+=Number(record.gd||0);
+            aggregate.gf+=Number(record.gf||0);
+          }
+        }
+        tied.sort((a,b)=>{
+          const x=mini.get(a.club),y=mini.get(b.club);
+          return y.points-x.points||y.gd-x.gd||y.gf-x.gf||String(a.club).localeCompare(String(b.club));
+        });
+        rows.splice(start,tied.length,...tied);
+      }
+      start=end;
+    }
+    return rows;
+  }
+
   function simulate(teams,fixtures){
     const byName=new Map(teams.map(t=>[t.club.toLowerCase(),t]));
     const remaining=fixtures.filter(f=>!finished(f.status));
@@ -1222,7 +1272,13 @@
     for(let sim=0;sim<SIMULATIONS;sim++){
       let nextArsenalOutcome=null;
       const impactOutcomes=new Map();
-      const season=new Map(teams.map(t=>[t.club,{club:t.club,points:t.points,gd:t.gd,gf:t.gf}]));
+      const season=new Map(teams.map(t=>[t.club,{club:t.club,points:t.points,gd:t.gd,gf:t.gf,h2h:new Map()}]));
+      // Carry source fixture results into each simulation's head-to-head mini-tables.
+      for(const played of fixtures){
+        if(!finished(played.status))continue;
+        const hs=Number(played.home_score),as=Number(played.away_score);
+        if(Number.isFinite(hs)&&Number.isFinite(as))addHeadToHeadResult(season,played.home,played.away,hs,as);
+      }
 
       for(const f of prepared){
         const hs=sampleScore(f.model.homeCDF,rng);
@@ -1252,9 +1308,10 @@
         if(hs>as)h.points+=3;
         else if(as>hs)a.points+=3;
         else{h.points++;a.points++;}
+        addHeadToHeadResult(season,f.homeTeam.club,f.awayTeam.club,hs,as);
       }
 
-      const rows=[...season.values()].sort((a,b)=>b.points-a.points||b.gd-a.gd||b.gf-a.gf||a.club.localeCompare(b.club));
+      const rows=rankLeagueTable([...season.values()]);
       const arsenalChampion=rows[0]?.club==='Arsenal';
       championPoints.push(Number(rows[0]?.points||0));
 
