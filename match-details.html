@@ -2905,6 +2905,81 @@ body.match-details-page.pl-match-details-page{
   #lineupPhotoExport .pitch-off-marker{min-width:28px!important;padding:2px 4px!important;font-size:9px!important}
 }
 </style>
+<style id="nl4-pl-full-sections-v1">
+/* Keep every Premier League Match Details section on the same official PL purple identity as the score section. */
+body.match-details-page.pl-match-details-page .details-grid,
+body.match-details-page.pl-match-details-page .match-panel,
+body.match-details-page.pl-match-details-page .formation-panel,
+body.match-details-page.pl-match-details-page .pre-lineup-subs-panel,
+body.match-details-page.pl-match-details-page .post-pitch-subs-panel,
+body.match-details-page.pl-match-details-page .stats-panel,
+body.match-details-page.pl-match-details-page .leaguewide-panel{
+  border-color:rgba(55,0,60,.62)!important;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(55,0,60,.42),transparent 55%),
+    linear-gradient(145deg,#1c041f 0%,#0d0610 58%,#070408 100%)!important;
+  box-shadow:0 24px 60px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.05)!important;
+}
+
+/* Individual section headers and rows use the same PL surface instead of unrelated black/gold colours. */
+body.match-details-page.pl-match-details-page .match-panel-head,
+body.match-details-page.pl-match-details-page .broadcast-side-head{
+  border-bottom-color:rgba(255,255,255,.12)!important;
+  background:linear-gradient(180deg,rgba(55,0,60,.34),rgba(55,0,60,.04))!important;
+}
+body.match-details-page.pl-match-details-page .lineup-list,
+body.match-details-page.pl-match-details-page .post-pitch-subs,
+body.match-details-page.pl-match-details-page .events-list,
+body.match-details-page.pl-match-details-page .stats-table,
+body.match-details-page.pl-match-details-page .leaguewide-teams{
+  background:transparent!important;
+}
+body.match-details-page.pl-match-details-page .lineup-row,
+body.match-details-page.pl-match-details-page .sub-bench-row,
+body.match-details-page.pl-match-details-page .pre-lineup-subs-panel .broadcast-sub,
+body.match-details-page.pl-match-details-page .event-row,
+body.match-details-page.pl-match-details-page .leaguewide-team,
+body.match-details-page.pl-match-details-page .leaguewide-player,
+body.match-details-page.pl-match-details-page .stats-row{
+  border-color:rgba(255,255,255,.10)!important;
+  background:
+    linear-gradient(90deg,rgba(55,0,60,.62),rgba(18,7,20,.82))!important;
+}
+body.match-details-page.pl-match-details-page .leaguewide-team-head{
+  border-bottom-color:rgba(255,255,255,.09)!important;
+  background:rgba(55,0,60,.24)!important;
+}
+
+/* The lineup/pitch section gets the same PL purple atmosphere while keeping the pitch itself green. */
+body.match-details-page.pl-match-details-page .broadcast-lineup{
+  background:
+    radial-gradient(circle at 50% 0%,rgba(55,0,60,.38),transparent 46%),
+    linear-gradient(180deg,#120516 0%,#08050a 100%)!important;
+}
+body.match-details-page.pl-match-details-page .broadcast-top{
+  background:linear-gradient(180deg,rgba(55,0,60,.78),rgba(9,3,11,.18))!important;
+  border-bottom:1px solid rgba(255,255,255,.10)!important;
+}
+body.match-details-page.pl-match-details-page .broadcast-side{
+  border-color:rgba(55,0,60,.62)!important;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(55,0,60,.42),transparent 55%),
+    linear-gradient(145deg,#1c041f,#0a050c)!important;
+}
+
+/* PL accent text/dividers throughout the sections. */
+body.match-details-page.pl-match-details-page .match-panel-head p,
+body.match-details-page.pl-match-details-page .event-minute,
+body.match-details-page.pl-match-details-page .sub-bench-used,
+body.match-details-page.pl-match-details-page .pre-lineup-subs-panel .broadcast-sub::after,
+body.match-details-page.pl-match-details-page .leaguewide-team-head span{
+  color:#c99bce!important;
+}
+body.match-details-page.pl-match-details-page .status-note{
+  border-top-color:rgba(55,0,60,.34)!important;
+  color:#9d8aa0!important;
+}
+</style>
 <!-- NL4 Champions League match-details background override -->
 <style id="nl4-cl-match-details-background-v1">
 /* Champions League background is applied only when the loaded fixture is a Champions League match. */
