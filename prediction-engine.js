@@ -124,7 +124,7 @@
     "riccardo calafiori":"assets/player-cutouts/player-12.png","calafiori":"assets/player-cutouts/player-12.png",
     "declan rice":"assets/player-cutouts/player-13.png","rice":"assets/player-cutouts/player-13.png",
     "bruno guimaraes rodriguez moura":"assets/player-cutouts/player-14.png","bruno guimaraes":"assets/player-cutouts/player-14.png","bruno g":"assets/player-cutouts/player-14.png",
-    "martin odegaard":"https://raw.githubusercontent.com/edradia-droid/northlondonforever/738bcd1da60b5534afd82acdaebb3c020840e3f6/assets/player-cutouts/player-15.png",
+    "martin odegaard":"assets/player-cutouts/odegaard-transparent.png",
     "martin zubimendi ibanez":"assets/player-cutouts/player-16.png","martin zubimendi":"assets/player-cutouts/player-16.png","zubimendi":"assets/player-cutouts/player-16.png",
     "mikel merino zazon":"assets/player-cutouts/player-17.png","mikel merino":"assets/player-cutouts/player-17.png","merino":"assets/player-cutouts/player-17.png",
     "myles lewis skelly":"assets/player-cutouts/player-18.png","lewis skelly":"assets/player-cutouts/player-18.png",
