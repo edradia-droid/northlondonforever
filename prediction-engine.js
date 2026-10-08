@@ -147,8 +147,23 @@
     }).filter(p=>p.name);
     return players.length>0;
   }
+  const ODEGAARD_CANONICAL_KEY='martin odegaard';
+  const ODEGAARD_CANONICAL_PHOTO=PLAYER_PHOTOS[ODEGAARD_CANONICAL_KEY];
+
+  function isOdegaard(player){
+    return [player?.name,player?.webName,player?.feedName]
+      .filter(Boolean)
+      .map(norm)
+      .includes(ODEGAARD_CANONICAL_KEY);
+  }
+
   function playerPhotoUrl(player){
     const keyCandidates=[player?.name,player?.webName,player?.feedName].filter(Boolean).map(norm);
+    // Ødegaard is a protected canonical asset. Never allow an upstream
+    // BSD/Supabase image_url to replace the verified transparent cutout.
+    if(keyCandidates.includes(ODEGAARD_CANONICAL_KEY)){
+      return new URL(ODEGAARD_CANONICAL_PHOTO,document.baseURI).href;
+    }
     const file=keyCandidates.map(k=>PLAYER_PHOTOS[k]).find(Boolean);
     return file ? new URL(file,document.baseURI).href : '';
   }
@@ -204,7 +219,11 @@
     const exportName=slot.querySelector('[data-export-name]');
     const player=findPlayer(select.value);
     const localPhoto=playerPhotoUrl(player);
-    const imageSrc=localPhoto || player?.image_url || '';
+    // Protected Ødegaard override: this branch must win over any future
+    // upstream image_url supplied by BSD/Supabase.
+    const imageSrc=isOdegaard(player)
+      ? localPhoto
+      : (localPhoto || player?.image_url || '');
     if(visual){
       if(displayMode==='initials'){
         visual.innerHTML=player ? `<span class="player-initials" aria-label="${esc(player.name)} initials">${esc(initials(player.name))}</span>` : '<span class="player-photo placeholder">+</span>';
