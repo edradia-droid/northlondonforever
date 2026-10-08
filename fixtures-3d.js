@@ -116,10 +116,6 @@
     };
   }
 
-  const h2hFixtureStyle=document.createElement('style');
-  h2hFixtureStyle.textContent='.h2h-fixture-link{border:1px solid rgba(255,255,255,.16)!important;border-radius:8px!important;background:linear-gradient(145deg,#5a1263,#3a0641)!important;color:#fff!important;box-shadow:0 4px 0 #210024,0 7px 14px rgba(0,0,0,.24)!important;padding:9px 12px!important;font-weight:1000!important;text-decoration:none!important;transition:.16s ease}.h2h-fixture-link:hover{background:linear-gradient(145deg,#6b1b75,#47084f)!important;border-color:#00d2be!important;color:#fff!important;transform:translateY(-2px);box-shadow:0 6px 0 #210024,0 10px 18px rgba(0,0,0,.3)!important}';
-  document.head.appendChild(h2hFixtureStyle);
-
   function applyTilt() {
     if (!window.matchMedia('(pointer:fine)').matches ||
         window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
@@ -197,7 +193,7 @@
               <span>MATCH ${String(match.matchday || '').padStart(2,'0')} / 38</span>
               <div class="fixture-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                 ${predictionClosed ? '' : `<a class="predict-lineup-link details-link" data-prediction-action data-kickoff="${escapeHtml(match.kickoffAt || '')}" href="predict-lineup.html?fixture=${encodeURIComponent(match.id)}">Predict Scores/Lineup</a>`}
-                <a class="details-link h2h-fixture-link" href="head-to-head.html?opponent=${encodeURIComponent((match.home === 'Arsenal' ? match.awayTeamId : match.homeTeamId) ?? (match.home === 'Arsenal' ? match.away : match.home))}">H2H vs ${escapeHtml(match.home === 'Arsenal' ? match.away : match.home)} →</a>
+                <a class="details-link" href="head-to-head.html?opponent=${encodeURIComponent((match.home === 'Arsenal' ? match.awayTeamId : match.homeTeamId) ?? (match.home === 'Arsenal' ? match.away : match.home))}">H2H vs ${escapeHtml(match.home === 'Arsenal' ? match.away : match.home)} →</a>
                 <a class="details-link" href="match-details.html?fixture=${encodeURIComponent(match.id)}">More Details →</a>
               </div>
             </div>
