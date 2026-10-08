@@ -4093,9 +4093,58 @@
     }
   }
 
-  async function saveAdminSnapshot(arsenal,completedCount){
+  function validateSimulationForPublication(simulation,fixtureAudit,fixtures,results){
+    const errors=[];
+    const rows=simulation?.rows||[];
+    const clubs=new Set(rows.map(r=>norm(r.club)).filter(Boolean));
+    const near=(value,target,tolerance=0.15)=>Number.isFinite(value)&&Math.abs(value-target)<=tolerance;
+
+    if(!fixtureAudit||fixtureAudit.clubs!==20)errors.push('Fixture audit did not confirm 20 clubs.');
+    if(!fixtureAudit||fixtureAudit.fixtures!==TOTAL_FIXTURES)errors.push(`Fixture audit did not confirm ${TOTAL_FIXTURES} fixtures.`);
+    if(!Array.isArray(results)||results.length!==(fixtureAudit?.completed??-1))errors.push('Completed-result count disagrees with fixture audit.');
+    if(rows.length!==20||clubs.size!==20)errors.push('Simulation did not return 20 unique club rows.');
+
+    const arsenal=rows.find(r=>norm(r.club)==='Arsenal');
+    if(!arsenal)errors.push('Arsenal is missing from the simulation.');
+    for(const row of rows){
+      for(const key of ['titleProb','top4Prob','top5Prob','relegationProb','expectedPoints','expectedPosition']){
+        const value=Number(row[key]);
+        if(!Number.isFinite(value))errors.push(`${row.club}: ${key} is not finite.`);
+        else if(['titleProb','top4Prob','top5Prob','relegationProb'].includes(key)&&(value<0||value>100))errors.push(`${row.club}: ${key} is outside 0–100%.`);
+      }
+      if(Number(row.expectedPoints)<0||Number(row.expectedPoints)>114)errors.push(`${row.club}: expected points outside 0–114.`);
+      if(Number(row.expectedPosition)<1||Number(row.expectedPosition)>20)errors.push(`${row.club}: expected position outside 1–20.`);
+      const positionProbabilities=row.positionProbabilities;
+      if(!Array.isArray(positionProbabilities)||positionProbabilities.length!==20||
+        !near(positionProbabilities.reduce((sum,v)=>sum+Number(v||0),0),100,0.2)){
+        errors.push(`${row.club}: position probabilities do not sum to 100%.`);
+      }
+    }
+
+    const sum=key=>rows.reduce((total,row)=>total+Number(row[key]||0),0);
+    if(!near(sum('titleProb'),100,0.15))errors.push('Title probabilities across clubs do not sum to 100%.');
+    if(!near(sum('top4Prob'),400,0.2))errors.push('Top-four probabilities do not sum to 400%.');
+    if(!near(sum('top5Prob'),500,0.2))errors.push('Top-five probabilities do not sum to 500%.');
+    if(!near(rows.reduce((total,row)=>total+Number(row.expectedPosition||0),0),210,0.2))errors.push('Expected positions across clubs do not sum to 210.');
+
+    for(let position=0;position<20;position++){
+      const slotTotal=rows.reduce((total,row)=>total+Number(row.positionProbabilities?.[position]||0),0);
+      if(!near(slotTotal,100,0.2))errors.push(`Position ${position+1} probabilities do not sum to 100%.`);
+    }
+
+    return {ok:errors.length===0,errors};
+  }
+
+  async function saveAdminSnapshot(arsenal,completedCount,publicationAudit){
     if(!arsenal||completedCount<0)return false;
     const statusEl=document.getElementById('titleModelStatus');
+
+    if(!publicationAudit?.ok){
+      const details=(publicationAudit?.errors||['Publication validation was not supplied.']).slice(0,4).join(' ');
+      console.error('NL4 snapshot blocked by publication validation:',publicationAudit?.errors||details);
+      if(statusEl)statusEl.textContent=`ADMIN MODEL CALCULATED • SNAPSHOT BLOCKED: ${details}`;
+      return false;
+    }
 
     try{
       const auth=await db.auth?.getUser?.();
@@ -4644,7 +4693,8 @@
         if(historyNote)historyNote.textContent='V13.2 sandbox history is stored only in this browser. Supabase probability history is untouched.';
       }else{
         history=await loadTitleHistory();
-        await saveAdminSnapshot(arsenal,results.length);
+        const publicationAudit=validateSimulationForPublication(simulation,fixtureAudit,fixtures,results);
+        await saveAdminSnapshot(arsenal,results.length,publicationAudit);
         history=await loadTitleHistory();
         renderV123Timeline(history,results,simulation.rows);
         renderV12MatchdayTracker(simulation.rows,results,history,results.length);
