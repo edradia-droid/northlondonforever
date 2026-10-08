@@ -475,7 +475,8 @@
     return CLUB_ALIASES[cleaned.toLowerCase()]||cleaned;
   };
   const finished=s=>['fulltime','finished','ft','aet','pen'].includes(String(s||'').toLowerCase());
-  const ignored=s=>['cancelled','postponed'].includes(String(s||'').toLowerCase());
+  // Postponed fixtures remain part of the season and must stay in the forecast. Only cancelled fixtures are excluded; fixture-universe validation will fail safely if a replacement is missing.
+  const ignored=s=>['cancelled'].includes(String(s||'').toLowerCase());
   const pairKey=(h,a)=>`${norm(h).toLowerCase()}__${norm(a).toLowerCase()}`;
 
   function code(name){
@@ -545,8 +546,67 @@
   }
 
   function completedResults(fixtures){
-    return fixtures.filter(f=>finished(f.status) &&
-      Number.isFinite(Number(f.home_score)) && Number.isFinite(Number(f.away_score)));
+    return (fixtures||[]).filter(f=>{
+      const hasHome=f.home_score!==null&&f.home_score!==undefined&&String(f.home_score).trim()!=='';
+      const hasAway=f.away_score!==null&&f.away_score!==undefined&&String(f.away_score).trim()!=='';
+      return finished(f.status)&&hasHome&&hasAway&&
+        Number.isFinite(Number(f.home_score))&&Number.isFinite(Number(f.away_score))&&
+        Number(f.home_score)>=0&&Number(f.away_score)>=0&&
+        Number.isInteger(Number(f.home_score))&&Number.isInteger(Number(f.away_score));
+    });
+  }
+
+  function deriveStandingsFromFixtures(fixtures){
+    const rows=new Map();
+    const ensure=club=>{
+      if(!rows.has(club))rows.set(club,{club,played:0,wins:0,draws:0,losses:0,gf:0,ga:0,gd:0,points:0});
+      return rows.get(club);
+    };
+    (fixtures||[]).forEach(f=>{if(f.home)ensure(norm(f.home));if(f.away)ensure(norm(f.away));});
+    const results=completedResults(fixtures);
+    results.forEach(f=>{
+      const home=rows.get(norm(f.home)),away=rows.get(norm(f.away));
+      if(!home||!away)return;
+      const hs=Number(f.home_score),as=Number(f.away_score);
+      home.played++;away.played++;
+      home.gf+=hs;home.ga+=as;away.gf+=as;away.ga+=hs;
+      if(hs>as){home.wins++;away.losses++;home.points+=3;}
+      else if(hs<as){away.wins++;home.losses++;away.points+=3;}
+      else{home.draws++;away.draws++;home.points++;away.points++;}
+    });
+    const sorted=[...rows.values()].map(r=>({...r,gd:r.gf-r.ga,remaining:38-r.played,
+      ppg:r.played?r.points/r.played:1.35,gfpg:r.played?r.gf/r.played:1.35,gapg:r.played?r.ga/r.played:1.35}))
+      .sort((a,b)=>b.points-a.points||b.gd-a.gd||b.gf-a.gf||a.club.localeCompare(b.club));
+    return sorted.map((r,i)=>({
+      position:i+1,club:r.club,played:r.played,wins:r.wins,draws:r.draws,losses:r.losses,
+      goals_for:r.gf,goals_against:r.ga,goal_difference:r.gd,points:r.points
+    }));
+  }
+
+  function validateFixtureUniverse(fixtures){
+    const rows=(fixtures||[]).filter(f=>f.home&&f.away&&!ignored(f.status));
+    const clubs=new Set();
+    const pairs=new Set();
+    const appearances=new Map();
+    const errors=[];
+    rows.forEach(f=>{
+      const h=norm(f.home),a=norm(f.away);
+      clubs.add(h);clubs.add(a);
+      if(h===a)errors.push(`Invalid self-fixture: ${h}.`);
+      const key=pairKey(h,a);
+      if(pairs.has(key))errors.push(`Duplicate fixture pairing: ${h} vs ${a}.`);
+      pairs.add(key);
+      appearances.set(h,(appearances.get(h)||0)+1);
+      appearances.set(a,(appearances.get(a)||0)+1);
+    });
+    if(clubs.size!==20)errors.push(`Expected 20 distinct clubs; found ${clubs.size}.`);
+    if(rows.length!==TOTAL_FIXTURES)errors.push(`Expected ${TOTAL_FIXTURES} season fixtures; found ${rows.length}.`);
+    for(const club of clubs){
+      const count=appearances.get(club)||0;
+      if(count!==38)errors.push(`${club} has ${count} fixtures; expected 38.`);
+    }
+    if(errors.length)throw new Error(`Fixture data validation failed: ${errors.slice(0,6).join(' ')}${errors.length>6?' More issues found.':''}`);
+    return {clubs:clubs.size,fixtures:rows.length,completed:completedResults(rows).length};
   }
 
   function resultTime(r){
@@ -4475,25 +4535,10 @@
 
       if(standingsRes.error)throw standingsRes.error;
       if(fixturesRes.error)throw fixturesRes.error;
-      if(previousStandingsRes.error){
-        console.warn('NL4 V12.9 previous-season standings unavailable:',previousStandingsRes.error);
-        buildPreviousSeasonProfiles([],[],standingsRes.data||[]);
-      }else{
-        if(secondPreviousStandingsRes.error){
-          console.warn('NL4 V12.9 second previous-season standings unavailable:',secondPreviousStandingsRes.error);
-        }
-        buildPreviousSeasonProfiles(
-          previousStandingsRes.data||[],
-          secondPreviousStandingsRes.error?[]:(secondPreviousStandingsRes.data||[]),
-          standingsRes.data||[]
-        );
-      }
-      const uniqueCurrentClubs=new Set((standingsRes.data||[]).map(r=>norm(r.club)).filter(Boolean));
-      if(uniqueCurrentClubs.size!==20)
-        throw new Error(`The model needs 20 distinct Premier League clubs after alias normalization. Found ${uniqueCurrentClubs.size}.`);
 
-      // One canonical fixture universe now drives the model. The legacy
-      // premier_league_matches table is intentionally no longer merged here.
+      // Canonical fixtures are the authoritative live season state. The
+      // standings table is retained for historical seasons, but its current
+      // 2026/27 rows are known to lag the canonical fixture results.
       let fixtures=(fixturesRes.data||[]).map(r=>({
         id:r.id,
         home:norm(r.home_team),
@@ -4514,10 +4559,46 @@
       }
       updateCoverage(fixtures);
 
+      // Fail closed rather than forecast from a partial/duplicated fixture universe.
+      const fixtureAudit=validateFixtureUniverse(fixtures);
       const results=completedResults(fixtures);
+      const derivedCurrentRows=deriveStandingsFromFixtures(fixtures);
+      const uniqueCurrentClubs=new Set(derivedCurrentRows.map(r=>norm(r.club)).filter(Boolean));
+      if(uniqueCurrentClubs.size!==20)
+        throw new Error(`The model needs 20 distinct clubs derived from canonical fixtures. Found ${uniqueCurrentClubs.size}.`);
+
+      // Compare source standings with the fixture-derived table for diagnostics.
+      // A stale current standings table must never override verified fixture results.
+      const sourceRows=normalizeStandings(standingsRes.data||[]);
+      const derivedRows=normalizeStandings(derivedCurrentRows);
+      const sourceByClub=new Map(sourceRows.map(r=>[r.club,r]));
+      const discrepancies=derivedRows.filter(r=>{
+        const s=sourceByClub.get(r.club);
+        return !s||s.played!==r.played||s.points!==r.points||s.gf!==r.gf||s.ga!==r.ga;
+      });
+      if(discrepancies.length){
+        console.warn('NL4 model: current standings differ from canonical fixture-derived standings; fixture-derived values are being used.',{
+          affectedClubs:discrepancies.map(r=>r.club),
+          fixtureAudit
+        });
+      }
+
+      if(previousStandingsRes.error){
+        console.warn('NL4 V12.9 previous-season standings unavailable:',previousStandingsRes.error);
+        buildPreviousSeasonProfiles([],[],derivedCurrentRows);
+      }else{
+        if(secondPreviousStandingsRes.error){
+          console.warn('NL4 V12.9 second previous-season standings unavailable:',secondPreviousStandingsRes.error);
+        }
+        buildPreviousSeasonProfiles(
+          previousStandingsRes.data||[],
+          secondPreviousStandingsRes.error?[]:(secondPreviousStandingsRes.data||[]),
+          derivedCurrentRows
+        );
+      }
       const currentRows=TEST_MODE
-        ? testStandingsFromResults((standingsRes.data||[]).map(r=>norm(r.club)),results)
-        : standingsRes.data;
+        ? testStandingsFromResults(derivedCurrentRows.map(r=>norm(r.club)),results)
+        : derivedCurrentRows;
       const currentTeams=normalizeStandings(currentRows);
       const ratings=buildRatings(currentTeams,results);
 
