@@ -48,7 +48,7 @@ body.h2h-page{margin:0;background:var(--pl-purple);color:var(--pl-ink);min-heigh
 .h2h-opponent{min-height:105px;display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:12px;padding:15px;border:1px solid rgba(255,255,255,.16);border-top:3px solid var(--pl-pink);border-radius:12px;background:linear-gradient(145deg,#5a1263,#3a0641);color:#fff;text-decoration:none;box-shadow:0 5px 0 #210024,0 10px 20px rgba(0,0,0,.28);transition:.16s ease}
 .h2h-opponent:hover{background:linear-gradient(145deg,#6b1b75,#47084f);transform:translateY(-3px);border-top-color:var(--pl-teal);box-shadow:0 8px 0 #210024,0 14px 24px rgba(0,0,0,.34)}
 .h2h-crest{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#300336;border:1px solid rgba(255,255,255,.18);overflow:hidden;font-size:9px;font-weight:1000;color:#e9cde9}
-.h2h-crest img{width:31px;height:31px;object-fit:contain}.h2h-table-team{display:inline-flex;align-items:center;gap:6px;color:#fff}.h2h-table-team img{width:22px;height:22px;object-fit:contain;vertical-align:middle} .h2h-crest .h2h-logo-placeholder{font-size:9px;font-weight:1000;color:#e9cde9}.h2h-table-team .h2h-logo-placeholder{display:inline-grid;place-items:center;width:22px;height:22px;font-size:7px;font-weight:1000;color:#fff;flex:0 0 22px}
+.h2h-crest img{width:31px;height:31px;object-fit:contain}.h2h-table-team{display:inline-flex;align-items:center;gap:6px;color:#fff}.h2h-table-team img{width:22px;height:22px;object-fit:contain;vertical-align:middle}
 .h2h-opponent strong{display:block;font-size:12px}.h2h-opponent span>small{display:block;margin-top:4px;color:#d2bfd4;font-size:8px}.h2h-record{text-align:right}.h2h-record b{display:block;color:var(--pl-teal);font-size:13px}.h2h-record small{color:#cdb9ce;font-size:7px}
 .h2h-detail{padding:18px}
 .h2h-detail-hero{display:grid;grid-template-columns:1fr 80px 1fr;align-items:center;gap:15px;padding:20px;border-radius:12px;background:linear-gradient(145deg,#5a1263,#300336);border:1px solid rgba(255,255,255,.16);box-shadow:0 6px 0 #210024,0 12px 24px rgba(0,0,0,.28)}
@@ -103,19 +103,6 @@ body.h2h-page{margin:0;background:var(--pl-purple);color:var(--pl-ink);min-heigh
     'Tottenham Hotspur':'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Tottenham Hotspur.png',
     'Wolverhampton Wanderers':'https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/Wolverhampton Wanderers.png'
   };
-  const TEAM_LOGO_ALIASES = {
-    'Bournemouth':'AFC Bournemouth',
-    'Liverpool FC':'Liverpool',
-    'Wolverhampton':'Wolverhampton Wanderers'
-  };
-  const TEAM_LOGO_WIKI = new Set([
-    'Burnley','Cardiff City','Huddersfield Town','Leicester City','Luton Town','Middlesbrough',
-    'Norwich City','Queens Park Rangers','Reading','Sheffield United','Southampton','Stoke City',
-    'Swansea City','Watford','West Bromwich Albion','West Ham United','Wigan Athletic'
-  ]);
-  const TEAM_LOGO_CACHE = new Map();
-  const TEAM_LOGO_PENDING = new Map();
-
   const E={search:document.getElementById('h2hSearch'),seasons:document.getElementById('h2hSeasons'),sort:document.getElementById('h2hSort'),filters:document.getElementById('h2hFilters'),stats:document.getElementById('h2hOverallStats'),opponents:document.getElementById('h2hOpponents'),meta:document.getElementById('h2hPanelMeta'),detailPanel:document.getElementById('h2hDetailPanel'),detailTitle:document.getElementById('h2hDetailTitle'),detail:document.getElementById('h2hDetail')};
   let fixtures=[],filter='all',seasonPositions={};
   const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
