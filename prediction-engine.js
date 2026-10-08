@@ -187,40 +187,14 @@
   }
   function nl4RemoveOdegaardBlackMatte(img){
     if(!img || img.dataset.odegaardMatteDone==='1') return;
-    // Embedded Odegaard image is already truly transparent: nothing to matte-remove.
-    if(/^data:image\/png/.test(img.getAttribute('src')||'')){img.dataset.odegaardMatteDone='1';return;}
-    const process=()=>{
-      if(!img.naturalWidth || !img.naturalHeight || !document.body.contains(img)) return;
-      try{
-        const canvas=document.createElement('canvas');
-        canvas.width=img.naturalWidth;
-        canvas.height=img.naturalHeight;
-        const ctx=canvas.getContext('2d',{willReadFrequently:true});
-        ctx.drawImage(img,0,0);
-        const image=ctx.getImageData(0,0,canvas.width,canvas.height);
-        const d=image.data,w=canvas.width,h=canvas.height;
-        const seen=new Uint8Array(w*h),queue=new Int32Array(w*h);
-        let head=0,tail=0;
-        const isMatte=p=>d[p+3]>0&&d[p]<48&&d[p+1]<48&&d[p+2]<48;
-        const push=(x,y)=>{
-          if(x<0||x>=w||y<0||y>=h)return;
-          const i=y*w+x,p=i*4;
-          if(seen[i]||!isMatte(p))return;
-          seen[i]=1;queue[tail++]=i;
-        };
-        for(let x=0;x<w;x++){push(x,0);push(x,h-1)}
-        for(let y=0;y<h;y++){push(0,y);push(w-1,y)}
-        while(head<tail){
-          const i=queue[head++],x=i%w,y=(i/w)|0;
-          d[i*4+3]=0;
-          push(x-1,y);push(x+1,y);push(x,y-1);push(x,y+1);
-        }
-        ctx.putImageData(image,0,0);
-        img.src=canvas.toDataURL('image/png');
-        img.dataset.odegaardMatteDone='1';
-      }catch(e){}
-    };
-    if(img.complete) process(); else img.addEventListener('load',process,{once:true});
+    const src=img.getAttribute('src')||'';
+    // Ødegaard is supplied as a pre-processed transparent PNG data URI.
+    // Do not run canvas pixel processing: it can fail on file:// and can
+    // accidentally turn transparent pixels into an opaque background.
+    if(/^data:image\/png/i.test(src) || img.dataset.odegaardTransparent==='1'){
+      img.dataset.odegaardMatteDone='1';
+      return;
+    }
   }
 
   function updatePlayerVisual(select){
