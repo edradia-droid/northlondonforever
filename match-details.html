@@ -1197,6 +1197,9 @@
     const db = window.nl4Supabase;
     const params = new URLSearchParams(location.search);
     const fixtureId = params.get("fixture");
+    let activeCompetitionName = "";
+    let activeMatchStatus = "";
+    let matchDetailsLoading = false;
 
     const els = {
       competition: document.getElementById("matchCompetition"),
@@ -1745,6 +1748,8 @@
 
       els.competition.textContent = `${fixture.competition || "MATCH"} • ${fixture.season || ""}`.replace(/\s+•\s*$/, "");
       const competitionName = String(fixture.competition || '').toLowerCase();
+      activeCompetitionName = competitionName;
+      activeMatchStatus = String(fixture.status || "scheduled").toLowerCase();
       const isChampionsLeague = competitionName.includes('champions league');
       const isPremierLeague = competitionName.includes('premier league');
       document.body.classList.toggle('cl-match-details-page', isChampionsLeague);
@@ -2304,22 +2309,39 @@
         availabilityText;
     }
 
-    const runMatchDetailsLoad = () => load().catch(error => {
-      console.error("[NL4 Match Details] Unhandled load error:", error);
-      const message = error?.message || String(error);
-      if (els.error) {
-        els.error.hidden = false;
-        els.error.textContent = "Match data could not finish loading: " + message;
+    const runMatchDetailsLoad = async () => {
+      // Never allow two full Match Details loads to run at the same time.
+      // The page performs many Supabase reads; overlapping loads can finish in
+      // a different order and make valid events/stats/lineups appear and then
+      // disappear when the older request writes its result over the newer one.
+      if (matchDetailsLoading) return;
+      matchDetailsLoading = true;
+      try {
+        await load();
+      } catch (error) {
+        console.error("[NL4 Match Details] Unhandled load error:", error);
+        const message = error?.message || String(error);
+        if (els.error) {
+          els.error.hidden = false;
+          els.error.textContent = "Match data could not finish loading: " + message;
+        }
+        if (els.status) els.status.textContent = "DATA LOAD ERROR";
+      } finally {
+        matchDetailsLoading = false;
       }
-      if (els.status) els.status.textContent = "DATA LOAD ERROR";
-    });
+    };
 
     runMatchDetailsLoad();
 
     setInterval(() => {
-      if (document.visibilityState === "visible") {
-        runMatchDetailsLoad();
-      }
+      if (document.visibilityState !== "visible" || matchDetailsLoading) return;
+      // Completed Carabao Cup matches are authoritative in the database and
+      // do not need a 15-second redraw. Re-polling them was causing stable
+      // events/statistics to be replaced by transient empty secondary reads.
+      const isCarabao = activeCompetitionName.includes("carabao cup");
+      const isCompleted = ["fulltime","finished","ft"].includes(activeMatchStatus);
+      if (isCarabao && isCompleted) return;
+      runMatchDetailsLoad();
     }, 15000);
   })();
   </script>
