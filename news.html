@@ -125,7 +125,7 @@
   let externalArticles=[];
   const externalStatus=document.getElementById('externalNewsStatus');
   const externalGrid=document.getElementById('externalNewsGrid');
-  const externalCacheKey='nl4-external-arsenal-news-v1';
+  const externalCacheKey='nl4-external-arsenal-news-v2';
   const externalCacheTtl=15*60*1000;
   const escapeText=value=>String(value??'');
   const dateLabel=value=>{
@@ -205,9 +205,21 @@
   function renderExternalNews(){
     const query=search.value.trim().toLowerCase();
     const manualTitles=new Set(articles.map(a=>String(a.title||'').trim().toLowerCase()));
+    const seenUrls=new Set();
     const matches=externalArticles.filter(a=>{
+      if(!isArsenalStory(a))return false;
       const title=String(a.title||'');
       const source=String(a.sitename||a.host||'');
+      let urlKey=String(a.url||'');
+      try{
+        const u=new URL(urlKey);
+        for(const key of Array.from(u.searchParams.keys()))if(/^(utm_.+|fbclid|gclid|mc_cid|mc_eid)$/i.test(key))u.searchParams.delete(key);
+        u.hash='';
+        if(u.pathname.length>1)u.pathname=u.pathname.replace(/\\/+$/,'');
+        urlKey=u.toString();
+      }catch(_){}
+      if(seenUrls.has(urlKey))return false;
+      seenUrls.add(urlKey);
       return !manualTitles.has(title.trim().toLowerCase()) && [title,source].some(v=>v.toLowerCase().includes(query));
     });
     externalGrid.replaceChildren();
