@@ -239,7 +239,7 @@
       source.className='external-news-source';
       source.textContent=String(article.sitename||article.host||'External publisher');
       const title=document.createElement('h3');
-      title.textContent=String(article.title||'Arsenal news');
+      title.textContent=decodeNewsEntities(article.title||'Arsenal news');
       const meta=document.createElement('div');
       meta.className='news-meta';
       const date=document.createElement('span');
@@ -251,6 +251,19 @@
       link.append(source,title,meta,read);
       externalGrid.append(link);
     });
+  }
+  function decodeNewsEntities(value){
+    // Some publishers provide HTML-escaped headlines, occasionally escaped twice.
+    // Decode as text only; title is still assigned with textContent, never HTML.
+    const decoder=document.createElement('textarea');
+    let decoded=String(value??'');
+    for(let i=0;i<3;i++){
+      decoder.innerHTML=decoded;
+      const next=decoder.value;
+      if(next===decoded)break;
+      decoded=next;
+    }
+    return decoded;
   }
   function isArsenalStory(article){
     const title=String(article?.title||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase();
