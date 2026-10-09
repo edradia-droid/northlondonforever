@@ -245,6 +245,24 @@
     return /\barsenal\b|\bgunners\b|mikel arteta|arsenal women|arsenal fc/.test(text);
   }
   async function loadExternalNews(){
+    // Prefer the server-synced Supabase feed so every visitor sees the same
+    // persisted headlines; the live API remains a fallback during first syncs.
+    if(db){
+      try{
+        const {data,error}=await db.from('external_arsenal_news')
+          .select('source_id,url,title,description,published_at,crawled_at,host,sitename,language,country')
+          .order('published_at',{ascending:false,nullsFirst:false})
+          .limit(24);
+        if(error)throw error;
+        if(Array.isArray(data)&&data.length){
+          externalArticles=data;
+          renderExternalNews();
+          return;
+        }
+      }catch(error){
+        console.warn('[NL4 News] Persisted external headlines unavailable; trying live feed:',error);
+      }
+    }
     const cached=(()=>{try{return JSON.parse(sessionStorage.getItem(externalCacheKey)||'null')}catch(_){return null}})();
     if(cached&&Array.isArray(cached.results)&&Date.now()-cached.savedAt<externalCacheTtl){
       externalArticles=cached.results;
