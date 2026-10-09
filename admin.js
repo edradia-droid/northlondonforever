@@ -1642,7 +1642,7 @@ async function openEditor(table, id = null) {
     if (table === "news") {
       row.category = "Arsenal News";
       row.author = "NL4 Editorial Team";
-      row.published_at = new Date().toISOString();
+      row.published_at = null;
       row.sources = "";
     }
     if (table === "premier_league_standings") row.season = "2026/27";
