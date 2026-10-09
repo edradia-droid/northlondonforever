@@ -3023,6 +3023,7 @@
     }
 
     const rated=buildRatings(startingTeams,evidence);
+    const tableResults=mode==='full'?currentEvidence:evidenceWithout;
     const byName=new Map(rated.map(t=>[t.club,t]));
     const remaining=cfFixtures.filter(f=>!finished(f.status));
     const prepared=remaining.map(f=>{
@@ -3034,7 +3035,7 @@
     let titles=0,pts=0;
     for(let sim=0;sim<V139_DECOMP_SIMS;sim++){
       const season=new Map(rated.map(t=>[t.club,{club:t.club,points:t.points,gd:t.gd,gf:t.gf}]));
-      seedHeadToHeadResults(season,evidence);
+      seedHeadToHeadResults(season,tableResults);
       for(const f of prepared){
         const hs=sampleScore(f.model.homeCDF,rng),as=sampleScore(f.model.awayCDF,rng);
         const h=season.get(f.homeTeam.club),a=season.get(f.awayTeam.club);
