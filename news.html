@@ -60,6 +60,10 @@
 .news-modal-body{padding:clamp(18px,4vw,38px)}
 .news-modal-body h2{font-size:clamp(27px,5vw,44px);line-height:1.05;letter-spacing:-.05em;margin:14px 0}
 .news-modal-body .story-content{white-space:pre-line;line-height:1.8;color:#d1d2d8}
+.news-source-list{margin-top:24px;padding-top:18px;border-top:1px solid var(--news-line)}
+.news-source-list h3{font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:#f2f2f5}
+.news-source-list ul{padding-left:20px;color:var(--news-muted);line-height:1.8}
+.news-source-list a{color:#ff6267;text-decoration:underline;text-underline-offset:3px}
 .news-loading{padding:32px;border:1px solid var(--news-line);border-radius:16px;background:#17181d;color:#c6c7ce}
 .external-news-section{margin-top:36px}.external-news-intro{color:var(--news-muted);font-size:13px;line-height:1.6;margin:-5px 0 16px}.external-news-badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--news-line);border-radius:999px;padding:8px 11px;color:#c9cad0;font-size:9px;letter-spacing:.12em;font-weight:900}.external-news-badge .live-dot{width:6px;height:6px;border-radius:50%;background:#4ed49a;box-shadow:0 0 0 4px #4ed49a20}.external-news-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.external-news-card{min-width:0;display:flex;flex-direction:column;gap:12px;padding:17px;border:1px solid var(--news-line);border-radius:15px;background:var(--news-panel);color:inherit;text-decoration:none;transition:transform .18s ease,border-color .18s ease}.external-news-card:hover{transform:translateY(-2px);border-color:rgba(239,1,7,.65)}.external-news-card h3{font-size:16px;line-height:1.35;letter-spacing:-.02em;margin:0}.external-news-card .news-meta{margin-top:auto}.external-news-card .external-read{font-size:11px;font-weight:850;color:#ff777a}.external-news-card .external-read:after{content:" ↗"}.external-news-source{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#ff777a;font-weight:900}.external-news-status{margin:0 0 16px}@media(max-width:850px){.external-news-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.external-news-grid{grid-template-columns:1fr}.external-news-card{padding:15px}.external-news-section .news-toolbar{align-items:flex-start}}
 @media(max-width:850px){.news-layout{grid-template-columns:1fr}.news-latest{grid-template-columns:repeat(2,minmax(0,1fr))}.news-latest-heading{grid-column:1/-1}}
@@ -149,14 +153,31 @@
   function openArticle(article){
     modalBody.replaceChildren();
     const meta=document.createElement('div');meta.className='news-meta';
-    const tag=document.createElement('span');tag.className='news-tag';tag.textContent='NL4 NEWSROOM';
+    const tag=document.createElement('span');tag.className='news-tag';tag.textContent=article.category||'NL4 ORIGINAL';
     const date=document.createElement('span');date.textContent=dateLabel(article.published_at||article.created_at);
     meta.append(tag,date);
+    if(article.author){const byline=document.createElement('span');byline.textContent='By '+article.author;meta.append(byline);}
     const title=document.createElement('h2');title.id='newsModalTitle';title.textContent=escapeText(article.title);
     modalBody.append(meta,title);
     if(article.image_url){modalBody.append(makeImage(article.image_url,article.title,true));}
     if(article.summary){const summary=document.createElement('p');summary.style.cssText='font-size:17px;line-height:1.65;color:#e0e0e5;font-weight:650';summary.textContent=article.summary;modalBody.append(summary);}
     const body=document.createElement('div');body.className='story-content';body.textContent=article.body||article.summary||'This story does not have any additional text.';modalBody.append(body);
+    const sourceUrls=String(article.sources||'').split(/\r?\n/).map(value=>value.trim()).filter(Boolean);
+    const safeSources=[];
+    sourceUrls.forEach(value=>{
+      try{const url=new URL(value);if(['http:','https:'].includes(url.protocol))safeSources.push(url.href);}catch(_){}
+    });
+    if(safeSources.length){
+      const sourceSection=document.createElement('section');sourceSection.className='news-source-list';
+      const sourceHeading=document.createElement('h3');sourceHeading.textContent='Sources & further reading';sourceSection.append(sourceHeading);
+      const sourceList=document.createElement('ul');
+      safeSources.forEach(url=>{
+        const item=document.createElement('li');const link=document.createElement('a');
+        link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=new URL(url).hostname.replace(/^www\./,'');
+        item.append(link);sourceList.append(item);
+      });
+      sourceSection.append(sourceList);modalBody.append(sourceSection);
+    }
     modal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';closeButton.focus();
     if(article.slug){const url=new URL(location.href);url.searchParams.set('story',article.slug);history.replaceState({},'',url);}
   }
@@ -177,9 +198,10 @@
     el.append(makeImage(article.image_url,article.title,index===0));
     const copy=document.createElement('div');copy.className=index===0?'news-featured-copy':'news-card-copy';
     const meta=document.createElement('div');meta.className='news-meta';
-    const tag=document.createElement('span');tag.className='news-tag';tag.textContent='ARSENAL';
+    const tag=document.createElement('span');tag.className='news-tag';tag.textContent=article.category||'Arsenal News';
     const date=document.createElement('span');date.textContent=dateLabel(article.published_at||article.created_at);
     meta.append(tag,date);
+    if(article.author){const byline=document.createElement('span');byline.textContent='By '+article.author;meta.append(byline);}
     const title=document.createElement(index===0?'h3':'h4');title.textContent=escapeText(article.title);
     copy.append(meta,title);
     if(article.summary){const summary=document.createElement('p');summary.textContent=article.summary;copy.append(summary);}
@@ -326,7 +348,7 @@
   async function loadNews(){
     if(!db){status.textContent='News could not connect to Supabase. Please try again shortly.';return;}
     try{
-      const {data,error}=await db.from('news').select('id,title,slug,summary,body,image_url,published_at,created_at').eq('is_published',true).order('published_at',{ascending:false,nullsFirst:false}).order('created_at',{ascending:false}).limit(100);
+      const {data,error}=await db.from('news').select('id,title,slug,summary,body,image_url,category,author,sources,published_at,created_at').eq('is_published',true).order('published_at',{ascending:false,nullsFirst:false}).order('created_at',{ascending:false}).limit(100);
       if(error)throw error;
       const now=Date.now();
       articles=(data||[]).filter(a=>!a.published_at||new Date(a.published_at).getTime()<=now);
