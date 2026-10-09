@@ -264,7 +264,7 @@
         const {data,error}=await db.from('external_arsenal_news')
           .select('source_id,url,title,description,published_at,crawled_at,host,sitename,language,country')
           .order('published_at',{ascending:false,nullsFirst:false})
-          .limit(24);
+          .limit(100);
         if(error)throw error;
         if(Array.isArray(data)&&data.length){
           externalArticles=data;
