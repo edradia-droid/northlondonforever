@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Latest Arsenal news, club updates and original NL4 reports.">
+<meta name="theme-color" content="#ef0107">
+<title>Arsenal News | NL4 — North London Forever</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="shared-sidebar.css">
+<link rel="stylesheet" href="sidebar-toggle-fix.css">
+<style>
+:root{--news-red:#ef0107;--news-dark:#101114;--news-panel:#191a1f;--news-line:rgba(255,255,255,.1);--news-muted:#a9abb3}
+.news-main{max-width:1440px;margin:0 auto;padding:30px clamp(16px,3vw,42px) 60px;color:#f8f8fa}
+.news-hero{position:relative;isolation:isolate;overflow:hidden;border-radius:24px;padding:clamp(26px,5vw,64px);background:radial-gradient(circle at 85% 12%,rgba(239,1,7,.32),transparent 32%),linear-gradient(125deg,#1b1b20 0%,#111216 60%,#281014 100%);border:1px solid var(--news-line);min-height:245px;display:flex;align-items:flex-end}
+.news-hero:after{content:"ARSENAL";position:absolute;z-index:-1;right:-.04em;bottom:-.23em;font-size:clamp(90px,18vw,250px);font-weight:1000;letter-spacing:-.09em;color:rgba(255,255,255,.035);line-height:1}
+.news-kicker{display:flex;align-items:center;gap:9px;text-transform:uppercase;letter-spacing:.16em;font-size:11px;font-weight:900;color:#ff6568;margin:0 0 15px}
+.news-kicker:before{content:"";width:24px;height:3px;background:var(--news-red);display:inline-block}
+.news-hero h1{font-size:clamp(40px,7vw,82px);line-height:.92;letter-spacing:-.065em;margin:0;max-width:800px}
+.news-hero h1 span{color:var(--news-red)}
+.news-hero p{max-width:600px;color:#c5c6cd;line-height:1.65;margin:20px 0 0;font-size:clamp(14px,1.7vw,17px)}
+.news-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:30px 0 18px;flex-wrap:wrap}
+.news-section-title{margin:0;font-size:clamp(23px,3vw,32px);letter-spacing:-.04em}
+.news-section-title small{display:block;color:var(--news-muted);font-size:10px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:8px}
+.news-search{display:flex;align-items:center;gap:10px;min-width:min(100%,300px);padding:0 14px;height:46px;border:1px solid var(--news-line);border-radius:12px;background:#17181d;color:white}
+.news-search input{background:transparent;border:0;outline:0;color:white;width:100%;font:inherit}
+.news-search input::placeholder{color:#858791}
+.news-layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,.8fr);gap:18px;align-items:start}
+.news-featured{min-width:0}
+.news-featured-card,.news-card{border:1px solid var(--news-line);background:var(--news-panel);border-radius:18px;overflow:hidden}
+.news-featured-card{cursor:pointer;transition:transform .18s ease,border-color .18s ease}
+.news-featured-card:hover,.news-card:hover{transform:translateY(-2px);border-color:rgba(239,1,7,.6)}
+.news-image{display:block;width:100%;aspect-ratio:16/8.2;object-fit:cover;background:linear-gradient(135deg,#25262c,#451217)}
+.news-image-fallback{display:grid;place-items:center;color:rgba(255,255,255,.15);font-size:clamp(50px,10vw,110px);font-weight:1000;letter-spacing:-.08em;background:radial-gradient(circle at 70% 30%,rgba(239,1,7,.3),transparent 40%),linear-gradient(135deg,#25262c,#101114)}
+.news-featured-copy{padding:clamp(18px,2.6vw,30px)}
+.news-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:var(--news-muted);font-size:11px}
+.news-tag{display:inline-flex;align-items:center;background:rgba(239,1,7,.13);color:#ff777a;padding:6px 8px;border-radius:5px;text-transform:uppercase;letter-spacing:.1em;font-weight:900;font-size:9px}
+.news-featured-copy h3{font-size:clamp(23px,3.1vw,38px);line-height:1.08;letter-spacing:-.045em;margin:15px 0 10px}
+.news-featured-copy p,.news-card-copy p{color:#bfc0c7;line-height:1.6;margin:0}
+.news-read{display:inline-flex;gap:8px;align-items:center;margin-top:18px;color:white;font-weight:850;font-size:12px}
+.news-read:after{content:"→";color:var(--news-red);font-size:18px}
+.news-latest{display:grid;gap:12px}
+.news-latest-heading{display:flex;align-items:center;justify-content:space-between;margin:0 0 2px}
+.news-latest-heading h3{margin:0;font-size:18px}
+.news-latest-heading span{font-size:10px;color:var(--news-muted);text-transform:uppercase;letter-spacing:.1em}
+.news-card{display:grid;grid-template-columns:112px minmax(0,1fr);cursor:pointer;transition:transform .18s ease,border-color .18s ease}
+.news-card .news-image{height:100%;min-height:112px;aspect-ratio:auto}
+.news-card-copy{padding:13px 14px;min-width:0}
+.news-card-copy h4{margin:9px 0 7px;font-size:15px;line-height:1.28;letter-spacing:-.02em}
+.news-card-copy p{font-size:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.news-empty,.news-status{border:1px solid var(--news-line);border-radius:16px;padding:26px;background:#17181d;color:#c6c7ce;line-height:1.6}
+.news-empty strong{display:block;color:white;font-size:19px;margin-bottom:7px}
+.news-empty a,.news-source-link{color:#ff777a;font-weight:800}
+.news-footer-note{margin-top:26px;border-top:1px solid var(--news-line);padding-top:18px;color:#8f919b;font-size:11px;line-height:1.6}
+.news-modal{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.78);backdrop-filter:blur(7px);display:none;align-items:flex-start;justify-content:center;padding:24px 14px;overflow:auto}
+.news-modal[aria-hidden="false"]{display:flex}
+.news-modal-panel{width:min(820px,100%);background:#17181d;border:1px solid var(--news-line);border-radius:18px;overflow:hidden;box-shadow:0 24px 80px #0008;margin:auto}
+.news-modal-top{display:flex;justify-content:flex-end;padding:12px 14px 0}
+.news-modal-close{border:1px solid var(--news-line);border-radius:9px;background:#24252b;color:white;padding:8px 12px;cursor:pointer;font-weight:800}
+.news-modal-body{padding:clamp(18px,4vw,38px)}
+.news-modal-body h2{font-size:clamp(27px,5vw,44px);line-height:1.05;letter-spacing:-.05em;margin:14px 0}
+.news-modal-body .story-content{white-space:pre-line;line-height:1.8;color:#d1d2d8}
+.news-loading{padding:32px;border:1px solid var(--news-line);border-radius:16px;background:#17181d;color:#c6c7ce}
+@media(max-width:850px){.news-layout{grid-template-columns:1fr}.news-latest{grid-template-columns:repeat(2,minmax(0,1fr))}.news-latest-heading{grid-column:1/-1}}
+@media(max-width:560px){.news-main{padding:16px 12px 40px}.news-hero{border-radius:17px;padding:24px 20px;min-height:220px}.news-hero:after{font-size:100px}.news-toolbar{align-items:stretch}.news-search{width:100%}.news-latest{grid-template-columns:1fr}.news-card{grid-template-columns:98px minmax(0,1fr)}.news-card .news-image{min-height:104px}.news-featured-card,.news-card{border-radius:14px}.news-modal{padding:10px}.news-modal-panel{border-radius:14px}}
+</style>
+</head>
+<body class="nl4-unified-sidebar">
+<button aria-controls="sidebar" aria-expanded="false" aria-label="Open or close navigation" id="nl4MenuToggle" type="button">☰</button>
+<div class="app-shell">
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-top"><a class="logo" href="index.html"><span class="logo-box nl4-logo-box"><img alt="NL4" src="https://i.postimg.cc/GhGgj8G7/75c7b198-597a-4288-abae-723c809c34fa.png"></span><span class="nl4-brand-text"><b>NORTH LONDON</b><small>FOREVER</small></span></a></div>
+  <nav class="side-nav" id="sideNav">
+    <p class="nav-label">FAN HUB</p><a class="nav-link" href="index.html"><span>⌂</span> Home</a><a class="nav-link" href="fixtures.html"><span>◷</span> Fixtures</a>
+    <p class="nav-label">COMPETITIONS</p><a class="nav-link" href="premier-league.html"><span>🏆</span> Premier League</a><a class="nav-link" href="champions-league.html"><span>🏆</span> Champions League</a><a class="nav-link" href="NL4/fa-cup.html"><span>🏆</span> FA Cup</a><a class="nav-link" href="NL4/carabao-cup.html"><span>🏆</span> Carabao Cup</a>
+    <p class="nav-label">TEAM</p><a class="nav-link" href="index.html#lineup"><span>⚽</span> Lineup</a><a class="nav-link active" href="news.html"><span>▤</span> Arsenal News</a>
+    <div class="nav-divider"></div><a class="treasure-link" href="trophies.html"><span>🔐</span><b>Treasure Room</b><small>Explore Arsenal history</small></a>
+  </nav><div class="sidebar-bottom"><span>COYG</span><span>1886 • FOREVER</span></div>
+</aside>
+<div class="mobile-overlay" id="overlay"></div>
+<main class="main">
+<header class="topbar"><button aria-controls="sidebar" aria-expanded="false" aria-label="Toggle menu" class="menu-btn" id="legacyMenuBtn" style="display:none!important">☰</button><div class="crumb"><span>ARSENAL</span><b>/</b> NEWSROOM</div><div class="top-actions"><span class="live-dot"></span><span>NL4 NEWS</span></div></header>
+<div class="news-main">
+  <section class="news-hero"><div><p class="news-kicker">North London Forever • Newsroom</p><h1>ARSENAL<br><span>NEWS.</span></h1><p>Club updates, matchday stories and original NL4 reports — focused on Arsenal, all in one place.</p></div></section>
+  <section class="news-toolbar" aria-label="News search"><h2 class="news-section-title"><small>Latest from the club</small>Latest News</h2><label class="news-search"><span aria-hidden="true">⌕</span><input id="newsSearch" type="search" placeholder="Search Arsenal news…" autocomplete="off" aria-label="Search Arsenal news"></label></section>
+  <div id="newsStatus" class="news-loading" role="status">Loading published Arsenal news…</div>
+  <section class="news-layout" id="newsLayout" hidden>
+    <div class="news-featured" id="newsFeatured"></div>
+    <div class="news-latest" id="newsLatest"></div>
+  </section>
+  <div id="newsEmpty" class="news-empty" hidden><strong>No published stories yet</strong>New articles published through the NL4 admin will appear here automatically. While the newsroom is being filled, you can read the club's updates on <a href="https://www.arsenal.com/news" target="_blank" rel="noopener noreferrer">Arsenal.com</a>.</div>
+  <p class="news-footer-note">NL4 is an independent Arsenal fan project. External publishers retain rights to their own content. This page displays stories published through the NL4 newsroom; official club updates are linked to Arsenal.com.</p>
+</div>
+</main>
+</div>
+<div class="news-modal" id="newsModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="newsModalTitle"><div class="news-modal-panel"><div class="news-modal-top"><button class="news-modal-close" id="newsModalClose" type="button">Close ✕</button></div><div class="news-modal-body" id="newsModalBody"></div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
+<script src="supabase-client.js"></script>
+<script src="shared-sidebar.js"></script>
+<script>
+(function(){
+  'use strict';
+  const db=window.nl4Supabase;
+  const status=document.getElementById('newsStatus');
+  const layout=document.getElementById('newsLayout');
+  const featured=document.getElementById('newsFeatured');
+  const latest=document.getElementById('newsLatest');
+  const empty=document.getElementById('newsEmpty');
+  const search=document.getElementById('newsSearch');
+  const modal=document.getElementById('newsModal');
+  const modalBody=document.getElementById('newsModalBody');
+  const closeButton=document.getElementById('newsModalClose');
+  let articles=[];
+  let visibleArticles=[];
+  const escapeText=value=>String(value??'');
+  const dateLabel=value=>{
+    if(!value)return 'NL4 NEWSROOM';
+    const date=new Date(value);
+    if(Number.isNaN(date.getTime()))return 'NL4 NEWSROOM';
+    return new Intl.DateTimeFormat(undefined,{day:'numeric',month:'short',year:'numeric'}).format(date);
+  };
+  const makeImage=(url,title,featuredImage)=>{
+    if(url){
+      const img=document.createElement('img');
+      img.className='news-image';
+      img.alt=title;
+      img.loading=featuredImage?'eager':'lazy';
+      img.src=url;
+      img.addEventListener('error',()=>{const fallback=document.createElement('div');fallback.className='news-image news-image-fallback';fallback.setAttribute('aria-hidden','true');fallback.textContent='AFC';img.replaceWith(fallback);},{once:true});
+      return img;
+    }
+    const fallback=document.createElement('div');fallback.className='news-image news-image-fallback';fallback.setAttribute('aria-hidden','true');fallback.textContent='AFC';return fallback;
+  };
+  function openArticle(article){
+    modalBody.replaceChildren();
+    const meta=document.createElement('div');meta.className='news-meta';
+    const tag=document.createElement('span');tag.className='news-tag';tag.textContent='NL4 NEWSROOM';
+    const date=document.createElement('span');date.textContent=dateLabel(article.published_at||article.created_at);
+    meta.append(tag,date);
+    const title=document.createElement('h2');title.id='newsModalTitle';title.textContent=escapeText(article.title);
+    modalBody.append(meta,title);
+    if(article.image_url){modalBody.append(makeImage(article.image_url,article.title,true));}
+    if(article.summary){const summary=document.createElement('p');summary.style.cssText='font-size:17px;line-height:1.65;color:#e0e0e5;font-weight:650';summary.textContent=article.summary;modalBody.append(summary);}
+    const body=document.createElement('div');body.className='story-content';body.textContent=article.body||article.summary||'This story does not have any additional text.';modalBody.append(body);
+    modal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';closeButton.focus();
+    if(article.slug){const url=new URL(location.href);url.searchParams.set('story',article.slug);history.replaceState({},'',url);}
+  }
+  function closeArticle(){
+    modal.setAttribute('aria-hidden','true');document.body.style.overflow='';
+    const url=new URL(location.href);url.searchParams.delete('story');history.replaceState({},'',url);
+  }
+  closeButton.addEventListener('click',closeArticle);
+  modal.addEventListener('click',event=>{if(event.target===modal)closeArticle();});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&modal.getAttribute('aria-hidden')==='false')closeArticle();});
+  function card(article,index){
+    const el=document.createElement('article');
+    el.className=index===0?'news-featured-card':'news-card';
+    el.tabIndex=0;el.setAttribute('role','button');el.setAttribute('aria-label','Read '+escapeText(article.title));
+    const open=()=>openArticle(article);
+    el.addEventListener('click',open);
+    el.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();open();}});
+    el.append(makeImage(article.image_url,article.title,index===0));
+    const copy=document.createElement('div');copy.className=index===0?'news-featured-copy':'news-card-copy';
+    const meta=document.createElement('div');meta.className='news-meta';
+    const tag=document.createElement('span');tag.className='news-tag';tag.textContent='ARSENAL';
+    const date=document.createElement('span');date.textContent=dateLabel(article.published_at||article.created_at);
+    meta.append(tag,date);
+    const title=document.createElement(index===0?'h3':'h4');title.textContent=escapeText(article.title);
+    copy.append(meta,title);
+    if(article.summary){const summary=document.createElement('p');summary.textContent=article.summary;copy.append(summary);}
+    const read=document.createElement('span');read.className='news-read';read.textContent='Read story';copy.append(read);
+    el.append(copy);return el;
+  }
+  function render(){
+    const query=search.value.trim().toLowerCase();
+    visibleArticles=articles.filter(a=>[a.title,a.summary,a.body].some(v=>String(v||'').toLowerCase().includes(query)));
+    featured.replaceChildren();latest.replaceChildren();
+    layout.hidden=visibleArticles.length===0;
+    empty.hidden=visibleArticles.length!==0||articles.length!==0;
+    if(articles.length===0){status.hidden=false;status.textContent='The NL4 newsroom is ready for published stories.';return;}
+    status.hidden=true;
+    if(!visibleArticles.length){empty.hidden=false;empty.innerHTML='<strong>No matching stories</strong>Try another search term.';return;}
+    featured.append(card(visibleArticles[0],0));
+    const heading=document.createElement('div');heading.className='news-latest-heading';
+    const h=document.createElement('h3');h.textContent=query?'Search results':'More Arsenal news';
+    const count=document.createElement('span');count.textContent=Math.max(visibleArticles.length-1,0)+' stories';
+    heading.append(h,count);latest.append(heading);
+    visibleArticles.slice(1).forEach((article,index)=>latest.append(card(article,index+1)));
+  }
+  async function loadNews(){
+    if(!db){status.textContent='News could not connect to Supabase. Please try again shortly.';return;}
+    try{
+      const {data,error}=await db.from('news').select('id,title,slug,summary,body,image_url,published_at,created_at').eq('is_published',true).order('published_at',{ascending:false,nullsFirst:false}).order('created_at',{ascending:false}).limit(100);
+      if(error)throw error;
+      const now=Date.now();
+      articles=(data||[]).filter(a=>!a.published_at||new Date(a.published_at).getTime()<=now);
+      render();
+      const slug=new URLSearchParams(location.search).get('story');
+      if(slug){const match=articles.find(a=>a.slug===slug);if(match)openArticle(match);}
+    }catch(error){
+      console.error('[NL4 News] Could not load published stories:',error);
+      status.textContent='Published Arsenal news could not load right now. Please refresh the page later.';
+    }
+  }
+  search.addEventListener('input',render);
+  loadNews();
+})();
+</script>
+</body>
+</html>
