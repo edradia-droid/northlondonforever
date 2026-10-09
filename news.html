@@ -215,7 +215,7 @@
         const u=new URL(urlKey);
         for(const key of Array.from(u.searchParams.keys()))if(/^(utm_.+|fbclid|gclid|mc_cid|mc_eid)$/i.test(key))u.searchParams.delete(key);
         u.hash='';
-        if(u.pathname.length>1)u.pathname=u.pathname.replace(/\\/+$/,'');
+        while(u.pathname.length>1&&u.pathname.endsWith('/'))u.pathname=u.pathname.slice(0,-1);
         urlKey=u.toString();
       }catch(_){}
       if(seenUrls.has(urlKey))return false;
@@ -253,8 +253,8 @@
     });
   }
   function isArsenalStory(article){
-    const text=[article?.title,article?.description].map(v=>String(v||'')).join(' ').toLowerCase();
-    return /\barsenal\b|\bgunners\b|mikel arteta|arsenal women|arsenal fc/.test(text);
+    const title=String(article?.title||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase();
+    return /\barsenal\b|\bgunners\b|mikel arteta|arsenal women|bukayo saka|declan rice|martin odegaard|william saliba|gabriel jesus|gabriel magalhaes|gabriel martinelli|david raya|kai havertz|leandro trossard|ben white|viktor gyokeres|myles lewis skelly|noni madueke|mikel merino|riccardo calafiori|jurrien timber|eberechi eze/.test(title);
   }
   async function loadExternalNews(){
     // Prefer the server-synced Supabase feed so every visitor sees the same
