@@ -4227,6 +4227,9 @@
         !near(positionProbabilities.reduce((sum,v)=>sum+Number(v||0),0),100,0.2)){
         errors.push(`${row.club}: position probabilities do not sum to 100%.`);
       }else{
+        if(positionProbabilities.some(value=>!Number.isFinite(Number(value))||Number(value)<0||Number(value)>100)){
+          errors.push(`${row.club}: a position probability is non-finite or outside 0–100%.`);
+        }
         const titleFromPositions=Number(positionProbabilities[0]||0);
         const top4FromPositions=positionProbabilities.slice(0,4).reduce((sum,v)=>sum+Number(v||0),0);
         const top5FromPositions=positionProbabilities.slice(0,5).reduce((sum,v)=>sum+Number(v||0),0);
