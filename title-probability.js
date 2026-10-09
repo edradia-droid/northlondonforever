@@ -4226,6 +4226,34 @@
       if(!Array.isArray(positionProbabilities)||positionProbabilities.length!==20||
         !near(positionProbabilities.reduce((sum,v)=>sum+Number(v||0),0),100,0.2)){
         errors.push(`${row.club}: position probabilities do not sum to 100%.`);
+      }else{
+        const titleFromPositions=Number(positionProbabilities[0]||0);
+        const top4FromPositions=positionProbabilities.slice(0,4).reduce((sum,v)=>sum+Number(v||0),0);
+        const top5FromPositions=positionProbabilities.slice(0,5).reduce((sum,v)=>sum+Number(v||0),0);
+        const expectedPositionFromDistribution=positionProbabilities.reduce(
+          (sum,value,index)=>sum+(index+1)*Number(value||0)/100,0
+        );
+        if(!near(Number(row.titleProb),titleFromPositions,0.15)){
+          errors.push(`${row.club}: title probability does not match first-place probability.`);
+        }
+        if(!near(Number(row.top4Prob),top4FromPositions,0.15)){
+          errors.push(`${row.club}: top-four probability does not match positions 1–4.`);
+        }
+        if(!near(Number(row.top5Prob),top5FromPositions,0.15)){
+          errors.push(`${row.club}: top-five probability does not match positions 1–5.`);
+        }
+        if(!near(Number(row.expectedPosition),expectedPositionFromDistribution,0.15)){
+          errors.push(`${row.club}: expected position does not match its position distribution.`);
+        }
+        if(Number(row.top4Prob)+0.001<Number(row.titleProb)||Number(row.top5Prob)+0.001<Number(row.top4Prob)){
+          errors.push(`${row.club}: title/top-four/top-five probabilities are not logically ordered.`);
+        }
+        const mostLikelyIndex=positionProbabilities.reduce(
+          (best,value,index)=>Number(value)>Number(positionProbabilities[best])?index:best,0
+        );
+        if(Number(row.mostLikelyPosition)!==mostLikelyIndex+1){
+          errors.push(`${row.club}: most-likely position does not match the position distribution.`);
+        }
       }
     }
 
