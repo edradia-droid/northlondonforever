@@ -4271,7 +4271,7 @@
         p_expected_points:Number(arsenal.expectedPoints.toFixed(4)),
         p_expected_position:Number(arsenal.expectedPosition.toFixed(4)),
         p_confidence_score:confidence.score,
-        p_model_version:'ADMIN MODEL • V13 ENGINE'
+        p_model_version:'V13 ENGINE • H2H POINTS + AWAY GOALS • f78481a2'
       };
 
       const rpc=await db.rpc('save_title_probability_snapshot',payload);
