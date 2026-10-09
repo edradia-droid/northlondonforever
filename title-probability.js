@@ -4307,7 +4307,7 @@
 
       // Verify the value public viewers will read from title_probability_history.
       const verify=await db.from('title_probability_history')
-        .select('completed_matches,title_probability,top4_probability,top5_probability,expected_points,expected_position,confidence_score,created_at')
+        .select('completed_matches,title_probability,top4_probability,top5_probability,expected_points,expected_position,confidence_score,model_version,created_at,updated_at')
         .eq('season',SEASON)
         .eq('completed_matches',Number(completedCount)||0)
         .order('created_at',{ascending:false})
