@@ -254,6 +254,7 @@
   }
   function isArsenalStory(article){
     const title=String(article?.title||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase();
+    if (/robotics arsenal|arsenal of (?:weapons|firearms|tools|products)/.test(title)) return false;
     return /\barsenal\b|\bgunners\b|mikel arteta|arsenal women|bukayo saka|declan rice|martin odegaard|william saliba|gabriel jesus|gabriel magalhaes|gabriel martinelli|david raya|kai havertz|leandro trossard|ben white|viktor gyokeres|myles lewis skelly|noni madueke|mikel merino|riccardo calafiori|jurrien timber|eberechi eze/.test(title);
   }
   async function loadExternalNews(){
