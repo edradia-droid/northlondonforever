@@ -4186,7 +4186,7 @@
   async function loadTitleHistory(){
     try{
       const res=await db.from('title_probability_history')
-        .select('completed_matches,title_probability,top4_probability,top5_probability,expected_points,expected_position,confidence_score,created_at')
+        .select('completed_matches,title_probability,top4_probability,top5_probability,expected_points,expected_position,confidence_score,model_version,created_at,updated_at')
         .eq('season',SEASON)
         .order('completed_matches',{ascending:true});
       if(res.error)throw res.error;
@@ -4294,9 +4294,13 @@
       if(!Number.isFinite(actual) || Math.abs(actual-expected)>0.01){
         throw new Error(`Saved snapshot verification mismatch: Admin ${expected.toFixed(1)}% vs saved ${Number.isFinite(actual)?actual.toFixed(1):'—'}%.`);
       }
+      const expectedVersion='V13 ENGINE • H2H POINTS + AWAY GOALS • f78481a2';
+      if(row.model_version!==expectedVersion){
+        throw new Error(`Snapshot version mismatch: expected ${expectedVersion}, saved ${row.model_version||'—'}. Reload the latest Admin Model script and publish again.`);
+      }
 
       if(statusEl){
-        statusEl.textContent=`ADMIN MODEL READY • ${expected.toFixed(1)}% TITLE • PUBLIC SNAPSHOT SYNCED`;
+        statusEl.textContent=`ADMIN MODEL READY • ${expected.toFixed(1)}% TITLE • PUBLIC SNAPSHOT SYNCED • V13 H2H POINTS + AWAY GOALS (f78481a2)`;
       }
 
       window.NL4_ADMIN_LAST_PUBLISHED_SNAPSHOT={
