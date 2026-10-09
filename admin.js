@@ -31,12 +31,15 @@ const schemas = {
     ]
   },
   news: {
-    title: "News story",
+    title: "Original NL4 article",
     order: "created_at",
     fields: [
-      ["title","Headline","text",true],["slug","Slug","text",true],["image_url","Image URL","url"],
-      ["published_at","Publish date/time","datetime-local"],["summary","Summary","textarea"],
-      ["body","Story","textarea"],["is_published","Published","checkbox"]
+      ["title","Headline","text",true],["slug","URL slug","text",true],
+      ["category","Category","select",true,["Arsenal News","Match Report","Match Preview","Transfer News","Analysis","Opinion"]],
+      ["author","Byline / Author","text",true],["image_url","Featured image URL","url"],
+      ["published_at","Publish date/time","datetime-local"],["summary","Short summary","textarea"],
+      ["body","Full article text","textarea"],["sources","Sources (one http(s) URL per line)","textarea"],
+      ["is_published","Publish this article","checkbox"]
     ]
   },
   fixtures: {
@@ -500,7 +503,7 @@ function cardHtml(table, row) {
     meta = `${row.position || "Player"} • ${row.appearances ?? 0} apps • ${row.goals ?? 0} goals • ${row.assists ?? 0} assists • ${row.clean_sheets ?? 0} clean sheets`;
   }
   if (table === "players") meta = [row.position,row.era,row.shirt_number ? `#${row.shirt_number}` : ""].filter(Boolean).join(" • ");
-  if (table === "news") meta = row.published_at ? new Date(row.published_at).toLocaleString() : "No publish date";
+  if (table === "news") meta = [row.category || "Arsenal News",row.author || "NL4 Editorial Team",row.published_at ? new Date(row.published_at).toLocaleString() : "No publish date"].join(" • ");
   if (table === "fixtures") meta = `${row.competition || "Fixture"} • ${new Date(row.kickoff_at).toLocaleString()}`;
   if (table === "trophies") meta = [row.season,row.trophy_year].filter(Boolean).join(" • ");
   if (table === "premier_league_standings") meta = `#${row.position ?? "—"} • ${row.points ?? 0} pts • P${row.played ?? 0} W${row.wins ?? 0} D${row.draws ?? 0} L${row.losses ?? 0} • GD ${Number(row.goal_difference || 0) > 0 ? "+" : ""}${row.goal_difference ?? 0}`;
@@ -1635,7 +1638,13 @@ async function openEditor(table, id = null) {
     if (error) return alert(error.message);
     row = data;
   } else {
-    if ("is_published" in Object.fromEntries(schema.fields.map(f => [f[0],true]))) row.is_published = true;
+    if ("is_published" in Object.fromEntries(schema.fields.map(f => [f[0],true]))) row.is_published = table === "news" ? false : true;
+    if (table === "news") {
+      row.category = "Arsenal News";
+      row.author = "NL4 Editorial Team";
+      row.published_at = new Date().toISOString();
+      row.sources = "";
+    }
     if (table === "premier_league_standings") row.season = "2026/27";
     if (table === "premier_league_player_stats") row.season = "2026/27";
     if (table === "premier_league_matches") {
@@ -1669,6 +1678,31 @@ async function openEditor(table, id = null) {
     </label>`;
   }).join("");
 
+  const newsEditorHelp = document.getElementById("newsEditorHelp");
+  if (newsEditorHelp) newsEditorHelp.hidden = table !== "news";
+  if (table === "news") {
+    const titleInput = editorForm.elements.title;
+    const slugInput = editorForm.elements.slug;
+    if (titleInput && slugInput) {
+      let slugWasManuallyEdited = Boolean(id && row.slug);
+      const makeSlug = value => String(value || "").normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      slugInput.addEventListener("input", () => {
+        slugWasManuallyEdited = Boolean(slugInput.value.trim());
+      });
+      titleInput.addEventListener("input", () => {
+        if (!slugWasManuallyEdited || !slugInput.value.trim()) {
+          slugInput.value = makeSlug(titleInput.value);
+          slugWasManuallyEdited = false;
+        }
+      });
+      if (!id && !slugInput.value.trim() && titleInput.value.trim()) {
+        slugInput.value = makeSlug(titleInput.value);
+      }
+    }
+  }
+
   setMessage(editorMessage);
   dialog.showModal();
 }
@@ -1684,6 +1718,34 @@ editorForm.addEventListener("submit", async (event) => {
     const el = editorForm.elements[name];
     payload[name] = normalizeValue(type, formData.get(name), el?.checked);
   });
+
+  if (table === "news") {
+    payload.title = String(payload.title || "").trim();
+    payload.slug = String(payload.slug || "").trim().toLowerCase();
+    payload.category = String(payload.category || "Arsenal News").trim();
+    payload.author = String(payload.author || "NL4 Editorial Team").trim();
+    payload.sources = String(payload.sources || "").split(/\r?\n/).map(line => line.trim()).filter(Boolean).join("\n") || null;
+
+    if (!payload.title || !payload.slug) {
+      return setMessage(editorMessage, "Add an article headline and URL slug before saving.", "error");
+    }
+    if (payload.is_published && !String(payload.body || "").trim()) {
+      return setMessage(editorMessage, "Add the full article text before publishing. You can save an incomplete article as a draft.", "error");
+    }
+    if (!payload.author || !payload.category) {
+      return setMessage(editorMessage, "Choose an article category and add a byline.", "error");
+    }
+    const sourceLines = String(payload.sources || "").split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+    for (const source of sourceLines) {
+      try {
+        const parsed = new URL(source);
+        if (!["http:", "https:"].includes(parsed.protocol)) throw new Error("Unsupported protocol");
+      } catch (_) {
+        return setMessage(editorMessage, "Each source must be a complete http(s) URL on its own line.", "error");
+      }
+    }
+    if (payload.is_published && !payload.published_at) payload.published_at = new Date().toISOString();
+  }
 
   if (table === "premier_league_matches") {
     const home = String(payload.home_team || "").trim();
