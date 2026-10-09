@@ -177,7 +177,7 @@
     featured.replaceChildren();latest.replaceChildren();
     layout.hidden=visibleArticles.length===0;
     empty.hidden=visibleArticles.length!==0||articles.length!==0;
-    if(articles.length===0){status.hidden=false;status.textContent='The NL4 newsroom is ready for published stories.';return;}
+    if(articles.length===0){status.hidden=true;return;}
     status.hidden=true;
     if(!visibleArticles.length){empty.hidden=false;empty.innerHTML='<strong>No matching stories</strong>Try another search term.';return;}
     featured.append(card(visibleArticles[0],0));
