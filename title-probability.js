@@ -1155,20 +1155,24 @@
     };
   }
 
-  // Premier League ranking: points, goal difference and goals scored first.
-  // If those are identical, compare the clubs' mini-table from their head-to-head fixtures.
+  // Premier League final-table order: overall points, goal difference, then goals scored.
+  // Under Rule C.17, when those are level and a decisive placing is affected, compare
+  // head-to-head points, then away goals scored in those head-to-head matches.
+  // Head-to-head goal difference/goals scored are NOT Premier League tie-breakers.
   function addHeadToHeadResult(season,homeClub,awayClub,homeGoals,awayGoals){
     const home=season.get(homeClub),away=season.get(awayClub);
     if(!home||!away||!Number.isFinite(Number(homeGoals))||!Number.isFinite(Number(awayGoals)))return;
     const ensure=(row,opponent)=>{
       if(!(row.h2h instanceof Map))row.h2h=new Map();
-      if(!row.h2h.has(opponent))row.h2h.set(opponent,{points:0,gf:0,ga:0,gd:0});
+      if(!row.h2h.has(opponent))row.h2h.set(opponent,{points:0,gf:0,ga:0,gd:0,awayGoals:0});
       return row.h2h.get(opponent);
     };
     const hg=Number(homeGoals),ag=Number(awayGoals);
     const h=ensure(home,awayClub),a=ensure(away,homeClub);
     h.gf+=hg;h.ga+=ag;h.gd+=hg-ag;
     a.gf+=ag;a.ga+=hg;a.gd+=ag-hg;
+    // The home club's away-goals count is zero; the visiting club scored ag away.
+    a.awayGoals+=ag;
     if(hg>ag)h.points+=3;
     else if(ag>hg)a.points+=3;
     else{h.points++;a.points++;}
@@ -1184,34 +1188,34 @@
 
   function rankLeagueTable(inputRows){
     const baseCompare=(a,b)=>Number(b.points||0)-Number(a.points||0)||Number(b.gd||0)-Number(a.gd||0)||Number(b.gf||0)-Number(a.gf||0);
-    const compareMini=(a,b,mini)=> {
+    const compareHeadToHead=(a,b,mini)=> {
       const x=mini.get(a.club),y=mini.get(b.club);
-      return y.points-x.points||y.gd-x.gd||y.gf-x.gf;
+      return y.points-x.points||y.awayGoals-x.awayGoals;
     };
     function rankHeadToHeadGroup(group){
       if(group.length<2)return group.slice();
       const tiedNames=new Set(group.map(row=>row.club));
-      const mini=new Map(group.map(row=>[row.club,{points:0,gd:0,gf:0}]));
+      const mini=new Map(group.map(row=>[row.club,{points:0,awayGoals:0}]));
       for(const row of group){
         if(!(row.h2h instanceof Map))continue;
         for(const [opponent,record] of row.h2h){
           if(!tiedNames.has(opponent))continue;
           const aggregate=mini.get(row.club);
           aggregate.points+=Number(record.points||0);
-          aggregate.gd+=Number(record.gd||0);
-          aggregate.gf+=Number(record.gf||0);
+          aggregate.awayGoals+=Number(record.awayGoals||0);
         }
       }
-      const sorted=group.slice().sort((a,b)=>compareMini(a,b,mini)||String(a.club).localeCompare(String(b.club)));
-      // If head-to-head cannot separate any club, stop instead of recursing forever.
-      if(sorted.every(row=>compareMini(sorted[0],row,mini)===0)){
+      const sorted=group.slice().sort((a,b)=>compareHeadToHead(a,b,mini)||String(a.club).localeCompare(String(b.club)));
+      // The Premier League criteria stop at head-to-head away goals; if still level,
+      // an eligible final-position tie may require a neutral-venue play-off.
+      if(sorted.every(row=>compareHeadToHead(sorted[0],row,mini)===0)){
         return sorted;
       }
-      // Reapply the mini-table criteria to any subset still tied after a club separates.
+      // Reapply the same official criteria to any subset still tied after a club separates.
       const resolved=[];
       for(let start=0;start<sorted.length;){
         let end=start+1;
-        while(end<sorted.length&&compareMini(sorted[start],sorted[end],mini)===0)end++;
+        while(end<sorted.length&&compareHeadToHead(sorted[start],sorted[end],mini)===0)end++;
         const subgroup=sorted.slice(start,end);
         resolved.push(...(subgroup.length>1?rankHeadToHeadGroup(subgroup):subgroup));
         start=end;
