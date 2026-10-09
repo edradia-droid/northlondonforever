@@ -1184,34 +1184,52 @@
 
   function rankLeagueTable(inputRows){
     const baseCompare=(a,b)=>Number(b.points||0)-Number(a.points||0)||Number(b.gd||0)-Number(a.gd||0)||Number(b.gf||0)-Number(a.gf||0);
+    const compareMini=(a,b,mini)=> {
+      const x=mini.get(a.club),y=mini.get(b.club);
+      return y.points-x.points||y.gd-x.gd||y.gf-x.gf;
+    };
+    function rankHeadToHeadGroup(group){
+      if(group.length<2)return group.slice();
+      const tiedNames=new Set(group.map(row=>row.club));
+      const mini=new Map(group.map(row=>[row.club,{points:0,gd:0,gf:0}]));
+      for(const row of group){
+        if(!(row.h2h instanceof Map))continue;
+        for(const [opponent,record] of row.h2h){
+          if(!tiedNames.has(opponent))continue;
+          const aggregate=mini.get(row.club);
+          aggregate.points+=Number(record.points||0);
+          aggregate.gd+=Number(record.gd||0);
+          aggregate.gf+=Number(record.gf||0);
+        }
+      }
+      const sorted=group.slice().sort((a,b)=>compareMini(a,b,mini)||String(a.club).localeCompare(String(b.club)));
+      // If head-to-head cannot separate any club, stop instead of recursing forever.
+      if(sorted.every(row=>compareMini(sorted[0],row,mini)===0)){
+        return sorted;
+      }
+      // Reapply the mini-table criteria to any subset still tied after a club separates.
+      const resolved=[];
+      for(let start=0;start<sorted.length;){
+        let end=start+1;
+        while(end<sorted.length&&compareMini(sorted[start],sorted[end],mini)===0)end++;
+        const subgroup=sorted.slice(start,end);
+        resolved.push(...(subgroup.length>1?rankHeadToHeadGroup(subgroup):subgroup));
+        start=end;
+      }
+      return resolved;
+    }
     const rows=inputRows.slice().sort((a,b)=>baseCompare(a,b)||String(a.club).localeCompare(String(b.club)));
     for(let start=0;start<rows.length;){
       let end=start+1;
       while(end<rows.length&&baseCompare(rows[start],rows[end])===0)end++;
       if(end-start>1){
-        const tied=rows.slice(start,end);
-        const tiedNames=new Set(tied.map(row=>row.club));
-        const mini=new Map(tied.map(row=>[row.club,{points:0,gd:0,gf:0}]));
-        for(const row of tied){
-          if(!(row.h2h instanceof Map))continue;
-          for(const [opponent,record] of row.h2h){
-            if(!tiedNames.has(opponent))continue;
-            const aggregate=mini.get(row.club);
-            aggregate.points+=Number(record.points||0);
-            aggregate.gd+=Number(record.gd||0);
-            aggregate.gf+=Number(record.gf||0);
-          }
-        }
-        tied.sort((a,b)=>{
-          const x=mini.get(a.club),y=mini.get(b.club);
-          return y.points-x.points||y.gd-x.gd||y.gf-x.gf||String(a.club).localeCompare(String(b.club));
-        });
-        rows.splice(start,tied.length,...tied);
+        rows.splice(start,end-start,...rankHeadToHeadGroup(rows.slice(start,end)));
       }
       start=end;
     }
     return rows;
   }
+
 
   function simulate(teams,fixtures){
     const byName=new Map(teams.map(t=>[t.club.toLowerCase(),t]));
