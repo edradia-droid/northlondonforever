@@ -1174,6 +1174,14 @@
     else{h.points++;a.points++;}
   }
 
+
+  function seedHeadToHeadResults(season,results){
+    for(const result of (Array.isArray(results)?results:[])){
+      if(!result||!Number.isFinite(Number(result.home_score))||!Number.isFinite(Number(result.away_score)))continue;
+      addHeadToHeadResult(season,result.home,result.away,result.home_score,result.away_score);
+    }
+  }
+
   function rankLeagueTable(inputRows){
     const baseCompare=(a,b)=>Number(b.points||0)-Number(a.points||0)||Number(b.gd||0)-Number(a.gd||0)||Number(b.gf||0)-Number(a.gf||0);
     const rows=inputRows.slice().sort((a,b)=>baseCompare(a,b)||String(a.club).localeCompare(String(b.club)));
@@ -1497,6 +1505,7 @@
 
     for(let sim=0;sim<COUNTERFACTUAL_SIMULATIONS;sim++){
       const season=new Map(ratedTeams.map(t=>[t.club,{club:t.club,points:t.points,gd:t.gd,gf:t.gf}]));
+      seedHeadToHeadResults(season,evidenceResults);
       let focalOutcome=null;
 
       for(const f of prepared){
@@ -1518,11 +1527,10 @@
         if(hs>as)h.points+=3;
         else if(as>hs)a.points+=3;
         else{h.points++;a.points++;}
+        addHeadToHeadResult(season,f.homeTeam.club,f.awayTeam.club,hs,as);
       }
 
-      const table=[...season.values()].sort((a,b)=>
-        b.points-a.points||b.gd-a.gd||b.gf-a.gf||a.club.localeCompare(b.club)
-      );
+      const table=rankLeagueTable([...season.values()]);
       if(focalOutcome&&table[0]?.club==='Arsenal')titles[focalOutcome]++;
     }
 
@@ -1607,6 +1615,7 @@
 
     for(let sim=0;sim<V138_SENSITIVITY_SIMS;sim++){
       const season=new Map(rated.map(t=>[t.club,{club:t.club,points:t.points,gd:t.gd,gf:t.gf}]));
+      seedHeadToHeadResults(season,scenario.evidence);
       for(const f of prepared){
         const hs=sampleScore(f.model.homeCDF,rng);
         const as=sampleScore(f.model.awayCDF,rng);
@@ -1615,10 +1624,9 @@
         if(hs>as)h.points+=3;
         else if(as>hs)a.points+=3;
         else{h.points++;a.points++;}
+        addHeadToHeadResult(season,f.homeTeam.club,f.awayTeam.club,hs,as);
       }
-      const table=[...season.values()].sort((a,b)=>
-        b.points-a.points||b.gd-a.gd||b.gf-a.gf||a.club.localeCompare(b.club)
-      );
+      const table=rankLeagueTable([...season.values()]);
       if(table[0]?.club==='Arsenal')arsenalTitles++;
       arsenalPointsSum+=Number(season.get('Arsenal')?.points||0);
     }
@@ -1684,7 +1692,9 @@
 
     for(let s=0;s<V1491_SIMS;s++){
       const natural=new Map(ratings.map(t=>[t.club,{club:t.club,points:t.points,gd:t.gd,gf:t.gf}]));
+      seedHeadToHeadResults(natural,fixed);
       const locked=new Map(ratings.map(t=>[t.club,{club:t.club,points:t.points,gd:t.gd,gf:t.gf}]));
+      seedHeadToHeadResults(locked,fixed);
 
       for(const f of prepared){
         // ONE shared random draw for this fixture/universe.
@@ -1697,13 +1707,15 @@
           const h=season.get(f.homeTeam.club),a=season.get(f.awayTeam.club);
           h.gf+=hs;a.gf+=as;h.gd+=hs-as;a.gd+=as-hs;
           if(hs>as)h.points+=3; else if(as>hs)a.points+=3; else {h.points++;a.points++;}
+          addHeadToHeadResult(season,f.homeTeam.club,f.awayTeam.club,hs,as);
+        addHeadToHeadResult(season,f.homeTeam.club,f.awayTeam.club,hs,as);
         };
         apply(natural,naturalHs,naturalAs);
         apply(locked,lockedHs,lockedAs);
       }
 
       const champ=(season)=>{
-        const rows=[...season.values()].sort((a,b)=>b.points-a.points||b.gd-a.gd||b.gf-a.gf||a.club.localeCompare(b.club));
+        const rows=rankLeagueTable([...season.values()]);
         return rows[0]?.club==='Arsenal';
       };
       const a=champ(natural),b=champ(locked);
@@ -1982,6 +1994,7 @@
       let titles=0;
       for(let s=0;s<V149_SIMS;s++){
         const season=new Map(ratings.map(t=>[t.club,{club:t.club,points:t.points,gd:t.gd,gf:t.gf}]));
+      seedHeadToHeadResults(season,fixed);
         for(const f of prepared){
           let hs,as;
           if(f.target && mode==='actual'){
@@ -1992,8 +2005,9 @@
           const h=season.get(f.homeTeam.club),a=season.get(f.awayTeam.club);
           h.gf+=hs;a.gf+=as;h.gd+=hs-as;a.gd+=as-hs;
           if(hs>as)h.points+=3; else if(as>hs)a.points+=3; else {h.points++;a.points++;}
+        addHeadToHeadResult(season,f.homeTeam.club,f.awayTeam.club,hs,as);
         }
-        const rows=[...season.values()].sort((a,b)=>b.points-a.points||b.gd-a.gd||b.gf-a.gf||a.club.localeCompare(b.club));
+        const rows=rankLeagueTable([...season.values()]);
         if(rows[0]?.club==='Arsenal')titles++;
       }
       return titles/V149_SIMS*100;
@@ -2090,6 +2104,7 @@
     let titles=0, arsenalPts=0;
     for(let s=0;s<V148_SIMS;s++){
       const season=new Map(ratings.map(t=>[t.club,{club:t.club,points:t.points,gd:t.gd,gf:t.gf}]));
+      seedHeadToHeadResults(season,fixed);
       for(const f of prepared){
         let hs,as;
         if(f.target && mode==='actual'){
@@ -2100,8 +2115,9 @@
         const h=season.get(f.homeTeam.club),a=season.get(f.awayTeam.club);
         h.gf+=hs;a.gf+=as;h.gd+=hs-as;a.gd+=as-hs;
         if(hs>as)h.points+=3; else if(as>hs)a.points+=3; else {h.points++;a.points++;}
+        addHeadToHeadResult(season,f.homeTeam.club,f.awayTeam.club,hs,as);
       }
-      const rows=[...season.values()].sort((a,b)=>b.points-a.points||b.gd-a.gd||b.gf-a.gf||a.club.localeCompare(b.club));
+      const rows=rankLeagueTable([...season.values()]);
       if(rows[0]?.club==='Arsenal')titles++;
       arsenalPts+=season.get('Arsenal')?.points||0;
     }
@@ -2212,13 +2228,15 @@
     const rng=rngFactory(seed);
     for(let s=0;s<V147_SIMS;s++){
       const season=new Map(ratings.map(t=>[t.club,{club:t.club,points:t.points,gd:t.gd,gf:t.gf}]));
+      seedHeadToHeadResults(season,fixedResults);
       for(const f of prepared){
         const hs=sampleScore(f.model.homeCDF,rng),as=sampleScore(f.model.awayCDF,rng);
         const h=season.get(f.homeTeam.club),a=season.get(f.awayTeam.club);
         h.gf+=hs;a.gf+=as;h.gd+=hs-as;a.gd+=as-hs;
         if(hs>as)h.points+=3; else if(as>hs)a.points+=3; else {h.points++;a.points++;}
+        addHeadToHeadResult(season,f.homeTeam.club,f.awayTeam.club,hs,as);
       }
-      const rows=[...season.values()].sort((a,b)=>b.points-a.points||b.gd-a.gd||b.gf-a.gf||a.club.localeCompare(b.club));
+      const rows=rankLeagueTable([...season.values()]);
       if(rows[0]?.club==='Arsenal')titles++;
       arsenalPts+=rows.find(r=>r.club==='Arsenal')?.points||0;
     }
@@ -2317,13 +2335,15 @@
     const rng=rngFactory(seed);
     for(let s=0;s<V146_SIMS;s++){
       const season=new Map(ratings.map(t=>[t.club,{club:t.club,points:t.points,gd:t.gd,gf:t.gf}]));
+      seedHeadToHeadResults(season,fixedResults);
       for(const f of prepared){
         const hs=sampleScore(f.model.homeCDF,rng),as=sampleScore(f.model.awayCDF,rng);
         const h=season.get(f.homeTeam.club),a=season.get(f.awayTeam.club);
         h.gf+=hs;a.gf+=as;h.gd+=hs-as;a.gd+=as-hs;
         if(hs>as)h.points+=3; else if(as>hs)a.points+=3; else {h.points++;a.points++;}
+        addHeadToHeadResult(season,f.homeTeam.club,f.awayTeam.club,hs,as);
       }
-      const rows=[...season.values()].sort((a,b)=>b.points-a.points||b.gd-a.gd||b.gf-a.gf||a.club.localeCompare(b.club));
+      const rows=rankLeagueTable([...season.values()]);
       if(rows[0]?.club==='Arsenal')titles++;
       arsenalPts+=rows.find(r=>r.club==='Arsenal')?.points||0;
     }
@@ -2510,6 +2530,7 @@
 
     for(let sim=0;sim<V143_COMPRESSION_SIMS;sim++){
       const season=new Map(rated.map(t=>[t.club,{club:t.club,points:t.points,gd:t.gd,gf:t.gf}]));
+      seedHeadToHeadResults(season,evidenceWithout);
       for(const f of prepared){
         let hs,as;
         if(f.isTarget && mode==='actual'){
@@ -2520,8 +2541,9 @@
         const h=season.get(f.homeTeam.club),a=season.get(f.awayTeam.club);
         h.gf+=hs;a.gf+=as;h.gd+=hs-as;a.gd+=as-hs;
         if(hs>as)h.points+=3; else if(as>hs)a.points+=3; else{h.points++;a.points++;}
+        addHeadToHeadResult(season,f.homeTeam.club,f.awayTeam.club,hs,as);
       }
-      const table=[...season.values()].sort((a,b)=>b.points-a.points||b.gd-a.gd||b.gf-a.gf||a.club.localeCompare(b.club));
+      const table=rankLeagueTable([...season.values()]);
       championPts+=table[0].points;
       top2Gap+=table[0].points-table[1].points;
       top3Span+=table[0].points-table[2].points;
@@ -2680,6 +2702,7 @@
 
     for(let sim=0;sim<V142_BOUNDARY_SIMS;sim++){
       const season=new Map(rated.map(t=>[t.club,{club:t.club,points:t.points,gd:t.gd,gf:t.gf}]));
+      seedHeadToHeadResults(season,evidenceWithout);
       for(const f of prepared){
         let hs,as;
         if(f.isTarget && mode==='actual'){
@@ -2690,8 +2713,9 @@
         const h=season.get(f.homeTeam.club),a=season.get(f.awayTeam.club);
         h.gf+=hs;a.gf+=as;h.gd+=hs-as;a.gd+=as-hs;
         if(hs>as)h.points+=3; else if(as>hs)a.points+=3; else{h.points++;a.points++;}
+        addHeadToHeadResult(season,f.homeTeam.club,f.awayTeam.club,hs,as);
       }
-      const table=[...season.values()].sort((a,b)=>b.points-a.points||b.gd-a.gd||b.gf-a.gf||a.club.localeCompare(b.club));
+      const table=rankLeagueTable([...season.values()]);
       const pos=table.findIndex(x=>x.club==='Arsenal')+1;
       finishCounts[pos]++;
       const arsenal=season.get('Arsenal'), champ=table[0];
@@ -2797,6 +2821,7 @@
     let titles=0,arsenalPts=0;
     for(let sim=0;sim<V141_EXPECTED_ACTUAL_SIMS;sim++){
       const season=new Map(rated.map(t=>[t.club,{club:t.club,points:t.points,gd:t.gd,gf:t.gf}]));
+      seedHeadToHeadResults(season,evidenceWithout);
       for(const f of prepared){
         let hs,as;
         if(f.isTarget && mode==='actual'){
@@ -2807,8 +2832,9 @@
         const h=season.get(f.homeTeam.club),a=season.get(f.awayTeam.club);
         h.gf+=hs;a.gf+=as;h.gd+=hs-as;a.gd+=as-hs;
         if(hs>as)h.points+=3; else if(as>hs)a.points+=3; else{h.points++;a.points++;}
+        addHeadToHeadResult(season,f.homeTeam.club,f.awayTeam.club,hs,as);
       }
-      const table=[...season.values()].sort((a,b)=>b.points-a.points||b.gd-a.gd||b.gf-a.gf||a.club.localeCompare(b.club));
+      const table=rankLeagueTable([...season.values()]);
       if(table[0]?.club==='Arsenal')titles++;
       arsenalPts+=season.get('Arsenal')?.points||0;
     }
@@ -3008,13 +3034,15 @@
     let titles=0,pts=0;
     for(let sim=0;sim<V139_DECOMP_SIMS;sim++){
       const season=new Map(rated.map(t=>[t.club,{club:t.club,points:t.points,gd:t.gd,gf:t.gf}]));
+      seedHeadToHeadResults(season,evidence);
       for(const f of prepared){
         const hs=sampleScore(f.model.homeCDF,rng),as=sampleScore(f.model.awayCDF,rng);
         const h=season.get(f.homeTeam.club),a=season.get(f.awayTeam.club);
         h.gf+=hs;a.gf+=as;h.gd+=hs-as;a.gd+=as-hs;
         if(hs>as)h.points+=3; else if(as>hs)a.points+=3; else{h.points++;a.points++;}
+        addHeadToHeadResult(season,f.homeTeam.club,f.awayTeam.club,hs,as);
       }
-      const table=[...season.values()].sort((a,b)=>b.points-a.points||b.gd-a.gd||b.gf-a.gf||a.club.localeCompare(b.club));
+      const table=rankLeagueTable([...season.values()]);
       if(table[0]?.club==='Arsenal')titles++;
       pts+=season.get('Arsenal')?.points||0;
     }
