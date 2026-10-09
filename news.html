@@ -61,6 +61,7 @@
 .news-modal-body h2{font-size:clamp(27px,5vw,44px);line-height:1.05;letter-spacing:-.05em;margin:14px 0}
 .news-modal-body .story-content{white-space:pre-line;line-height:1.8;color:#d1d2d8}
 .news-loading{padding:32px;border:1px solid var(--news-line);border-radius:16px;background:#17181d;color:#c6c7ce}
+.external-news-section{margin-top:36px}.external-news-intro{color:var(--news-muted);font-size:13px;line-height:1.6;margin:-5px 0 16px}.external-news-badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--news-line);border-radius:999px;padding:8px 11px;color:#c9cad0;font-size:9px;letter-spacing:.12em;font-weight:900}.external-news-badge .live-dot{width:6px;height:6px;border-radius:50%;background:#4ed49a;box-shadow:0 0 0 4px #4ed49a20}.external-news-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.external-news-card{min-width:0;display:flex;flex-direction:column;gap:12px;padding:17px;border:1px solid var(--news-line);border-radius:15px;background:var(--news-panel);color:inherit;text-decoration:none;transition:transform .18s ease,border-color .18s ease}.external-news-card:hover{transform:translateY(-2px);border-color:rgba(239,1,7,.65)}.external-news-card h3{font-size:16px;line-height:1.35;letter-spacing:-.02em;margin:0}.external-news-card .news-meta{margin-top:auto}.external-news-card .external-read{font-size:11px;font-weight:850;color:#ff777a}.external-news-card .external-read:after{content:" ↗"}.external-news-source{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#ff777a;font-weight:900}.external-news-status{margin:0 0 16px}@media(max-width:850px){.external-news-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.external-news-grid{grid-template-columns:1fr}.external-news-card{padding:15px}.external-news-section .news-toolbar{align-items:flex-start}}
 @media(max-width:850px){.news-layout{grid-template-columns:1fr}.news-latest{grid-template-columns:repeat(2,minmax(0,1fr))}.news-latest-heading{grid-column:1/-1}}
 @media(max-width:560px){.news-main{padding:16px 12px 40px}.news-hero{border-radius:17px;padding:24px 20px;min-height:220px}.news-hero:after{font-size:100px}.news-toolbar{align-items:stretch}.news-search{width:100%}.news-latest{grid-template-columns:1fr}.news-card{grid-template-columns:98px minmax(0,1fr)}.news-card .news-image{min-height:104px}.news-featured-card,.news-card{border-radius:14px}.news-modal{padding:10px}.news-modal-panel{border-radius:14px}}
 </style>
@@ -89,6 +90,15 @@
     <div class="news-latest" id="newsLatest"></div>
   </section>
   <div id="newsEmpty" class="news-empty" hidden><strong>No published stories yet</strong>New articles published through the NL4 admin will appear here automatically. While the newsroom is being filled, you can read the club's updates on <a href="https://www.arsenal.com/news" target="_blank" rel="noopener noreferrer">Arsenal.com</a>.</div>
+  <section class="external-news-section" aria-labelledby="externalNewsTitle">
+    <div class="news-toolbar">
+      <h2 class="news-section-title"><small>From external publishers</small><span id="externalNewsTitle">Live Arsenal Headlines</span></h2>
+      <span class="external-news-badge"><span class="live-dot"></span> AUTOMATIC FEED</span>
+    </div>
+    <p class="external-news-intro">Recent Arsenal-related headlines from news publishers. Select a headline to read it on the publisher’s website.</p>
+    <div id="externalNewsStatus" class="news-status" role="status">Checking for the latest Arsenal headlines…</div>
+    <div id="externalNewsGrid" class="external-news-grid"></div>
+  </section>
   <p class="news-footer-note">NL4 is an independent Arsenal fan project. External publishers retain rights to their own content. This page displays stories published through the NL4 newsroom; official club updates are linked to Arsenal.com.</p>
 </div>
 </main>
@@ -112,6 +122,11 @@
   const closeButton=document.getElementById('newsModalClose');
   let articles=[];
   let visibleArticles=[];
+  let externalArticles=[];
+  const externalStatus=document.getElementById('externalNewsStatus');
+  const externalGrid=document.getElementById('externalNewsGrid');
+  const externalCacheKey='nl4-external-arsenal-news-v1';
+  const externalCacheTtl=15*60*1000;
   const escapeText=value=>String(value??'');
   const dateLabel=value=>{
     if(!value)return 'NL4 NEWSROOM';
@@ -187,6 +202,83 @@
     heading.append(h,count);latest.append(heading);
     visibleArticles.slice(1).forEach((article,index)=>latest.append(card(article,index+1)));
   }
+  function renderExternalNews(){
+    const query=search.value.trim().toLowerCase();
+    const manualTitles=new Set(articles.map(a=>String(a.title||'').trim().toLowerCase()));
+    const matches=externalArticles.filter(a=>{
+      const title=String(a.title||'');
+      const source=String(a.sitename||a.host||'');
+      return !manualTitles.has(title.trim().toLowerCase()) && [title,source].some(v=>v.toLowerCase().includes(query));
+    });
+    externalGrid.replaceChildren();
+    if(!matches.length){
+      if(!externalStatus.textContent.includes('temporarily unavailable')) externalStatus.textContent=query?'No external headlines match that search.':'No recent external Arsenal headlines were returned.';
+      externalStatus.hidden=false;
+      return;
+    }
+    externalStatus.hidden=true;
+    matches.slice(0,18).forEach(article=>{
+      const link=document.createElement('a');
+      link.className='external-news-card';
+      link.href=article.url;
+      link.target='_blank';
+      link.rel='noopener noreferrer';
+      const source=document.createElement('span');
+      source.className='external-news-source';
+      source.textContent=String(article.sitename||article.host||'External publisher');
+      const title=document.createElement('h3');
+      title.textContent=String(article.title||'Arsenal news');
+      const meta=document.createElement('div');
+      meta.className='news-meta';
+      const date=document.createElement('span');
+      date.textContent=dateLabel(article.published_at);
+      const read=document.createElement('span');
+      read.className='external-read';
+      read.textContent='Read at source';
+      meta.append(date);
+      link.append(source,title,meta,read);
+      externalGrid.append(link);
+    });
+  }
+  function isArsenalStory(article){
+    const text=[article?.title,article?.description].map(v=>String(v||'')).join(' ').toLowerCase();
+    return /\barsenal\b|\bgunners\b|mikel arteta|arsenal women|arsenal fc/.test(text);
+  }
+  async function loadExternalNews(){
+    const cached=(()=>{try{return JSON.parse(sessionStorage.getItem(externalCacheKey)||'null')}catch(_){return null}})();
+    if(cached&&Array.isArray(cached.results)&&Date.now()-cached.savedAt<externalCacheTtl){
+      externalArticles=cached.results;
+      renderExternalNews();
+      return;
+    }
+    try{
+      const endpoint=new URL('https://freenewsapi.ai/v1/search');
+      endpoint.search=new URLSearchParams({q:'Arsenal',lang:'en',date:'7d',size:'30',sort:'date'}).toString();
+      const response=await fetch(endpoint.toString(),{headers:{'Accept':'application/json'}});
+      if(!response.ok)throw new Error('News feed returned HTTP '+response.status);
+      const payload=await response.json();
+      if(!Array.isArray(payload.results))throw new Error('News feed returned an unexpected response.');
+      externalArticles=payload.results
+        .filter(a=>a&&typeof a.url==='string'&&/^https?:\/\//i.test(a.url)&&a.title&&isArsenalStory(a))
+        .filter((a,i,list)=>list.findIndex(b=>b.url===a.url)===i)
+        .sort((a,b)=>new Date(b.published_at||0)-new Date(a.published_at||0))
+        .slice(0,24);
+      try{sessionStorage.setItem(externalCacheKey,JSON.stringify({savedAt:Date.now(),results:externalArticles}));}catch(_){}
+      externalStatus.textContent=externalArticles.length?'':'No recent external Arsenal headlines were returned.';
+      renderExternalNews();
+    }catch(error){
+      console.warn('[NL4 News] External headline feed unavailable:',error);
+      if(cached&&Array.isArray(cached.results)){
+        externalArticles=cached.results;
+        externalStatus.textContent='Showing cached external headlines because the live feed is temporarily unavailable.';
+        externalStatus.hidden=false;
+        renderExternalNews();
+      }else{
+        externalStatus.textContent='Automatic headlines are temporarily unavailable. NL4-published stories remain available above; please try again later.';
+        externalStatus.hidden=false;
+      }
+    }
+  }
   async function loadNews(){
     if(!db){status.textContent='News could not connect to Supabase. Please try again shortly.';return;}
     try{
@@ -202,8 +294,9 @@
       status.textContent='Published Arsenal news could not load right now. Please refresh the page later.';
     }
   }
-  search.addEventListener('input',render);
+  search.addEventListener('input',()=>{render();renderExternalNews();});
   loadNews();
+  loadExternalNews();
 })();
 </script>
 </body>
