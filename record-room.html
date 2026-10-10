@@ -60,7 +60,7 @@ select,input{width:100%;background:#0f0f0f;border:1px solid var(--line);color:#f
 
 
 .admin-record-bar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 3vw;background:rgba(5,5,5,.96);border-bottom:1px solid rgba(255,255,255,.09);backdrop-filter:blur(14px)}
-.admin-record-brand{display:flex;align-items:center;gap:10px;font-weight:900}.admin-record-brand b{display:grid;place-items:center;width:40px;height:40px;border-radius:10px;background:#d6001c;color:#fff}.admin-record-brand span{font-size:12px;color:#ddd}.admin-record-actions{display:flex;gap:8px;flex-wrap:wrap}.admin-record-actions a,.admin-record-actions button{border:1px solid rgba(255,255,255,.12);background:#151515;color:#fff;border-radius:10px;padding:9px 12px;text-decoration:none;font-size:10px;font-weight:900;cursor:pointer}.admin-record-actions a.active{border-color:rgba(216,173,69,.45);color:#d8ad45}.record-auth-block{min-height:100vh;display:grid;place-items:center;padding:30px;background:#070707;color:#fff;font-family:Arial,sans-serif}.record-auth-card{width:min(520px,92vw);border:1px solid rgba(255,255,255,.1);border-radius:20px;background:#111;padding:24px}.record-auth-card h1{font-size:28px;letter-spacing:-1px}.record-auth-card p{color:#888;line-height:1.6}.record-auth-card a{display:inline-block;margin-top:12px;background:#d8ad45;color:#090909;text-decoration:none;font-weight:900;padding:11px 14px;border-radius:10px}
+.admin-record-brand{display:flex;align-items:center;gap:10px;font-weight:900}.admin-record-brand b{display:grid;place-items:center;width:40px;height:40px;border-radius:10px;background:#d6001c;color:#fff}.admin-record-brand span{font-size:12px;color:#ddd}.admin-record-actions{display:flex;gap:8px;flex-wrap:wrap}.admin-record-actions a,.admin-record-actions button{border:1px solid rgba(255,255,255,.12);background:#151515;color:#fff;border-radius:10px;padding:9px 12px;text-decoration:none;font-size:10px;font-weight:900;cursor:pointer}.admin-record-actions a.active{border-color:rgba(216,173,69,.45);color:#d8ad45}.admin-record-actions button#rrArchiveBsd{border-color:rgba(73,209,125,.4);color:#49d17d}.record-auth-block{min-height:100vh;display:grid;place-items:center;padding:30px;background:#070707;color:#fff;font-family:Arial,sans-serif}.record-auth-card{width:min(520px,92vw);border:1px solid rgba(255,255,255,.1);border-radius:20px;background:#111;padding:24px}.record-auth-card h1{font-size:28px;letter-spacing:-1px}.record-auth-card p{color:#888;line-height:1.6}.record-auth-card a{display:inline-block;margin-top:12px;background:#d8ad45;color:#090909;text-decoration:none;font-weight:900;padding:11px 14px;border-radius:10px}
 </style>
 </head>
 <body>
@@ -71,6 +71,7 @@ select,input{width:100%;background:#0f0f0f;border:1px solid var(--line);color:#f
     <a href="admin-model.html">Model Admin</a>
     <a class="active" href="record-room.html?v=20260908-supabase-live-v38">Record Room</a>
     <button id="rrUpdateMatches" type="button" title="Load the full Record Room data tools and refresh saved match records">UPDATE MATCHES / LOAD DATA</button>
+    <button id="rrArchiveBsd" type="button" title="Run the protected BSD Record Room archive">ARCHIVE BSD NOW</button>
     <button id="recordRoomLogout" type="button">Sign out</button>
   </div>
 </div>
@@ -1018,6 +1019,38 @@ render();
       }catch(err){
         console.error('[NL4 Record Room] Update matches failed:',err);
         updateBtn.textContent='UPDATE FAILED — RETRY';updateBtn.disabled=false;updateBtn.dataset.busy='0';
+      }
+    });
+  }
+  const archiveBtn=document.getElementById('rrArchiveBsd');
+  if(archiveBtn){
+    archiveBtn.addEventListener('click',async()=>{
+      if(archiveBtn.dataset.busy==='1')return;
+      const confirmed=window.confirm('Run the BSD archive for the 2026/27 Premier League season? This saves a new source snapshot and updates the archive; it does not delete existing archive history.');
+      if(!confirmed)return;
+      archiveBtn.dataset.busy='1';archiveBtn.disabled=true;
+      const original='ARCHIVE BSD NOW';archiveBtn.textContent='ARCHIVING BSD…';
+      try{
+        const {data,error}=await db.functions.invoke('record-room-bsd-archive',{body:{}});
+        if(error)throw error;
+        if(data?.status==='rejected'){
+          const issues=Array.isArray(data.issues)?data.issues.join(', '):'source validation failed';
+          window.alert('BSD archive was safely rejected. No archive rows were written. Issues: '+issues);
+          archiveBtn.textContent='ARCHIVE REJECTED — REVIEW';
+        }else if(data?.status==='succeeded'){
+          window.alert('BSD archive completed successfully. Fixtures checked: '+(data.event_count??'—')+'. Newly archived: '+(data.inserted??'—')+'. Updated: '+(data.updated??'—')+'.');
+          archiveBtn.textContent='BSD ARCHIVE SUCCESS ✓';
+        }else{
+          window.alert('BSD archive returned an unexpected response. Check Supabase Edge Function logs before retrying.');
+          archiveBtn.textContent='CHECK ARCHIVE RESULT';
+        }
+      }catch(err){
+        console.error('[NL4 Record Room] BSD archive failed:',err);
+        const message=String(err?.message||err||'Unknown error');
+        window.alert('BSD archive did not complete. Existing archive history was not intentionally deleted. Check the record-room-bsd-archive function logs for details.\n\n'+message);
+        archiveBtn.textContent='ARCHIVE FAILED — RETRY';
+      }finally{
+        archiveBtn.disabled=false;archiveBtn.dataset.busy='0';
       }
     });
   }
