@@ -72,6 +72,7 @@ select,input{width:100%;background:#0f0f0f;border:1px solid var(--line);color:#f
     <a class="active" href="record-room.html?v=20260908-supabase-live-v38">Record Room</a>
     <button id="rrUpdateMatches" type="button" title="Load the full Record Room data tools and refresh saved match records">UPDATE MATCHES / LOAD DATA</button>
     <button id="rrArchiveBsd" type="button" title="Run the protected BSD Record Room archive">ARCHIVE BSD NOW</button>
+    <button id="rrEnrichBsd" type="button" title="Archive BSD match details, team stats, lineups, incidents and player stats without touching public match data">ENRICH BSD MATCH DATA</button>
     <button id="recordRoomLogout" type="button">Sign out</button>
   </div>
 </div>
@@ -1051,6 +1052,39 @@ render();
         archiveBtn.textContent='ARCHIVE FAILED — RETRY';
       }finally{
         archiveBtn.disabled=false;archiveBtn.dataset.busy='0';
+      }
+    });
+  }
+  const enrichBtn=document.getElementById('rrEnrichBsd');
+  if(enrichBtn){
+    enrichBtn.addEventListener('click',async()=>{
+      if(enrichBtn.dataset.busy==='1')return;
+      const confirmed=window.confirm('Run the BSD match-data enrichment for the full 2026/27 Premier League season? This archives raw BSD match details, team-stat endpoint responses, lineups, incidents and available player match stats in separate history tables. It does not edit public pages, canonical fixture data or existing Record Room match records.');
+      if(!confirmed)return;
+      enrichBtn.dataset.busy='1';enrichBtn.disabled=true;
+      enrichBtn.textContent='ENRICHING BSD…';
+      try{
+        const {data,error}=await db.functions.invoke('record-room-bsd-enrich',{body:{}});
+        if(error)throw error;
+        if(data?.status==='rejected'){
+          window.alert('BSD enrichment was safely rejected before writing. Reason: '+(data.reason||'source validation failed'));
+          enrichBtn.textContent='ENRICHMENT REJECTED — REVIEW';
+        }else if(data?.status==='succeeded'){
+          const counts=data.endpoint_counts||{};
+          const summary=Object.entries(counts).map(([k,v])=>k+': '+(v.ok||0)+' ok / '+(v.failed||0)+' failed').join('\n');
+          window.alert('BSD enrichment run completed.\nFixtures processed: '+(data.events_processed??'—')+'\nUnique players discovered: '+(data.unique_players_discovered??'—')+'\nHistorical resource rows saved: '+(data.resource_rows_written??'—')+'\nFailed resource requests recorded: '+(data.failed_resource_requests??'—')+'\n\nEndpoint coverage:\n'+summary+'\n\nNo public/canonical match data changed; no records deleted. Failed requests are recorded separately from successful empty responses.');
+          enrichBtn.textContent='BSD ENRICHMENT SUCCESS ✓';
+        }else{
+          window.alert('BSD enrichment returned an unexpected response. Check the record-room-bsd-enrich function logs before retrying.');
+          enrichBtn.textContent='CHECK ENRICHMENT RESULT';
+        }
+      }catch(err){
+        console.error('[NL4 Record Room] BSD enrichment failed:',err);
+        const message=String(err?.message||err||'Unknown error');
+        window.alert('BSD enrichment did not complete. Existing archive history was not intentionally deleted. Check the record-room-bsd-enrich function logs for details.\n\n'+message);
+        enrichBtn.textContent='ENRICHMENT FAILED — RETRY';
+      }finally{
+        enrichBtn.disabled=false;enrichBtn.dataset.busy='0';
       }
     });
   }
