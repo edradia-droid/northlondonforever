@@ -2893,27 +2893,57 @@ async function syncFootballDataNow() {
   const button = document.getElementById("syncFootballDataNowBtn");
   const message = document.getElementById("apiSyncMessage");
   if (!button || !db) return;
-  const old = button.textContent;
+  const oldLabel = button.textContent;
   button.disabled = true;
   button.textContent = "SYNCING BSD…";
-  if (message) setMessage(message, "Running protected BSD / BeSoccer EPL sync…");
+  if (message) setMessage(message, "Running protected BSD / BeSoccer EPL sync. Keep this page open; the final result will remain visible here.");
+  let syncData = null;
   try {
     const { data, error } = await db.functions.invoke("sync-football-data", {
       body: { preview: false, source: "admin-sync-now", history: true }
     });
-    if (error) throw error;
-    if (data?.error) throw new Error(data.error);
-    if (message) setMessage(message, "BSD sync accepted. Refreshing status…", "success");
-    await new Promise(resolve => setTimeout(resolve, 1200));
+    if (error) {
+      let detail = error?.message || String(error);
+      try {
+        if (error?.context && typeof error.context.clone === "function") {
+          const responseText = await error.context.clone().text();
+          if (responseText) detail += " | Response: " + responseText.slice(0, 1800);
+        }
+      } catch (_) {}
+      throw new Error(detail);
+    }
+    syncData = data || {};
+    if (syncData?.ok === false || syncData?.error) {
+      throw new Error(syncData.error || "The sync function returned ok:false.");
+    }
+
+    const standingsError = syncData?.leagueStandingsUpdated?.error;
+    const summary = [
+      "BSD sync response received.",
+      "Fixtures processed: " + (syncData.fixtures ?? "not reported"),
+      "Standings: " + (standingsError ? "FAILED — " + standingsError : (syncData.leagueStandingsUpdated?.rows === 20 ? "20 rows published" : JSON.stringify(syncData.leagueStandingsUpdated ?? "not reported"))),
+      "Response time: " + new Date().toLocaleString()
+    ].join(" ");
+    if (message) setMessage(message, summary, standingsError ? "error" : "success");
+
+    await new Promise(resolve => setTimeout(resolve, 700));
     await loadFootballApiSyncStatus();
-    await loadAll();
+    try {
+      await loadAll();
+      if (message && !standingsError) setMessage(message, summary + " Admin data refreshed.", "success");
+      else if (message && standingsError) setMessage(message, summary + " Other admin data refresh attempted; standings still need repair.", "error");
+    } catch (refreshError) {
+      console.error("BSD sync finished but admin data refresh failed:", refreshError);
+      if (message) setMessage(message, summary + " The sync response was received, but reloading other Admin data failed: " + (refreshError?.message || String(refreshError)), "error");
+    }
   } catch (error) {
-    console.error("Manual BSD sync failed:", error);
-    if (message) setMessage(message, `BSD sync failed: ${error.message}`, "error");
-    await loadFootballApiSyncStatus();
+    console.error("Manual BSD sync failed:", error, syncData);
+    const detail = error?.message || String(error);
+    if (message) setMessage(message, "BSD SYNC FAILED — " + detail + " | Time: " + new Date().toLocaleString(), "error");
+    try { await loadFootballApiSyncStatus(); } catch (_) {}
   } finally {
     button.disabled = false;
-    button.textContent = old;
+    button.textContent = oldLabel;
   }
 }
 
