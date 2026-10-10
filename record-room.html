@@ -1038,7 +1038,7 @@ render();
           window.alert('BSD archive was safely rejected. No archive rows were written. Issues: '+issues);
           archiveBtn.textContent='ARCHIVE REJECTED — REVIEW';
         }else if(data?.status==='succeeded'){
-          window.alert('BSD archive completed successfully. Fixtures checked: '+(data.event_count??'—')+'. Newly archived: '+(data.inserted??'—')+'. Updated: '+(data.updated??'—')+'.');
+          window.alert('BSD archive completed successfully. Fixtures checked: '+(data.event_count??'—')+'. Newly archived: '+(data.inserted_count??'—')+'. Updated: '+(data.updated_count??'—')+'.');
           archiveBtn.textContent='BSD ARCHIVE SUCCESS ✓';
         }else{
           window.alert('BSD archive returned an unexpected response. Check Supabase Edge Function logs before retrying.');
