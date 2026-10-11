@@ -1350,7 +1350,7 @@
       const start = row.minute_on ?? 0;
       const mins = Math.max(0, Math.min(90,end) - Math.min(90,start));
 
-      let timing = row.is_starter ? `${mins} min` : `ON ${start}'`;
+      let timing = row.is_starter ? `${mins} min` : (Number(start) > 0 ? 'ON ' + start + "'" : 'Unused substitute');
       if (row.minute_off !== null && row.minute_off !== undefined) {
         timing += ` • OFF ${row.minute_off}'`;
       }
