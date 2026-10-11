@@ -6,6 +6,7 @@ on:
     paths:
       - 'supabase/functions/sync-arsenal-pl-history/**'
       - 'supabase/functions/sync-football-data/**'
+      - 'supabase/functions/record-room-bsd-sync/**'
       - 'supabase/config.toml'
       - '.github/workflows/deploy-supabase-functions.yml'
 
@@ -31,3 +32,4 @@ jobs:
         run: |
           supabase functions deploy sync-arsenal-pl-history --project-ref "$SUPABASE_PROJECT_ID" --use-api
           supabase functions deploy sync-football-data --project-ref "$SUPABASE_PROJECT_ID" --use-api
+          supabase functions deploy record-room-bsd-sync --project-ref "$SUPABASE_PROJECT_ID" --use-api
