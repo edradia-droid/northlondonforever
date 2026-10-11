@@ -1079,6 +1079,12 @@ render();
           'Player-stat refresh: '+(report.player_stats_refresh??'—')
         ].join('\n');
         if(report.status==='failed')throw new Error(report.error||'The sync function reported failure');
+        try{
+          if(typeof window.NL4LoadRecordRoomMaintenance==='function')await window.NL4LoadRecordRoomMaintenance();
+          window.NL4FinalSquadHistorySync?.syncAll?.();
+          window.NL4CurrentSquadEnforcer?.enforceRecordRoom?.();
+          try{if(typeof render==='function')render();}catch(_){}
+        }catch(refreshError){console.warn('[NL4 Record Room] Data synced; immediate view refresh failed:',refreshError);}
         const warnings=Array.isArray(report.warnings)?report.warnings:[];
         window.alert('BSD → RECORD ROOM SYNC: '+String(report.status||'completed').toUpperCase()+'\n\n'+summary+'\n\nBSD API requests used: 0'+(warnings.length?'\n\nWarnings: '+warnings.slice(0,5).map(w=>w.reason||w.detail||JSON.stringify(w)).join(' | '):'')+'\n\nUpcoming fixtures were not changed.');
         syncBsdBtn.textContent=report.status==='partial'?'SYNC FINISHED — REVIEW WARNINGS':'BSD RECORD ROOM SYNC ✓';
@@ -1118,6 +1124,12 @@ render();
         const {data:published,error:publishError}=await db.functions.invoke('record-room-bsd-sync',{body:{event_ids:ids}});
         if(publishError)throw publishError;
         if(!published||published.status==='failed')throw new Error(published?.error||'BSD archive was saved, but Record Room publishing failed.');
+        try{
+          if(typeof window.NL4LoadRecordRoomMaintenance==='function')await window.NL4LoadRecordRoomMaintenance();
+          window.NL4FinalSquadHistorySync?.syncAll?.();
+          window.NL4CurrentSquadEnforcer?.enforceRecordRoom?.();
+          try{if(typeof render==='function')render();}catch(_){}
+        }catch(refreshError){console.warn('[NL4 Record Room] Selected BSD data synced; immediate view refresh failed:',refreshError);}
         const counts=data.endpoint_counts||{};
         const endpoints=Object.entries(counts).map(([k,v])=>k+': '+(v.ok||0)+' ok / '+(v.failed||0)+' failed').join('\n');
         window.alert('SELECTED BSD MATCHES PROCESSED\nEvent IDs: '+ids.join(', ')+'\n\nArchive rows saved: '+(data.resource_rows_written??'—')+'\nFailed resource requests: '+(data.failed_resource_requests??'—')+'\n\nRecord Room results synced: '+(published.results_synced??'—')+'\nStats synced: '+(published.stats_synced??'—')+'\nLineup rows synced: '+(published.lineups_synced??'—')+'\nGoals/cards synced: '+(published.events_synced??'—')+'\nSubstitutions synced: '+(published.substitutions_synced??'—')+'\n\nEndpoint coverage:\n'+endpoints+'\n\nOnly the selected event IDs were enriched; no full-season refresh was run.');
