@@ -2919,7 +2919,7 @@ async function syncFootballDataNow() {
   let syncData = null;
   try {
     const { data, error } = await db.functions.invoke("sync-football-data", {
-      body: { preview: false, source: "admin-sync-now", history: true }
+      body: { preview: false, source: "admin-sync-now", history: false }
     });
     if (error) {
       let detail = error?.message || String(error);
