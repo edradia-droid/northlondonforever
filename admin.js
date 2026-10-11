@@ -2919,7 +2919,7 @@ async function syncFootballDataNow() {
   let syncData = null;
   try {
     const { data, error } = await db.functions.invoke("sync-football-data", {
-      body: { preview: false, source: "admin-sync-now", history: false }
+      body: { preview: false, source: "admin-sync-now", history: false, core_only: true }
     });
     if (error) {
       let detail = error?.message || String(error);
@@ -2942,7 +2942,7 @@ async function syncFootballDataNow() {
 
     const standingsError = syncData?.leagueStandingsUpdated?.error;
     const summary = [
-      "BSD sync response received.",
+      "BSD core refresh response received (fixtures/results/incidents/current standings). Player and lineup enrichment is not part of this quick refresh.",
       "Fixtures processed: " + (syncData.fixtures ?? "not reported"),
       "Standings: " + (standingsError ? "FAILED — " + standingsError : (syncData.leagueStandingsUpdated?.rows === 20 ? "20 rows published" : JSON.stringify(syncData.leagueStandingsUpdated ?? "not reported"))),
       "Response time: " + new Date().toLocaleString()
