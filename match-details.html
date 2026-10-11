@@ -1765,14 +1765,48 @@
       els.statsHomeTeam.textContent = home;
       els.statsAwayTeam.textContent = away;
 
+      // Prefer the fixture's public stats; if they are missing, fall back to the
+      // Record Room stats row linked through source_fixture_id. This avoids a
+      // silent blank panel when the match stats were saved under the match UUID.
+      let statsSource = fixture;
+      const fixtureHasStats = [
+        fixture.home_possession, fixture.away_possession, fixture.home_shots,
+        fixture.away_shots, fixture.home_shots_on_target, fixture.away_shots_on_target,
+        fixture.home_corners, fixture.away_corners, fixture.home_fouls,
+        fixture.away_fouls, fixture.home_offsides, fixture.away_offsides,
+        fixture.home_saves, fixture.away_saves
+      ].some(value => value !== null && value !== undefined);
+      if (!fixtureHasStats) {
+        try {
+          const { data: rrMatch } = await db
+            .from("premier_league_matches")
+            .select("id")
+            .eq("source_fixture_id", fixture.id)
+            .limit(1)
+            .maybeSingle();
+          if (rrMatch?.id) {
+            const { data: rrStats } = await db
+              .from("record_room_match_stats")
+              .select("home_possession,away_possession,home_shots,away_shots,home_shots_on_target,away_shots_on_target,home_corners,away_corners,home_fouls,away_fouls,home_offsides,away_offsides,home_saves,away_saves")
+              .eq("match_id", rrMatch.id)
+              .maybeSingle();
+            if (rrStats) statsSource = { ...fixture, ...Object.fromEntries(
+              Object.entries(rrStats).filter(([, value]) => value !== null && value !== undefined)
+            ) };
+          }
+        } catch (statsFallbackError) {
+          console.warn("[NL4 Match Details] Record Room stats fallback unavailable:", statsFallbackError);
+        }
+      }
+
       const statRows = [
-        ["Possession", fixture.home_possession, fixture.away_possession, "%"],
-        ["Shots", fixture.home_shots, fixture.away_shots, ""],
-        ["Shots on Target", fixture.home_shots_on_target, fixture.away_shots_on_target, ""],
-        ["Corners", fixture.home_corners, fixture.away_corners, ""],
-        ["Fouls", fixture.home_fouls, fixture.away_fouls, ""],
-        ["Offsides", fixture.home_offsides, fixture.away_offsides, ""],
-        ["Saves", fixture.home_saves, fixture.away_saves, ""]
+        ["Possession", statsSource.home_possession, statsSource.away_possession, "%"],
+        ["Shots", statsSource.home_shots, statsSource.away_shots, ""],
+        ["Shots on Target", statsSource.home_shots_on_target, statsSource.away_shots_on_target, ""],
+        ["Corners", statsSource.home_corners, statsSource.away_corners, ""],
+        ["Fouls", statsSource.home_fouls, statsSource.away_fouls, ""],
+        ["Offsides", statsSource.home_offsides, statsSource.away_offsides, ""],
+        ["Saves", statsSource.home_saves, statsSource.away_saves, ""]
       ];
 
       const hasAnyStats = statRows.some(([,h,a]) =>
