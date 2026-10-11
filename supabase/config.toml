@@ -3,3 +3,6 @@ verify_jwt = false
 
 [functions.sync-football-data]
 verify_jwt = false
+
+[functions.record-room-bsd-sync]
+verify_jwt = true
