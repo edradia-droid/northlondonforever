@@ -27,7 +27,7 @@ function serverKey(){
 function json(x:any,s=200){ return new Response(JSON.stringify(x),{status:s,headers:{...corsHeaders,'Content-Type':'application/json'}}); }
 async function bsdLegacy(path:string,key:string){const r=await fetch(BSD_LEGACY+path,{headers:{Authorization:'Token '+key,Accept:'application/json'}});const txt=await r.text();let body:any;try{body=JSON.parse(txt)}catch{throw new Error('BSD returned non-JSON '+r.status)}if(!r.ok)throw new Error('BSD '+r.status+': '+JSON.stringify(body));return body;}
 const teamIdCache=new Map<string,number|null>();
-function normalizeTeamName(x:any){return String(x??'').trim().toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/\\b(?:a?fc|football club)\\b/g,'').replace(/[^a-z0-9]+/g,' ').trim();}
+function normalizeTeamName(x:any){return String(x??'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\b(?:a?fc|football club)\b/g,'').replace(/[^a-z0-9]+/g,' ').trim();}
 async function resolveTeamId(teamName:string,key:string){
   const k=normalizeTeamName(teamName);
   if(!k)return null;
@@ -41,6 +41,24 @@ async function resolveTeamId(teamName:string,key:string){
     return v;
   }catch{teamIdCache.set(k,null);return null}
 }
+// Seed BSD team IDs from NL4's verified fixture history first. This avoids a
+// separate BSD /teams lookup for every opponent on each scheduled sync.
+async function primeTeamIdCache(db:any){
+  teamIdCache.clear();
+  const q=await db.from('fixtures')
+    .select('home_team,away_team,home_team_id,away_team_id')
+    .eq('competition','Premier League')
+    .eq('is_published',true)
+    .limit(5000);
+  if(q.error) throw q.error;
+  for(const r of (q.data??[])){
+    const homeKey=normalizeTeamName(r.home_team), awayKey=normalizeTeamName(r.away_team);
+    const homeId=num(r.home_team_id), awayId=num(r.away_team_id);
+    if(homeKey&&homeId&&homeId>0&&!teamIdCache.has(homeKey)) teamIdCache.set(homeKey,homeId);
+    if(awayKey&&awayId&&awayId>0&&!teamIdCache.has(awayKey)) teamIdCache.set(awayKey,awayId);
+  }
+}
+
 async function backfillHistoricalFixtureTeamIds(db:any,key:string){
   const q=await db.from('fixtures').select('id,home_team,away_team,home_team_id,away_team_id').eq('competition','Premier League').eq('is_published',true);
   if(q.error)throw q.error;
@@ -58,12 +76,35 @@ async function backfillHistoricalFixtureTeamIds(db:any,key:string){
   }
   return {examined:rows.length,updated,unresolved,teamsResolved:ids.size};
 }
+// BSD_REQUEST_LOG_V1: request-level usage logging and quota circuit breaker.
+let bsdUsageDb:any=null;
+let bsdGuardBlocked=false;
 async function bsd(path:string,key:string){
-  const r=await fetch(BSD+path,{headers:{Authorization:'Token '+key,Accept:'application/json'}});
-  const txt=await r.text();
-  let body:any; try{body=JSON.parse(txt)}catch{throw new Error('BSD returned non-JSON '+r.status)}
-  if(!r.ok) throw new Error('BSD '+r.status+': '+JSON.stringify(body));
-  return body;
+  if(bsdGuardBlocked) throw new Error('BSD quota guard is active; external requests are paused.');
+  const started=Date.now();
+  let r:Response;
+  let txt='';
+  let body:any=null;
+  try {
+    r=await fetch(BSD+path,{headers:{Authorization:'Token '+key,Accept:'application/json'}});
+    txt=await r.text();
+    try{body=JSON.parse(txt)}catch{body={raw:txt.slice(0,500)}}
+  } catch(e) {
+    if(bsdUsageDb) { try { await bsdUsageDb.from('bsd_api_request_log').insert({function_name:'sync-football-data',endpoint:path,http_status:null,duration_ms:Date.now()-started,error_code:'fetch_error'}); } catch {} }
+    throw e;
+  }
+  const status=r.status;
+  const errorCode=String(body?.code??body?.error_code??(status===429?'http_429':(!r.ok?'http_'+status:'')))||null;
+  if(bsdUsageDb) { try { await bsdUsageDb.from('bsd_api_request_log').insert({function_name:'sync-football-data',endpoint:path,http_status:status,duration_ms:Date.now()-started,error_code:errorCode}); } catch(e) { console.error('BSD_REQUEST_LOG_WRITE_FAILED',String(e)); } }
+  if(status===429) {
+    bsdGuardBlocked=true;
+    const now=new Date();
+    const nextMidnight=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()+1));
+    if(bsdUsageDb) { try { await bsdUsageDb.from('bsd_api_quota_guard').upsert({id:1,blocked_until:nextMidnight.toISOString(),last_429_at:now.toISOString(),last_error_code:errorCode,updated_at:now.toISOString()},{onConflict:'id'}); } catch(e) { console.error('BSD_QUOTA_GUARD_WRITE_FAILED',String(e)); } }
+  }
+  let parsed:any; try{parsed=JSON.parse(txt)}catch{throw new Error('BSD returned non-JSON '+status)}
+  if(!r.ok) throw new Error('BSD '+status+': '+JSON.stringify(parsed));
+  return parsed;
 }
 // v155: BSD historical standings may be returned in `standings`.
 const arr=(x:any)=>Array.isArray(x)?x:(x?.standings??x?.results??x?.events??x?.players??x?.data??x?.incidents??[]);
@@ -104,8 +145,15 @@ async function fetchLeagueSeasonEvents(seasonId:any,key:string){
 
 function deriveLeagueStandingsFromEvents(events:any[]){
   const table=new Map<string,any>();
+  const canonicalClubName=(name:any)=>{
+    const raw=String(name??'').trim();
+    const key=normalizeTeamName(raw);
+    if(key==='bournemouth') return 'AFC Bournemouth';
+    if(key==='liverpool') return 'Liverpool';
+    return raw;
+  };
   const ensure=(name:any)=>{
-    const club=String(name??'').trim();
+    const club=canonicalClubName(name);
     if(!club) return null;
     const key=normalizeTeamName(club);
     if(!key) return null;
@@ -117,13 +165,15 @@ function deriveLeagueStandingsFromEvents(events:any[]){
     const awayObj=e?.away_team??e?.away??e?.teams?.away;
     const home=nm(homeObj)??e?.home_team_name;
     const away=nm(awayObj)??e?.away_team_name;
+    if(!home||!away) continue;
+    // Seed all 20 clubs from the full fixture list, even before their first match.
+    const h=ensure(home),a=ensure(away);
+    if(!h||!a) continue;
     const hs=num(e?.home_score??e?.score?.home??e?.scores?.home);
     const as=num(e?.away_score??e?.score?.away??e?.scores?.away);
     const raw=String(e?.status??e?.event_status??e?.state??'').toLowerCase();
     const finished=raw.includes('finish')||raw==='ft'||raw==='fulltime';
-    if(!home||!away||hs===null||as===null||!finished) continue;
-    const h=ensure(home),a=ensure(away);
-    if(!h||!a) continue;
+    if(hs===null||as===null||!finished) continue;
     h.played++;a.played++;
     h.goals_for+=hs;h.goals_against+=as;
     a.goals_for+=as;a.goals_against+=hs;
@@ -141,6 +191,14 @@ function deriveLeagueStandingsFromEvents(events:any[]){
   );
   if(rows.length!==20||new Set(rows.map((r:any)=>normalizeTeamName(r.club))).size!==20) throw new Error('BSD event-derived table did not contain exactly 20 unique clubs');
   return rows.map((r:any,i:number)=>({...r,position:i+1}));
+}
+
+async function syncCurrentLeagueStandings(db:any,key:string){
+  const events=await fetchLeagueSeasonEvents(SEASON_ID,key);
+  const rows=deriveLeagueStandingsFromEvents(events);
+  const published=await db.rpc('publish_premier_league_standings',{p_season:SEASON,p_rows:rows});
+  if(published.error) throw published.error;
+  return {season:SEASON,rows:20,source:'BSD events',eventsFetched:events.length,publication:published.data};
 }
 
 async function syncHistoricalStandings(db:any,key:string){
@@ -187,47 +245,53 @@ async function syncHistoricalStandings(db:any,key:string){
       const clubs=new Set(rows.map((x:any)=>normalizeTeamName(x.club)));
       if(rows.length!==20||positions.size!==20||clubs.size!==20||[...positions].some((p:any)=>p<1||p>20)) throw new Error('invalid BSD table');
 
-      const old=await db.from('premier_league_standings').select('id,club').eq('season',label);
-      if(old.error) throw old.error;
-      if((old.data??[]).length){
-        for(let i=0;i<(old.data??[]).length;i++){
-          const b=await db.from('premier_league_standings').update({position:1000+i}).eq('id',(old.data??[])[i].id);
-          if(b.error) throw b.error;
+      if(start===latestStart){
+        const published=await db.rpc('publish_premier_league_standings',{p_season:label,p_rows:rows});
+        if(published.error) throw published.error;
+      }else{
+        const old=await db.from('premier_league_standings').select('id,club').eq('season',label);
+        if(old.error) throw old.error;
+        if((old.data??[]).length){
+          for(let i=0;i<(old.data??[]).length;i++){
+            const b=await db.from('premier_league_standings').update({position:1000+i}).eq('id',(old.data??[])[i].id);
+            if(b.error) throw b.error;
+          }
         }
-      }
-      const byClub=new Map((old.data??[]).map((x:any)=>[normalizeTeamName(x.club),x.id]));
-      const kept=new Set<string>();
-      for(const row of rows){
-        const data:any={
-          season:label,
-          position:Number(row.position),
-          club:String(row.club).trim(),
-          played:row.played??0,
-          wins:row.wins??0,
-          draws:row.draws??0,
-          losses:row.losses??0,
-          goals_for:row.goals_for??0,
-          goals_against:row.goals_against??0,
-          goal_difference:row.goal_difference??0,
-          points:row.points??0,
-          updated_at:new Date().toISOString()
-        };
-        const existingId=byClub.get(normalizeTeamName(data.club));
-        if(existingId){
-          const u=await db.from('premier_league_standings').update(data).eq('id',existingId);
-          if(u.error) throw u.error;
-          kept.add(String(existingId));
-        }else{
-          const u=await db.from('premier_league_standings').insert(data).select('id').single();
-          if(u.error) throw u.error;
-          kept.add(String(u.data.id));
+        const byClub=new Map((old.data??[]).map((x:any)=>[normalizeTeamName(x.club),x.id]));
+        const kept=new Set<string>();
+        for(const row of rows){
+          const data:any={
+            season:label,
+            position:Number(row.position),
+            club:String(row.club).trim(),
+            played:row.played??0,
+            wins:row.wins??0,
+            draws:row.draws??0,
+            losses:row.losses??0,
+            goals_for:row.goals_for??0,
+            goals_against:row.goals_against??0,
+            goal_difference:row.goal_difference??0,
+            points:row.points??0,
+            updated_at:new Date().toISOString()
+          };
+          const existingId=byClub.get(normalizeTeamName(data.club));
+          if(existingId){
+            const u=await db.from('premier_league_standings').update(data).eq('id',existingId);
+            if(u.error) throw u.error;
+            kept.add(String(existingId));
+          }else{
+            const u=await db.from('premier_league_standings').insert(data).select('id').single();
+            if(u.error) throw u.error;
+            kept.add(String(u.data.id));
+          }
         }
-      }
-      for(const row of(old.data??[])){
-        if(!kept.has(String(row.id))){
-          const d=await db.from('premier_league_standings').delete().eq('id',row.id);
-          if(d.error) throw d.error;
+        for(const row of(old.data??[])){
+          if(!kept.has(String(row.id))){
+            const d=await db.from('premier_league_standings').delete().eq('id',row.id);
+            if(d.error) throw d.error;
+          }
         }
+  
       }
       const arsenal=rows.find((x:any)=>/^arsenal(?: fc)?$/i.test(String(x.club).trim()));
       if(!arsenal) throw new Error('validated BSD table does not contain Arsenal for '+label);
@@ -266,6 +330,7 @@ async function syncRootPlayerStats(db:any,arsenalId:any,key:string){
   if(completedForStats.error)throw completedForStats.error;
   const canonicalEventIds=new Set((completedForStats.data??[]).map((r:any)=>String(r.external_fixture_id).replace(/^bsd:/,'')));
   const byPlayer=new Map<string,any>();
+  const playersWithEventEvidence=new Set<string>();
   for(const p of players){
     const playerKey=String(p.id);
     let rows=playerStatsRequestCache.get(playerKey);
@@ -286,6 +351,7 @@ async function syncRootPlayerStats(db:any,arsenalId:any,key:string){
       if(!canonicalEventIds.has(ek)) continue;
       if(seen.has(ek))continue;
       seen.add(ek);
+      playersWithEventEvidence.add(keyOf(p.name));
       // Participation is NOT derived from BSD player-stat rows here.
       // It is reconciled later from confirmed match lineups so bench/aggregate rows
       // cannot create false appearances, starts or minutes.
@@ -302,7 +368,7 @@ async function syncRootPlayerStats(db:any,arsenalId:any,key:string){
     // Confirmed lineups are the sole source for participation reconciliation.
     byPlayer.set(keyOf(p.name),a);
   }
-  const active=[...byPlayer.values()].filter((a:any)=>Number(a.appearances||0)>0);
+  const active=[...byPlayer.values()].filter((a:any)=>playersWithEventEvidence.has(keyOf(a.player_name)));
   const completed=await db.from('fixtures').select('home_team,away_team,home_score,away_score').eq('season',SEASON).eq('competition','Premier League').eq('status','fulltime').or('home_team.eq.Arsenal,away_team.eq.Arsenal');if(completed.error)throw completed.error;
   const rows=completed.data??[],expectedGoals=rows.reduce((s:number,r:any)=>s+(String(r.home_team)==='Arsenal'?Number(r.home_score||0):Number(r.away_score||0)),0),rootGoals=[...byPlayer.values()].reduce((s:number,a:any)=>s+Number(a.goals||0),0),rootAssists=[...byPlayer.values()].reduce((s:number,a:any)=>s+Number(a.assists||0),0);
   // Guard the statistical feed itself, but never use player-stat minutes to validate participation.
@@ -321,20 +387,46 @@ async function syncRootPlayerStats(db:any,arsenalId:any,key:string){
 
 async function syncArsenalLineups(db:any,eventRows:any[],key:string,includeSpatial=false){const completed=eventRows.filter((e:any)=>{const home=nm(e?.home_team??e?.home??e?.teams?.home),away=nm(e?.away_team??e?.away??e?.teams?.away);const hs=num(e?.home_score??e?.score?.home??e?.scores?.home),as=num(e?.away_score??e?.score?.away??e?.scores?.away);return home&&away&&(home==='Arsenal'||away==='Arsenal')&&hs!==null&&as!==null});let synced=0,rejected=0;for(const e of completed){const eid=String(id(e));const fx=await db.from('fixtures').select('id,home_team,away_team,lineup_formation').eq('external_fixture_id','bsd:'+eid).maybeSingle();if(fx.error)throw fx.error;if(!fx.data?.id)continue;const lineupKey=key;
       let body:any=null;
-      for(const path of ['/events/'+eid+'/lineups/','/matches/'+eid+'/lineups/','/fixtures/'+eid+'/lineups/']){
+      // Prefer previously archived BSD lineup data before making another provider request.
+      // The archive is source data, not a substitute or generated lineup.
+      try {
+        const archived = await db.from('record_room_bsd_archive_resources')
+          .select('raw_payload,http_status,fetch_error,captured_at')
+          .eq('source_event_id',eid).eq('resource_type','lineups').eq('http_status',200)
+          .order('captured_at',{ascending:false}).limit(1).maybeSingle();
+        if(!archived.error && archived.data?.raw_payload) {
+          const ar=archived.data.raw_payload?.data??archived.data.raw_payload;
+          const sides=ar?.lineups??ar;
+          const home=sides?.home??sides?.teams?.home;
+          const away=sides?.away??sides?.teams?.away;
+          const validSide=(s:any)=>Array.isArray(s?.players)&&s.players.length===11&&Array.isArray(s?.substitutes)&&s.substitutes.length===9;
+          if(validSide(home)&&validSide(away)) body=archived.data.raw_payload;
+        }
+      } catch(archiveError) {
+        console.log('BSD_LINEUP_ARCHIVE_READ_FAILED',JSON.stringify({eventId:eid,error:String(archiveError)}));
+      }
+      if(!body) for(const path of ['/events/'+eid+'/lineups/','/matches/'+eid+'/lineups/','/fixtures/'+eid+'/lineups/']){
         try{body=await bsd(path,lineupKey);break;}catch{}
       }
       if(!body){try{body=await bsdLegacy('/events/'+eid+'/lineups/',lineupKey);}catch{}}
       if(!body)continue;const root=body?.data??body;const findFormation=(x:any,d=0):string|null=>{if(x==null||d>4)return null;if(typeof x==='string'){const s=x.trim();return /^\\d-\\d(?:-\\d){1,3}$/.test(s)?s:null;}if(Array.isArray(x)){for(const v of x){const f=findFormation(v,d+1);if(f)return f;}return null;}if(typeof x!=='object')return null;for(const k of ['formation','lineup_formation','tactical_formation','formations','home_formation','away_formation','tactics','tactical']){if(x[k]!=null){const f=findFormation(x[k],d+1);if(f)return f;}}for(const k of Object.keys(x)){const f=findFormation(x[k],d+1);if(f)return f;}return null;};let globalFormation=findFormation(root)??fx.data.lineup_formation??null;if(!globalFormation){try{const detail=await bsd('/events/'+eid+'/',key);globalFormation=findFormation(detail?.data??detail);}catch{}}const lineups=root?.lineups??root;
       const sideRows=(side:any)=>{
         const formation=side?.formation??side?.lineup_formation??side?.tactical_formation??side?.team?.formation??globalFormation??null;
-        if(Array.isArray(side?.players)){
-          const starters=side.players.map((x:any)=>({...x,__lineupStarter:true}));
-          const bench=Array.isArray(side?.substitutes)?side.substitutes.map((x:any)=>({...x,__lineupStarter:false})):[];
+        const starterKey=['players','starting_xi','startingXI','starting_lineup','starters','starting'].find((k:string)=>Array.isArray(side?.[k]));
+        const benchKey=['substitutes','bench','substitute_players','reserves'].find((k:string)=>Array.isArray(side?.[k]));
+        if(starterKey){
+          const starters=(side[starterKey] as any[]).map((x:any)=>({...x,__lineupStarter:true}));
+          const bench=benchKey?(side[benchKey] as any[]).map((x:any)=>({...x,__lineupStarter:false})):[];
           return {rows:[...starters,...bench],implicitStarter:false,formation};
         }
-        for(const k of ['lineup','bench','substitutes','starting_xi','startingXI','starting_lineup','starters','starting']){
-          if(Array.isArray(side?.[k])) return {rows:side[k],implicitStarter:k==='starting_xi'||k==='startingXI'||k==='starting_lineup'||k==='starters'||k==='starting',formation};
+        // Some BSD responses split "lineup" and "bench" instead of "players" and "substitutes".
+        if(Array.isArray(side?.lineup)&&benchKey){
+          const starters=(side.lineup as any[]).map((x:any)=>({...x,__lineupStarter:true}));
+          const bench=(side[benchKey] as any[]).map((x:any)=>({...x,__lineupStarter:false}));
+          return {rows:[...starters,...bench],implicitStarter:false,formation};
+        }
+        for(const k of ['lineup','bench','substitutes','substitute_players','reserves']){
+          if(Array.isArray(side?.[k])) return {rows:side[k],implicitStarter:false,formation};
         }
         return {rows:arr(side),implicitStarter:false,formation};
       };
@@ -371,7 +463,7 @@ async function syncArsenalLineups(db:any,eventRows:any[],key:string,includeSpati
           pl?.position ??
           pl?.pos ??
           null;
-        const BSD_FORMATION_ORDERS:any={'4-2-3-1':['GK','RB','RCB','LCB','LB','RDM','LDM','RW','CAM','LW','ST'],'4-3-3':['GK','RB','RCB','LCB','LB','RCM','CM','LCM','RW','ST','LW'],'4-4-2':['GK','RB','RCB','LCB','LB','RM','RCM','LCM','LM','RST','LST'],'4-1-4-1':['GK','RB','RCB','LCB','LB','DM','RM','RCM','LCM','LM','ST'],'4-5-1':['GK','RB','RCB','LCB','LB','RM','RDM','CAM','LDM','LM','ST'],'3-4-3':['GK','RCB','CB','LCB','RWB','RCM','LCM','LWB','RW','ST','LW'],'3-5-2':['GK','RCB','CB','LCB','RWB','RCM','CM','LCM','LWB','RST','LST']};
+        const BSD_FORMATION_ORDERS:any={'4-2-3-1':['GK','RB','RCB','LCB','LB','LDM','RDM','RW','CAM','LW','ST'],'4-3-3':['GK','RB','RCB','LCB','LB','RCM','CM','LCM','RW','ST','LW'],'4-4-2':['GK','RB','RCB','LCB','LB','RM','RCM','LCM','LM','RST','LST'],'4-1-4-1':['GK','RB','RCB','LCB','LB','DM','RM','RCM','LCM','LM','ST'],'4-5-1':['GK','RB','RCB','LCB','LB','RM','RDM','CAM','LDM','LM','ST'],'3-4-3':['GK','RCB','CB','LCB','RWB','RCM','LCM','LWB','RW','ST','LW'],'3-5-2':['GK','RCB','CB','LCB','RWB','RCM','CM','LCM','LWB','RST','LST'],'3-4-2-1':['GK','RCB','CB','LCB','RWB','LCM','RCM','LWB','LAM','RAM','ST'],'3-4-1-2':['GK','RCB','CB','LCB','RWB','RCM','LCM','LWB','CAM','RST','LST'],'5-3-2':['GK','RWB','RCB','CB','LCB','LWB','RCM','CM','LCM','RST','LST'],'5-4-1':['GK','RWB','RCB','CB','LCB','LWB','RM','RCM','LCM','LM','ST'],'5-2-3':['GK','RWB','RCB','CB','LCB','LWB','RDM','LDM','RW','ST','LW'],'4-2-2-2':['GK','RB','RCB','LCB','LB','RDM','LDM','RAM','LAM','RST','LST'],'4-3-2-1':['GK','RB','RCB','LCB','LB','RCM','CM','LCM','RAM','LAM','ST'],'4-1-2-1-2':['GK','RB','RCB','LCB','LB','DM','RCM','LCM','CAM','RST','LST'],'4-3-1-2':['GK','RB','RCB','LCB','LB','RCM','CM','LCM','CAM','RST','LST'],'4-2-4':['GK','RB','RCB','LCB','LB','RDM','LDM','RW','RST','LST','LW']};
 function extractPositionCandidates(x:any):any[]{const out:any[]=[];const seen=new Set<any>();const walk=(v:any,d=0)=>{if(v==null||d>4)return;if(typeof v==='string'||typeof v==='number'){out.push(v);return;}if(typeof v!=='object'||seen.has(v))return;seen.add(v);for(const k of ['tactical_position','position_detail','position_code','position_name','preferred_position','primary_position','playing_position','role','position','positions','tactical','details'])if(v[k]!=null)walk(v[k],d+1);};walk(x);return out;}
 function normalizeTacticalPosition(value:any){for(const candidate of extractPositionCandidates(value)){const v=String(candidate).trim().toUpperCase().replace(/[‐-‒–—]/g,'-').replace(/\s+/g,' ');if(['RB','RIGHT BACK','RIGHT-BACK'].includes(v))return'RB';if(['LB','LEFT BACK','LEFT-BACK'].includes(v))return'LB';if(['RWB','RIGHT WING BACK','RIGHT-WING-BACK'].includes(v))return'RWB';if(['LWB','LEFT WING BACK','LEFT-WING-BACK'].includes(v))return'LWB';if(['RCB','RIGHT CENTRE-BACK','RIGHT CENTER-BACK','RIGHT CENTRE BACK','RIGHT CENTER BACK'].includes(v))return'RCB';if(['LCB','LEFT CENTRE-BACK','LEFT CENTER-BACK','LEFT CENTRE BACK','LEFT CENTER BACK'].includes(v))return'LCB';if(['CB','CENTRE-BACK','CENTER-BACK','CENTRE BACK','CENTER BACK'].includes(v))return'CB';if(['GK','G','GOALKEEPER'].includes(v))return'GK';if(['DM','CDM','DEFENSIVE MIDFIELDER'].includes(v))return'DM';if(['LDM','LEFT DM','LEFT DEFENSIVE MIDFIELDER'].includes(v))return'LDM';if(['RDM','RIGHT DM','RIGHT DEFENSIVE MIDFIELDER'].includes(v))return'RDM';if(['LM','LEFT MIDFIELDER','LEFT MIDFIELD'].includes(v))return'LM';if(['RM','RIGHT MIDFIELDER','RIGHT MIDFIELD'].includes(v))return'RM';if(['LW','LEFT WINGER','LEFT WING'].includes(v))return'LW';if(['RW','RIGHT WINGER','RIGHT WING'].includes(v))return'RW';if(['ST','STRIKER','CENTRE FORWARD','CENTER FORWARD'].includes(v))return'ST';if(['LST','LEFT STRIKER'].includes(v))return'LST';if(['RST','RIGHT STRIKER'].includes(v))return'RST';if(['CAM','AM','ATTACKING MIDFIELDER'].includes(v))return'CAM';if(['LCM','LEFT CENTRAL MIDFIELDER'].includes(v))return'LCM';if(['RCM','RIGHT CENTRAL MIDFIELDER'].includes(v))return'RCM';if(['CM','CENTRAL MIDFIELDER','CENTRE MIDFIELDER','CENTER MIDFIELDER'].includes(v))return'CM';}return null;}
 function deriveFormationSlot(formation:any,index:number){const order=BSD_FORMATION_ORDERS[String(formation??'').trim()];return order&&order[index]?order[index]:null;}
@@ -542,12 +634,19 @@ const legacyNormalizeTacticalPosition=(value:any)=>{
 if(effectiveFormation){
   const formationUpdate=await db.from('fixtures').update({lineup_formation:effectiveFormation,updated_at:new Date().toISOString()}).eq('id',fx.data.id);
   if(formationUpdate.error)throw formationUpdate.error;
-}const deduped=new Map<string,any>();for(const row of all){const k=String(row.team)+'|'+canonicalPlayerName(row.name).toLowerCase();if(!deduped.has(k))deduped.set(k,row);}const cleanRows=[...deduped.values()];const starterRows=cleanRows.filter((x:any)=>x.starter);const cleanHomeStarters=cleanRows.filter((x:any)=>x.team===fx.data.home_team&&x.starter).length;const cleanAwayStarters=cleanRows.filter((x:any)=>x.team===fx.data.away_team&&x.starter).length;if(cleanHomeStarters!==11||cleanAwayStarters!==11){console.log('BSD_LINEUP_REJECT_DEDUP',JSON.stringify({fixture:eid,rows:cleanRows.length,starters:starterRows.length,cleanHomeStarters,cleanAwayStarters}));rejected++;continue;}const lineupPayload=cleanRows.map((x:any)=>({fixture_id:fx.data.id,player_name:canonicalPlayerName(x.name),position:x.position,formation:x.formation??effectiveFormation,pitch_slot:x.pitch_slot,position_x:x.position_x,position_y:x.position_y,is_starter:x.starter,minute_on:x.on??0,minute_off:x.off??null,source_order:x.source_order??null,team_name:x.team,updated_at:new Date().toISOString()}));const ins=await db.from('match_lineups').upsert(lineupPayload,{onConflict:'fixture_id,team_name,player_name'});if(ins.error)throw ins.error;const validKeys=new Set(lineupPayload.map((x:any)=>String(x.team_name)+'|'+String(x.player_name).toLowerCase()));const existingAfter=await db.from('match_lineups').select('id,team_name,player_name').eq('fixture_id',fx.data.id);if(existingAfter.error)throw existingAfter.error;for(const oldRow of(existingAfter.data??[])){const key=String(oldRow.team_name)+'|'+String(oldRow.player_name).toLowerCase();if(!validKeys.has(key)){const del=await db.from('match_lineups').delete().eq('id',oldRow.id);if(del.error)throw del.error;}}synced++;}return{lineupsSynced:synced,lineupsRejected:rejected,completedArsenalMatches:completed.length};}
-async function reconcileParticipationFromLineups(db:any){const fx=await db.from('fixtures').select('id').eq('season',SEASON).eq('competition','Premier League').eq('status','fulltime').or('home_team.eq.Arsenal,away_team.eq.Arsenal');if(fx.error)throw fx.error;const ids=(fx.data??[]).map((r:any)=>String(r.id));if(!ids.length)return{participationUpdated:0,coverage:false};const lu=await db.from('match_lineups').select('id,fixture_id,player_name,is_starter,minute_on,minute_off').in('fixture_id',ids).eq('team_name','Arsenal');if(lu.error)throw lu.error;const events=await db.from('match_events').select('fixture_id,minute,player_name,related_player_name,event_type,team_name').in('fixture_id',ids).eq('event_type','substitution').eq('team_name','Arsenal');if(events.error)throw events.error;const norm=(v:any)=>String(v??'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[øØ]/g,'o').replace(/[^a-z0-9]+/gi,' ').trim().toLowerCase().split(' ').filter(Boolean);const samePlayer=(a:any,b:any)=>{const ca=norm(canonicalPlayerName(a)),cb=norm(canonicalPlayerName(b));if(ca.length&&cb.length&&ca.join(' ')===cb.join(' '))return true;const aa=norm(a),bb=norm(b);if(!aa.length||!bb.length)return false;if(aa.join(' ')===bb.join(' '))return true;if(aa.length>=2&&bb.length>=2){const surname=aa[aa.length-1]===bb[bb.length-1],initial=aa[0]===bb[0];return surname&&initial;}return false};for(const ev of(events.data??[])){const rows=(lu.data??[]).filter((r:any)=>String(r.fixture_id)===String(ev.fixture_id));for(const r of rows){if(r.is_starter){r.minute_on=0;}}const incoming=rows.find((r:any)=>samePlayer(r.player_name,ev.player_name));const outgoing=rows.find((r:any)=>samePlayer(r.player_name,ev.related_player_name));const minute=num(ev.minute);if(minute===null)continue;if(incoming){const u=await db.from('match_lineups').update({is_starter:false,minute_on:minute,updated_at:new Date().toISOString()}).eq('id',incoming.id);if(u.error)throw u.error;incoming.is_starter=false;incoming.minute_on=minute;}if(outgoing){const u=await db.from('match_lineups').update({is_starter:true,minute_off:minute,updated_at:new Date().toISOString()}).eq('id',outgoing.id);if(u.error)throw u.error;outgoing.is_starter=true;outgoing.minute_off=minute;}}const byFixture=new Map<string,any[]>();for(const r of(lu.data??[])){const k=String(r.fixture_id);if(!byFixture.has(k))byFixture.set(k,[]);byFixture.get(k)!.push(r);}if(ids.some((id:string)=>((byFixture.get(id)??[]).filter((r:any)=>r.is_starter).length!==11)))return{participationUpdated:0,coverage:false,reason:'incomplete_lineup_coverage'};const agg=new Map<string,{appearances:number,starts:number,minutes:number}>();for(const rows of byFixture.values())for(const r of rows){const on=num(r.minute_on),off=num(r.minute_off),played=Boolean(r.is_starter)||((on??0)>0);if(!played)continue;const mins=Math.max(0,(off??90)-(on??0)),key=canonicalPlayerName(r.player_name).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),a=agg.get(key)??{appearances:0,starts:0,minutes:0};a.appearances++;a.starts+=r.is_starter?1:0;a.minutes+=mins;agg.set(key,a);}const existing=await db.from('premier_league_player_stats').select('player_name').eq('season',SEASON);if(existing.error)throw existing.error;let updated=0;for(const r of(existing.data??[])){const key=canonicalPlayerName(r.player_name).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),a=agg.get(key)??{appearances:0,starts:0,minutes:0};const u=await db.from('premier_league_player_stats').update({...a,updated_at:new Date().toISOString()}).eq('season',SEASON).eq('player_name',r.player_name);if(u.error)throw u.error;const rr=await db.from('record_room_players').update({...a,updated_at:new Date().toISOString()}).eq('season',SEASON).eq('club','Arsenal').eq('player_name',r.player_name);if(rr.error)throw rr.error;updated++;}return{participationUpdated:updated,coverage:true};}
+}const deduped=new Map<string,any>();for(const row of all){const k=String(row.team)+'|'+canonicalPlayerName(row.name).toLowerCase();if(!deduped.has(k))deduped.set(k,row);}const cleanRows=[...deduped.values()];const starterRows=cleanRows.filter((x:any)=>x.starter);const cleanHomeStarters=cleanRows.filter((x:any)=>x.team===fx.data.home_team&&x.starter).length;const cleanAwayStarters=cleanRows.filter((x:any)=>x.team===fx.data.away_team&&x.starter).length;const cleanHomeBench=cleanRows.filter((x:any)=>x.team===fx.data.home_team&&!x.starter).length;const cleanAwayBench=cleanRows.filter((x:any)=>x.team===fx.data.away_team&&!x.starter).length;if(cleanHomeStarters!==11||cleanAwayStarters!==11){console.log('BSD_LINEUP_REJECT_DEDUP',JSON.stringify({fixture:eid,rows:cleanRows.length,starters:starterRows.length,cleanHomeStarters,cleanAwayStarters}));rejected++;continue;}if(cleanHomeBench!==9||cleanAwayBench!==9){console.log('BSD_LINEUP_REJECT_INCOMPLETE_BENCH',JSON.stringify({fixture:eid,cleanHomeBench,cleanAwayBench,expectedBenchPerSide:9,action:'preserved existing published lineup'}));rejected++;continue;}const lineupPayload=cleanRows.map((x:any)=>({fixture_id:fx.data.id,player_name:canonicalPlayerName(x.name),position:x.position,formation:x.formation??effectiveFormation,pitch_slot:x.pitch_slot,position_x:x.position_x,position_y:x.position_y,is_starter:x.starter,minute_on:x.on??0,minute_off:x.off??null,source_order:x.source_order??null,team_name:x.team,updated_at:new Date().toISOString()}));const ins=await db.from('match_lineups').upsert(lineupPayload,{onConflict:'fixture_id,team_name,player_name'});if(ins.error)throw ins.error;const validKeys=new Set(lineupPayload.map((x:any)=>String(x.team_name)+'|'+String(x.player_name).toLowerCase()));const existingAfter=await db.from('match_lineups').select('id,team_name,player_name').eq('fixture_id',fx.data.id);if(existingAfter.error)throw existingAfter.error;for(const oldRow of(existingAfter.data??[])){const key=String(oldRow.team_name)+'|'+String(oldRow.player_name).toLowerCase();if(!validKeys.has(key)){const del=await db.from('match_lineups').delete().eq('id',oldRow.id);if(del.error)throw del.error;}}synced++;}return{lineupsSynced:synced,lineupsRejected:rejected,completedArsenalMatches:completed.length};}
+async function reconcileParticipationFromLineups(db:any){const fx=await db.from('fixtures').select('id').eq('season',SEASON).eq('competition','Premier League').eq('status','fulltime').or('home_team.eq.Arsenal,away_team.eq.Arsenal');if(fx.error)throw fx.error;const ids=(fx.data??[]).map((r:any)=>String(r.id));if(!ids.length)return{participationUpdated:0,coverage:false};const lu=await db.from('match_lineups').select('id,fixture_id,player_name,is_starter,minute_on,minute_off').in('fixture_id',ids).eq('team_name','Arsenal');if(lu.error)throw lu.error;const events=await db.from('match_events').select('fixture_id,minute,player_name,related_player_name,event_type,team_name').in('fixture_id',ids).eq('event_type','substitution').eq('team_name','Arsenal');if(events.error)throw events.error;const norm=(v:any)=>String(v??'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[øØ]/g,'o').replace(/[^a-z0-9]+/gi,' ').trim().toLowerCase().split(' ').filter(Boolean);const samePlayer=(a:any,b:any)=>{const ca=norm(canonicalPlayerName(a)),cb=norm(canonicalPlayerName(b));if(ca.length&&cb.length&&ca.join(' ')===cb.join(' '))return true;const aa=norm(a),bb=norm(b);if(!aa.length||!bb.length)return false;if(aa.join(' ')===bb.join(' '))return true;if(aa.length>=2&&bb.length>=2){const surname=aa[aa.length-1]===bb[bb.length-1],firstMatches=aa[0]===bb[0]||aa[0].startsWith(bb[0])||bb[0].startsWith(aa[0]);return surname&&firstMatches;}return false};for(const ev of(events.data??[])){const rows=(lu.data??[]).filter((r:any)=>String(r.fixture_id)===String(ev.fixture_id));for(const r of rows){if(r.is_starter){r.minute_on=0;}}const incoming=rows.find((r:any)=>samePlayer(r.player_name,ev.player_name));const outgoing=rows.find((r:any)=>samePlayer(r.player_name,ev.related_player_name));const minute=num(ev.minute);if(minute===null)continue;if(incoming){const u=await db.from('match_lineups').update({is_starter:false,minute_on:minute,updated_at:new Date().toISOString()}).eq('id',incoming.id);if(u.error)throw u.error;incoming.is_starter=false;incoming.minute_on=minute;}if(outgoing){const u=await db.from('match_lineups').update({is_starter:true,minute_off:minute,updated_at:new Date().toISOString()}).eq('id',outgoing.id);if(u.error)throw u.error;outgoing.is_starter=true;outgoing.minute_off=minute;}}const byFixture=new Map<string,any[]>();for(const r of(lu.data??[])){const k=String(r.fixture_id);if(!byFixture.has(k))byFixture.set(k,[]);byFixture.get(k)!.push(r);}if(ids.some((id:string)=>((byFixture.get(id)??[]).filter((r:any)=>r.is_starter).length!==11)))return{participationUpdated:0,coverage:false,reason:'incomplete_lineup_coverage'};const agg=new Map<string,{appearances:number,starts:number,minutes:number}>();for(const rows of byFixture.values())for(const r of rows){const on=num(r.minute_on),off=num(r.minute_off),played=Boolean(r.is_starter)||((on??0)>0);if(!played)continue;const mins=Math.max(0,(off??90)-(on??0)),key=canonicalPlayerName(r.player_name).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),a=agg.get(key)??{appearances:0,starts:0,minutes:0};a.appearances++;a.starts+=r.is_starter?1:0;a.minutes+=mins;agg.set(key,a);}const existing=await db.from('premier_league_player_stats').select('player_name').eq('season',SEASON);if(existing.error)throw existing.error;let updated=0;for(const r of(existing.data??[])){const key=canonicalPlayerName(r.player_name).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),a=agg.get(key)??{appearances:0,starts:0,minutes:0};const u=await db.from('premier_league_player_stats').update({...a,updated_at:new Date().toISOString()}).eq('season',SEASON).eq('player_name',r.player_name);if(u.error)throw u.error;const rr=await db.from('record_room_players').update({...a,updated_at:new Date().toISOString()}).eq('season',SEASON).eq('club','Arsenal').eq('player_name',r.player_name);if(rr.error)throw rr.error;updated++;}return{participationUpdated:updated,coverage:true};}
 
 async function syncArsenalTeamStatsCanonical(db:any){
  const {data,error}=await db.from('fixtures').select('home_team,away_team,home_score,away_score,home_possession,away_possession,home_shots,away_shots,home_shots_on_target,away_shots_on_target,home_corners,away_corners,home_fouls,away_fouls,home_offsides,away_offsides').eq('season',SEASON).eq('competition','Premier League').eq('status','fulltime').or('home_team.eq.Arsenal,away_team.eq.Arsenal');
  if(error)throw error;if(!data?.length)throw new Error('No completed Arsenal Premier League fixtures');
+ const requiredStats=['home_possession','away_possession','home_shots','away_shots','home_shots_on_target','away_shots_on_target','home_corners','away_corners','home_fouls','away_fouls','home_offsides','away_offsides'];
+ const incomplete=data.filter((r:any)=>requiredStats.some((k:string)=>r[k]===null||r[k]===undefined));
+ if(incomplete.length){
+   const summary={matches:data.length,skipped:'incomplete_source_stats',fixturesMissingStats:incomplete.length};
+   console.warn('ARSENAL_TEAM_STATS_REFRESH_SKIPPED_INCOMPLETE_SOURCE',JSON.stringify(summary));
+   return summary;
+ }
  const n=(v:any)=>v==null?0:Number(v),m=data.length;
  const pick=(r:any,h:any,a:any)=>r.home_team==='Arsenal'?n(r[h]):n(r[a]);
  const avg=data.reduce((s:any,r:any)=>s+pick(r,'home_possession','away_possession'),0)/m;
@@ -619,13 +718,18 @@ async function syncCleanSheetsV2(db:any,arsenalId:any,key:string){
   if(coverage.error) throw coverage.error;
   const covered=new Set((coverage.data??[]).map((r:any)=>String(r.fixture_id)));
   if(covered.size<cleanFixtureIds.size) return {cleanSheetsUpdated:0,skipped:'incomplete_lineup_coverage'};
-  const lu=await db.from('match_lineups').select('fixture_id,player_name,is_starter,minute_on,minute_off')
-    .in('fixture_id',[...cleanFixtureIds]);
+  const lu=await db.from('match_lineups').select('fixture_id,player_name,position,pitch_slot,is_starter,minute_on,minute_off')
+    .in('fixture_id',[...cleanFixtureIds]).eq('team_name','Arsenal');
   if(lu.error) throw lu.error;
   const eligible=new Map<string,Set<string>>();
   for(const r of (lu.data??[])){
     const on=num(r.minute_on??0);const off=num(r.minute_off??90);if(!r.is_starter&&(on===null||on<=0)) continue;const mins=off-on;
     if(mins<60||!r.player_name) continue;
+    // Clean sheets are awarded to goalkeepers and defenders, not every player in a clean-sheet match.
+    const normalizeRole=(v:any)=>String(v??'').trim().toUpperCase().replace(/[^A-Z]/g,'');
+    const role=normalizeRole(r.position),slot=normalizeRole(r.pitch_slot);
+    const eligibleRole=new Set(['G','GK','GOALKEEPER','D','DEF','DEFENDER','RB','LB','CB','RCB','LCB','RWB','LWB','SW']);
+    if(!eligibleRole.has(role)&&!eligibleRole.has(slot)) continue;
     const name=String(r.player_name).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[øØ]/g,'o').toLowerCase().trim();
     if(!eligible.has(name)) eligible.set(name,new Set());
     eligible.get(name)!.add(String(r.fixture_id));
@@ -645,6 +749,84 @@ async function syncCleanSheetsV2(db:any,arsenalId:any,key:string){
   return {cleanSheetsUpdated:updated,cleanSheetLeaders:leaders};
 }
 
+
+async function syncLiveCoreOnly(db:any,key:string) {
+  const now=new Date(), past=now.getTime()-3*60*60*1000, future=now.getTime()+10*60*1000;
+  const q=await db.from('fixtures').select('id,external_fixture_id,home_team,away_team,kickoff_at,status,home_score,away_score,arsenal_score,opponent_score')
+    .eq('competition','Premier League').eq('season',SEASON).eq('is_published',true).like('external_fixture_id','bsd:%')
+    .or('home_team.eq.Arsenal,away_team.eq.Arsenal');
+  if(q.error)throw q.error;
+  const rows=q.data??[];
+  const targets=rows.filter((r:any)=>{
+    const s=String(r.status??'').toLowerCase().replace(/[\s_-]+/g,'');
+    if(['fulltime','finished','postponed','cancelled','abandoned'].includes(s))return false;
+    if(s==='live'||s==='inprogress')return true;
+    const ko=Date.parse(String(r.kickoff_at??''));
+    return Number.isFinite(ko)&&ko>=past&&ko<=future;
+  }).slice(0,2);
+  let checked=0,changed=0,eventsWritten=0;
+  const errors:string[]=[];
+  for(const row of targets){
+    if(bsdGuardBlocked)break;
+    const eid=String(row.external_fixture_id??'').replace(/^bsd:/,'');
+    if(!/^\d+$/.test(eid))continue;
+    checked++;
+    try{
+      const payload=await bsd('/events/'+encodeURIComponent(eid)+'/',key);
+      const e=payload?.event??payload?.data??payload?.result??payload;
+      if(!e||typeof e!=='object')throw new Error('Unrecognized BSD match-detail payload');
+      const raw=String(e?.status??e?.event_status??e?.state??'').toLowerCase().replace(/[\s_-]+/g,'');
+      let status:string|null=null;
+      if(['ft','aet','pen','finished','fulltime'].includes(raw)||raw.includes('finished')||raw.includes('fulltime'))status='fulltime';
+      else if(['live','1h','2h','ht','et','inprogress','halftime','extratime'].includes(raw)||raw.includes('inprogress')||raw.includes('halftime'))status='live';
+      else if(raw.includes('postpon'))status='postponed';
+      else if(raw.includes('cancel'))status='cancelled';
+      else if(raw.includes('abandon'))status='abandoned';
+      const sh=num(e?.home_score??e?.score?.home??e?.scores?.home),sa=num(e?.away_score??e?.score?.away??e?.scores?.away);
+      const isHome=row.home_team==='Arsenal',patch:any={};
+      if(status&&status!==row.status)patch.status=status;
+      if(sh!==null&&(row.home_score==null||Number(row.home_score)!==sh))patch.home_score=sh;
+      if(sa!==null&&(row.away_score==null||Number(row.away_score)!==sa))patch.away_score=sa;
+      if(sh!==null&&sa!==null){
+        const as=isHome?sh:sa,os=isHome?sa:sh;
+        if(row.arsenal_score==null||Number(row.arsenal_score)!==as)patch.arsenal_score=as;
+        if(row.opponent_score==null||Number(row.opponent_score)!==os)patch.opponent_score=os;
+      }
+      if(Object.keys(patch).length){
+        patch.source_updated_at=now.toISOString();patch.updated_at=now.toISOString();
+        const u=await db.from('fixtures').update(patch).eq('id',row.id);
+        if(u.error)throw u.error;
+        changed++;
+      }
+      if(!['live','fulltime'].includes(status??String(row.status??'').toLowerCase()))continue;
+      const incPayload=await bsd('/events/'+encodeURIComponent(eid)+'/incidents/',key);
+      const candidates=[incPayload,incPayload?.incidents,incPayload?.results,incPayload?.events,incPayload?.data,incPayload?.data?.incidents,incPayload?.data?.results];
+      const inc=candidates.find(Array.isArray);
+      if(!inc)throw new Error('Unrecognized incident payload; existing events kept');
+      const mapped:any[]=[];
+      for(const x of inc){
+        const minute=num(x?.minute??x?.time?.minute),extra=num(x?.added_time??x?.extra_minute??x?.time?.added_time);
+        const player=nm(x?.player??x?.player_name),team=x?.is_home===true?row.home_team:x?.is_home===false?row.away_team:null;
+        if(x?.type==='goal')mapped.push({fixture_id:row.id,event_type:'goal',player_name:player,team_name:team,minute,stoppage_minute:extra,related_player_name:nm(x?.assist),external_event_id:'bsd:'+eid+':goal:'+minute+':'+(x?.player_id??player),updated_at:new Date().toISOString()});
+        else if(x?.type==='card'){
+          const card=String(x?.card_type??'').toLowerCase(),type=card.includes('red')?'red_card':card.includes('yellow')?'yellow_card':null;
+          if(type)mapped.push({fixture_id:row.id,event_type:type,player_name:player,team_name:team,minute,stoppage_minute:extra,related_player_name:null,external_event_id:'bsd:'+eid+':'+type+':'+minute+':'+(x?.player_id??player),updated_at:new Date().toISOString()});
+        }else if(x?.type==='substitution')mapped.push({fixture_id:row.id,event_type:'substitution',player_name:nm(x?.player_in),team_name:team,minute,stoppage_minute:extra,related_player_name:nm(x?.player_out),external_event_id:'bsd:'+eid+':substitution:'+minute+':'+(x?.player_in_id??nm(x?.player_in))+':'+(x?.player_out_id??nm(x?.player_out)),updated_at:new Date().toISOString()});
+      }
+      if(mapped.length){
+        const u=await db.from('match_events').upsert(mapped,{onConflict:'external_event_id'});
+        if(u.error)throw u.error;
+        eventsWritten+=mapped.length;
+      }
+    }catch(e){
+      const message=e instanceof Error?e.message:String(e);
+      errors.push('Match '+eid+': '+message);
+      if(bsdGuardBlocked)break;
+    }
+  }
+  return {ok:errors.length===0,source:'BSD',season:SEASON,coreOnly:true,mode:'targeted-live-refresh',fixturesAvailable:rows.length,fixturesChecked:checked,fixturesChanged:changed,eventsWritten,errors:errors.slice(0,3),syncedAt:new Date().toISOString()};
+}
+
 async function run(reqUrl=new URL('https://local.invalid')){
   const key=Deno.env.get('BSD_API_KEY'); if(!key) throw new Error('Missing BSD_API_KEY');
   // Caches are deliberately scoped to this sync invocation. Never reuse a prior
@@ -653,10 +835,26 @@ async function run(reqUrl=new URL('https://local.invalid')){
   playerStatsRequestCache.clear();
   playerProfileRequestCache.clear();
   const db=createClient(Deno.env.get('SUPABASE_URL')!,serverKey(),{auth:{persistSession:false,autoRefreshToken:false}});
+  bsdUsageDb=db;
+  bsdGuardBlocked=false;
+  const guard=await db.from('bsd_api_quota_guard').select('blocked_until,last_error_code').eq('id',1).maybeSingle();
+  if(guard.error) { bsdGuardBlocked=true; throw new Error('BSD quota guard check failed; refusing external API request: '+guard.error.message); }
+  if(guard.data?.blocked_until && new Date(guard.data.blocked_until).getTime()>Date.now()) {
+    bsdGuardBlocked=true;
+    throw new Error('BSD quota guard active until '+guard.data.blocked_until+' ('+(guard.data.last_error_code??'rate limited')+'); no BSD requests sent.');
+  }
 
-  const teams=arr(await bsd('/teams/?name=Arsenal&limit=20&offset=0',key));
-  const arsenal=teams.find((t:any)=>nm(t)==='Arsenal'||nm(t?.team)==='Arsenal')??teams[0];
-  const arsenalId=id(arsenal); if(!arsenalId) throw new Error('Could not resolve Arsenal BSD team id');
+  if(reqUrl.searchParams.get('core_only')==='1')return await syncLiveCoreOnly(db,key);
+
+  await primeTeamIdCache(db);
+  let arsenalId:any=teamIdCache.get(normalizeTeamName('Arsenal'))??null;
+  if(!arsenalId){
+    const teams=arr(await bsd('/teams/?name=Arsenal&limit=20&offset=0',key));
+    const arsenal=teams.find((t:any)=>nm(t)==='Arsenal'||nm(t?.team)==='Arsenal')??teams[0];
+    arsenalId=id(arsenal);
+    if(!arsenalId) throw new Error('Could not resolve Arsenal BSD team id');
+    teamIdCache.set(normalizeTeamName('Arsenal'),Number(arsenalId));
+  }
   let historicalStandings:any[]=[];if(reqUrl.searchParams.get('history')==='1')historicalStandings=await syncHistoricalStandings(db,key);
   if(reqUrl.searchParams.get('lineups_only')==='1'){
     const events=arr(await bsd(`/events/?league_id=${LEAGUE_ID}&season_id=${SEASON_ID}&team_id=${arsenalId}&limit=200&offset=0`,key));
@@ -702,6 +900,12 @@ async function run(reqUrl=new URL('https://local.invalid')){
     return {ok:true,probe:true,squadCount:squad.length,sample};
   }
   const events=arr(await bsd(`/events/?league_id=${LEAGUE_ID}&season_id=${SEASON_ID}&team_id=${arsenalId}&limit=200&offset=0`,key));
+  const knownFixtureQuery=await db.from('fixtures').select('external_fixture_id,home_team_id,away_team_id').eq('competition','Premier League').eq('season',SEASON).eq('is_published',true).like('external_fixture_id','bsd:%');
+  if(knownFixtureQuery.error)throw knownFixtureQuery.error;
+  const knownTeamIdsByEvent=new Map<string,any>((knownFixtureQuery.data??[]).map((r:any)=>[String(r.external_fixture_id??'').replace(/^bsd:/,''),r]));
+  const eventIds=events.map((e:any)=>String(id(e)??'')).filter(Boolean);
+  const archivedIncidentIds=new Set<string>();
+  if(eventIds.length){const archiveCheck=await db.from('record_room_bsd_archive_resources').select('source_event_id').eq('resource_type','incidents').eq('http_status',200).in('source_event_id',eventIds);if(!archiveCheck.error)for(const r of (archiveCheck.data??[]))archivedIncidentIds.add(String(r.source_event_id));else console.warn('BSD_ARCHIVED_INCIDENT_CACHE_UNAVAILABLE',archiveCheck.error.message);}
   let fixtures=0, incidents=0, statsUpdated=0;
 
   for(const e of events){
@@ -710,8 +914,9 @@ async function run(reqUrl=new URL('https://local.invalid')){
     const awayObj=e?.away_team??e?.away??e?.teams?.away;
     const home=nm(homeObj);
     const away=nm(awayObj);
-    const homeId=num(id(homeObj))??await resolveTeamId(home,key);
-    const awayId=num(id(awayObj))??await resolveTeamId(away,key);
+    const knownFixture=knownTeamIdsByEvent.get(eid);
+    const homeId=num(id(homeObj))??num(knownFixture?.home_team_id)??await resolveTeamId(home,key);
+    const awayId=num(id(awayObj))??num(knownFixture?.away_team_id)??await resolveTeamId(away,key);
     if(!home||!away) continue;
     const isHome=home==='Arsenal';
     const opponent=isHome?away:home;
@@ -739,38 +944,78 @@ async function run(reqUrl=new URL('https://local.invalid')){
     fixtures++;
 
     if(status==='fulltime'||status==='live'){
-      const {error:oldBsdError}=await db.from('match_events').delete().eq('fixture_id',fixtureId).like('external_event_id','bsd:%');
-      if(oldBsdError) throw oldBsdError;
-      const inc=arr(await bsd(`/events/${eid}/incidents/`,key));
-      const mapped:any[]=[];
-      for(const x of inc){
-        const minute=num(x?.minute); const extra=num(x?.added_time);
-        const player=nm(x?.player); const team=x?.is_home===true?home:x?.is_home===false?away:null;
-        if(x?.type==='goal'){
-          mapped.push({
-            fixture_id:fixtureId,event_type:'goal',player_name:player,team_name:team,
-            minute,stoppage_minute:extra,related_player_name:nm(x?.assist),
-            external_event_id:`bsd:${eid}:goal:${minute}:${x?.player_id??player}`,updated_at:new Date().toISOString()
-          });
-        }else if(x?.type==='card'){
-          const ct=String(x?.card_type??'').toLowerCase();
-          const et=ct.includes('red')?'red_card':ct.includes('yellow')?'yellow_card':null;
-          if(et) mapped.push({fixture_id:fixtureId,event_type:et,player_name:player,team_name:team,minute,stoppage_minute:extra,related_player_name:null,external_event_id:`bsd:${eid}:${et}:${minute}:${x?.player_id??player}`,updated_at:new Date().toISOString()});
-        }else if(x?.type==='substitution'){
-          mapped.push({fixture_id:fixtureId,event_type:'substitution',player_name:nm(x?.player_in),team_name:x?.is_home===true?home:away,minute,stoppage_minute:extra,related_player_name:nm(x?.player_out),external_event_id:`bsd:${eid}:substitution:${minute}:${x?.player_in_id??nm(x?.player_in)}:${x?.player_out_id??nm(x?.player_out)}`,updated_at:new Date().toISOString()});
+      // Final results are immutable. Keep already-mirrored BSD incidents for a
+      // completed match; refresh only live matches or completed matches without
+      // any saved BSD events. An explicit force_incidents run can override this.
+      const prior=await db.from('match_events').select('id')
+        .eq('fixture_id',fixtureId).like('external_event_id',`bsd:${eid}:%`).limit(1);
+      if(prior.error) throw prior.error;
+      const shouldRefreshIncidents=status==='live'
+        || (!((prior.data??[]).length)&&!archivedIncidentIds.has(eid))
+        || reqUrl.searchParams.get('force_incidents')==='1';
+      if(shouldRefreshIncidents){
+        const {error:oldBsdError}=await db.from('match_events').delete().eq('fixture_id',fixtureId).like('external_event_id','bsd:%');
+        if(oldBsdError) throw oldBsdError;
+        const inc=arr(await bsd(`/events/${eid}/incidents/`,key));
+        const mapped:any[]=[];
+        for(const x of inc){
+          const minute=num(x?.minute); const extra=num(x?.added_time);
+          const player=nm(x?.player); const team=x?.is_home===true?home:x?.is_home===false?away:null;
+          if(x?.type==='goal'){
+            mapped.push({
+              fixture_id:fixtureId,event_type:'goal',player_name:player,team_name:team,
+              minute,stoppage_minute:extra,related_player_name:nm(x?.assist),
+              external_event_id:`bsd:${eid}:goal:${minute}:${x?.player_id??player}`,updated_at:new Date().toISOString()
+            });
+          }else if(x?.type==='card'){
+            const ct=String(x?.card_type??'').toLowerCase();
+            const et=ct.includes('red')?'red_card':ct.includes('yellow')?'yellow_card':null;
+            if(et) mapped.push({fixture_id:fixtureId,event_type:et,player_name:player,team_name:team,minute,stoppage_minute:extra,related_player_name:null,external_event_id:`bsd:${eid}:${et}:${minute}:${x?.player_id??player}`,updated_at:new Date().toISOString()});
+          }else if(x?.type==='substitution'){
+            mapped.push({fixture_id:fixtureId,event_type:'substitution',player_name:nm(x?.player_in),team_name:x?.is_home===true?home:away,minute,stoppage_minute:extra,related_player_name:nm(x?.player_out),external_event_id:`bsd:${eid}:substitution:${minute}:${x?.player_in_id??nm(x?.player_in)}:${x?.player_out_id??nm(x?.player_out)}`,updated_at:new Date().toISOString()});
+          }
         }
+        if(mapped.length){ const {error}=await db.from('match_events').upsert(mapped,{onConflict:'external_event_id'}); if(error) throw error; incidents+=mapped.length; }
       }
-      if(mapped.length){ const {error}=await db.from('match_events').upsert(mapped,{onConflict:'external_event_id'}); if(error) throw error; incidents+=mapped.length; }
     }
   }
 
-  const teamIdBackfill=await backfillHistoricalFixtureTeamIds(db,key);
+  // Fast manual Admin mode: refresh canonical Arsenal fixtures/results/incidents and
+  // the validated current-season league table, then return before costly player/lineup
+  // enrichment. This prevents the HTTP response from being cut off by a long-running
+  // full enrichment pass; enrichment remains available through its dedicated modes.
+  if(reqUrl.searchParams.get('core_only')==='1'){
+    let leagueStandingsUpdated:any;
+    if(reqUrl.searchParams.get('skip_standings')==='1'){
+      leagueStandingsUpdated={season:SEASON,skipped:true,reason:'Live refresh skips the full-season standings rebuild.'};
+    }else{
+      try{
+        leagueStandingsUpdated=await syncCurrentLeagueStandings(db,key);
+      }catch(e){
+        leagueStandingsUpdated={season:SEASON,error:e instanceof Error?e.message:String(e)};
+        console.error('LEAGUE_STANDINGS_SYNC_FAILED',JSON.stringify(leagueStandingsUpdated));
+      }
+    }
+    return {ok:true,source:'BSD',season:SEASON,fixtures,incidents,leagueStandingsUpdated,coreOnly:true,details:'Core fixture refresh complete; full-season standings and player/lineup enrichment are skipped when requested.',syncedAt:new Date().toISOString()};
+  }
 
-  // Reconcile season player statistics; lineups are accepted only with exactly 11 starters.\n  const lineupResult=await syncArsenalLineups(db,events,key);\n  const teamStatsUpdated=await syncArsenalTeamStatsCanonical(db);\n  const playerStatsUpdated=await syncRootPlayerStats(db,arsenalId,key);\n  const participationResult=await reconcileParticipationFromLineups(db);\n  const goalkeeperSavesUpdated=await syncGoalkeeperSavesV2(db,arsenalId,key);\n  const cleanSheetResult=await syncCleanSheetsV2(db,arsenalId,key);\n  return {ok:true,source:'BSD',season:SEASON,arsenalTeamId:arsenalId,fixtures,incidents,statsUpdated,teamStatsUpdated,playerStatsUpdated,lineupResult,participationResult,goalkeeperSavesUpdated,cleanSheetResult,historicalStandings,syncedAt:new Date().toISOString()};
+  const teamIdBackfill=await backfillHistoricalFixtureTeamIds(db,key);
+  let leagueStandingsUpdated:any;
+  // Always run a dedicated current-season standings refresh after the general
+  // sync, including history-enabled admin syncs. Historical sync records per-season
+  // errors and must not prevent a direct retry of the current 2026/27 table.
+  try{
+    leagueStandingsUpdated=await syncCurrentLeagueStandings(db,key);
+  }catch(e){
+    leagueStandingsUpdated={season:SEASON,error:e instanceof Error?e.message:String(e)};
+    console.error('LEAGUE_STANDINGS_SYNC_FAILED',JSON.stringify(leagueStandingsUpdated));
+  }
+
+  // Reconcile season player statistics; lineups are accepted only with exactly 11 starters.\n  const lineupResult=await syncArsenalLineups(db,events,key);\n  const teamStatsUpdated=await syncArsenalTeamStatsCanonical(db);\n  const playerStatsUpdated=await syncRootPlayerStats(db,arsenalId,key);\n  const participationResult=await reconcileParticipationFromLineups(db);\n  const goalkeeperSavesUpdated=await syncGoalkeeperSavesV2(db,arsenalId,key);\n  const cleanSheetResult=await syncCleanSheetsV2(db,arsenalId,key);\n  return {ok:true,source:'BSD',season:SEASON,arsenalTeamId:arsenalId,fixtures,incidents,statsUpdated,teamStatsUpdated,playerStatsUpdated,lineupResult,participationResult,goalkeeperSavesUpdated,cleanSheetResult,historicalStandings,leagueStandingsUpdated,syncedAt:new Date().toISOString()};
 }
 
 Deno.serve(async(req)=>{
   if(req.method==='OPTIONS') return new Response('ok',{headers:corsHeaders});
   if(req.method!=='POST') return json({error:'POST required'},405);
-  try{const u=new URL(req.url);let body:any={};try{body=await req.json()}catch{}if(body?.history===true)u.searchParams.set('history','1');return json(await run(u))}catch(e){console.error('BSD_SYNC_FAILED',e);return json({ok:false,error:e instanceof Error?e.message:JSON.stringify(e)},500)}
+  try{const u=new URL(req.url);let body:any={};try{body=await req.json()}catch{}if(body?.history===true)u.searchParams.set('history','1');if(body?.core_only===true)u.searchParams.set('core_only','1');if(body?.skip_standings===true)u.searchParams.set('skip_standings','1');if(body?.force_incidents===true)u.searchParams.set('force_incidents','1');return json(await run(u))}catch(e){console.error('BSD_SYNC_FAILED',e);return json({ok:false,error:e instanceof Error?e.message:JSON.stringify(e)},500)}
 });
