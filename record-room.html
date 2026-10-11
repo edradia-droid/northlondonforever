@@ -72,7 +72,8 @@ select,input{width:100%;background:#0f0f0f;border:1px solid var(--line);color:#f
     <a class="active" href="record-room.html?v=20260908-supabase-live-v38">Record Room</a>
     <button id="rrUpdateMatches" type="button" title="Load the full Record Room data tools and refresh saved match records">UPDATE MATCHES / LOAD DATA</button>
     <button id="rrArchiveBsd" type="button" title="Run the protected BSD Record Room archive">ARCHIVE BSD NOW</button>
-    <button id="rrEnrichBsd" type="button" title="Archive BSD match details, team stats, lineups, incidents and player stats without touching public match data">ENRICH BSD MATCH DATA</button>
+    <button id="rrSyncBsdArchive" type="button" title="Publish completed match data from archived BSD snapshots without using BSD API quota">PUBLISH BSD TO RECORD ROOM</button>
+    <button id="rrEnrichBsd" type="button" title="Fetch data for a small, explicitly selected set of BSD matches">ENRICH SELECTED BSD MATCHES</button>
     <button id="recordRoomLogout" type="button">Sign out</button>
   </div>
 </div>
@@ -1055,34 +1056,76 @@ render();
       }
     });
   }
+  const syncBsdBtn=document.getElementById('rrSyncBsdArchive');
+  if(syncBsdBtn){
+    syncBsdBtn.addEventListener('click',async()=>{
+      if(syncBsdBtn.dataset.busy==='1')return;
+      const confirmed=window.confirm('Publish all eligible completed 2026/27 Premier League matches from BSD data already archived in Supabase? This includes final results, match details, statistics, starting lineups, benches, goals/cards and substitutions. It makes NO calls to BSD and uses NO BSD API quota. Upcoming fixtures will remain unchanged.');
+      if(!confirmed)return;
+      syncBsdBtn.dataset.busy='1';syncBsdBtn.disabled=true;syncBsdBtn.textContent='SYNCING ARCHIVED BSD…';
+      try{
+        const {data,error}=await db.functions.invoke('record-room-bsd-sync',{body:{mode:'all_completed'}});
+        if(error)throw error;
+        const report=data||{};
+        const summary=[
+          'Completed matches checked: '+(report.completed_matches_found??'—'),
+          'Results synced: '+(report.results_synced??'—'),
+          'Match details synced: '+(report.details_synced??'—'),
+          'Match-stat rows synced: '+(report.stats_synced??'—'),
+          'Record Room lineup rows synced: '+(report.lineups_synced??'—'),
+          'Goals/cards synced: '+(report.events_synced??'—'),
+          'Substitutions synced: '+(report.substitutions_synced??'—'),
+          'Public lineup rows synced: '+(report.canonical_lineups_synced??'—'),
+          'Player-stat refresh: '+(report.player_stats_refresh??'—')
+        ].join('\n');
+        if(report.status==='failed')throw new Error(report.error||'The sync function reported failure');
+        const warnings=Array.isArray(report.warnings)?report.warnings:[];
+        window.alert('BSD → RECORD ROOM SYNC: '+String(report.status||'completed').toUpperCase()+'\n\n'+summary+'\n\nBSD API requests used: 0'+(warnings.length?'\n\nWarnings: '+warnings.slice(0,5).map(w=>w.reason||w.detail||JSON.stringify(w)).join(' | '):'')+'\n\nUpcoming fixtures were not changed.');
+        syncBsdBtn.textContent=report.status==='partial'?'SYNC FINISHED — REVIEW WARNINGS':'BSD RECORD ROOM SYNC ✓';
+      }catch(err){
+        console.error('[NL4 Record Room] Archived BSD sync failed:',err);
+        window.alert('The archived BSD data sync could not complete. Check the record-room-bsd-sync Edge Function logs.\n\n'+String(err?.message||err||'Unknown error'));
+        syncBsdBtn.textContent='BSD SYNC FAILED — RETRY';
+      }finally{
+        syncBsdBtn.disabled=false;syncBsdBtn.dataset.busy='0';
+      }
+    });
+  }
+
   const enrichBtn=document.getElementById('rrEnrichBsd');
   if(enrichBtn){
     enrichBtn.addEventListener('click',async()=>{
       if(enrichBtn.dataset.busy==='1')return;
-      const confirmed=window.confirm('Run the BSD match-data enrichment for the full 2026/27 Premier League season? This archives raw BSD match details, team-stat endpoint responses, lineups, incidents and available player match stats in separate history tables. It does not edit public pages, canonical fixture data or existing Record Room match records.');
-      if(!confirmed)return;
-      enrichBtn.dataset.busy='1';enrichBtn.disabled=true;
-      enrichBtn.textContent='ENRICHING BSD…';
+      const raw=window.prompt('Enter 1–3 BSD event IDs for Premier League matches, separated by commas. Example: 209547,209581\n\nThis fetches only the selected matches; do not enter all 380 fixtures.');
+      if(raw===null)return;
+      const ids=[...new Set(raw.split(',').map(x=>x.trim()).filter(Boolean))];
+      if(!ids.length||ids.length>3||ids.some(x=>!/^\d+$/.test(x))){
+        window.alert('Enter between 1 and 3 numeric BSD event IDs only. No request was made.');
+        return;
+      }
+      if(!window.confirm('Enrich only BSD event IDs: '+ids.join(', ')+'? This will make provider requests for the selected match resources/player stats, then publish the archived data into Record Room. It will not run a full-season enrichment.'))return;
+      enrichBtn.dataset.busy='1';enrichBtn.disabled=true;enrichBtn.textContent='ENRICHING SELECTED MATCHES…';
       try{
-        const {data,error}=await db.functions.invoke('record-room-bsd-enrich',{body:{}});
+        const {data,error}=await db.functions.invoke('record-room-bsd-enrich',{body:{event_ids:ids}});
         if(error)throw error;
         if(data?.status==='rejected'){
           window.alert('BSD enrichment was safely rejected before writing. Reason: '+(data.reason||'source validation failed'));
           enrichBtn.textContent='ENRICHMENT REJECTED — REVIEW';
-        }else if(data?.status==='succeeded'){
-          const counts=data.endpoint_counts||{};
-          const summary=Object.entries(counts).map(([k,v])=>k+': '+(v.ok||0)+' ok / '+(v.failed||0)+' failed').join('\n');
-          window.alert('BSD enrichment run completed.\nFixtures processed: '+(data.events_processed??'—')+'\nUnique players discovered: '+(data.unique_players_discovered??'—')+'\nHistorical resource rows saved: '+(data.resource_rows_written??'—')+'\nFailed resource requests recorded: '+(data.failed_resource_requests??'—')+'\n\nEndpoint coverage:\n'+summary+'\n\nNo public/canonical match data changed; no records deleted. Failed requests are recorded separately from successful empty responses.');
-          enrichBtn.textContent='BSD ENRICHMENT SUCCESS ✓';
-        }else{
-          window.alert('BSD enrichment returned an unexpected response. Check the record-room-bsd-enrich function logs before retrying.');
-          enrichBtn.textContent='CHECK ENRICHMENT RESULT';
+          return;
         }
+        if(data?.status!=='succeeded')throw new Error(data?.error||data?.reason||'Unexpected BSD enrichment status: '+String(data?.status||'unknown'));
+        enrichBtn.textContent='PUBLISHING SELECTED MATCHES…';
+        const {data:published,error:publishError}=await db.functions.invoke('record-room-bsd-sync',{body:{event_ids:ids}});
+        if(publishError)throw publishError;
+        if(!published||published.status==='failed')throw new Error(published?.error||'BSD archive was saved, but Record Room publishing failed.');
+        const counts=data.endpoint_counts||{};
+        const endpoints=Object.entries(counts).map(([k,v])=>k+': '+(v.ok||0)+' ok / '+(v.failed||0)+' failed').join('\n');
+        window.alert('SELECTED BSD MATCHES PROCESSED\nEvent IDs: '+ids.join(', ')+'\n\nArchive rows saved: '+(data.resource_rows_written??'—')+'\nFailed resource requests: '+(data.failed_resource_requests??'—')+'\n\nRecord Room results synced: '+(published.results_synced??'—')+'\nStats synced: '+(published.stats_synced??'—')+'\nLineup rows synced: '+(published.lineups_synced??'—')+'\nGoals/cards synced: '+(published.events_synced??'—')+'\nSubstitutions synced: '+(published.substitutions_synced??'—')+'\n\nEndpoint coverage:\n'+endpoints+'\n\nOnly the selected event IDs were enriched; no full-season refresh was run.');
+        enrichBtn.textContent='SELECTED BSD MATCHES SYNCED ✓';
       }catch(err){
-        console.error('[NL4 Record Room] BSD enrichment failed:',err);
-        const message=String(err?.message||err||'Unknown error');
-        window.alert('BSD enrichment did not complete. Existing archive history was not intentionally deleted. Check the record-room-bsd-enrich function logs for details.\n\n'+message);
-        enrichBtn.textContent='ENRICHMENT FAILED — RETRY';
+        console.error('[NL4 Record Room] Selected BSD enrichment/publish failed:',err);
+        window.alert('Selected BSD match processing did not fully complete. Existing archive records were not intentionally deleted. Check the record-room-bsd-enrich and record-room-bsd-sync Edge Function logs.\n\n'+String(err?.message||err||'Unknown error'));
+        enrichBtn.textContent='SELECTED BSD SYNC FAILED — RETRY';
       }finally{
         enrichBtn.disabled=false;enrichBtn.dataset.busy='0';
       }
