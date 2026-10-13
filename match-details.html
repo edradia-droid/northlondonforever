@@ -2160,7 +2160,16 @@
           const startersCount = rows.filter(function(row) { return row.is_starter; }).length;
           const benchCount = rows.filter(function(row) { return !row.is_starter; }).length;
           const html = rows.length ? rows.map(function(row) {
-            const timing = row.is_starter ? "START" : (Number(row.minute_on) > 0 ? "ON " + Number(row.minute_on) + String.fromCharCode(39) : "BENCH");
+            // Substitution events are authoritative for players who entered.
+            // BSD lineup rows may leave minute_on at 0 even after a real substitution.
+            const usedEvent = !row.is_starter && uniqueSubstitutionRows.find(function(ev) {
+              return sameTeamName(ev.teamName, team) &&
+                normalizePlayerKey(ev.inPlayer) === normalizePlayerKey(row.player_name);
+            });
+            const onMinute = usedEvent ? Number(usedEvent.minute) : Number(row.minute_on);
+            const timing = row.is_starter ? "START" : (Number.isFinite(onMinute) && onMinute > 0
+              ? "ON " + onMinute + String.fromCharCode(39)
+              : "BENCH");
             const off = row.minute_off != null && Number(row.minute_off) > 0 ? " • OFF " + Number(row.minute_off) + String.fromCharCode(39) : "";
             return "<div class=\"leaguewide-player\"><strong>" + esc(row.player_name) + "</strong><small>" + esc(timing + off) + "</small></div>";
           }).join("") : "<div class=\"empty\">No confirmed lineup data yet.</div>";
