@@ -1048,6 +1048,19 @@
 .event-assist{display:inline-block;margin-left:7px;color:#d8ad45;font-size:10px;font-weight:900;letter-spacing:.35px}
 @media(max-width:700px){.event-assist{display:block;margin:3px 0 0;font-size:9px}}
 </style>
+<style id="nl4-cl-mobile-full-lineup-fit-v1">
+@media (max-width:700px){
+  #lineupPhotoExport.cl-mobile-full-lineup-fit .broadcast-top{padding-top:10px!important;padding-left:10px!important;padding-right:10px!important;gap:5px!important;}
+  #lineupPhotoExport.cl-mobile-full-lineup-fit .broadcast-kicker{font-size:clamp(16px,4.4vw,22px)!important;line-height:1.08!important;}
+  #lineupPhotoExport.cl-mobile-full-lineup-fit .broadcast-kicker small{margin-top:5px!important;font-size:9px!important;letter-spacing:.7px!important;}
+  #lineupPhotoExport.cl-mobile-full-lineup-fit .lineup-brand-lockup{margin-top:4px!important;gap:6px!important;}
+  #lineupPhotoExport.cl-mobile-full-lineup-fit .confirmed-lineup-badge{font-size:10px!important;letter-spacing:.35px!important;}
+  #lineupPhotoExport.cl-mobile-full-lineup-fit .lineup-brand-lockup .lineup-brand-logo img{width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;max-width:34px!important;max-height:34px!important;}
+  #lineupPhotoExport.cl-mobile-full-lineup-fit .broadcast-grid{margin-top:0!important;padding:0 5px 8px!important;}
+  #lineupPhotoExport.cl-mobile-full-lineup-fit .pitch-stage{min-height:0!important;height:auto!important;padding:10px 0 12px!important;}
+  #lineupPhotoExport.cl-mobile-full-lineup-fit #startingXI{width:min(94%,38vh)!important;max-width:100%!important;aspect-ratio:76/96!important;}
+}
+</style>
 </head>
 
 <body class="nl4-unified-sidebar match-details-page">
@@ -1759,6 +1772,8 @@
       els.competition.textContent = `${fixture.competition || "MATCH"} • ${fixture.season || ""}`.replace(/\s+•\s*$/, "");
       const competitionName = String(fixture.competition || '').toLowerCase();
       activeCompetitionName = competitionName;
+      const clLineupBoard = document.getElementById('lineupPhotoExport');
+      if (clLineupBoard) clLineupBoard.classList.toggle('cl-mobile-full-lineup-fit', /champions league/i.test(String(competitionName || '')));
       activeMatchStatus = String(fixture.status || "scheduled").toLowerCase();
       const isChampionsLeague = competitionName.includes('champions league');
       const isPremierLeague = competitionName.includes('premier league');
@@ -2441,7 +2456,7 @@
       // Force html2canvas to use the same responsive breakpoint as the live page.
       const captureViewport = {
         width: Math.max(1, document.documentElement.clientWidth || window.innerWidth),
-        height: Math.max(1, window.innerHeight)
+        height: Math.max(1, window.innerHeight, Math.ceil(liveRect.height))
       };
 
       // The prediction page's pitch is a flat 2D layout. This match-details
