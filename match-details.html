@@ -2458,7 +2458,7 @@
     ) || document.querySelector('.broadcast-shell') || document.querySelector('#lineupSection');
   }
 
-  async function downloadLineupPhoto(){
+  async function downloadLineupPhoto(previewOnly = false){
     const btn = document.getElementById('downloadLineupBtn');
     const board = document.getElementById('lineupPhotoExport');
 
@@ -2471,11 +2471,9 @@
       return;
     }
 
-    const oldText = btn.textContent;
-    const oldTitle = btn.title;
-    btn.disabled = true;
-    btn.title = 'Creating photo…';
-    btn.setAttribute('aria-label', 'Creating lineup photo');
+    const oldText = btn?.textContent || '⇩';
+    const oldTitle = btn?.title || 'Download lineup photo';
+    if (btn) { btn.disabled = true; btn.title = 'Creating photo…'; btn.setAttribute('aria-label', 'Creating lineup photo'); }
 
     const captureState = {
       hidden: [],
@@ -2516,7 +2514,7 @@
       `;
       document.head.appendChild(captureState.temporaryStyle);
 
-      board.querySelectorAll('#downloadLineupBtn, .lineup-download-bar').forEach(el => {
+      board.querySelectorAll('#downloadLineupBtn, .lineup-download-bar, #lineupNativeImageSurface').forEach(el => {
         captureState.hidden.push({ el, display: el.style.display });
         el.style.display = 'none';
       });
@@ -2678,12 +2676,16 @@
         .replace(/^-+|-+$/g, '')
         .toLowerCase();
 
-      const link = document.createElement('a');
-      link.download = `${heading || 'arsenal-lineup'}.png`;
-      link.href = canvas.toDataURL('image/png', 1);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      const imageData = canvas.toDataURL('image/png', 1);
+      if (previewOnly) {
+        const surface = document.getElementById('lineupNativeImageSurface');
+        if (surface) { surface.src = imageData; surface.dataset.ready = 'true'; surface.alt = (document.getElementById('broadcastMatchup')?.textContent || 'Arsenal lineup') + ' complete lineup image'; }
+      } else {
+        const link = document.createElement('a');
+        link.download = (heading || 'arsenal-lineup') + '.png';
+        link.href = imageData;
+        document.body.appendChild(link); link.click(); link.remove();
+      }
     } catch (err) {
       console.error('Lineup download failed:', err);
       alert('Could not create the lineup photo. Please try again.');
@@ -2691,16 +2693,63 @@
       captureState.hidden.forEach(item => { item.el.style.display = item.display; });
       if (captureState.temporaryStyle) captureState.temporaryStyle.remove();
       window.scrollTo(captureState.scrollX, captureState.scrollY);
-      btn.disabled = false;
-      btn.textContent = oldText;
-      btn.title = oldTitle;
-      btn.setAttribute('aria-label', 'Download lineup photo');
+      if (btn) { btn.disabled = false; btn.textContent = oldText; btn.title = oldTitle; btn.setAttribute('aria-label', 'Download lineup photo'); }
     }
   }
   document.addEventListener('click', function(e){
     const btn = e.target.closest('#downloadLineupBtn');
     if (btn) downloadLineupPhoto();
   });
+  // A real PNG overlay enables native Save Image / Copy Image context menus.
+  let previewTimer = 0, previewBusy = false;
+  function ensureNativeImageSurface() {
+    const board = document.getElementById('lineupPhotoExport');
+    if (!board) return null;
+    let surface = document.getElementById('lineupNativeImageSurface');
+    if (!surface) {
+      surface = document.createElement('img');
+      surface.id = 'lineupNativeImageSurface';
+      surface.alt = 'Complete lineup image';
+      surface.draggable = true;
+      surface.decoding = 'async';
+      board.insertBefore(surface, board.firstChild);
+    }
+    return surface;
+  }
+  async function refreshNativeImageSurface() {
+    const surface = ensureNativeImageSurface();
+    if (!surface || previewBusy || !document.getElementById('startingXI')) return;
+    previewBusy = true;
+    try { await downloadLineupPhoto(true); }
+    catch (error) { console.warn('Native lineup image refresh skipped:', error); }
+    finally { previewBusy = false; }
+  }
+  function scheduleNativeImageRefresh() {
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(refreshNativeImageSurface, 1200);
+  }
+  function startNativeImageSurface() {
+    const board = document.getElementById('lineupPhotoExport');
+    if (!board || board.dataset.nativeImageSurfaceInstalled === 'true') return;
+    board.dataset.nativeImageSurfaceInstalled = 'true';
+    ensureNativeImageSurface();
+    const observer = new MutationObserver(records => {
+      const meaningful = records.some(record => {
+        const target = record.target;
+        if (target?.id === 'lineupNativeImageSurface' ||
+            target?.closest?.('#lineupNativeImageSurface, #downloadLineupBtn, .lineup-download-bar')) return false;
+        const nodes = [...(record.addedNodes || []), ...(record.removedNodes || [])];
+        return nodes.some(node => node.id !== 'lineupNativeImageSurface' &&
+          !node.closest?.('#lineupNativeImageSurface, #downloadLineupBtn, .lineup-download-bar'));
+      });
+      if (meaningful) scheduleNativeImageRefresh();
+    });
+    observer.observe(board, {subtree:true, childList:true, characterData:true});
+    scheduleNativeImageRefresh();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', startNativeImageSurface, {once:true});
+  else startNativeImageSurface();
+  window.addEventListener('load', scheduleNativeImageRefresh, {once:true});
 })();
 </script>
 
@@ -3655,6 +3704,21 @@ body.match-details-page.cl-match-details-page .pitch-stage .pitch-player{
     max-width: 44vw !important;
   }
 }
+</style>
+
+
+<style id="nl4-native-full-lineup-image-surface">
+/* Full board image surface: native desktop context menu and mobile image callout. */
+body.match-details-page.cl-match-details-page #lineupPhotoExport{position:relative!important;isolation:isolate!important}
+#lineupPhotoExport #lineupNativeImageSurface{
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  object-fit:fill!important;display:block!important;z-index:5000!important;
+  user-select:auto!important;-webkit-user-select:auto!important;-webkit-touch-callout:default!important;
+  touch-action:pan-y!important;cursor:context-menu!important;background:transparent!important;
+}
+#lineupPhotoExport #downloadLineupBtn,
+#lineupPhotoExport .lineup-download-bar{position:relative!important;z-index:5002!important}
+#lineupPhotoExport #lineupNativeImageSurface:not([data-ready="true"]){visibility:hidden!important}
 </style>
 
 </html>
