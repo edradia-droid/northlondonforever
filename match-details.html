@@ -3393,4 +3393,36 @@ body.match-details-page.cl-match-details-page .pitch-stage .pitch-player{
 }
 </style>
 
+
+<style id="nl4-cl-mobile-lineup-header-clearance-v1">
+/* Keep match title, stadium, NL4 branding and CONFIRMED LINEUP above the pitch.
+   The earlier negative grid margin was causing the pitch to overlap the header on mobile. */
+@media (max-width: 700px) {
+  body.match-details-page.cl-match-details-page #lineupPhotoExport .broadcast-top {
+    position: relative !important;
+    z-index: 20 !important;
+    display: flex !important;
+    margin: 0 !important;
+    padding: 20px 12px 12px !important;
+    min-height: max-content !important;
+  }
+
+  body.match-details-page.cl-match-details-page #lineupPhotoExport .lineup-brand-lockup {
+    position: relative !important;
+    z-index: 21 !important;
+    margin-top: 0 !important;
+    margin-bottom: 12px !important;
+  }
+
+  body.match-details-page.cl-match-details-page #lineupPhotoExport .broadcast-grid {
+    position: relative !important;
+    z-index: 5 !important;
+    margin-top: 0 !important;
+  }
+
+  body.match-details-page.cl-match-details-page #lineupPhotoExport .pitch-stage {
+    margin-top: 0 !important;
+  }
+}
+</style>
 </html>
