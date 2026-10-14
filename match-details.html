@@ -3563,4 +3563,16 @@ body.match-details-page.cl-match-details-page .pitch-stage .pitch-player{
 }
 </style>
 
+
+<style id="nl4-cl-mobile-pitch-one-inch-adjustment-v1">
+/* Slightly reduce only the Champions League mobile pitch height.
+   Keep the match header, pitch width, player positions and all other pages unchanged. */
+@media (max-width: 700px) {
+  body.match-details-page.cl-match-details-page #lineupPhotoExport .pitch-stage {
+    min-height: 520px !important;
+    height: 520px !important;
+  }
+}
+</style>
+
 </html>
