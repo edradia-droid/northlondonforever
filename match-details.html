@@ -2426,14 +2426,25 @@
 
     runMatchDetailsLoad();
 
+    let lastScheduledPollAt = 0;
     setInterval(() => {
       if (document.visibilityState !== "visible" || matchDetailsLoading) return;
-      // Completed Carabao Cup matches are authoritative in the database and
-      // do not need a 15-second redraw. Re-polling them was causing stable
-      // events/statistics to be replaced by transient empty secondary reads.
-      const isCarabao = activeCompetitionName.includes("carabao cup");
-      const isCompleted = ["fulltime","finished","ft"].includes(activeMatchStatus);
-      if (isCarabao && isCompleted) return;
+
+      const status = String(activeMatchStatus || "").toLowerCase();
+      const isCompleted = ["fulltime", "finished", "ft", "completed"].includes(status);
+      const isLive = ["live", "in_play", "in-play", "playing", "half_time", "halftime"].includes(status);
+
+      // Completed matches are stable: do not re-query or redraw them.
+      if (isCompleted) return;
+
+      // Live matches keep the existing 15-second refresh. Scheduled matches
+      // only need a periodic check for kickoff, reducing repeated Supabase reads.
+      if (!isLive) {
+        const now = Date.now();
+        if (now - lastScheduledPollAt < 60000) return;
+        lastScheduledPollAt = now;
+      }
+
       runMatchDetailsLoad();
     }, 15000);
   })();
