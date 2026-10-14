@@ -3575,4 +3575,26 @@ body.match-details-page.cl-match-details-page .pitch-stage .pitch-player{
 }
 </style>
 
+
+<style id="nl4-cl-mobile-pitch-ten-percent-v2">
+/* CL mobile lineup: reduce the actual pitch area by 10%, not just its wrapper. */
+@media (max-width: 700px) {
+  body.match-details-page.cl-match-details-page #lineupPhotoExport .pitch-stage {
+    box-sizing: border-box !important;
+    min-height: 504px !important;
+    height: 504px !important;
+  }
+
+  body.match-details-page.cl-match-details-page #lineupPhotoExport #startingXI {
+    box-sizing: border-box !important;
+    width: 90% !important;
+    height: 90% !important;
+    max-width: 90% !important;
+    min-height: 0 !important;
+    margin: auto !important;
+    align-self: center !important;
+  }
+}
+</style>
+
 </html>
