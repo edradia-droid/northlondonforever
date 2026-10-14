@@ -2535,7 +2535,7 @@
       const offBadgeGeometry = new Map(
         [...sourcePitch.querySelectorAll('.pitch-off-marker[aria-label]')].map(badge => {
           const badgeRect = badge.getBoundingClientRect();
-          const name = normaliseExportName(badge.getAttribute('aria-label'));
+          const name = normaliseExportName(badge.getAttribute('title'));
           return [name, {
             x: (badgeRect.left + badgeRect.width / 2 - sourcePitchRect.left) / sourcePitchRect.width,
             y: (badgeRect.top + badgeRect.height / 2 - sourcePitchRect.top) / sourcePitchRect.height
