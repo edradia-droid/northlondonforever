@@ -798,7 +798,71 @@ async function syncLiveCoreOnly(db:any,key:string) {
         if(u.error)throw u.error;
         changed++;
       }
-      if(!['live','fulltime'].includes(status??String(row.status??'').toLowerCase()))continue;
+      const effectiveStatus=status??String(row.status??'').toLowerCase();
+      if(['live','fulltime'].includes(effectiveStatus)){
+        // Live per-match statistics come directly from BSD. Missing or malformed
+        // fields are ignored so incomplete provider responses cannot erase saved data.
+        try{
+          const statsPayload=await bsd('/events/'+encodeURIComponent(eid)+'/stats/',key);
+          const stats=statsPayload?.stats??statsPayload?.data?.stats??statsPayload?.data??statsPayload;
+          const hs=stats?.home??{},as=stats?.away??{};
+          const statPatch:any={};
+          const putStat=(column:string,value:any,min=0,max=Number.MAX_SAFE_INTEGER,integer=true)=>{
+            if(value===null||value===undefined||value==='')return;
+            const nval=Number(value);
+            if(!Number.isFinite(nval)||nval<min||nval>max||(integer&&!Number.isInteger(nval)))return;
+            statPatch[column]=nval;
+          };
+          putStat('home_possession',hs.ball_possession,0,100,false);
+          putStat('away_possession',as.ball_possession,0,100,false);
+          putStat('home_shots',hs.total_shots);
+          putStat('away_shots',as.total_shots);
+          putStat('home_shots_on_target',hs.shots_on_target);
+          putStat('away_shots_on_target',as.shots_on_target);
+          putStat('home_corners',hs.corner_kicks);
+          putStat('away_corners',as.corner_kicks);
+          putStat('home_fouls',hs.fouls);
+          putStat('away_fouls',as.fouls);
+          putStat('home_offsides',hs.offsides);
+          putStat('away_offsides',as.offsides);
+          putStat('home_saves',hs.saves??hs.saves_total??hs.total_saves??hs.goalkeeper_saves);
+          putStat('away_saves',as.saves??as.saves_total??as.total_saves??as.goalkeeper_saves);
+          if(Object.keys(statPatch).length){
+            statPatch.source_updated_at=new Date().toISOString();
+            statPatch.updated_at=new Date().toISOString();
+            const su=await db.from('fixtures').update(statPatch).eq('id',row.id);
+            if(su.error)throw su.error;
+          }
+        }catch(statsError){
+          console.warn('BSD_LIVE_TEAM_STATS_REFRESH_FAILED',JSON.stringify({eventId:eid,error:statsError instanceof Error?statsError.message:String(statsError)}));
+        }
+        // Reuse the existing strict lineup validator. Skip a fetch when both
+        // teams already have exactly 11 starters and 9 substitutes saved.
+        try{
+          const existingLineups=await db.from('match_lineups').select('team_name,is_starter').eq('fixture_id',row.id);
+          if(existingLineups.error)throw existingLineups.error;
+          const counts=new Map<string,{starters:number;bench:number}>();
+          for(const item of(existingLineups.data??[])){
+            const team=String(item.team_name??'');
+            const c=counts.get(team)??{starters:0,bench:0};
+            if(item.is_starter===true)c.starters++;else c.bench++;
+            counts.set(team,c);
+          }
+          const complete=[row.home_team,row.away_team].every((team:string)=>{
+            const c=counts.get(team);
+            return Boolean(c&&c.starters===11&&c.bench===9);
+          });
+          if(!complete){
+            const lineupEvent={...e,id:eid,home_team:row.home_team,away_team:row.away_team,
+              home_score:sh??row.home_score,away_score:sa??row.away_score};
+            await syncArsenalLineups(db,[lineupEvent],key);
+          }
+        }catch(lineupError){
+          console.warn('BSD_LIVE_LINEUP_REFRESH_FAILED',JSON.stringify({eventId:eid,error:lineupError instanceof Error?lineupError.message:String(lineupError)}));
+        }
+      }else{
+        continue;
+      }
       const incPayload=await bsd('/events/'+encodeURIComponent(eid)+'/incidents/',key);
       const candidates=[incPayload,incPayload?.incidents,incPayload?.results,incPayload?.events,incPayload?.data,incPayload?.data?.incidents,incPayload?.data?.results];
       const inc=candidates.find(Array.isArray);
