@@ -2480,15 +2480,60 @@
         });
       }));
 
-      // Capture the live board like predict-lineup.html, with 3D perspective
-      // and motion disabled only for the duration of this screenshot.
+      // Record each marker's actual on-screen centre relative to the pitch.
+      // html2canvas can misplace percentage-positioned/transformed children when
+      // cloning this large Match Details layout. Reapply the measured geometry
+      // to the export clone only; never touch the live formation or player data.
+      const sourcePitch = board.querySelector('#startingXI');
+      if (!sourcePitch) throw new Error('The lineup pitch is missing.');
+      const sourcePitchRect = sourcePitch.getBoundingClientRect();
+      if (sourcePitchRect.width <= 0 || sourcePitchRect.height <= 0) {
+        throw new Error('The lineup pitch has no measurable size.');
+      }
+      const markerGeometry = [...sourcePitch.querySelectorAll('.player-marker')].map(marker => {
+        const rect = marker.getBoundingClientRect();
+        return {
+          x: ((rect.left + rect.width / 2 - sourcePitchRect.left) / sourcePitchRect.width) * 100,
+          y: ((rect.top + rect.height / 2 - sourcePitchRect.top) / sourcePitchRect.height) * 100
+        };
+      });
+
+      // Capture the full board. In the html2canvas clone, flatten each marker
+      // to the exact centre measured on the visible pitch and prevent the
+      // Champions League stage from clipping marker edges.
       const pixelRatio = Math.min(2, Math.max(1, window.devicePixelRatio || 1.5));
       const canvas = await window.html2canvas(board, {
         backgroundColor: '#08150c',
         scale: pixelRatio,
         useCORS: true,
         allowTaint: false,
-        logging: false
+        logging: false,
+        onclone: clonedDocument => {
+          const clonedBoard = clonedDocument.getElementById('lineupPhotoExport');
+          if (!clonedBoard) return;
+          const clonedStage = clonedBoard.querySelector('.pitch-stage');
+          const clonedPitch = clonedBoard.querySelector('#startingXI');
+          if (clonedStage) {
+            clonedStage.style.setProperty('overflow', 'visible', 'important');
+            clonedStage.style.setProperty('perspective', 'none', 'important');
+            clonedStage.style.setProperty('transform', 'none', 'important');
+          }
+          if (!clonedPitch) return;
+          clonedPitch.style.setProperty('position', 'relative', 'important');
+          clonedPitch.style.setProperty('overflow', 'visible', 'important');
+          clonedPitch.querySelectorAll('.player-marker').forEach((marker, index) => {
+            const point = markerGeometry[index];
+            if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
+            marker.style.setProperty('position', 'absolute', 'important');
+            marker.style.setProperty('left', point.x + '%', 'important');
+            marker.style.setProperty('top', point.y + '%', 'important');
+            marker.style.setProperty('right', 'auto', 'important');
+            marker.style.setProperty('bottom', 'auto', 'important');
+            marker.style.setProperty('transform', 'translate(-50%, -50%) scale(1)', 'important');
+            marker.style.setProperty('transition', 'none', 'important');
+            marker.style.setProperty('animation', 'none', 'important');
+          });
+        }
       });
 
       const heading = (document.getElementById('matchHeading')?.textContent || 'Arsenal Lineup')
