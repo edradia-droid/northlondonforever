@@ -2490,11 +2490,29 @@
       if (sourcePitchRect.width <= 0 || sourcePitchRect.height <= 0) {
         throw new Error('The lineup pitch has no measurable size.');
       }
-      const markerGeometry = [...sourcePitch.querySelectorAll('.player-marker')].map(marker => {
+
+      // Snapshot the rendered pitch styling as well as geometry. The export clone
+      // can otherwise fall back to the generic green pitch theme even when the
+      // visible Champions League pitch is using its dark broadcast treatment.
+      const sourcePitchStyle = getComputedStyle(sourcePitch);
+      const pitchVisual = {
+        background: sourcePitchStyle.background,
+        backgroundColor: sourcePitchStyle.backgroundColor,
+        backgroundImage: sourcePitchStyle.backgroundImage,
+        border: sourcePitchStyle.border,
+        borderRadius: sourcePitchStyle.borderRadius,
+        boxShadow: sourcePitchStyle.boxShadow
+      };
+
+      // Store each marker's centre as a fraction of the visible pitch. Fractions
+      // avoid percentage drift if the cloned export is rendered at a different
+      // pixel width from the live mobile/desktop layout.
+      const markerGeometry = [...sourcePitch.querySelectorAll('.player-marker')].map((marker, index) => {
         const rect = marker.getBoundingClientRect();
         return {
-          x: ((rect.left + rect.width / 2 - sourcePitchRect.left) / sourcePitchRect.width) * 100,
-          y: ((rect.top + rect.height / 2 - sourcePitchRect.top) / sourcePitchRect.height) * 100
+          index,
+          x: (rect.left + rect.width / 2 - sourcePitchRect.left) / sourcePitchRect.width,
+          y: (rect.top + rect.height / 2 - sourcePitchRect.top) / sourcePitchRect.height
         };
       });
 
@@ -2519,14 +2537,29 @@
             clonedStage.style.setProperty('transform', 'none', 'important');
           }
           if (!clonedPitch) return;
+
+          // Match the live pitch's exact measured box and visible surface in the
+          // export clone, instead of allowing clone viewport CSS to resize/retheme it.
+          clonedPitch.style.setProperty('box-sizing', 'border-box', 'important');
+          clonedPitch.style.setProperty('width', sourcePitchRect.width + 'px', 'important');
+          clonedPitch.style.setProperty('height', sourcePitchRect.height + 'px', 'important');
+          clonedPitch.style.setProperty('min-height', '0', 'important');
+          clonedPitch.style.setProperty('aspect-ratio', 'auto', 'important');
           clonedPitch.style.setProperty('position', 'relative', 'important');
           clonedPitch.style.setProperty('overflow', 'visible', 'important');
+          clonedPitch.style.setProperty('background', pitchVisual.background, 'important');
+          clonedPitch.style.setProperty('background-color', pitchVisual.backgroundColor, 'important');
+          clonedPitch.style.setProperty('background-image', pitchVisual.backgroundImage, 'important');
+          clonedPitch.style.setProperty('border', pitchVisual.border, 'important');
+          clonedPitch.style.setProperty('border-radius', pitchVisual.borderRadius, 'important');
+          clonedPitch.style.setProperty('box-shadow', pitchVisual.boxShadow, 'important');
+
           clonedPitch.querySelectorAll('.player-marker').forEach((marker, index) => {
             const point = markerGeometry[index];
             if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
             marker.style.setProperty('position', 'absolute', 'important');
-            marker.style.setProperty('left', point.x + '%', 'important');
-            marker.style.setProperty('top', point.y + '%', 'important');
+            marker.style.setProperty('left', (point.x * 100) + '%', 'important');
+            marker.style.setProperty('top', (point.y * 100) + '%', 'important');
             marker.style.setProperty('right', 'auto', 'important');
             marker.style.setProperty('bottom', 'auto', 'important');
             marker.style.setProperty('transform', 'translate(-50%, -50%) scale(1)', 'important');
