@@ -1187,6 +1187,24 @@
           </article>
         </section>
 
+        <section class="match-panel" id="lineupImageTools" aria-label="Lineup image tools">
+          <div class="match-panel-head">
+            <p>NL4 IMAGE EXPORT</p>
+            <h2>Save or Copy Complete Lineup</h2>
+          </div>
+          <div class="lineup-image-tools-actions">
+            <button type="button" id="previewLineupImageBtn">Create Image Preview</button>
+            <button type="button" id="copyLineupImageBtn">Copy Image</button>
+          </div>
+          <div id="lineupImagePreview" hidden>
+            <div class="lineup-image-preview-actions">
+              <button type="button" id="saveLineupPreviewBtn">Save PNG</button>
+              <button type="button" id="closeLineupPreviewBtn">Close Preview</button>
+            </div>
+            <img id="lineupImagePreviewImg" alt="Complete Champions League lineup image" draggable="true">
+          </div>
+        </section>
+
         <section class="match-panel post-pitch-subs-panel" id="matchSubstitutionsPanel">
           <div class="match-panel-head">
             <p>MATCH SQUAD</p>
@@ -2458,7 +2476,7 @@
     ) || document.querySelector('.broadcast-shell') || document.querySelector('#lineupSection');
   }
 
-  async function downloadLineupPhoto(){
+  async function downloadLineupPhoto(mode = 'download'){
     const btn = document.getElementById('downloadLineupBtn');
     const board = document.getElementById('lineupPhotoExport');
 
@@ -2678,9 +2696,30 @@
         .replace(/^-+|-+$/g, '')
         .toLowerCase();
 
+      const imageData = canvas.toDataURL('image/png', 1);
+      if (mode === 'preview') {
+        const preview = document.getElementById('lineupImagePreview');
+        const previewImage = document.getElementById('lineupImagePreviewImg');
+        if (preview && previewImage) {
+          previewImage.src = imageData;
+          preview.hidden = false;
+          preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        return;
+      }
+      if (mode === 'copy') {
+        if (!navigator.clipboard || typeof ClipboardItem === 'undefined') {
+          alert('Copying images is not supported by this browser. Use Save Image instead.');
+          return;
+        }
+        const pngBlob = await (await fetch(imageData)).blob();
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': pngBlob })]);
+        alert('Lineup image copied.');
+        return;
+      }
       const link = document.createElement('a');
       link.download = `${heading || 'arsenal-lineup'}.png`;
-      link.href = canvas.toDataURL('image/png', 1);
+      link.href = imageData;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -2698,8 +2737,35 @@
     }
   }
   document.addEventListener('click', function(e){
-    const btn = e.target.closest('#downloadLineupBtn');
-    if (btn) downloadLineupPhoto();
+    if (e.target.closest('#downloadLineupBtn')) {
+      downloadLineupPhoto('download');
+      return;
+    }
+    if (e.target.closest('#previewLineupImageBtn')) {
+      downloadLineupPhoto('preview');
+      return;
+    }
+    if (e.target.closest('#copyLineupImageBtn')) {
+      downloadLineupPhoto('copy');
+      return;
+    }
+    if (e.target.closest('#saveLineupPreviewBtn')) {
+      const img = document.getElementById('lineupImagePreviewImg');
+      if (!img || !img.src || img.src === window.location.href) {
+        downloadLineupPhoto('download');
+        return;
+      }
+      const link = document.createElement('a');
+      link.href = img.src;
+      link.download = 'nl4-champions-league-lineup.png';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+    if (e.target.closest('#closeLineupPreviewBtn')) {
+      const preview = document.getElementById('lineupImagePreview');
+      if (preview) preview.hidden = true;
+    }
   });
 })();
 </script>
@@ -3657,4 +3723,17 @@ body.match-details-page.cl-match-details-page .pitch-stage .pitch-player{
 }
 </style>
 
+<style id="nl4-cl-lineup-image-tools">
+/* Separate export tools: never overlay or alter the live pitch. */
+#lineupImageTools{display:none}
+body.match-details-page.cl-match-details-page #lineupImageTools{display:block;margin-top:18px}
+#lineupImageTools .lineup-image-tools-actions,
+#lineupImageTools .lineup-image-preview-actions{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+#lineupImageTools button{border:1px solid rgba(255,255,255,.24);border-radius:9px;padding:10px 15px;background:#101d38;color:#fff;font-weight:800;cursor:pointer}
+#lineupImageTools button:focus-visible{outline:2px solid #fff;outline-offset:3px}
+#lineupImagePreview[hidden]{display:none!important}
+#lineupImagePreview img{display:block;width:100%;height:auto;max-width:100%;border-radius:10px;background:#071126;user-select:auto;-webkit-touch-callout:default}
+body.match-details-page.cl-match-details-page #lineupImageTools{position:relative;z-index:1}
+@media(max-width:600px){#lineupImageTools .lineup-image-tools-actions button{flex:1 1 130px}}
+</style>
 </html>
