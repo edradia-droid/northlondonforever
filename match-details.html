@@ -3353,8 +3353,8 @@ body.match-details-page.cl-match-details-page .pitch-stage .pitch-player{
 </style>
 
 <style id="nl4-cl-mobile-pitch-fit-v1">
-/* CL Match Details only: let the pitch use the available mobile box width.
-   Desktop layout and the Premier League/prediction pages remain unchanged. */
+/* CL Match Details only: make the pitch fill the mobile pitch-stage box,
+   including the unused space below it. Desktop and other pages are untouched. */
 @media (max-width: 700px) {
   body.match-details-page.cl-match-details-page #lineupPhotoExport .broadcast-grid {
     box-sizing: border-box !important;
@@ -3365,24 +3365,30 @@ body.match-details-page.cl-match-details-page .pitch-stage .pitch-player{
 
   body.match-details-page.cl-match-details-page #lineupPhotoExport .pitch-stage {
     box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
     width: 100% !important;
     max-width: none !important;
     min-width: 0 !important;
-    padding-left: 6px !important;
-    padding-right: 6px !important;
-    align-items: center !important;
+    min-height: 560px !important;
+    height: 560px !important;
+    padding: 0 !important;
     overflow: hidden !important;
   }
 
   body.match-details-page.cl-match-details-page #lineupPhotoExport #startingXI {
     box-sizing: border-box !important;
     display: block !important;
+    flex: 1 1 auto !important;
     width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
     max-width: none !important;
     min-width: 0 !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    aspect-ratio: 76 / 96 !important;
+    margin: 0 !important;
+    aspect-ratio: auto !important;
   }
 }
 </style>
