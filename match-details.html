@@ -2729,6 +2729,7 @@
     previewTimer = setTimeout(refreshNativeImageSurface, 1200);
   }
   function startNativeImageSurface() {
+    if (!document.body.classList.contains('cl-match-details-page')) return;
     const board = document.getElementById('lineupPhotoExport');
     if (!board || board.dataset.nativeImageSurfaceInstalled === 'true') return;
     board.dataset.nativeImageSurfaceInstalled = 'true';
@@ -3710,15 +3711,15 @@ body.match-details-page.cl-match-details-page .pitch-stage .pitch-player{
 <style id="nl4-native-full-lineup-image-surface">
 /* Full board image surface: native desktop context menu and mobile image callout. */
 body.match-details-page.cl-match-details-page #lineupPhotoExport{position:relative!important;isolation:isolate!important}
-#lineupPhotoExport #lineupNativeImageSurface{
+body.match-details-page.cl-match-details-page #lineupPhotoExport #lineupNativeImageSurface{
   position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
   object-fit:fill!important;display:block!important;z-index:5000!important;
   user-select:auto!important;-webkit-user-select:auto!important;-webkit-touch-callout:default!important;
   touch-action:pan-y!important;cursor:context-menu!important;background:transparent!important;
 }
-#lineupPhotoExport #downloadLineupBtn,
-#lineupPhotoExport .lineup-download-bar{position:relative!important;z-index:5002!important}
-#lineupPhotoExport #lineupNativeImageSurface:not([data-ready="true"]){visibility:hidden!important}
+body.match-details-page.cl-match-details-page #lineupPhotoExport #downloadLineupBtn,
+body.match-details-page.cl-match-details-page #lineupPhotoExport .lineup-download-bar{position:relative!important;z-index:5002!important}
+body.match-details-page.cl-match-details-page #lineupPhotoExport #lineupNativeImageSurface:not([data-ready="true"]){visibility:hidden!important}
 </style>
 
 </html>
