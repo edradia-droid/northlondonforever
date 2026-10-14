@@ -3351,4 +3351,40 @@ body.match-details-page.cl-match-details-page .pitch-stage .pitch-player{
   filter:drop-shadow(0 5px 8px rgba(0,0,0,.32));
 }
 </style>
+
+<style id="nl4-cl-mobile-pitch-fit-v1">
+/* CL Match Details only: let the pitch use the available mobile box width.
+   Desktop layout and the Premier League/prediction pages remain unchanged. */
+@media (max-width: 700px) {
+  body.match-details-page.cl-match-details-page #lineupPhotoExport .broadcast-grid {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  body.match-details-page.cl-match-details-page #lineupPhotoExport .pitch-stage {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+    align-items: center !important;
+    overflow: hidden !important;
+  }
+
+  body.match-details-page.cl-match-details-page #lineupPhotoExport #startingXI {
+    box-sizing: border-box !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    aspect-ratio: 76 / 96 !important;
+  }
+}
+</style>
+
 </html>
