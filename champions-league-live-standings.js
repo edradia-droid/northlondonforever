@@ -5,8 +5,7 @@ async function loadArsenalOverview(){
  if(!db)return;
  const result=await db.from('ucl_standings').select('position,team_name,played,wins,draws,losses,goals_for,goals_against,goal_difference,points,source_updated_at').eq('season','2026/27').eq('stage','league-phase').eq('source','BSD');
  if(result.error){console.warn('NL4 UCL overview standings:',result.error);return;}
- const rows=result.data||[];
- const names=new Set(rows.map(r=>String(r.team_name||'').trim().toLowerCase()));
+ const rows=result.data||[],names=new Set(rows.map(r=>String(r.team_name||'').trim().toLowerCase()));
  let valid=rows.length===36&&names.size===36;
  for(const r of rows){
   const fields=['position','played','wins','draws','losses','goals_for','goals_against','goal_difference','points'];
