@@ -2440,29 +2440,74 @@
 
       const clone = board.cloneNode(true);
 
-      // Stabilize pitch geometry for the downloaded image. html2canvas can
-      // resolve inherited responsive layout differently from the visible page;
-      // explicitly anchor every player to the pitch using its original x/y
-      // coordinates so markers cannot drift together toward one side.
+      // Snapshot the visible pitch geometry before cloning. html2canvas renders
+      // in a separate document where responsive CSS can change the pitch size
+      // and cause percentage-positioned players to bunch up or drift sideways.
+      const sourcePitch = board.querySelector('.football-pitch');
+      const sourcePitchRect = sourcePitch ? sourcePitch.getBoundingClientRect() : null;
+      const sourceBoardRect = board.getBoundingClientRect();
+      const sourcePitchStyle = sourcePitch ? getComputedStyle(sourcePitch) : null;
+      const pitchWidth = sourcePitchRect ? Math.round(sourcePitchRect.width) : 0;
+      const pitchHeight = sourcePitchRect ? Math.round(sourcePitchRect.height) : 0;
+      const pitchBorderLeft = sourcePitchStyle ? parseFloat(sourcePitchStyle.borderLeftWidth) || 0 : 0;
+      const pitchBorderTop = sourcePitchStyle ? parseFloat(sourcePitchStyle.borderTopWidth) || 0 : 0;
+      const markerGeometry = sourcePitch && sourcePitchRect
+        ? Array.from(sourcePitch.querySelectorAll('.player-marker')).map(marker => {
+            const rect = marker.getBoundingClientRect();
+            return {
+              x: rect.left + rect.width / 2 - sourcePitchRect.left - pitchBorderLeft,
+              y: rect.top + rect.height / 2 - sourcePitchRect.top - pitchBorderTop,
+              depth: marker.style.getPropertyValue('--depth').trim() || '1'
+            };
+          })
+        : [];
+
+      // Freeze the export board and pitch to the visible dimensions, then place
+      // each player at its measured position in pixels. This deliberately avoids
+      // depending on media queries, CSS percentages, or flex/grid recalculation
+      // inside html2canvas's off-screen document.
       function normalizeExportPitch(root) {
+        root.style.setProperty('width', Math.round(sourceBoardRect.width) + 'px', 'important');
+        root.style.setProperty('min-width', Math.round(sourceBoardRect.width) + 'px', 'important');
+        root.style.setProperty('max-width', Math.round(sourceBoardRect.width) + 'px', 'important');
+        root.style.setProperty('box-sizing', 'border-box', 'important');
         const pitch = root.querySelector('.football-pitch');
         if (!pitch) return;
+        if (pitchWidth > 0) {
+          pitch.style.setProperty('width', pitchWidth + 'px', 'important');
+          pitch.style.setProperty('min-width', pitchWidth + 'px', 'important');
+          pitch.style.setProperty('max-width', pitchWidth + 'px', 'important');
+        }
+        if (pitchHeight > 0) {
+          pitch.style.setProperty('height', pitchHeight + 'px', 'important');
+          pitch.style.setProperty('min-height', pitchHeight + 'px', 'important');
+          pitch.style.setProperty('max-height', pitchHeight + 'px', 'important');
+          pitch.style.setProperty('aspect-ratio', 'auto', 'important');
+        }
         pitch.style.setProperty('position', 'relative', 'important');
         pitch.style.setProperty('box-sizing', 'border-box', 'important');
-
-        root.querySelectorAll('.football-pitch .player-marker').forEach(marker => {
-          const x = marker.style.getPropertyValue('--x').trim();
-          const y = marker.style.getPropertyValue('--y').trim();
-          if (!x || !y) return;
+        pitch.style.setProperty('transform', 'none', 'important');
+        const markers = Array.from(pitch.querySelectorAll('.player-marker'));
+        markers.forEach((marker, index) => {
+          const point = markerGeometry[index];
+          if (!point) return;
           marker.style.setProperty('position', 'absolute', 'important');
-          marker.style.setProperty('left', x, 'important');
-          marker.style.setProperty('top', y, 'important');
+          marker.style.setProperty('left', point.x + 'px', 'important');
+          marker.style.setProperty('top', point.y + 'px', 'important');
           marker.style.setProperty('right', 'auto', 'important');
           marker.style.setProperty('bottom', 'auto', 'important');
           marker.style.setProperty('margin', '0', 'important');
+          marker.style.setProperty('--depth', point.depth, 'important');
           marker.style.setProperty('transform', 'translate(-50%,-50%) scale(var(--depth,1))', 'important');
           marker.style.setProperty('transform-origin', 'center center', 'important');
+          marker.style.setProperty('transition', 'none', 'important');
           marker.style.setProperty('animation', 'none', 'important');
+        });
+        pitch.querySelectorAll('.pitch-off-marker').forEach(marker => {
+          const x = marker.style.getPropertyValue('--x').trim();
+          const y = marker.style.getPropertyValue('--y').trim();
+          if (x.endsWith('%')) marker.style.setProperty('left', (parseFloat(x) / 100 * pitchWidth) + 'px', 'important');
+          if (y.endsWith('%')) marker.style.setProperty('top', (parseFloat(y) / 100 * pitchHeight) + 'px', 'important');
         });
       }
       normalizeExportPitch(clone);
