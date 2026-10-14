@@ -17,7 +17,17 @@ function renderFixtures(){
 }
 function renderTable(rows){
  const body=document.getElementById('uclTableBody');if(!body)return;
- if(!rows.length){body.innerHTML='<tr><td colspan="10">Champions League standings are not available from BSD yet.</td></tr>';return;}
+ const fail='Standings temporarily withheld because the source data failed validation.';
+ if(!Array.isArray(rows)||rows.length!==36){body.innerHTML='<tr><td colspan="10">'+fail+'</td></tr>';return;}
+ const names=new Set();
+ for(const r of rows){
+  const team=String(r.team_name||'').trim().toLowerCase();
+  const fields=['position','played','wins','draws','losses','goals_for','goals_against','goal_difference','points'];
+  if(!team||names.has(team)||fields.some(k=>r[k]===null||r[k]===undefined||!Number.isFinite(Number(r[k])))){body.innerHTML='<tr><td colspan="10">'+fail+'</td></tr>';return;}
+  names.add(team);
+  const played=Number(r.played),w=Number(r.wins),d=Number(r.draws),l=Number(r.losses),gf=Number(r.goals_for),ga=Number(r.goals_against),gd=Number(r.goal_difference),pts=Number(r.points);
+  if(played!==w+d+l||pts!==w*3+d||gd!==gf-ga){body.innerHTML='<tr><td colspan="10">'+fail+'</td></tr>';return;}
+ }
  body.innerHTML=rows.map(r=>'<tr class="'+(String(r.team_name).toLowerCase()==='arsenal'?'arsenal-row':'')+'"><td>'+esc(r.position)+'</td><td class="club-cell"><div class="club-wrap"><span class="club-dot">'+esc(String(r.team_name||'').slice(0,3).toUpperCase())+'</span><span>'+esc(r.team_name)+'</span></div></td><td>'+esc(r.played)+'</td><td>'+esc(r.wins)+'</td><td>'+esc(r.draws??0)+'</td><td>'+esc(r.losses)+'</td><td>'+esc(r.goals_for)+'</td><td>'+esc(r.goals_against)+'</td><td>'+((Number(r.goal_difference)>0?'+':'')+esc(r.goal_difference))+'</td><td>'+esc(r.points)+'</td></tr>').join('');
 }
 function styles(){const s=document.createElement('style');s.textContent='.ucl-fixture-bottom{display:block!important;padding-top:13px!important}.ucl-fixture-caption{display:flex;justify-content:space-between}.ucl-fixture-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.ucl-action{display:inline-flex;padding:8px 11px;border-radius:9px;text-decoration:none;font-size:9px;font-weight:1000}.ucl-action-details{color:#d8ad45;border:1px solid rgba(216,173,69,.38)}.fixture-status.fulltime{color:#8df0b2}.ucl-score{width:auto!important;padding:0 13px!important;border-radius:14px!important}@media(max-width:600px){.ucl-action{flex:1}}';document.head.appendChild(s)}
@@ -26,7 +36,7 @@ async function sync(){
  if(!db){console.warn('NL4 UCL: Supabase client unavailable; retrying after client load');setTimeout(sync,250);return;}
  try{
   const [fixturesResult,standingsResult]=await Promise.all([
-   db.from('fixtures').select('id,matchday,status,kickoff_at,venue,home_team,away_team,home_score,away_score,home_crest_url,away_crest_url,source').eq('season','2026/27').eq('competition','UEFA Champions League').eq('source','BSD').order('matchday',{ascending:true}),
+   db.from('fixtures').select('id,matchday,status,kickoff_at,venue,home_team,away_team,home_score,away_score,home_crest_url,away_crest_url,source').eq('season','2026/27').eq('competition','UEFA Champions League').eq('source','BSD').or('home_team.ilike.%Arsenal%,away_team.ilike.%Arsenal%').order('matchday',{ascending:true}),
    db.from('ucl_standings').select('position,team_name,played,wins,draws,losses,goals_for,goals_against,goal_difference,points,source').eq('season','2026/27').eq('stage','league-phase').eq('source','BSD').order('position',{ascending:true})
   ]);
   if(fixturesResult.error)throw fixturesResult.error;
