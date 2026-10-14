@@ -2521,6 +2521,28 @@
         };
       });
 
+      // The red OFF/time badges are rendered in a separate overlay and their
+      // slot coordinates are authoritative. Use those badge centres to anchor
+      // the matching outgoing player's figure in the exported image, rather
+      // than relying on the larger marker's bounding-box centre (which includes
+      // the player name and can drift when html2canvas lays out the clone).
+      const normaliseExportName = value => String(value || '')
+        .split(' • ')[0]
+        .normalize('NFD')
+        .replace(/[\\u0300-\\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '');
+      const offBadgeGeometry = new Map(
+        [...sourcePitch.querySelectorAll('.pitch-off-marker[aria-label]')].map(badge => {
+          const badgeRect = badge.getBoundingClientRect();
+          const name = normaliseExportName(badge.getAttribute('aria-label'));
+          return [name, {
+            x: (badgeRect.left + badgeRect.width / 2 - sourcePitchRect.left) / sourcePitchRect.width,
+            y: (badgeRect.top + badgeRect.height / 2 - sourcePitchRect.top) / sourcePitchRect.height
+          }];
+        })
+      );
+
       // Capture the full board. In the html2canvas clone, flatten each marker
       // to the exact centre measured on the visible pitch and prevent the
       // Champions League stage from clipping marker edges.
@@ -2581,7 +2603,12 @@
           clonedPitch.style.setProperty('box-shadow', pitchVisual.boxShadow, 'important');
 
           clonedPitch.querySelectorAll('.player-marker').forEach((marker, index) => {
-            const point = markerGeometry[index];
+            let point = markerGeometry[index];
+            const playerName = normaliseExportName(marker.getAttribute('title'));
+            const offPoint = offBadgeGeometry.get(playerName);
+            // Outgoing players must align to the OFF/time badge's measured slot.
+            // Other players retain their own live-screen measurements.
+            if (offPoint) point = offPoint;
             if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
             marker.style.setProperty('position', 'absolute', 'important');
             marker.style.setProperty('left', (point.x * 100) + '%', 'important');
