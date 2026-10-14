@@ -2438,6 +2438,11 @@
       if (liveRect.width <= 0 || liveRect.height <= 0) {
         throw new Error('The visible lineup board has no measurable size.');
       }
+      // Force html2canvas to use the same responsive breakpoint as the live page.
+      const captureViewport = {
+        width: Math.max(1, document.documentElement.clientWidth || window.innerWidth),
+        height: Math.max(1, window.innerHeight)
+      };
 
       // The prediction page's pitch is a flat 2D layout. This match-details
       // pitch additionally uses CSS perspective and animated 3D elements.
@@ -2521,17 +2526,38 @@
       // Champions League stage from clipping marker edges.
       const pixelRatio = Math.min(2, Math.max(1, window.devicePixelRatio || 1.5));
       const canvas = await window.html2canvas(board, {
-        backgroundColor: '#08150c',
+        backgroundColor: null,
         scale: pixelRatio,
         useCORS: true,
         allowTaint: false,
         logging: false,
+        width: Math.ceil(liveRect.width),
+        height: Math.ceil(liveRect.height),
+        windowWidth: captureViewport.width,
+        windowHeight: captureViewport.height,
+        scrollX: 0,
+        scrollY: 0,
         onclone: clonedDocument => {
           const clonedBoard = clonedDocument.getElementById('lineupPhotoExport');
           if (!clonedBoard) return;
+          clonedBoard.style.setProperty('width', liveRect.width + 'px', 'important');
+          clonedBoard.style.setProperty('min-width', liveRect.width + 'px', 'important');
+          clonedBoard.style.setProperty('max-width', liveRect.width + 'px', 'important');
+          clonedBoard.style.setProperty('height', liveRect.height + 'px', 'important');
+          clonedBoard.style.setProperty('overflow', 'visible', 'important');
           const clonedStage = clonedBoard.querySelector('.pitch-stage');
           const clonedPitch = clonedBoard.querySelector('#startingXI');
           if (clonedStage) {
+            const liveStage = board.querySelector('.pitch-stage');
+            const stageRect = liveStage?.getBoundingClientRect();
+            if (stageRect && stageRect.width > 0 && stageRect.height > 0) {
+              clonedStage.style.setProperty('box-sizing', 'border-box', 'important');
+              clonedStage.style.setProperty('width', stageRect.width + 'px', 'important');
+              clonedStage.style.setProperty('min-width', stageRect.width + 'px', 'important');
+              clonedStage.style.setProperty('max-width', stageRect.width + 'px', 'important');
+              clonedStage.style.setProperty('height', stageRect.height + 'px', 'important');
+              clonedStage.style.setProperty('min-height', stageRect.height + 'px', 'important');
+            }
             clonedStage.style.setProperty('overflow', 'visible', 'important');
             clonedStage.style.setProperty('perspective', 'none', 'important');
             clonedStage.style.setProperty('transform', 'none', 'important');
