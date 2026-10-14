@@ -2426,12 +2426,11 @@
     btn.title = 'Creating photo…';
     btn.setAttribute('aria-label', 'Creating lineup photo');
 
-    // Match the proven prediction-page export: capture the live visible board.
-    // Do not clone the board, reflow it, or recalculate player coordinates.
     const captureState = {
       hidden: [],
       scrollX: window.scrollX,
-      scrollY: window.scrollY
+      scrollY: window.scrollY,
+      temporaryStyle: null
     };
 
     try {
@@ -2440,15 +2439,35 @@
         throw new Error('The visible lineup board has no measurable size.');
       }
 
-      // Hide only download controls that might sit inside the captured board.
-      // Restore their original inline display values after capture.
+      // The prediction page's pitch is a flat 2D layout. This match-details
+      // pitch additionally uses CSS perspective and animated 3D elements.
+      // html2canvas does not reproduce that perspective consistently, so
+      // flatten only the capture state while leaving the visible layout intact.
+      captureState.temporaryStyle = document.createElement('style');
+      captureState.temporaryStyle.textContent = `
+        #lineupPhotoExport .pitch-stage {
+          perspective: none !important;
+          transform: none !important;
+          transform-style: flat !important;
+        }
+        #lineupPhotoExport .player-marker {
+          transition: none !important;
+          animation: none !important;
+        }
+        #lineupPhotoExport .kit-player {
+          animation: none !important;
+        }
+      `;
+      document.head.appendChild(captureState.temporaryStyle);
+
       board.querySelectorAll('#downloadLineupBtn, .lineup-download-bar').forEach(el => {
         captureState.hidden.push({ el, display: el.style.display });
         el.style.display = 'none';
       });
 
-      // Let the browser settle, then wait for every player photo to be ready.
+      // Wait for the browser to apply the flat capture state before measuring.
       await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
       const images = [...board.querySelectorAll('img')];
       await Promise.all(images.map(img => {
         if (img.complete) {
@@ -2461,8 +2480,8 @@
         });
       }));
 
-      // Capture the actual on-screen board at its existing dimensions.
-      // This is intentionally the same method used by predict-lineup.html.
+      // Capture the live board like predict-lineup.html, with 3D perspective
+      // and motion disabled only for the duration of this screenshot.
       const pixelRatio = Math.min(2, Math.max(1, window.devicePixelRatio || 1.5));
       const canvas = await window.html2canvas(board, {
         backgroundColor: '#08150c',
@@ -2488,6 +2507,7 @@
       alert('Could not create the lineup photo. Please try again.');
     } finally {
       captureState.hidden.forEach(item => { item.el.style.display = item.display; });
+      if (captureState.temporaryStyle) captureState.temporaryStyle.remove();
       window.scrollTo(captureState.scrollX, captureState.scrollY);
       btn.disabled = false;
       btn.textContent = oldText;
