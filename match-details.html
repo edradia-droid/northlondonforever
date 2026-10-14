@@ -2513,26 +2513,8 @@
         height: Math.max(1, window.innerHeight, Math.ceil(liveRect.height))
       };
 
-      // The prediction page's pitch is a flat 2D layout. This match-details
-      // pitch additionally uses CSS perspective and animated 3D elements.
-      // html2canvas does not reproduce that perspective consistently, so
-      // flatten only the capture state while leaving the visible layout intact.
-      captureState.temporaryStyle = document.createElement('style');
-      captureState.temporaryStyle.textContent = `
-        #lineupPhotoExport .pitch-stage {
-          perspective: none !important;
-          transform: none !important;
-          transform-style: flat !important;
-        }
-        #lineupPhotoExport .player-marker {
-          transition: none !important;
-          animation: none !important;
-        }
-        #lineupPhotoExport .kit-player {
-          animation: none !important;
-        }
-      `;
-      document.head.appendChild(captureState.temporaryStyle);
+      // Capture-only presentation changes are applied to html2canvas's clone below.
+      // The live Champions League pitch is never restyled during image generation.
 
       board.querySelectorAll('#downloadLineupBtn, .lineup-download-bar').forEach(el => {
         captureState.hidden.push({ el, display: el.style.display });
@@ -2638,6 +2620,10 @@
           clonedBoard.style.setProperty('overflow', 'visible', 'important');
           const clonedStage = clonedBoard.querySelector('.pitch-stage');
           const clonedPitch = clonedBoard.querySelector('#startingXI');
+          clonedBoard.querySelectorAll('.player-marker, .kit-player').forEach(el => {
+            el.style.setProperty('transition', 'none', 'important');
+            el.style.setProperty('animation', 'none', 'important');
+          });
           if (clonedStage) {
             const liveStage = board.querySelector('.pitch-stage');
             const stageRect = liveStage?.getBoundingClientRect();
