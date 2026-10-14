@@ -2440,6 +2440,33 @@
 
       const clone = board.cloneNode(true);
 
+      // Stabilize pitch geometry for the downloaded image. html2canvas can
+      // resolve inherited responsive layout differently from the visible page;
+      // explicitly anchor every player to the pitch using its original x/y
+      // coordinates so markers cannot drift together toward one side.
+      function normalizeExportPitch(root) {
+        const pitch = root.querySelector('.football-pitch');
+        if (!pitch) return;
+        pitch.style.setProperty('position', 'relative', 'important');
+        pitch.style.setProperty('box-sizing', 'border-box', 'important');
+
+        root.querySelectorAll('.football-pitch .player-marker').forEach(marker => {
+          const x = marker.style.getPropertyValue('--x').trim();
+          const y = marker.style.getPropertyValue('--y').trim();
+          if (!x || !y) return;
+          marker.style.setProperty('position', 'absolute', 'important');
+          marker.style.setProperty('left', x, 'important');
+          marker.style.setProperty('top', y, 'important');
+          marker.style.setProperty('right', 'auto', 'important');
+          marker.style.setProperty('bottom', 'auto', 'important');
+          marker.style.setProperty('margin', '0', 'important');
+          marker.style.setProperty('transform', 'translate(-50%,-50%) scale(var(--depth,1))', 'important');
+          marker.style.setProperty('transform-origin', 'center center', 'important');
+          marker.style.setProperty('animation', 'none', 'important');
+        });
+      }
+      normalizeExportPitch(clone);
+
       // Force the Admin-selected grass/shirt theme directly onto the cloned export.
       // html2canvas can otherwise fall back to an older computed pitch background.
       const exportGrass = board.dataset.grass === 'black' ? 'black' : 'green';
@@ -2492,6 +2519,7 @@
           if (clonedBoard) {
             clonedBoard.dataset.grass = exportGrass;
             clonedBoard.dataset.shirt = exportShirt;
+            normalizeExportPitch(clonedBoard);
           }
 
           const pitch = clonedDocument.querySelector('#lineupPhotoExport .football-pitch');
