@@ -2940,23 +2940,26 @@ async function syncFootballDataNow() {
       throw new Error(syncData.error || "The sync function returned ok:false.");
     }
 
-    const standingsError = syncData?.leagueStandingsUpdated?.error;
+    const fixturesAvailable = Number(syncData?.fixturesAvailable);
+    const fixturesChecked = Number(syncData?.fixturesChecked);
+    const fixturesChanged = Number(syncData?.fixturesChanged);
+    const eventsWritten = Number(syncData?.eventsWritten);
+    const syncErrors = Array.isArray(syncData?.errors) ? syncData.errors : [];
     const summary = [
-      "BSD core refresh response received (fixtures/results/incidents/current standings). Player and lineup enrichment is not part of this quick refresh.",
-      "Fixtures processed: " + (syncData.fixtures ?? "not reported"),
-      "Standings: " + (standingsError ? "FAILED — " + standingsError : (syncData.leagueStandingsUpdated?.rows === 20 ? "20 rows published" : JSON.stringify(syncData.leagueStandingsUpdated ?? "not reported"))),
+      "BSD targeted live refresh response received. This mode checks at most two live or near-kickoff Arsenal Premier League fixtures; it does not rebuild the full fixture list or standings and does not enrich lineups/player stats.",
+      "Eligible Arsenal fixtures available: " + (Number.isFinite(fixturesAvailable) ? fixturesAvailable : "not reported"),
+      "Fixtures checked with BSD: " + (Number.isFinite(fixturesChecked) ? fixturesChecked : "not reported"),
+      "Fixtures changed: " + (Number.isFinite(fixturesChanged) ? fixturesChanged : "not reported"),
+      "Match events written: " + (Number.isFinite(eventsWritten) ? eventsWritten : "not reported"),
+      syncErrors.length ? "Sync errors: " + syncErrors.join(" | ") : (fixturesChecked === 0 ? "No eligible live/near-kickoff fixtures were checked; this run does not confirm a wider fixture or standings refresh." : "No sync errors reported."),
       "Response time: " + new Date().toLocaleString()
     ].join(" ");
-    setBsdSyncRunResult(summary, standingsError ? "error" : "success");
+    setBsdSyncRunResult(summary, "success");
 
     try { await loadFootballApiSyncStatus(); } catch (_) {}
     try {
       await loadAll();
-      if (standingsError) {
-        setBsdSyncRunResult(summary + " Other Admin data refresh attempted; standings still need repair.", "error");
-      } else {
-        setBsdSyncRunResult(summary + " Admin data refreshed.", "success");
-      }
+      setBsdSyncRunResult(summary + " Admin data refreshed; this is separate from the BSD changes reported above.", "success");
     } catch (refreshError) {
       console.error("BSD sync finished but admin data refresh failed:", refreshError);
       setBsdSyncRunResult(summary + " The sync response was received, but reloading other Admin data failed: " + (refreshError?.message || String(refreshError)), "error");
