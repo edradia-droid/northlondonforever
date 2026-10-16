@@ -2011,10 +2011,18 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
   function render(feed,rows){
     const order={Goalkeeper:1,Defender:2,Midfielder:3,Forward:4,Squad:5};
     // BSD is the canonical identity/display source for this table.
-    const current=(feed||[]).map(f=>{const s=findStat(f,rows);if(!s)return null;return{...s,name:s.player_name||f.name,position:positionLabel(s.position||f.position),number:f.number??"—"}}).filter(Boolean).sort((a,b)=>(order[a.position]||9)-(order[b.position]||9)||String(a.name).localeCompare(String(b.name)));
-    tbody.innerHTML=current.length?current.map(p=>`<tr data-player="${esc(p.name)}" data-position="${esc(p.position)}"><td class="player-cell"><div class="pl-player-name"><span class="pl-player-number">${esc(p.number)}</span><span><strong>${esc(p.name)}</strong><small>${esc(p.position)}</small></span></div></div></td><td>${n(p.appearances)}</td><td>${n(p.starts)}</td><td>${n(p.minutes)}</td><td class="pl-stat-hot">${n(p.goals)}</td><td class="pl-stat-hot">${n(p.assists)}</td><td>${n(p.clean_sheets)}</td><td>${n(p.yellow_cards)}</td><td>${n(p.red_cards)}</td><td>${n(p.man_of_the_match)}</td><td>${n(p.shots)}</td><td>${n(p.shots_on_target)}</td><td>${n(p.chances_created)}</td><td>${n(p.tackles)}</td><td>${n(p.interceptions)}</td><td>${n(p.saves)}</td></tr>`).join(""):'<tr><td colspan="16">No Arsenal Premier League player statistics are available yet.</td></tr>';
+    // Render every player in the official squad feed, even when BSD has not
+    // returned a stats row yet. Missing data is explicitly labelled rather than
+    // silently removing a registered player from the public squad table.
+    const current=(feed||[]).map(f=>{
+      const stat=findStat(f,rows);
+      const p={appearances:0,starts:0,minutes:0,goals:0,assists:0,clean_sheets:0,yellow_cards:0,red_cards:0,man_of_the_match:0,shots:0,shots_on_target:0,chances_created:0,tackles:0,interceptions:0,saves:0,...(stat||{}),name:f.name,position:positionLabel(f.position),number:f.number??"—",hasStats:!!stat};
+      return p;
+    }).sort((a,b)=>(order[a.position]||9)-(order[b.position]||9)||String(a.name).localeCompare(String(b.name)));
+    tbody.innerHTML=current.length?current.map(p=>`<tr data-player="${esc(p.name)}" data-position="${esc(p.position)}"><td class="player-cell"><div class="pl-player-name"><span class="pl-player-number">${esc(p.number)}</span><span><strong>${esc(p.name)}</strong><small>${esc(p.position)}${p.hasStats?"":" • Stats not yet available"}</small></span></div></td><td>${n(p.appearances)}</td><td>${n(p.starts)}</td><td>${n(p.minutes)}</td><td class="pl-stat-hot">${n(p.goals)}</td><td class="pl-stat-hot">${n(p.assists)}</td><td>${n(p.clean_sheets)}</td><td>${n(p.yellow_cards)}</td><td>${n(p.red_cards)}</td><td>${n(p.man_of_the_match)}</td><td>${n(p.shots)}</td><td>${n(p.shots_on_target)}</td><td>${n(p.chances_created)}</td><td>${n(p.tackles)}</td><td>${n(p.interceptions)}</td><td>${n(p.saves)}</td></tr>`).join(""):'<tr><td colspan="16">No Arsenal squad records are available yet.</td></tr>';
     document.querySelectorAll("[data-player-filter]").forEach(btn=>btn.onclick=()=>{document.querySelectorAll("[data-player-filter]").forEach(x=>x.classList.remove("active"));btn.classList.add("active");const filter=btn.dataset.playerFilter;tbody.querySelectorAll("tr[data-position]").forEach(row=>row.hidden=filter!=="All"&&row.dataset.position!==filter)});
   }
+  function currentSquadCount(feed){return Array.isArray(feed)?feed.length:0;}
   async function load(){
     const db=window.nl4Supabase,feed=window.NL4_FINAL_PL_SQUADS?.Arsenal;
     if(!db){status.textContent="Supabase is not available.";return}
@@ -2024,7 +2032,7 @@ body.season-complete [data-v1501-hidden="season-complete"]{display:none!importan
     if(error){console.error("NL4 player stats:",error);status.textContent="Could not load canonical Arsenal player statistics.";return}
     const rows=data||[];render(feed,rows);
     const latest=rows.reduce((m,r)=>r.updated_at&&(!m||new Date(r.updated_at)>new Date(m))?r.updated_at:m,null);
-    status.textContent=`${feed.length} current Arsenal squad player records • BSD-backed Supabase • updated ${latest?new Date(latest).toLocaleString():"—"}`;
+    status.textContent=`${currentSquadCount(feed)} current Arsenal squad players shown • BSD-backed Supabase • updated ${latest?new Date(latest).toLocaleString():"—"}`;
   }
   window.nl4LoadArsenalPlayerStats=load;
   window.addEventListener("load",()=>setTimeout(load,850));
