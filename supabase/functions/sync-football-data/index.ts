@@ -311,9 +311,11 @@ async function syncRootPlayerStats(db:any,arsenalId:any,key:string){
     squad=arr(squadBody);
     squadRequestCache.set(squadKey,squad);
   }
-  const players=squad.map((q:any)=>{const p=q?.player??q;return{id:p?.id??q?.player_id,name:canonicalPlayerName(nm(p)??q?.player_name??q?.name),position:p?.position??q?.position??null,image_url:p?.image_url??q?.image_url??null,profile_url:p?.profile_url??q?.profile_url??null};}).filter((p:any)=>p.id&&p.name);
-  if(players.length<15)return 0;
-  const existing=await db.from('premier_league_player_stats').select('player_name,position,image_url,profile_url,appearances,starts,minutes,clean_sheets').eq('season',SEASON);if(existing.error)throw existing.error;
+  const extractSquad=(x:any,depth=0):any[]=>{if(depth>5||x==null)return [];if(Array.isArray(x))return x;if(typeof x!=='object')return [];for(const k of ['squad','players','results','data','team','members']){const v=x[k];if(Array.isArray(v))return v;if(v&&typeof v==='object'){const nested=extractSquad(v,depth+1);if(nested.length)return nested;}}return [];};
+  squad=extractSquad(squad);
+  const players=squad.map((q:any)=>{const p=q?.player??q?.person??q;const rawId=p?.id??p?.player_id??q?.player_id??q?.id;const rawName=nm(p)??q?.player_name??q?.name??q?.full_name;return{id:rawId,name:canonicalPlayerName(rawName),position:p?.position??q?.position??null,image_url:p?.image_url??q?.image_url??null,profile_url:p?.profile_url??q?.profile_url??null};}).filter((p:any)=>p.id!=null&&p.name);
+  if(players.length<15)throw new Error('Player statistics refresh stopped safely: BSD squad response yielded only '+players.length+' valid players; existing stats were not overwritten.');
+  const existing=await db.from('premier_league_player_stats').select('player_name,position,image_url,profile_url,appearances,starts,minutes,goals,assists,clean_sheets,yellow_cards,red_cards,man_of_the_match,shots,shots_on_target,chances_created,tackles,interceptions,saves').eq('season',SEASON);if(existing.error)throw existing.error;
   const metaRows=existing.data??[];
   const normName=(v:any)=>String(v??'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[øØ]/g,'o').replace(/[^a-z0-9]+/gi,' ').trim().toLowerCase();
   const identityMatch=(a:any,b:any)=>{
@@ -366,13 +368,16 @@ async function syncRootPlayerStats(db:any,arsenalId:any,key:string){
     }
     // Do not derive appearances/starts/minutes from BSD player-stat logs.
     // Confirmed lineups are the sole source for participation reconciliation.
+    // If BSD returns no match-level rows for a squad member, preserve their last verified
+    // season totals rather than replacing them with zeros.
+    if(!playersWithEventEvidence.has(keyOf(p.name))&&existingMeta){for(const field of ['goals','assists','yellow_cards','red_cards','man_of_the_match','shots','shots_on_target','chances_created','tackles','interceptions','saves'])a[field]=Number((existingMeta as any)[field]??0);}
     byPlayer.set(keyOf(p.name),a);
   }
   const active=[...byPlayer.values()].filter((a:any)=>playersWithEventEvidence.has(keyOf(a.player_name)));
   const completed=await db.from('fixtures').select('home_team,away_team,home_score,away_score').eq('season',SEASON).eq('competition','Premier League').eq('status','fulltime').or('home_team.eq.Arsenal,away_team.eq.Arsenal');if(completed.error)throw completed.error;
   const rows=completed.data??[],expectedGoals=rows.reduce((s:number,r:any)=>s+(String(r.home_team)==='Arsenal'?Number(r.home_score||0):Number(r.away_score||0)),0),rootGoals=[...byPlayer.values()].reduce((s:number,a:any)=>s+Number(a.goals||0),0),rootAssists=[...byPlayer.values()].reduce((s:number,a:any)=>s+Number(a.assists||0),0);
   // Guard the statistical feed itself, but never use player-stat minutes to validate participation.
-  if(active.length<10||rootGoals>expectedGoals||rootAssists>rootGoals)return 0;
+  if(active.length<10||rootGoals>expectedGoals||rootAssists>rootGoals)throw new Error('Player statistics refresh rejected by completeness guard: '+JSON.stringify({squadPlayers:players.length,playersWithPLMatchEvidence:active.length,rootGoals,expectedGoals,rootAssists,reason:active.length<10?'insufficient player match evidence':rootGoals>expectedGoals?'player goals exceed completed Arsenal PL team goals':'assists exceed goals'}));
   const outRows:any[]=[],rrRows:any[]=[];
   for(const a of byPlayer.values()){const m=metaFor(a.player_name);outRows.push({...a,season:SEASON,position:a.position??m?.position??null,image_url:a.image_url??m?.image_url??null,profile_url:a.profile_url??m?.profile_url??null,updated_at:new Date().toISOString()});rrRows.push({season:SEASON,club:'Arsenal',player_name:a.player_name,position:a.position??m?.position??null,appearances:a.appearances,starts:a.starts,minutes:a.minutes,goals:a.goals,assists:a.assists,clean_sheets:a.clean_sheets,yellow_cards:a.yellow_cards,red_cards:a.red_cards,man_of_the_match:a.man_of_the_match,shots:a.shots,shots_on_target:a.shots_on_target,chances_created:a.chances_created,tackles:a.tackles,interceptions:a.interceptions,saves:a.saves,updated_at:new Date().toISOString()});}
   const up=await db.from('premier_league_player_stats').upsert(outRows,{onConflict:'season,player_name'});if(up.error)throw up.error;
