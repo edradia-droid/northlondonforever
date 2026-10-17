@@ -849,6 +849,9 @@ async function run(reqUrl=new URL('https://local.invalid')){
     throw new Error('BSD quota guard active until '+guard.data.blocked_until+' ('+(guard.data.last_error_code??'rate limited')+'); no BSD requests sent.');
   }
 
+  // Standings-only scheduled mode: refresh the validated 20-club table without running the heavier Arsenal fixture/player enrichment pipeline.
+  if(reqUrl.searchParams.get('standings_only')==='1')return await syncCurrentLeagueStandings(db,key);
+
   if(reqUrl.searchParams.get('live_refresh')==='1')return await syncLiveCoreOnly(db,key);
 
   await primeTeamIdCache(db);
@@ -1038,5 +1041,5 @@ Deno.serve(async(req)=>{
     if(adminError){console.error('SYNC_ADMIN_CHECK_FAILED');return json({error:'Unable to verify admin access'},500);}
     if(!admin)return json({error:'Admin access required'},403);
   }
-  try{const u=new URL(req.url);let body:any={};try{body=await req.json()}catch{}if(body?.history===true)u.searchParams.set('history','1');if(body?.core_only===true)u.searchParams.set('core_only','1');if(body?.live_refresh===true)u.searchParams.set('live_refresh','1');if(body?.skip_standings===true)u.searchParams.set('skip_standings','1');if(body?.force_incidents===true)u.searchParams.set('force_incidents','1');return json(await run(u))}catch(e){console.error('BSD_SYNC_FAILED',e);return json({ok:false,error:e instanceof Error?e.message:JSON.stringify(e)},500)}
+  try{const u=new URL(req.url);let body:any={};try{body=await req.json()}catch{}if(body?.history===true)u.searchParams.set('history','1');if(body?.core_only===true)u.searchParams.set('core_only','1');if(body?.live_refresh===true)u.searchParams.set('live_refresh','1');if(body?.standings_only===true)u.searchParams.set('standings_only','1');if(body?.skip_standings===true)u.searchParams.set('skip_standings','1');if(body?.force_incidents===true)u.searchParams.set('force_incidents','1');return json(await run(u))}catch(e){console.error('BSD_SYNC_FAILED',e);return json({ok:false,error:e instanceof Error?e.message:JSON.stringify(e)},500)}
 });
