@@ -251,6 +251,7 @@ body{
 <input id="awayScore" type="number" min="0" max="30" value="0"><strong id="awayTeam">Away</strong>
 </div>
 <button id="saveScore" class="btn" type="button">Submit Score Prediction</button>
+<div id="scoreTurnstile" class="cf-turnstile-placeholder" aria-label="Security check for score prediction"></div>
 <span id="scoreMsg" class="msg"></span>
 </section>
 
@@ -296,12 +297,34 @@ body{
   <div class="subs-title">SUBSTITUTES • choose up to 9</div>
   <div id="subs" class="subs"></div>
   <button id="saveLineup" class="btn" type="button">Submit Lineup Prediction</button>
+  <div id="lineupTurnstile" class="cf-turnstile-placeholder" aria-label="Security check for lineup prediction"></div>
   <span id="lineupMsg" class="msg"></span>
 </div>
 </section>
 </div>
 </div>
 
+<script>
+window.NL4_TURNSTILE_TOKENS = { score: null, lineup: null };
+window.NL4_TURNSTILE_WIDGETS = { score: null, lineup: null };
+window.nl4TurnstileLoaded = function () {
+  if (!window.turnstile) return;
+  const sitekey = "0x4AAAAAAFZmGAs8IRqx_Mml";
+  window.NL4_TURNSTILE_WIDGETS.score = window.turnstile.render("#scoreTurnstile", {
+    sitekey,
+    callback: token => { window.NL4_TURNSTILE_TOKENS.score = token; },
+    "expired-callback": () => { window.NL4_TURNSTILE_TOKENS.score = null; },
+    "error-callback": () => { window.NL4_TURNSTILE_TOKENS.score = null; }
+  });
+  window.NL4_TURNSTILE_WIDGETS.lineup = window.turnstile.render("#lineupTurnstile", {
+    sitekey,
+    callback: token => { window.NL4_TURNSTILE_TOKENS.lineup = token; },
+    "expired-callback": () => { window.NL4_TURNSTILE_TOKENS.lineup = null; },
+    "error-callback": () => { window.NL4_TURNSTILE_TOKENS.lineup = null; }
+  });
+};
+</script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=nl4TurnstileLoaded&render=explicit" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js"></script>
 <script src="supabase-client.js?v=20260817-predict-fix"></script>
 <script src="premier-league-final-squads-2026-27.js"></script>
