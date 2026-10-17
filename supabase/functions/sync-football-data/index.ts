@@ -849,7 +849,7 @@ async function run(reqUrl=new URL('https://local.invalid')){
     throw new Error('BSD quota guard active until '+guard.data.blocked_until+' ('+(guard.data.last_error_code??'rate limited')+'); no BSD requests sent.');
   }
 
-  if(reqUrl.searchParams.get('core_only')==='1')return await syncLiveCoreOnly(db,key);
+  if(reqUrl.searchParams.get('live_refresh')==='1')return await syncLiveCoreOnly(db,key);
 
   await primeTeamIdCache(db);
   let arsenalId:any=teamIdCache.get(normalizeTeamName('Arsenal'))??null;
@@ -1022,5 +1022,21 @@ async function run(reqUrl=new URL('https://local.invalid')){
 Deno.serve(async(req)=>{
   if(req.method==='OPTIONS') return new Response('ok',{headers:corsHeaders});
   if(req.method!=='POST') return json({error:'POST required'},405);
-  try{const u=new URL(req.url);let body:any={};try{body=await req.json()}catch{}if(body?.history===true)u.searchParams.set('history','1');if(body?.core_only===true)u.searchParams.set('core_only','1');if(body?.skip_standings===true)u.searchParams.set('skip_standings','1');if(body?.force_incidents===true)u.searchParams.set('force_incidents','1');return json(await run(u))}catch(e){console.error('BSD_SYNC_FAILED',e);return json({ok:false,error:e instanceof Error?e.message:JSON.stringify(e)},500)}
+  // Privileged sync requires a trusted internal token or a verified NL4 admin session.
+  const internalSecret=Deno.env.get('NL4_SYNC_TOKEN')||'';
+  const suppliedInternal=req.headers.get('x-nl4-sync-token')||'';
+  const isTrustedInternal=Boolean(internalSecret&&suppliedInternal&&suppliedInternal===internalSecret);
+  if(!isTrustedInternal){
+    const bearer=(req.headers.get('Authorization')||'').match(/^Bearer\s+(.+)$/i)?.[1]?.trim()||'';
+    if(!bearer)return json({error:'Authentication required'},401);
+    const url=Deno.env.get('SUPABASE_URL')||'',key=serverKey();
+    if(!url||!key)return json({error:'Server authentication unavailable'},500);
+    const authDb=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
+    const {data:authData,error:authError}=await authDb.auth.getUser(bearer);
+    if(authError||!authData?.user)return json({error:'Invalid or expired session'},401);
+    const {data:admin,error:adminError}=await authDb.from('admins').select('user_id').eq('user_id',authData.user.id).maybeSingle();
+    if(adminError){console.error('SYNC_ADMIN_CHECK_FAILED');return json({error:'Unable to verify admin access'},500);}
+    if(!admin)return json({error:'Admin access required'},403);
+  }
+  try{const u=new URL(req.url);let body:any={};try{body=await req.json()}catch{}if(body?.history===true)u.searchParams.set('history','1');if(body?.core_only===true)u.searchParams.set('core_only','1');if(body?.live_refresh===true)u.searchParams.set('live_refresh','1');if(body?.skip_standings===true)u.searchParams.set('skip_standings','1');if(body?.force_incidents===true)u.searchParams.set('force_incidents','1');return json(await run(u))}catch(e){console.error('BSD_SYNC_FAILED',e);return json({ok:false,error:e instanceof Error?e.message:JSON.stringify(e)},500)}
 });
