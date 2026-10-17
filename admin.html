@@ -11,6 +11,12 @@
 @media(max-width:720px){.admin-match-row{grid-template-columns:52px 1fr}.admin-match-result{grid-column:1/-1;justify-content:space-between;padding-top:9px;border-top:1px solid rgba(255,255,255,.06)}.admin-event-row{grid-template-columns:1fr auto}.admin-event-type,.admin-event-minute{grid-column:auto}.admin-event-player{grid-column:1/2}.admin-event-actions{grid-column:2/3}.match-admin-section-head{align-items:flex-start;flex-direction:column}.match-dialog,.event-dialog{width:96vw}}
 
 .stats-admin-table{display:grid;gap:7px}.stats-admin-head,.stats-admin-row{display:grid;grid-template-columns:minmax(80px,1fr) minmax(120px,1.4fr) minmax(80px,1fr);gap:10px;align-items:center}.stats-admin-head{padding:0 4px 5px;color:#d8ad45;text-align:center;font-size:9px;letter-spacing:1px}.stats-admin-row{padding:8px;border:1px solid rgba(255,255,255,.07);border-radius:11px;background:#101010}.stats-admin-row span{text-align:center;color:#999;font-size:10px;font-weight:800}.stats-admin-row input{text-align:center;min-width:0}.stats-admin-row input:first-child{border-left:2px solid #d8001f}.stats-admin-row input:last-child{border-right:2px solid #d8ad45}@media(max-width:520px){.stats-admin-head,.stats-admin-row{grid-template-columns:70px 1fr 70px;gap:6px}.stats-admin-row{padding:6px}.stats-admin-row span{font-size:8px}}
+
+ .fan-prediction-submissions-list{display:grid;gap:10px;margin-top:12px}
+ .fan-submission-card{border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px;background:rgba(255,255,255,.025);overflow-wrap:anywhere}
+ .fan-submission-card p{margin:7px 0;font-size:12px;line-height:1.6;color:#bfc0c6}
+ .fan-submission-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12px}
+ .fan-submission-head span{color:#92939b;font-size:11px}
 </style>
 
 <style>
@@ -642,6 +648,14 @@
       <p class="eyebrow">SCORE PROBABILITY</p>
       <div id="adminScoreProbabilityList" class="admin-score-probability-list"></div>
     </div>
+  </section>
+
+  <section class="match-admin-section">
+    <div class="match-admin-section-head">
+      <div><p class="eyebrow">INDIVIDUAL RESPONSES</p><h3>Submitted Predictions</h3></div>
+      <span class="status" id="fanPredictionSubmissionCount">Loading…</span>
+    </div>
+    <div id="fanPredictionSubmissionsList" class="fan-prediction-submissions-list"><p class="muted">Loading submitted predictions…</p></div>
   </section>
 </dialog>
 
