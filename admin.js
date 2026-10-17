@@ -1996,8 +1996,11 @@ db.auth.onAuthStateChange((_event, session) => {
         .replace(/\b(fc|football club)\b/g, '')
         .replace(/[^a-z]/g, '') === 'arsenal';
 
+      // Show only Arsenal fixtures that have at least one actual fan submission.
+      // Published fixtures without votes must not appear in this dashboard.
       fanRows = (data || []).filter(row =>
-        isArsenalTeam(row.home_team) || isArsenalTeam(row.away_team)
+        (isArsenalTeam(row.home_team) || isArsenalTeam(row.away_team)) &&
+        Number(row.fan_count || 0) > 0
       );
 
       const total = fanRows.reduce((sum,row) => sum + Number(row.fan_count || 0),0);
@@ -2036,7 +2039,7 @@ db.auth.onAuthStateChange((_event, session) => {
           </div>
           <button type="button" class="primary-btn" data-view-fan-xi="${fanEsc(row.fixture_id)}" ${Number(row.lineup_prediction_count || 0) ? '' : 'disabled'}>View Most Selected XI</button>
         </article>`;
-      }).join('') : '<p class="muted">No published fixtures found.</p>';
+      }).join('') : '<p class="muted">No Arsenal fixtures have submitted fan predictions yet.</p>';
     }catch(error){
       console.error('Fan prediction admin load failed:',error);
       listEl.innerHTML = `<p class="message">Could not load fan predictions: ${fanEsc(error.message || 'Unknown error')}</p>`;
