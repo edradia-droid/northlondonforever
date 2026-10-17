@@ -547,15 +547,48 @@
     }catch(_){}
   }
 
+  async function submitThroughProtectedEndpoint(prediction, messageId) {
+    const kind = messageId === 'scoreMsg' ? 'score' : 'lineup';
+    const token = window.NL4_TURNSTILE_TOKENS?.[kind];
+    if (!token) {
+      setMsg(messageId, 'Complete the Cloudflare security check before submitting.');
+      return { data: null, error: new Error('Security check incomplete.') };
+    }
+    try {
+      const response = await fetch('https://vrjxejuyiynllygiozhs.supabase.co/functions/v1/submit-fan-prediction', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': db.supabaseKey
+        },
+        body: JSON.stringify({ turnstileToken: token, prediction })
+      });
+      let result = {};
+      try { result = await response.json(); } catch (_) {}
+      if (!response.ok || result.success !== true) {
+        return { data: null, error: new Error(result.error || 'Prediction could not be saved.') };
+      }
+      return { data: result.id, error: null };
+    } catch (error) {
+      return { data: null, error: new Error('Connection failed. Please retry the security check and submit again.') };
+    } finally {
+      window.NL4_TURNSTILE_TOKENS[kind] = null;
+      const widgetId = window.NL4_TURNSTILE_WIDGETS?.[kind];
+      if (window.turnstile && widgetId !== null && widgetId !== undefined) {
+        try { window.turnstile.reset(widgetId); } catch (_) {}
+      }
+    }
+  }
+
   document.getElementById('saveScore').addEventListener('click',async()=>{
     if(!db){setMsg('scoreMsg','Supabase is not connected.');return;}
     if(!fixtureUuid){setMsg('scoreMsg','Fixture has not resolved to a Supabase UUID yet.');return;}
     const hs=Number(document.getElementById('homeScore').value), as=Number(document.getElementById('awayScore').value);
     setMsg('scoreMsg','Saving score prediction…');
-    const {data,error}=await db.rpc('submit_fan_prediction',{
+    const {data,error}=await submitThroughProtectedEndpoint({
       p_fixture_id:fixtureUuid,p_voter_key:voterKey(),p_mode:'score',p_formation:null,p_kit:null,
       p_starters:[],p_substitutes:[],p_home_score:hs,p_away_score:as
-    });
+    }, 'scoreMsg');
     if(error){
       if(String(error.message||'').toLowerCase().includes('already submitted a score prediction')){
         lockScorePredictionUI();
@@ -582,11 +615,11 @@
     const starterSet=new Set(starters.map(x=>x.player_name.toLowerCase()));
     if(subs.some(x=>starterSet.has(x.toLowerCase()))) return setMsg('lineupMsg','A starter cannot also be a substitute.');
     setMsg('lineupMsg','Saving lineup prediction…');
-    const {data,error}=await db.rpc('submit_fan_prediction',{
+    const {data,error}=await submitThroughProtectedEndpoint({
       p_fixture_id:fixtureUuid,p_voter_key:voterKey(),p_mode:'lineup',
       p_formation:document.getElementById('formation').value,p_kit:document.getElementById('kit').value,
       p_starters:starters,p_substitutes:subs.map(player_name=>({player_name})),p_home_score:null,p_away_score:null
-    });
+    }, 'lineupMsg');
     if(error) return setMsg('lineupMsg','SAVE FAILED • '+error.message);
     setMsg('lineupMsg','SAVED ✓ Lineup prediction sent to Admin Fan Predictions.',true);
     console.log('NL4 lineup prediction saved',data);
