@@ -2940,18 +2940,15 @@ async function syncFootballDataNow() {
       throw new Error(syncData.error || "The sync function returned ok:false.");
     }
 
-    const fixturesAvailable = Number(syncData?.fixturesAvailable);
-    const fixturesChecked = Number(syncData?.fixturesChecked);
-    const fixturesChanged = Number(syncData?.fixturesChanged);
-    const eventsWritten = Number(syncData?.eventsWritten);
-    const syncErrors = Array.isArray(syncData?.errors) ? syncData.errors : [];
+    const fixturesUpdated = Number(syncData?.fixtures);
+    const incidentsUpdated = Number(syncData?.incidents);
+    const standings = syncData?.leagueStandingsUpdated;
     const summary = [
-      "BSD targeted live refresh response received. This mode checks at most two live or near-kickoff Arsenal Premier League fixtures; it does not rebuild the full fixture list or standings and does not enrich lineups/player stats.",
-      "Eligible Arsenal fixtures available: " + (Number.isFinite(fixturesAvailable) ? fixturesAvailable : "not reported"),
-      "Fixtures checked with BSD: " + (Number.isFinite(fixturesChecked) ? fixturesChecked : "not reported"),
-      "Fixtures changed: " + (Number.isFinite(fixturesChanged) ? fixturesChanged : "not reported"),
-      "Match events written: " + (Number.isFinite(eventsWritten) ? eventsWritten : "not reported"),
-      syncErrors.length ? "Sync errors: " + syncErrors.join(" | ") : (fixturesChecked === 0 ? "No eligible live/near-kickoff fixtures were checked; this run does not confirm a wider fixture or standings refresh." : "No sync errors reported."),
+      "BSD core sync response received. This mode refreshes the Arsenal Premier League fixture/results list and match incidents, then attempts the current-season Premier League standings refresh. Lineups and player statistics are handled by separate enrichment modes.",
+      "Arsenal fixtures processed: " + (Number.isFinite(fixturesUpdated) ? fixturesUpdated : "not reported"),
+      "Match incidents written: " + (Number.isFinite(incidentsUpdated) ? incidentsUpdated : "not reported"),
+      standings?.error ? "Standings refresh ERROR: " + String(standings.error) : (standings?.skipped ? "Standings refresh skipped: " + String(standings.reason || "not specified") : (standings ? "Standings refresh result received for " + String(standings.season || "current season") + "." : "Standings refresh result not reported.")),
+      "Lineups/player statistics were not enriched by this core sync.",
       "Response time: " + new Date().toLocaleString()
     ].join(" ");
     setBsdSyncRunResult(summary, "success");
