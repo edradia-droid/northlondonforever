@@ -91,7 +91,7 @@
 <div class="stat-card"><strong id="plPosition">second</strong><span>Position</span></div>
 <div class="stat-card"><strong id="plPlayed">5</strong><span>Matches</span></div>
 <div class="stat-card"><strong id="plPoints">12</strong><span>Points</span></div>
-<div class="stat-card form-card"><small>FORM</small><strong>W W W W L</strong><span>Last 10 league matches</span></div>
+<div class="stat-card form-card"><small>FORM</small><strong>—</strong><span>Last 10 league matches</span></div>
 </div>
 </section>
 <section class="section-block" id="champions-league">
@@ -100,7 +100,7 @@
 <div class="stat-card"><strong id="clPosition">sixteenth</strong><span>Position</span></div>
 <div class="stat-card"><strong id="clPlayed">1</strong><span>Matches</span></div>
 <div class="stat-card"><strong id="clPoints">3</strong><span>League-phase points</span></div>
-<div class="stat-card form-card"><small>FORM</small><strong>W</strong><span>Last 8 league-phase matches</span></div>
+<div class="stat-card form-card"><small>FORM</small><strong>—</strong><span>Last 8 league-phase matches</span></div>
 </div>
 </section>
 <section class="section-block cup-grid-section">
@@ -165,6 +165,15 @@
   };
   const finished=s=>['fulltime','finished','ft','aet','pen'].includes(String(s||'').toLowerCase());
   const outcome=(a,b)=>Number(a)>Number(b)?'W':Number(a)<Number(b)?'L':'D';
+  const hasScore=(r)=>r.arsenal_score!==null&&r.arsenal_score!==undefined&&r.opponent_score!==null&&r.opponent_score!==undefined;
+  const arsenalOutcome=(r)=>{
+    if(hasScore(r))return outcome(r.arsenal_score,r.opponent_score);
+    const arsenalHome=/arsenal/i.test(String(r.home_team||''));
+    const arsenalAway=/arsenal/i.test(String(r.away_team||''));
+    if(arsenalHome&&r.home_score!==null&&r.home_score!==undefined&&r.away_score!==null&&r.away_score!==undefined)return outcome(r.home_score,r.away_score);
+    if(arsenalAway&&r.home_score!==null&&r.home_score!==undefined&&r.away_score!==null&&r.away_score!==undefined)return outcome(r.away_score,r.home_score);
+    return null;
+  };
 
   async function syncPremierLeague(){
     const {data,error}=await db.from('premier_league_standings')
@@ -180,12 +189,13 @@
     set('#premier-league .stat-card:nth-child(3) strong',points);
 
     const {data:fixtures}=await db.from('fixtures')
-      .select('home_team,away_team,is_home,opponent,arsenal_score,opponent_score,status,kickoff_at,matchday')
+      .select('home_team,away_team,is_home,opponent,arsenal_score,opponent_score,home_score,away_score,status,kickoff_at,matchday')
       .eq('season','2026/27').eq('competition','Premier League');
     const completed=(fixtures||[]).filter(r=>finished(r.status))
       .filter(r=>/arsenal/i.test(`${r.home_team||''} ${r.away_team||''} ${r.opponent||''}`))
-      .sort((a,b)=>new Date(b.kickoff_at||0)-new Date(a.kickoff_at||0));
-    const form=completed.slice(0,10).reverse().map(r=>outcome(r.arsenal_score,r.opponent_score)).join(' ');
+      .map(r=>({row:r,result:arsenalOutcome(r)})).filter(x=>x.result)
+      .sort((a,b)=>new Date(b.row.kickoff_at||0)-new Date(a.row.kickoff_at||0));
+    const form=completed.slice(0,10).reverse().map(x=>x.result).join(' ');
     set('#premier-league .form-card strong',form||'—');
     const note=document.querySelector('#premier-league .lineup-note');
     if(note)note.textContent='Live from the Premier League standings table • Form uses the last 10 completed Premier League matches.';
@@ -203,12 +213,13 @@
     set('#champions-league .stat-card:nth-child(3) strong',arsenal.points);
 
     const {data:fixtures}=await db.from('fixtures')
-      .select('home_team,away_team,is_home,opponent,arsenal_score,opponent_score,status,kickoff_at,matchday')
-      .eq('season','2026/27').eq('competition','Champions League');
+      .select('home_team,away_team,is_home,opponent,arsenal_score,opponent_score,home_score,away_score,status,kickoff_at,matchday')
+      .eq('season','2026/27').eq('competition','UEFA Champions League');
     const completed=(fixtures||[]).filter(r=>finished(r.status))
-      .filter(r=>/arsenal/i.test(String(r.home_team||r.away_team||r.opponent||'')))
-      .sort((a,b)=>new Date(b.kickoff_at||0)-new Date(a.kickoff_at||0));
-    let form=completed.slice(0,8).reverse().map(r=>outcome(r.arsenal_score,r.opponent_score)).join(' ');
+      .filter(r=>/arsenal/i.test(`${r.home_team||''} ${r.away_team||''} ${r.opponent||''}`))
+      .map(r=>({row:r,result:arsenalOutcome(r)})).filter(x=>x.result)
+      .sort((a,b)=>new Date(b.row.kickoff_at||0)-new Date(a.row.kickoff_at||0));
+    let form=completed.slice(0,8).reverse().map(x=>x.result).join(' ');
     if(!form && Number(arsenal.played)===1){
       if(Number(arsenal.wins)===1) form='W';
       else if(Number(arsenal.draws)===1) form='D';
