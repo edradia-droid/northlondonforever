@@ -1993,7 +1993,7 @@ db.auth.onAuthStateChange((_event, session) => {
       const isArsenalTeam = value => String(value || '')
         .trim()
         .toLowerCase()
-        .replace(/\\b(fc|football club)\\b/g, '')
+        .replace(/\b(fc|football club)\b/g, '')
         .replace(/[^a-z]/g, '') === 'arsenal';
 
       fanRows = (data || []).filter(row =>
