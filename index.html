@@ -88,18 +88,18 @@
 <section class="section-block" id="premier-league">
 <div class="section-heading"><div><p class="eyebrow">COMPETITION</p><h2>Premier League</h2></div><a href="premier-league.html">View Premier League table →</a><span class="status">2026 / 27</span></div>
 <div class="competition-grid">
-<div class="stat-card"><strong id="plPosition">second</strong><span>Position</span></div>
-<div class="stat-card"><strong id="plPlayed">5</strong><span>Matches</span></div>
-<div class="stat-card"><strong id="plPoints">12</strong><span>Points</span></div>
+<div class="stat-card"><strong id="plPosition">—</strong><span>Position</span></div>
+<div class="stat-card"><strong id="plPlayed">—</strong><span>Matches</span></div>
+<div class="stat-card"><strong id="plPoints">—</strong><span>Points</span></div>
 <div class="stat-card form-card"><small>FORM</small><strong>—</strong><span>Last 10 league matches</span></div>
 </div>
 </section>
 <section class="section-block" id="champions-league">
 <div class="section-heading"><div><p class="eyebrow">EUROPE</p><h2>Champions League</h2></div><a href="champions-league.html#uclTable">View Champions League table →</a><span class="status">2026 / 27</span></div>
 <div class="competition-grid">
-<div class="stat-card"><strong id="clPosition">sixteenth</strong><span>Position</span></div>
-<div class="stat-card"><strong id="clPlayed">1</strong><span>Matches</span></div>
-<div class="stat-card"><strong id="clPoints">3</strong><span>League-phase points</span></div>
+<div class="stat-card"><strong id="clPosition">—</strong><span>Position</span></div>
+<div class="stat-card"><strong id="clPlayed">—</strong><span>Matches</span></div>
+<div class="stat-card"><strong id="clPoints">—</strong><span>League-phase points</span></div>
 <div class="stat-card form-card"><small>FORM</small><strong>—</strong><span>Last 8 league-phase matches</span></div>
 </div>
 </section>
@@ -184,9 +184,9 @@
     const position=Number(arsenal.position);
     const played=Number(arsenal.played??arsenal.p??0);
     const points=Number(arsenal.points??arsenal.pts??0);
-    set('#premier-league .stat-card:nth-child(1) strong',ordinal(position));
-    set('#premier-league .stat-card:nth-child(2) strong',played);
-    set('#premier-league .stat-card:nth-child(3) strong',points);
+    set('#plPosition',ordinal(position));
+    set('#plPlayed',played);
+    set('#plPoints',points);
 
     const {data:fixtures}=await db.from('fixtures')
       .select('home_team,away_team,is_home,opponent,arsenal_score,opponent_score,home_score,away_score,status,kickoff_at,matchday')
@@ -208,9 +208,9 @@
     if(error||!data?.length)return;
     const arsenal=data.find(r=>/arsenal/i.test(String(r.team_name||'')));
     if(!arsenal)return;
-    set('#champions-league .stat-card:nth-child(1) strong',ordinal(arsenal.position));
-    set('#champions-league .stat-card:nth-child(2) strong',arsenal.played);
-    set('#champions-league .stat-card:nth-child(3) strong',arsenal.points);
+    set('#clPosition',ordinal(arsenal.position));
+    set('#clPlayed',arsenal.played);
+    set('#clPoints',arsenal.points);
 
     const {data:fixtures}=await db.from('fixtures')
       .select('home_team,away_team,is_home,opponent,arsenal_score,opponent_score,home_score,away_score,status,kickoff_at,matchday')
@@ -220,11 +220,6 @@
       .map(r=>({row:r,result:arsenalOutcome(r)})).filter(x=>x.result)
       .sort((a,b)=>new Date(b.row.kickoff_at||0)-new Date(a.row.kickoff_at||0));
     let form=completed.slice(0,8).reverse().map(x=>x.result).join(' ');
-    if(!form && Number(arsenal.played)===1){
-      if(Number(arsenal.wins)===1) form='W';
-      else if(Number(arsenal.draws)===1) form='D';
-      else if(Number(arsenal.losses)===1) form='L';
-    }
     set('#champions-league .form-card strong',form||'—');
     const note=document.querySelector('#champions-league .lineup-note');
     if(note)note.textContent='Live from the Champions League standings table • Form uses the last 8 completed league-phase matches.';
