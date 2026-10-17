@@ -1945,6 +1945,8 @@ db.auth.onAuthStateChange((_event, session) => {
   const countEl = document.getElementById('fanPredictionDialogCount');
   const xiEl = document.getElementById('fanPredictionXI');
   const adminScoreProbabilityList = document.getElementById('adminScoreProbabilityList');
+  const fanSubmissionsList = document.getElementById('fanPredictionSubmissionsList');
+  const fanSubmissionCount = document.getElementById('fanPredictionSubmissionCount');
 
   let fanRows = [];
 
@@ -2082,6 +2084,38 @@ db.auth.onAuthStateChange((_event, session) => {
         console.error('Admin score probability load failed:',error);
         adminScoreProbabilityList.innerHTML=`<p class="message">Could not load score probability: ${fanEsc(error.message || 'Unknown error')}</p>`;
       }
+    }
+
+    // Admin-only endpoint returns individual current submissions, never voter keys.
+    if (fanSubmissionsList) fanSubmissionsList.innerHTML = '<p class="muted">Loading submitted predictions…</p>';
+    if (fanSubmissionCount) fanSubmissionCount.textContent = 'Loading…';
+    try {
+      const {data:submissions,error:submissionError} = await db.rpc('get_fan_prediction_admin_details',{p_fixture_id:fixtureId});
+      if (submissionError) throw submissionError;
+      const submitted = submissions || [];
+      if (fanSubmissionCount) fanSubmissionCount.textContent = `${submitted.length} submission${submitted.length === 1 ? '' : 's'}`;
+      if (fanSubmissionsList) {
+        fanSubmissionsList.innerHTML = submitted.length ? submitted.map((item,index) => {
+          const starters = Array.isArray(item.starters) ? item.starters : [];
+          const subs = Array.isArray(item.substitutes) ? item.substitutes : [];
+          const lineup = starters.map(p => `${p.slot ? fanEsc(p.slot) + ': ' : ''}${fanEsc(p.player_name || p.name || 'Unknown player')}`).join(' · ');
+          const substituteNames = subs.map(p => fanEsc(p.player_name || p.name || 'Unknown player')).join(', ');
+          const score = item.has_score_prediction
+            ? `${fanEsc(t.home)} ${fanEsc(item.predicted_home_score)}–${fanEsc(item.predicted_away_score)} ${fanEsc(t.away)}`
+            : 'Not submitted';
+          const submittedAt = item.created_at ? new Date(item.created_at).toLocaleString() : 'Time unavailable';
+          return `<article class="fan-submission-card">
+            <div class="fan-submission-head"><strong>Submission ${index + 1}</strong><span>${fanEsc(submittedAt)}</span></div>
+            <p><b>Formation:</b> ${fanEsc(item.formation || '—')} <span>•</span> <b>Kit:</b> ${fanEsc(item.kit || '—')}</p>
+            <p><b>Score prediction:</b> ${score}</p>
+            ${item.has_lineup_prediction ? `<p><b>Starting XI:</b> ${lineup || 'No player details saved'}</p><p><b>Substitutes:</b> ${substituteNames || 'None selected'}</p>` : '<p><b>Starting XI:</b> Not submitted</p>'}
+          </article>`;
+        }).join('') : '<p class="muted">No individual predictions have been submitted for this fixture yet.</p>';
+      }
+    } catch(error) {
+      console.error('Individual fan submissions failed:',error);
+      if (fanSubmissionCount) fanSubmissionCount.textContent = 'Unavailable';
+      if (fanSubmissionsList) fanSubmissionsList.innerHTML = `<p class="message">Could not load individual submissions: ${fanEsc(error.message || 'Unknown error')}. Confirm the admin-only database migration has been applied.</p>`;
     }
   }
 
