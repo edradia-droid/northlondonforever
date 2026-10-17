@@ -1988,7 +1988,17 @@ db.auth.onAuthStateChange((_event, session) => {
     try{
       const {data,error} = await db.rpc('get_fan_prediction_admin_summary');
       if (error) throw error;
-      fanRows = data || [];
+      // The admin prediction dashboard is Arsenal-only, even though the database
+      // contains published fixtures for the full Premier League.
+      const isArsenalTeam = value => String(value || '')
+        .trim()
+        .toLowerCase()
+        .replace(/\\b(fc|football club)\\b/g, '')
+        .replace(/[^a-z]/g, '') === 'arsenal';
+
+      fanRows = (data || []).filter(row =>
+        isArsenalTeam(row.home_team) || isArsenalTeam(row.away_team)
+      );
 
       const total = fanRows.reduce((sum,row) => sum + Number(row.fan_count || 0),0);
       if (totalEl) totalEl.textContent = `${total} PREDICTION${total === 1 ? '' : 'S'}`;
