@@ -2361,15 +2361,33 @@
     runMatchDetailsLoad();
 
     let lastScheduledPollAt = 0;
+    let completedPollStartedAt = 0;
+    let lastCompletedPollAt = 0;
+    const completedPollWindowMs = 30 * 60 * 1000;
+    const completedPollIntervalMs = 5 * 60 * 1000;
     setInterval(() => {
       if (document.visibilityState !== "visible" || matchDetailsLoading) return;
 
-      const status = String(activeMatchStatus || "").toLowerCase();
-      const isCompleted = ["fulltime", "finished", "ft", "completed"].includes(status);
-      const isLive = ["live", "in_play", "in-play", "playing", "half_time", "halftime"].includes(status);
+      const status = String(activeMatchStatus || "").toLowerCase().replace(/[\s_-]+/g, "");
+      const isCompleted = ["fulltime", "finished", "ft", "completed", "afterextratime", "afterpenalties"].includes(status);
+      const isLive = ["live", "inplay", "playing", "halftime", "1h", "2h", "firsthalf", "secondhalf", "extratime", "break"].includes(status);
 
-      // Completed matches are stable: do not re-query or redraw them.
-      if (isCompleted) return;
+      // Full-time statistics/events can arrive after the first final status.
+      // Poll every five minutes for at most 30 minutes, then stop to avoid waste.
+      if (isCompleted) {
+        const now = Date.now();
+        if (!completedPollStartedAt) {
+          completedPollStartedAt = now;
+          lastCompletedPollAt = now;
+        }
+        if (now - completedPollStartedAt >= completedPollWindowMs) return;
+        if (now - lastCompletedPollAt < completedPollIntervalMs) return;
+        lastCompletedPollAt = now;
+        runMatchDetailsLoad();
+        return;
+      }
+      completedPollStartedAt = 0;
+      lastCompletedPollAt = 0;
 
       // Live matches keep the existing 15-second refresh. Scheduled matches
       // only need a periodic check for kickoff, reducing repeated Supabase reads.
