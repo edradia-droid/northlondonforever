@@ -390,11 +390,12 @@ async function syncRootPlayerStats(db:any,arsenalId:any,key:string){
   return outRows.length;
 }
 
-async function syncArsenalLineups(db:any,eventRows:any[],key:string,includeSpatial=false){const completed=eventRows.filter((e:any)=>{const home=nm(e?.home_team??e?.home??e?.teams?.home),away=nm(e?.away_team??e?.away??e?.teams?.away);const hs=num(e?.home_score??e?.score?.home??e?.scores?.home),as=num(e?.away_score??e?.score?.away??e?.scores?.away);return home&&away&&(home==='Arsenal'||away==='Arsenal')&&hs!==null&&as!==null});let synced=0,rejected=0;for(const e of completed){const eid=String(id(e));const fx=await db.from('fixtures').select('id,home_team,away_team,lineup_formation').eq('external_fixture_id','bsd:'+eid).maybeSingle();if(fx.error)throw fx.error;if(!fx.data?.id)continue;const lineupKey=key;
+async function syncArsenalLineups(db:any,eventRows:any[],key:string,includeSpatial=false,forceFresh=false){const completed=eventRows.filter((e:any)=>{const home=nm(e?.home_team??e?.home??e?.teams?.home),away=nm(e?.away_team??e?.away??e?.teams?.away);const hs=num(e?.home_score??e?.score?.home??e?.scores?.home),as=num(e?.away_score??e?.score?.away??e?.scores?.away);const raw=String(e?.status??e?.event_status??e?.state??'').toLowerCase().replace(/[\\s_-]+/g,'');const live=['live','inprogress','inplay','1h','2h','ht','halftime','firsthalf','secondhalf','1sthalf','2ndhalf','extratime','et'].includes(raw)||raw.includes('inprogress')||raw.includes('halftime');return home&&away&&(home==='Arsenal'||away==='Arsenal')&&(live||(hs!==null&&as!==null));});let synced=0,rejected=0;for(const e of completed){const eid=String(id(e));const fx=await db.from('fixtures').select('id,home_team,away_team,lineup_formation').eq('external_fixture_id','bsd:'+eid).maybeSingle();if(fx.error)throw fx.error;if(!fx.data?.id)continue;const lineupKey=key;
       let body:any=null;
       // Prefer previously archived BSD lineup data before making another provider request.
       // The archive is source data, not a substitute or generated lineup.
       try {
+        if(forceFresh) throw new Error('Fresh BSD lineup required for live refresh');
         const archived = await db.from('record_room_bsd_archive_resources')
           .select('raw_payload,http_status,fetch_error,captured_at')
           .eq('source_event_id',eid).eq('resource_type','lineups').eq('http_status',200)
@@ -782,12 +783,19 @@ async function syncLiveCoreOnly(db:any,key:string) {
       if(!e||typeof e!=='object')throw new Error('Unrecognized BSD match-detail payload');
       const raw=String(e?.status??e?.event_status??e?.state??'').toLowerCase().replace(/[\s_-]+/g,'');
       let status:string|null=null;
-      if(['ft','aet','pen','finished','fulltime'].includes(raw)||raw.includes('finished')||raw.includes('fulltime'))status='fulltime';
-      else if(['live','1h','2h','ht','et','inprogress','halftime','extratime'].includes(raw)||raw.includes('inprogress')||raw.includes('halftime'))status='live';
+      if(['ft','aet','pen','finished','fulltime','afterextratime','afterpenalties'].includes(raw)||raw.includes('finished')||raw.includes('fulltime'))status='fulltime';
+      else if(['live','1h','2h','ht','et','inprogress','inplay','playing','halftime','firsthalf','secondhalf','1sthalf','2ndhalf','extratime','break'].includes(raw)||raw.includes('inprogress')||raw.includes('inplay')||raw.includes('halftime')||raw.includes('firsthalf')||raw.includes('secondhalf'))status='live';
       else if(raw.includes('postpon'))status='postponed';
       else if(raw.includes('cancel'))status='cancelled';
       else if(raw.includes('abandon'))status='abandoned';
       const sh=num(e?.home_score??e?.score?.home??e?.scores?.home),sa=num(e?.away_score??e?.score?.away??e?.scores?.away);
+      // BSD sometimes leaves a non-terminal event labelled notstarted after kickoff.
+      // Infer live only after a 10-minute grace period inside this targeted live window.
+      if(!status&&['notstarted','scheduled','upcoming',''].includes(raw)){
+        const ko=Date.parse(String(row.kickoff_at??e?.event_date??e?.start_time??''));
+        const elapsed=now.getTime()-ko;
+        if(Number.isFinite(ko)&&elapsed>=10*60*1000&&elapsed<=3*60*60*1000)status='live';
+      }
       const isHome=row.home_team==='Arsenal',patch:any={};
       if(status&&status!==row.status)patch.status=status;
       if(sh!==null&&(row.home_score==null||Number(row.home_score)!==sh))patch.home_score=sh;
@@ -804,6 +812,53 @@ async function syncLiveCoreOnly(db:any,key:string) {
         changed++;
       }
       if(!['live','fulltime'].includes(status??String(row.status??'').toLowerCase()))continue;
+      if(status==='live'){
+        try{
+          let statsPayload:any;
+          try{statsPayload=await bsd('/events/'+encodeURIComponent(eid)+'/stats/',key);}
+          catch(firstStatsError){
+            try{statsPayload=await bsd('/events/'+encodeURIComponent(eid)+'/statistics/',key);}
+            catch{throw firstStatsError;}
+          }
+          const statsRoot=statsPayload?.data??statsPayload;
+          const stats=statsRoot?.stats??statsRoot?.team_stats??statsRoot;
+          const homeStats=stats?.home??stats?.teams?.home??stats?.home_team??null;
+          const awayStats=stats?.away??stats?.teams?.away??stats?.away_team??null;
+          const statNum=(v:any)=>{
+            if(v&&typeof v==='object')v=v.value??v.total??v.count??v.percentage??v.display_value??v.current;
+            if(typeof v==='string')v=v.trim().replace(/%$/,'');
+            if(v==null||v==='')return null;
+            const n=Number(v);return Number.isFinite(n)?n:null;
+          };
+          const pickStat=(side:any,...keys:string[])=>{for(const k of keys){const n=statNum(side?.[k]);if(n!==null)return n;}return null;};
+          const statPatch:any={};
+          const mapStats=[
+            ['home_possession',homeStats,['ball_possession','possession','possession_percentage']],['away_possession',awayStats,['ball_possession','possession','possession_percentage']],
+            ['home_shots',homeStats,['total_shots','shots','total_attempts']],['away_shots',awayStats,['total_shots','shots','total_attempts']],
+            ['home_shots_on_target',homeStats,['shots_on_target','on_target','shots_on_goal']],['away_shots_on_target',awayStats,['shots_on_target','on_target','shots_on_goal']],
+            ['home_corners',homeStats,['corner_kicks','corners','corner']],['away_corners',awayStats,['corner_kicks','corners','corner']],
+            ['home_fouls',homeStats,['fouls','total_fouls']],['away_fouls',awayStats,['fouls','total_fouls']],
+            ['home_offsides',homeStats,['offsides','offside']],['away_offsides',awayStats,['offsides','offside']],
+            ['home_saves',homeStats,['saves','goalkeeper_saves']],['away_saves',awayStats,['saves','goalkeeper_saves']]
+          ] as any[];
+          for(const [column,side,keys] of mapStats){const value=pickStat(side,...keys);if(value!==null)statPatch[column]=value;}
+          if(Object.keys(statPatch).length){statPatch.source_updated_at=now.toISOString();statPatch.updated_at=now.toISOString();const su=await db.from('fixtures').update(statPatch).eq('id',row.id);if(su.error)throw su.error;}
+        }catch(statsError){errors.push('Match '+eid+' stats: '+(statsError instanceof Error?statsError.message:String(statsError)));if(bsdGuardBlocked)break;}
+        try{
+          const existingLineups=await db.from('match_lineups').select('team_name,is_starter,updated_at').eq('fixture_id',row.id);
+          if(existingLineups.error)throw existingLineups.error;
+          const lineupRows=existingLineups.data??[];
+          const sides=[row.home_team,row.away_team];
+          const completeSides=sides.every((team:string)=>lineupRows.filter((x:any)=>x.team_name===team&&x.is_starter===true).length===11);
+          const latestLineupUpdate=lineupRows.reduce((latest:number,x:any)=>Math.max(latest,Date.parse(String(x.updated_at??x.created_at??''))||0),0);
+          const kickoffMs=Date.parse(String(row.kickoff_at??''))||0;
+          const hasFreshLineup=completeSides&&latestLineupUpdate>=kickoffMs-6*60*60*1000;
+          if(!hasFreshLineup){
+            const freshLineup=await syncArsenalLineups(db,[{...e,status:'live'}],key,false,true);
+            if(freshLineup.lineupsRejected)errors.push('Match '+eid+': BSD returned an invalid live lineup; existing lineup retained');
+          }
+        }catch(lineupError){errors.push('Match '+eid+' lineup: '+(lineupError instanceof Error?lineupError.message:String(lineupError)));if(bsdGuardBlocked)break;}
+      }
       const incPayload=await bsd('/events/'+encodeURIComponent(eid)+'/incidents/',key);
       const candidates=[incPayload,incPayload?.incidents,incPayload?.results,incPayload?.events,incPayload?.data,incPayload?.data?.incidents,incPayload?.data?.results];
       const inc=candidates.find(Array.isArray);
