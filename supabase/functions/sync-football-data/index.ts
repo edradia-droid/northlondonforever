@@ -758,17 +758,36 @@ async function syncCleanSheetsV2(db:any,arsenalId:any,key:string){
 
 async function syncLiveCoreOnly(db:any,key:string) {
   const now=new Date(), past=now.getTime()-3*60*60*1000, future=now.getTime()+10*60*1000;
-  const q=await db.from('fixtures').select('id,external_fixture_id,home_team,away_team,kickoff_at,status,home_score,away_score,arsenal_score,opponent_score')
+  const q=await db.from('fixtures').select('id,external_fixture_id,home_team,away_team,kickoff_at,status,home_score,away_score,arsenal_score,opponent_score,home_possession,away_possession,home_shots,away_shots,home_shots_on_target,away_shots_on_target')
     .eq('competition','Premier League').eq('season',SEASON).eq('is_published',true).like('external_fixture_id','bsd:%')
     .or('home_team.eq.Arsenal,away_team.eq.Arsenal');
   if(q.error)throw q.error;
   const rows=q.data??[];
+  // A completed match may receive final statistics a little after the final whistle.
+  // Retry only when core stats are still missing, within the existing 3-hour window,
+  // and no final-sync audit has been written for that fixture in the last 15 minutes.
+  let recentFinalAuditIds=new Set<string>();
+  let finalAuditReadOk=true;
+  try{
+    const recentAudit=await db.from('nl4_sync_health_log').select('fixture_id').eq('mode','targeted-live-refresh').gte('sync_completed_at',new Date(now.getTime()-15*60*1000).toISOString());
+    if(recentAudit.error)throw recentAudit.error;
+    recentFinalAuditIds=new Set((recentAudit.data??[]).map((x:any)=>String(x.fixture_id??'')).filter(Boolean));
+  }catch(auditReadError){
+    finalAuditReadOk=false;
+    console.warn('NL4_FINAL_STATS_RETRY_AUDIT_UNAVAILABLE',auditReadError instanceof Error?auditReadError.message:String(auditReadError));
+  }
   const targets=rows.filter((r:any)=>{
     const s=String(r.status??'').toLowerCase().replace(/[\s_-]+/g,'');
-    if(['fulltime','finished','postponed','cancelled','abandoned'].includes(s))return false;
-    if(s==='live'||s==='inprogress')return true;
+    if(['postponed','cancelled','abandoned'].includes(s))return false;
     const ko=Date.parse(String(r.kickoff_at??''));
-    return Number.isFinite(ko)&&ko>=past&&ko<=future;
+    const inRecentWindow=Number.isFinite(ko)&&ko>=past&&ko<=future;
+    if(['fulltime','finished','ft'].includes(s)){
+      const required=['home_possession','away_possession','home_shots','away_shots','home_shots_on_target','away_shots_on_target'];
+      const statsComplete=required.every((column:string)=>r[column]!==null&&r[column]!==undefined);
+      return inRecentWindow&&!statsComplete&&finalAuditReadOk&&!recentFinalAuditIds.has(String(r.id));
+    }
+    if(s==='live'||s==='inprogress')return true;
+    return inRecentWindow;
   }).slice(0,2);
   let checked=0,changed=0,eventsWritten=0;
   const errors:string[]=[];
@@ -814,8 +833,9 @@ async function syncLiveCoreOnly(db:any,key:string) {
         if(u.error)throw u.error;
         changed++;
       }
-      if(!['live','fulltime'].includes(status??String(row.status??'').toLowerCase()))continue;
-      if(status==='live'){
+      const effectiveStatus=status??String(row.status??'').toLowerCase().replace(/[\s_-]+/g,'');
+      if(!['live','fulltime'].includes(effectiveStatus))continue;
+      if(effectiveStatus==='live'||effectiveStatus==='fulltime'){
         try{
           let statsPayload:any;
           try{statsPayload=await bsd('/events/'+encodeURIComponent(eid)+'/stats/',key);}
@@ -847,6 +867,9 @@ async function syncLiveCoreOnly(db:any,key:string) {
           for(const [column,side,keys] of mapStats){const value=pickStat(side,...keys);if(value!==null)statPatch[column]=value;}
           if(Object.keys(statPatch).length){statPatch.source_updated_at=now.toISOString();statPatch.updated_at=now.toISOString();const su=await db.from('fixtures').update(statPatch).eq('id',row.id);if(su.error)throw su.error;}
         }catch(statsError){const message='Match '+eid+' stats: '+(statsError instanceof Error?statsError.message:String(statsError));errors.push(message);fixtureErrors.push(message);}
+        // Only refresh the live lineup while play is in progress; final-stat retries
+        // must not trigger unnecessary player-profile/lineup requests.
+        if(effectiveStatus==='live'){
         try{
           const existingLineups=await db.from('match_lineups').select('team_name,is_starter,updated_at').eq('fixture_id',row.id);
           if(existingLineups.error)throw existingLineups.error;
@@ -861,6 +884,7 @@ async function syncLiveCoreOnly(db:any,key:string) {
             if(freshLineup.lineupsRejected){const message='Match '+eid+': BSD returned an invalid live lineup; existing lineup retained';errors.push(message);fixtureErrors.push(message);}
           }
         }catch(lineupError){const message='Match '+eid+' lineup: '+(lineupError instanceof Error?lineupError.message:String(lineupError));errors.push(message);fixtureErrors.push(message);}
+        }
       }
       const incPayload=await bsd('/events/'+encodeURIComponent(eid)+'/incidents/',key);
       const candidates=[incPayload,incPayload?.incidents,incPayload?.results,incPayload?.events,incPayload?.data,incPayload?.data?.incidents,incPayload?.data?.results];
