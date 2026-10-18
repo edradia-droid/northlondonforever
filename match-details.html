@@ -2363,8 +2363,11 @@
     let lastScheduledPollAt = 0;
     let completedPollStartedAt = 0;
     let lastCompletedPollAt = 0;
-    const completedPollWindowMs = 30 * 60 * 1000;
-    const completedPollIntervalMs = 5 * 60 * 1000;
+    // Keep the public page checking for delayed final statistics for the same
+    // three-hour post-kickoff window used by the server-side final-stat retry.
+    // A 15-minute interval aligns with the sync audit throttle and limits reads.
+    const completedPollWindowMs = 3 * 60 * 60 * 1000;
+    const completedPollIntervalMs = 15 * 60 * 1000;
     setInterval(() => {
       if (document.visibilityState !== "visible" || matchDetailsLoading) return;
 
