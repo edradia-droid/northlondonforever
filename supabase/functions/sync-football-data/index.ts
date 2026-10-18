@@ -772,11 +772,14 @@ async function syncLiveCoreOnly(db:any,key:string) {
   }).slice(0,2);
   let checked=0,changed=0,eventsWritten=0;
   const errors:string[]=[];
+  const healthChecks:any[]=[];
+  const auditStartedAt=now.toISOString();
   for(const row of targets){
     if(bsdGuardBlocked)break;
     const eid=String(row.external_fixture_id??'').replace(/^bsd:/,'');
     if(!/^\d+$/.test(eid))continue;
     checked++;
+    const fixtureErrors:string[]=[];
     try{
       const payload=await bsd('/events/'+encodeURIComponent(eid)+'/',key);
       const e=payload?.event??payload?.data??payload?.result??payload;
@@ -843,7 +846,7 @@ async function syncLiveCoreOnly(db:any,key:string) {
           ] as any[];
           for(const [column,side,keys] of mapStats){const value=pickStat(side,...keys);if(value!==null)statPatch[column]=value;}
           if(Object.keys(statPatch).length){statPatch.source_updated_at=now.toISOString();statPatch.updated_at=now.toISOString();const su=await db.from('fixtures').update(statPatch).eq('id',row.id);if(su.error)throw su.error;}
-        }catch(statsError){errors.push('Match '+eid+' stats: '+(statsError instanceof Error?statsError.message:String(statsError)));if(bsdGuardBlocked)break;}
+        }catch(statsError){const message='Match '+eid+' stats: '+(statsError instanceof Error?statsError.message:String(statsError));errors.push(message);fixtureErrors.push(message);if(bsdGuardBlocked)break;}
         try{
           const existingLineups=await db.from('match_lineups').select('team_name,is_starter,updated_at').eq('fixture_id',row.id);
           if(existingLineups.error)throw existingLineups.error;
@@ -855,9 +858,9 @@ async function syncLiveCoreOnly(db:any,key:string) {
           const hasFreshLineup=completeSides&&latestLineupUpdate>=kickoffMs-6*60*60*1000;
           if(!hasFreshLineup){
             const freshLineup=await syncArsenalLineups(db,[{...e,status:'live'}],key,false,true);
-            if(freshLineup.lineupsRejected)errors.push('Match '+eid+': BSD returned an invalid live lineup; existing lineup retained');
+            if(freshLineup.lineupsRejected){const message='Match '+eid+': BSD returned an invalid live lineup; existing lineup retained';errors.push(message);fixtureErrors.push(message);}
           }
-        }catch(lineupError){errors.push('Match '+eid+' lineup: '+(lineupError instanceof Error?lineupError.message:String(lineupError)));if(bsdGuardBlocked)break;}
+        }catch(lineupError){const message='Match '+eid+' lineup: '+(lineupError instanceof Error?lineupError.message:String(lineupError));errors.push(message);fixtureErrors.push(message);if(bsdGuardBlocked)break;}
       }
       const incPayload=await bsd('/events/'+encodeURIComponent(eid)+'/incidents/',key);
       const candidates=[incPayload,incPayload?.incidents,incPayload?.results,incPayload?.events,incPayload?.data,incPayload?.data?.incidents,incPayload?.data?.results];
@@ -880,11 +883,38 @@ async function syncLiveCoreOnly(db:any,key:string) {
       }
     }catch(e){
       const message=e instanceof Error?e.message:String(e);
-      errors.push('Match '+eid+': '+message);
-      if(bsdGuardBlocked)break;
+      const fixtureMessage='Match '+eid+': '+message;
+      errors.push(fixtureMessage);
+      fixtureErrors.push(fixtureMessage);
     }
+    try{
+      const latest=await db.from('fixtures').select('status,home_score,away_score,home_possession,away_possession,home_shots,away_shots,home_shots_on_target,away_shots_on_target').eq('id',row.id).maybeSingle();
+      if(latest.error)throw latest.error;
+      const lineupAudit=await db.from('match_lineups').select('team_name,is_starter').eq('fixture_id',row.id);
+      if(lineupAudit.error)throw lineupAudit.error;
+      const lineupRows=lineupAudit.data??[];
+      const lineupComplete=[row.home_team,row.away_team].every((team:string)=>lineupRows.filter((x:any)=>x.team_name===team&&x.is_starter===true).length===11);
+      const requiredStats=['home_possession','away_possession','home_shots','away_shots','home_shots_on_target','away_shots_on_target'];
+      const statsComplete=!!latest.data&&requiredStats.every((column:string)=>latest.data[column]!==null&&latest.data[column]!==undefined);
+      const eventAudit=await db.from('match_events').select('id',{count:'exact',head:true}).eq('fixture_id',row.id);
+      if(eventAudit.error)throw eventAudit.error;
+      const healthErrors=[...fixtureErrors];
+      if(!statsComplete)healthErrors.push('required_live_stats_incomplete');
+      if(!lineupComplete)healthErrors.push('confirmed_starting_xi_incomplete');
+      const healthStatus=fixtureErrors.length?'error':(!statsComplete||!lineupComplete?'incomplete':'ok');
+      const auditRow={sync_started_at:auditStartedAt,sync_completed_at:new Date().toISOString(),function_name:'sync-football-data',mode:'targeted-live-refresh',fixture_id:row.id,external_fixture_id:row.external_fixture_id,home_team:row.home_team,away_team:row.away_team,fixture_status:latest.data?.status??null,health_status:healthStatus,stats_complete:statsComplete,lineup_complete:lineupComplete,event_count:eventAudit.count??0,errors:healthErrors,details:{home_score:latest.data?.home_score??null,away_score:latest.data?.away_score??null,required_stats:requiredStats}};
+      const saved=await db.from('nl4_sync_health_log').insert(auditRow);
+      if(saved.error)throw saved.error;
+      healthChecks.push({fixture:row.external_fixture_id,status:healthStatus,statsComplete,lineupComplete,eventCount:eventAudit.count??0,errors:healthErrors});
+    }catch(auditError){const message='Match '+eid+' health audit failed: '+(auditError instanceof Error?auditError.message:String(auditError));errors.push(message);console.error('NL4_SYNC_HEALTH_AUDIT_FAILED',message);}
   }
-  return {ok:errors.length===0,source:'BSD',season:SEASON,coreOnly:true,mode:'targeted-live-refresh',fixturesAvailable:rows.length,fixturesChecked:checked,fixturesChanged:changed,eventsWritten,errors:errors.slice(0,3),syncedAt:new Date().toISOString()};
+  if(targets.length===0){
+    try{
+      const recent=await db.from('nl4_sync_health_log').select('id').eq('mode','targeted-live-refresh').eq('health_status','no_target').gte('sync_completed_at',new Date(now.getTime()-30*60*1000).toISOString()).limit(1);
+      if(!recent.error&&!recent.data?.length){const saved=await db.from('nl4_sync_health_log').insert({sync_started_at:auditStartedAt,sync_completed_at:new Date().toISOString(),function_name:'sync-football-data',mode:'targeted-live-refresh',health_status:'no_target',errors:[],details:{reason:'No eligible Arsenal fixture in the live refresh window',fixturesAvailable:rows.length}});if(saved.error)throw saved.error;}
+    }catch(auditError){const message='No-target health audit failed: '+(auditError instanceof Error?auditError.message:String(auditError));errors.push(message);console.error('NL4_SYNC_HEALTH_AUDIT_FAILED',message);}
+  }
+  return {ok:errors.length===0,source:'BSD',season:SEASON,coreOnly:true,mode:'targeted-live-refresh',fixturesAvailable:rows.length,fixturesChecked:checked,fixturesChanged:changed,eventsWritten,healthChecks,errors:errors.slice(0,5),syncedAt:new Date().toISOString()};
 }
 
 async function run(reqUrl=new URL('https://local.invalid')){
