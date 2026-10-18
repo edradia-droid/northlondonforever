@@ -2376,7 +2376,7 @@
       const isLive = ["live", "inplay", "playing", "halftime", "1h", "2h", "firsthalf", "secondhalf", "extratime", "break"].includes(status);
 
       // Full-time statistics/events can arrive after the first final status.
-      // Poll every five minutes for at most 30 minutes, then stop to avoid waste.
+      // Poll every 15 minutes for up to three hours, then stop to limit database reads.
       if (isCompleted) {
         const now = Date.now();
         if (!completedPollStartedAt) {
