@@ -195,10 +195,49 @@ function deriveLeagueStandingsFromEvents(events:any[]){
 
 async function syncCurrentLeagueStandings(db:any,key:string){
   const events=await fetchLeagueSeasonEvents(SEASON_ID,key);
-  const rows=deriveLeagueStandingsFromEvents(events);
+  // BSD event responses can regress a previously finished fixture back to scheduled.
+  // Preserve completed BSD results from the Record Room archive instead of allowing
+  // a partial/stale event response to reduce the published league table.
+  const archived=await db.from('record_room_bsd_archive')
+    .select('source_event_id,raw_event,home_team,away_team,home_score,away_score')
+    .eq('league_id',LEAGUE_ID)
+    .eq('season_id',SEASON_ID)
+    .eq('season_label',SEASON)
+    .eq('match_status','finished')
+    .not('home_score','is',null)
+    .not('away_score','is',null);
+  if(archived.error) throw archived.error;
+  const byId=new Map<string,any>();
+  for(const event of events){
+    const id=String(event?.id??event?.event_id??event?.external_event_id??'').trim();
+    if(id) byId.set(id,event);
+  }
+  let archiveFallbacks=0;
+  for(const row of (archived.data??[])){
+    const id=String(row.source_event_id??'').trim();
+    if(!id) continue;
+    const current=byId.get(id);
+    const currentStatus=String(current?.status??current?.event_status??current?.state??'').toLowerCase();
+    const currentFinished=(currentStatus.includes('finish')||['ft','fulltime','full time','complete','completed','final','ended','end'].includes(currentStatus))
+      && num(current?.home_score??current?.score?.home??current?.scores?.home)!==null
+      && num(current?.away_score??current?.score?.away??current?.scores?.away)!==null;
+    if(currentFinished) continue;
+    byId.set(id,{
+      ...(row.raw_event&&typeof row.raw_event==='object'?row.raw_event:{}),
+      ...(current&&typeof current==='object'?current:{}),
+      id,
+      home_team:row.home_team,
+      away_team:row.away_team,
+      home_score:row.home_score,
+      away_score:row.away_score,
+      status:'finished'
+    });
+    archiveFallbacks++;
+  }
+  const rows=deriveLeagueStandingsFromEvents([...byId.values()]);
   const published=await db.rpc('publish_premier_league_standings',{p_season:SEASON,p_rows:rows});
   if(published.error) throw published.error;
-  return {season:SEASON,rows:20,source:'BSD events',eventsFetched:events.length,publication:published.data};
+  return {season:SEASON,rows:20,source:'BSD events with archived-finished fallback',eventsFetched:events.length,archiveFallbacks,finishedMatches:rows.reduce((sum:any,row:any)=>sum+Number(row.played||0),0)/2,publication:published.data};
 }
 
 async function syncHistoricalStandings(db:any,key:string){
