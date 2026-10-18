@@ -1057,6 +1057,16 @@ async function run(reqUrl=new URL('https://local.invalid')){
     return {ok:true,probe:true,squadCount:squad.length,sample};
   }
   const events=arr(await bsd(`/events/?league_id=${LEAGUE_ID}&season_id=${SEASON_ID}&team_id=${arsenalId}&limit=200&offset=0`,key));
+  // BSD's current event feed has occasionally regressed completed matches to
+  // scheduled/null-score. Use only already-archived BSD final results as a
+  // safety net, so the fixture mirror cannot overwrite a confirmed final.
+  const archivedFinishedQuery=await db.from('record_room_bsd_archive')
+    .select('source_event_id,match_status,home_score,away_score,home_team,away_team')
+    .eq('league_id',LEAGUE_ID).eq('season_id',SEASON_ID).eq('season_label',SEASON)
+    .eq('match_status','finished').not('home_score','is',null).not('away_score','is',null);
+  if(archivedFinishedQuery.error)throw archivedFinishedQuery.error;
+  const archivedFinishedById=new Map<string,any>((archivedFinishedQuery.data??[])
+    .map((r:any)=>[String(r.source_event_id),r]));
   const knownFixtureQuery=await db.from('fixtures').select('external_fixture_id,home_team_id,away_team_id').eq('competition','Premier League').eq('season',SEASON).eq('is_published',true).like('external_fixture_id','bsd:%');
   if(knownFixtureQuery.error)throw knownFixtureQuery.error;
   const knownTeamIdsByEvent=new Map<string,any>((knownFixtureQuery.data??[]).map((r:any)=>[String(r.external_fixture_id??'').replace(/^bsd:/,''),r]));
@@ -1077,10 +1087,13 @@ async function run(reqUrl=new URL('https://local.invalid')){
     if(!home||!away) continue;
     const isHome=home==='Arsenal';
     const opponent=isHome?away:home;
-    const scoreHome=num(e?.home_score??e?.score?.home??e?.scores?.home);
-    const scoreAway=num(e?.away_score??e?.score?.away??e?.scores?.away);
+    const archivedFinal=archivedFinishedById.get(eid);
+    const feedHomeScore=num(e?.home_score??e?.score?.home??e?.scores?.home);
+    const feedAwayScore=num(e?.away_score??e?.score?.away??e?.scores?.away);
+    const scoreHome=archivedFinal?num(archivedFinal.home_score):feedHomeScore;
+    const scoreAway=archivedFinal?num(archivedFinal.away_score):feedAwayScore;
     const statusRaw=String(e?.status??e?.event_status??e?.state??'').toLowerCase();
-    const status=statusRaw.includes('finish')||statusRaw==='ft'?'fulltime':statusRaw.includes('live')?'live':statusRaw.includes('postpon')?'postponed':statusRaw.includes('cancel')?'cancelled':'scheduled';
+    const status=archivedFinal?'fulltime':statusRaw.includes('finish')||statusRaw==='ft'?'fulltime':statusRaw.includes('live')?'live':statusRaw.includes('postpon')?'postponed':statusRaw.includes('cancel')?'cancelled':'scheduled';
     const kickoff=e?.event_date??e?.start_time??e?.kickoff_at??e?.date??null;
     const row:any={
       opponent,competition:'Premier League',kickoff_at:kickoff,is_home:isHome,
