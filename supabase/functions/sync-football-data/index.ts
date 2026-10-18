@@ -172,7 +172,7 @@ function deriveLeagueStandingsFromEvents(events:any[]){
     const hs=num(e?.home_score??e?.score?.home??e?.scores?.home);
     const as=num(e?.away_score??e?.score?.away??e?.scores?.away);
     const raw=String(e?.status??e?.event_status??e?.state??'').toLowerCase();
-    const finished=raw.includes('finish')||raw==='ft'||raw==='fulltime';
+    const finished=raw.includes('finish')||raw==='ft'||raw==='fulltime'||raw==='full time'||raw==='complete'||raw==='completed'||raw==='final'||raw==='ended'||raw==='end';
     if(hs===null||as===null||!finished) continue;
     h.played++;a.played++;
     h.goals_for+=hs;h.goals_against+=as;
