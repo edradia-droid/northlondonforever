@@ -1171,6 +1171,7 @@
     const fixtureId = params.get("fixture");
     let activeCompetitionName = "";
     let activeMatchStatus = "";
+    let activeKickoffAt = null;
     let matchDetailsLoading = false;
 
     const els = {
@@ -1734,6 +1735,7 @@
       const clLineupBoard = document.getElementById('lineupPhotoExport');
       if (clLineupBoard) clLineupBoard.classList.toggle('cl-mobile-full-lineup-fit', /champions league/i.test(String(competitionName || '')));
       activeMatchStatus = String(fixture.status || "scheduled").toLowerCase();
+      activeKickoffAt = fixture.kickoff_at ? Date.parse(String(fixture.kickoff_at)) : null;
       const isChampionsLeague = competitionName.includes('champions league');
       const isPremierLeague = competitionName.includes('premier league');
       document.body.classList.toggle('cl-match-details-page', isChampionsLeague);
@@ -2383,7 +2385,12 @@
           completedPollStartedAt = now;
           lastCompletedPollAt = now;
         }
-        if (now - completedPollStartedAt >= completedPollWindowMs) return;
+        // Anchor the final-stat retry window to the actual kickoff, not when a fan opened this page.
+        // If kickoff is missing, retain the safe first-seen fallback window.
+        const completedWindowExpired = Number.isFinite(activeKickoffAt)
+          ? now - activeKickoffAt >= completedPollWindowMs
+          : now - completedPollStartedAt >= completedPollWindowMs;
+        if (completedWindowExpired) return;
         if (now - lastCompletedPollAt < completedPollIntervalMs) return;
         lastCompletedPollAt = now;
         runMatchDetailsLoad();
