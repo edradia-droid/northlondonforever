@@ -784,7 +784,8 @@ async function syncLiveCoreOnly(db:any,key:string) {
     if(['fulltime','finished','ft'].includes(s)){
       const required=['home_possession','away_possession','home_shots','away_shots','home_shots_on_target','away_shots_on_target'];
       const statsComplete=required.every((column:string)=>r[column]!==null&&r[column]!==undefined);
-      return inRecentWindow&&!statsComplete&&finalAuditReadOk&&!recentFinalAuditIds.has(String(r.id));
+      // Refresh completed-match statistics during the post-kickoff window even when live values exist; final provider totals can differ. The per-fixture audit still limits this to one retry per 15 minutes.
+      return inRecentWindow&&finalAuditReadOk&&!recentFinalAuditIds.has(String(r.id));
     }
     if(s==='live'||s==='inprogress')return true;
     return inRecentWindow;
