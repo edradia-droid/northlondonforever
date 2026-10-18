@@ -899,10 +899,10 @@ async function syncLiveCoreOnly(db:any,key:string) {
       const eventAudit=await db.from('match_events').select('id',{count:'exact',head:true}).eq('fixture_id',row.id);
       if(eventAudit.error)throw eventAudit.error;
       const healthErrors=[...fixtureErrors];
-      if(!statsComplete)healthErrors.push('required_live_stats_incomplete');
-      if(!lineupComplete)healthErrors.push('confirmed_starting_xi_incomplete');
+      if(!statsComplete){healthErrors.push('required_live_stats_incomplete');errors.push('Match '+eid+': required_live_stats_incomplete');}
+      if(!lineupComplete){healthErrors.push('starting_xi_incomplete');errors.push('Match '+eid+': starting_xi_incomplete');}
       const healthStatus=fixtureErrors.length?'error':(!statsComplete||!lineupComplete?'incomplete':'ok');
-      const auditRow={sync_started_at:auditStartedAt,sync_completed_at:new Date().toISOString(),function_name:'sync-football-data',mode:'targeted-live-refresh',fixture_id:row.id,external_fixture_id:row.external_fixture_id,home_team:row.home_team,away_team:row.away_team,fixture_status:latest.data?.status??null,health_status:healthStatus,stats_complete:statsComplete,lineup_complete:lineupComplete,event_count:eventAudit.count??0,errors:healthErrors,details:{home_score:latest.data?.home_score??null,away_score:latest.data?.away_score??null,required_stats:requiredStats}};
+      const auditRow={sync_started_at:auditStartedAt,sync_completed_at:new Date().toISOString(),function_name:'sync-football-data',mode:'targeted-live-refresh',fixture_id:row.id,external_fixture_id:row.external_fixture_id,home_team:row.home_team,away_team:row.away_team,fixture_status:latest.data?.status??null,health_status:healthStatus,stats_complete:statsComplete,lineup_complete:lineupComplete,event_count:eventAudit.count??0,errors:healthErrors,details:{home_score:latest.data?.home_score??null,away_score:latest.data?.away_score??null,required_stats:requiredStats,lineup_check:'11 starters per side; does not independently prove provider confirmation state'}};
       const saved=await db.from('nl4_sync_health_log').insert(auditRow);
       if(saved.error)throw saved.error;
       healthChecks.push({fixture:row.external_fixture_id,status:healthStatus,statsComplete,lineupComplete,eventCount:eventAudit.count??0,errors:healthErrors});
