@@ -392,9 +392,36 @@
         throw new Error('Supabase client not found.');
       }
 
-      // Read the validated canonical standings snapshot published by BSD.
-      // Do not rebuild the whole league table from Arsenal-only fixture updates:
-      // that would leave other clubs stale until their individual fixtures refresh.
+      // Prefer the separate live snapshot when the backend has published a fully
+      // validated 20-club table. This keeps provisional in-play calculations separate
+      // from the permanent confirmed standings snapshot.
+      const { data: liveRows, error: liveError } = await client
+        .from('nl4_live_premier_league_standings')
+        .select('season,position,club,played,wins,draws,losses,goals_for,goals_against,goal_difference,points,is_provisional,live_matches,computed_at')
+        .eq('season', '2026/27')
+        .order('position', { ascending: true })
+        .limit(20);
+
+      if (!liveError && Array.isArray(liveRows) && liveRows.length === 20) {
+        const liveClubs = new Set(liveRows.map(row => String(row.club || '').trim().toLowerCase()));
+        const livePositions = new Set(liveRows.map(row => Number(row.position)));
+        if (liveClubs.size === 20 && livePositions.size === 20 &&
+            liveRows.every(row => Number(row.position) >= 1 && Number(row.position) <= 20)) {
+          const standings = liveRows.map(normalizeStanding);
+          const hasLive = liveRows.some(row => row.is_provisional === true || Number(row.live_matches) > 0);
+          const liveCount = liveRows.reduce((max, row) => Math.max(max, Number(row.live_matches) || 0), 0);
+          const updated = liveRows[0]?.computed_at ? new Date(liveRows[0].computed_at).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', timeZone:'Europe/London' }) : '';
+          renderStandings(
+            standings,
+            `${hasLive ? 'LIVE • PROVISIONAL TABLE' : 'LIVE TABLE • CONFIRMED RESULTS'} • ${liveCount} live matches • updated ${updated || 'recently'}`
+          );
+          renderTitleRaceFromStandings(standings);
+          return;
+        }
+      }
+
+      // Safe fallback: retain the permanent confirmed table until a valid live
+      // snapshot is published. Never derive the whole league from Arsenal-only fixtures.
       const { data: rows, error } = await client
         .from('premier_league_standings')
         .select('season,position,club,played,wins,draws,losses,goals_for,goals_against,goal_difference,points,updated_at')
@@ -417,7 +444,7 @@
       const standings = rows.map(normalizeStanding);
       renderStandings(
         standings,
-        `BSD-published Premier League standings • ${standings.reduce((max, team) => Math.max(max, team.played), 0)} maximum matches played • 2026/27`
+        `Confirmed BSD standings • ${standings.reduce((max, team) => Math.max(max, team.played), 0)} maximum matches played • 2026/27 • live snapshot pending`
       );
       renderTitleRaceFromStandings(standings);
     } catch (error) {
@@ -553,4 +580,8 @@
   // This keeps the displayed position tied to the canonical fixture-derived table
   // even if another public-page module finishes later and touches the same summary.
   window.addEventListener('load', () => setTimeout(loadStandings, 1200));
+
+  // Poll Supabase for newly published live standings; no direct BSD calls are
+  // made by the public page. Backend quota protection remains authoritative.
+  window.setInterval(loadStandings, 30000);
 })();
