@@ -133,10 +133,12 @@
   }
 
   function renderStandings(rows, sourceLabel) {
+    // Supabase publishes the validated official positions. Preserve them rather
+    // than re-ranking client-side with a different tie-break order; this keeps
+    // the table aligned with the same snapshot used by the backend and summary.
     const standings = rows
       .map(normalizeStanding)
-      .sort((a,b) => b.points - a.points || b.gd - a.gd || b.gf - a.gf || a.club.localeCompare(b.club))
-      .map((team,index) => ({...team,position:index + 1}));
+      .sort((a,b) => a.position - b.position);
 
     tableBody.innerHTML = standings.map(team => {
       const arsenal = team.club.toLowerCase() === 'arsenal';
