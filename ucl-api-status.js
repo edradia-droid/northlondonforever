@@ -102,6 +102,41 @@
     }
   }
 
+  async function syncTargetEvent(){
+    const button = $('uclTargetSync');
+    const input = $('uclTargetEventId');
+    const message = $('uclTargetSyncMessage');
+    if (!db || !button || !input || !message) return;
+    const eventId = String(input.value || '').trim();
+    if (!/^\\d+$/.test(eventId)) {
+      message.textContent = 'Enter a numeric BSD event ID.';
+      message.dataset.state = 'bad';
+      return;
+    }
+    button.disabled = true;
+    button.textContent = 'Syncing event…';
+    message.textContent = 'Requesting BSD details for event ' + eventId + '…';
+    message.dataset.state = 'neutral';
+    try {
+      const { data, error } = await db.functions.invoke('sync-ucl-football', { body: { event_ids: [eventId] } });
+      if (error) throw error;
+      if (!data || data.ok !== true) throw new Error(data?.error || 'Targeted sync did not confirm success.');
+      message.textContent = 'Targeted sync completed. Event details: ' + (data.details ?? 0) + '; fixture records processed: ' + (data.arsenalFixtures ?? 0) + '.';
+      message.dataset.state = Number(data.details) > 0 ? 'good' : 'warn';
+      setText('uclFunctionHealth','Targeted BSD sync completed','good');
+      await readFixtureStatus().catch(() => {});
+      setText('uclStatusUpdated', 'Targeted sync checked ' + new Date().toLocaleTimeString(), 'good');
+    } catch (err) {
+      message.textContent = err?.message || String(err);
+      message.dataset.state = 'bad';
+      setText('uclFunctionHealth','Targeted sync failed','bad');
+      setText('uclStatusError',message.textContent,'bad');
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Sync Event Details';
+    }
+  }
+
   async function syncNow(){
     const button = $('syncApi');
     if (!db || !button) return;
@@ -133,7 +168,7 @@
     const refresh = $('uclRefreshStatus');
     const sync = $('syncApi');
     if (refresh) refresh.addEventListener('click', refreshStatus);
-    if (sync) sync.addEventListener('click', syncNow);
+    if (sync) sync.addEventListener('click', syncNow);\n    const targetSync = $('uclTargetSync');\n    if (targetSync) targetSync.addEventListener('click', syncTargetEvent);
     setText('uclJwt','Required • verify_jwt enabled','good');
     refreshStatus();
   }
