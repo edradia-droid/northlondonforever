@@ -108,7 +108,7 @@
     const message = $('uclTargetSyncMessage');
     if (!db || !button || !input || !message) return;
     const eventId = String(input.value || '').trim();
-    if (!/^\\d+$/.test(eventId)) {
+    if (!/^\d+$/.test(eventId)) {
       message.textContent = 'Enter a numeric BSD event ID.';
       message.dataset.state = 'bad';
       return;
