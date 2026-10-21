@@ -168,7 +168,8 @@
     const refresh = $('uclRefreshStatus');
     const sync = $('syncApi');
     if (refresh) refresh.addEventListener('click', refreshStatus);
-    if (sync) sync.addEventListener('click', syncNow);\n    const targetSync = $('uclTargetSync');\n    if (targetSync) targetSync.addEventListener('click', syncTargetEvent);
+    if (sync) sync.addEventListener('click', syncNow);
+    const targetSync = $('uclTargetSync');\n    if (targetSync) targetSync.addEventListener('click', syncTargetEvent);
     setText('uclJwt','Required • verify_jwt enabled','good');
     refreshStatus();
   }
