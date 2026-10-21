@@ -5,7 +5,7 @@ const esc=v=>String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 const BSD_TEAM_IDS=Object.freeze({"Arsenal":18,"SSC Napoli":62,"Lille":106,"FC Bayern München":79,"SK Slavia Praha":120,"Borussia Dortmund":92,"Real Madrid":57,"Real Betis":56,"Sabah FK":412});
 const crest=(name,url)=>{const supplied=String(url||'').trim();const id=BSD_TEAM_IDS[String(name||'').trim()];const primary=supplied|| (id?'https://sports.bzzoiro.com/img/team/'+id+'/':'');const fallback=id?'https://sports.bzzoiro.com/img/team/'+id+'/?bg=transparent':'';if(!primary)return '<span class="club-dot">'+esc(String(name||'').slice(0,3).toUpperCase())+'</span>';return '<img class="team-logo" src="'+esc(primary)+'" data-bsd-fallback="'+esc(fallback)+'" alt="'+esc(name)+' crest" loading="eager" onerror="if(this.dataset.bsdFallback&&this.src!==this.dataset.bsdFallback){this.src=this.dataset.bsdFallback;this.dataset.bsdFallback=\'\';}else{this.style.display=\'none\';}">';};
 function statusOf(f){
- const s=String(f.status||'scheduled').toLowerCase().replace(/[_\\s]+/g,'-');
+ const s=String(f.status||'scheduled').toLowerCase().replace(/[_\s]+/g,'-');
  if(['live','1h','ht','2h','et','in-progress','inprogress','in-play','playing','half-time','halftime','extra-time'].includes(s))return {label:'LIVE',done:false,live:true};
  if(['fulltime','full-time','finished','ft','aet','pen','completed','ended'].includes(s))return {label:'FULL TIME',done:true,live:false};
  const kickoff=f.kickoff_at?new Date(f.kickoff_at):null;
