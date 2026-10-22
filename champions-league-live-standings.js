@@ -19,5 +19,6 @@ async function loadArsenalOverview(){
  const status=document.querySelector('.ucl-table-status'),last=rows.map(r=>r.source_updated_at).filter(Boolean).sort().pop();
  if(status){const derived=rows.some(r=>r.source==='BSD-results-derived');status.textContent=(derived?'Live table calculated from BSD match results':'Official BSD standings')+(last?' • updated '+new Date(last).toLocaleString():'');}
 }
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadArsenalOverview,{once:true});else loadArsenalOverview();
+function startStandingsRefresh(){loadArsenalOverview();setInterval(()=>{if(!document.hidden)loadArsenalOverview();},30000);}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startStandingsRefresh,{once:true});else startStandingsRefresh();
 })();
