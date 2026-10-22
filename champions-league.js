@@ -18,7 +18,7 @@ function renderFixtures(){
 let uclCrests=new Map();
 function teamCrest(team){
  const key=String(team||'').trim().toLocaleLowerCase(),url=uclCrests.get(key);
- return url?'<img class="ucl-table-crest" src="'+esc(url)+'" alt="" aria-hidden="true" loading="lazy" onerror="this.style.display=\\'none\\'">':'<span class="club-dot" aria-hidden="true">'+esc(String(team||'').slice(0,3).toUpperCase())+'</span>';
+ return url?'<img class="ucl-table-crest" src="'+esc(url)+'" alt="" aria-hidden="true" loading="lazy" onerror="this.remove()">':'<span class="club-dot" aria-hidden="true">'+esc(String(team||'').slice(0,3).toUpperCase())+'</span>';
 }
 function renderTable(rows){
  const body=document.getElementById('uclTableBody');if(!body)return;
