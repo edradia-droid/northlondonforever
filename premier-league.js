@@ -112,6 +112,84 @@
     };
   }
 
+  // Live fixture decoration is read-only and kept separate from standings math.
+  // The displayed minute is an estimate from kickoff time because fixtures has no
+  // authoritative live-clock column; status itself must come from the stored fixture.
+  let liveMatchByClub = new Map();
+
+  function clubKey(name) {
+    return String(name || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+
+  function estimatedLiveMinute(kickoffAt) {
+    const kickoff = new Date(kickoffAt).getTime();
+    if (!Number.isFinite(kickoff)) return '';
+    const elapsed = Math.floor((Date.now() - kickoff) / 60000);
+    if (elapsed < 0 || elapsed > 180) return '';
+    if (elapsed < 45) return `${elapsed}′`;
+    if (elapsed < 60) return 'HT';
+    const matchMinute = elapsed - 15;
+    if (matchMinute <= 90) return `${matchMinute}′`;
+    return '90+′';
+  }
+
+  function applyLiveFixtureDetails() {
+    if (!tableBody) return;
+    tableBody.querySelectorAll('.club-name-wrap[data-club-key]').forEach(wrap => {
+      const key = wrap.getAttribute('data-club-key');
+      const match = liveMatchByClub.get(key);
+      const badge = wrap.querySelector('[data-club-live-badge]');
+      const meta = wrap.querySelector('[data-club-live-meta]');
+      if (!badge || !meta) return;
+      if (!match) {
+        badge.hidden = true;
+        meta.hidden = true;
+        meta.textContent = '';
+        return;
+      }
+      badge.hidden = false;
+      meta.hidden = false;
+      meta.textContent = `vs ${match.opponent} · ${match.minute || 'LIVE'}`;
+    });
+  }
+
+  async function loadLiveFixtureDetails() {
+    try {
+      const client =
+        window.nl4Supabase ||
+        window.supabaseClient ||
+        window.NL4_SUPABASE ||
+        window.supabaseDb ||
+        window.db;
+      if (!client || typeof client.from !== 'function') return;
+
+      const { data, error } = await client
+        .from('fixtures')
+        .select('season,competition,home_team,away_team,kickoff_at,status,is_published')
+        .eq('season', '2026/27')
+        .eq('competition', 'Premier League')
+        .eq('is_published', true)
+        .eq('status', 'live')
+        .limit(20);
+
+      if (error) throw error;
+      const next = new Map();
+      (Array.isArray(data) ? data : []).forEach(fixture => {
+        if (!fixture?.home_team || !fixture?.away_team) return;
+        const minute = estimatedLiveMinute(fixture.kickoff_at);
+        const homeKey = clubKey(fixture.home_team);
+        const awayKey = clubKey(fixture.away_team);
+        next.set(homeKey, { opponent: fixture.away_team, minute });
+        next.set(awayKey, { opponent: fixture.home_team, minute });
+      });
+      liveMatchByClub = next;
+      applyLiveFixtureDetails();
+    } catch (error) {
+      // A live-detail query failure must never prevent the standings table rendering.
+      console.warn('NL4 live fixture decorations unavailable:', error);
+    }
+  }
+
   function updateArsenalSummary(arsenal) {
     if (!arsenal) return;
 
@@ -148,9 +226,13 @@
           <td>${team.position}</td>
 
           <td class="club-cell">
-            <div class="club-name-wrap">
+            <div class="club-name-wrap" data-club-key="${escapeHtml(clubKey(team.club))}">
               ${clubLogo(team.club,"club-mini-logo")}
-              <span>${escapeHtml(team.club)}</span>
+              <span class="club-live-pill" data-club-live-badge hidden aria-label="Match live">LIVE</span>
+              <span class="club-info">
+                <span class="club-name-text">${escapeHtml(team.club)}</span>
+                <span class="club-live-meta" data-club-live-meta hidden></span>
+              </span>
             </div>
           </td>
 
@@ -165,6 +247,8 @@
         </tr>
       `;
     }).join('');
+
+    applyLiveFixtureDetails();
 
     const arsenal = standings.find(team =>
       team.club.toLowerCase() === 'arsenal'
@@ -586,4 +670,6 @@
   // Poll Supabase for newly published live standings; no direct BSD calls are
   // made by the public page. Backend quota protection remains authoritative.
   window.setInterval(loadStandings, 30000);
+  loadLiveFixtureDetails();
+  window.setInterval(loadLiveFixtureDetails, 30000);
 })();
