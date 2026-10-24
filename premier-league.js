@@ -1,6 +1,9 @@
 (function () {
   const tableBody = document.getElementById('leagueTableBody');
   const tableStatus = document.getElementById('leagueTableStatus');
+  let liveFixtureByClub = new Map();
+  let lastStandingsRows = [];
+  let lastStandingsSourceLabel = '';
 
   const fallbackTeams = [
     'Arsenal',
@@ -133,6 +136,8 @@
   }
 
   function renderStandings(rows, sourceLabel) {
+    lastStandingsRows = rows;
+    lastStandingsSourceLabel = sourceLabel;
     // Supabase publishes the validated official positions. Preserve them rather
     // than re-ranking client-side with a different tie-break order; this keeps
     // the table aligned with the same snapshot used by the backend and summary.
@@ -150,7 +155,11 @@
           <td class="club-cell">
             <div class="club-name-wrap">
               ${clubLogo(team.club,"club-mini-logo")}
-              <span>${escapeHtml(team.club)}</span>
+              ${liveFixtureByClub.has(team.club.toLowerCase()) ? '<span class="club-live-badge" aria-label="Match live">LIVE</span>' : ''}
+              <span class="club-name-stack">
+                <span class="club-team-name">${escapeHtml(team.club)}</span>
+                ${renderLiveMatchMeta(team.club)}
+              </span>
             </div>
           </td>
 
@@ -173,6 +182,75 @@
     updateArsenalSummary(arsenal);
 
     tableStatus.textContent = sourceLabel;
+  }
+
+  function liveMatchMinute(kickoffAt) {
+    const kickoff = kickoffAt ? new Date(kickoffAt).getTime() : NaN;
+    if (!Number.isFinite(kickoff)) return null;
+    const elapsed = Math.floor((Date.now() - kickoff) / 60000);
+    if (elapsed < 0) return null;
+
+    // The fixtures table does not currently store the provider's match clock.
+    // Estimate the minute from kickoff and pause around the standard interval
+    // between halves instead of letting the displayed clock run through half-time.
+    if (elapsed <= 45) return Math.min(45, elapsed);
+    if (elapsed < 60) return 45;
+    return Math.min(90, elapsed - 15);
+  }
+
+  function renderLiveMatchMeta(clubName) {
+    const fixture = liveFixtureByClub.get(String(clubName || '').toLowerCase());
+    if (!fixture) return '<small class="club-live-meta" hidden></small>';
+    const home = String(fixture.home_team || '');
+    const away = String(fixture.away_team || '');
+    const isHome = home.toLowerCase() === String(clubName || '').toLowerCase();
+    const opponent = isHome ? away : home;
+    const minute = liveMatchMinute(fixture.kickoff_at);
+    const matchClock = minute === null ? 'LIVE' : `${minute}′`;
+    return `<small class="club-live-meta" title="Match minute estimated from scheduled kickoff">vs ${escapeHtml(opponent)} · ${matchClock}</small>`;
+  }
+
+  async function loadLiveFixtureLabels() {
+    try {
+      const client =
+        window.nl4Supabase ||
+        window.supabaseClient ||
+        window.NL4_SUPABASE ||
+        window.supabaseDb ||
+        window.db;
+      if (!client || typeof client.from !== 'function') return;
+
+      const { data, error } = await client
+        .from('fixtures')
+        .select('external_fixture_id,season,competition,home_team,away_team,kickoff_at,status,is_published')
+        .eq('season', '2026/27')
+        .eq('competition', 'Premier League')
+        .eq('is_published', true)
+        .limit(100);
+      if (error) throw error;
+
+      const nextMap = new Map();
+      for (const fixture of (data || [])) {
+        const status = String(fixture.status || '').trim().toLowerCase();
+        if (!['live', '1h', '2h', 'ht', 'halftime', 'inplay', 'in_progress'].includes(status)) continue;
+        if (!fixture.home_team || !fixture.away_team) continue;
+        const homeKey = String(fixture.home_team).trim().toLowerCase();
+        const awayKey = String(fixture.away_team).trim().toLowerCase();
+        // Avoid marking a club as live from an ambiguous duplicate fixture.
+        if (nextMap.has(homeKey) || nextMap.has(awayKey)) continue;
+        nextMap.set(homeKey, fixture);
+        nextMap.set(awayKey, fixture);
+      }
+
+      liveFixtureByClub = nextMap;
+      if (lastStandingsRows.length) {
+        renderStandings(lastStandingsRows, lastStandingsSourceLabel);
+      }
+    } catch (error) {
+      // Keep the last valid standings and any last known live labels if this
+      // separate read-only display query temporarily fails.
+      console.warn('NL4 live-match table labels failed:', error);
+    }
   }
 
   function renderStandingsUnavailable(message='Premier League standings are temporarily unavailable.') {
@@ -577,6 +655,7 @@
   loadStandings();
   loadArsenalResults();
   loadNextFixture();
+  loadLiveFixtureLabels();
 
   // Final page-load reconciliation: run after every other page script has loaded.
   // This keeps the displayed position tied to the canonical fixture-derived table
@@ -586,4 +665,5 @@
   // Poll Supabase for newly published live standings; no direct BSD calls are
   // made by the public page. Backend quota protection remains authoritative.
   window.setInterval(loadStandings, 30000);
+  window.setInterval(loadLiveFixtureLabels, 30000);
 })();

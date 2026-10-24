@@ -942,3 +942,56 @@ body.premier-league-page .main{
 .pl-title-race-section{background:radial-gradient(circle at 80% 15%,rgba(55,0,60,.30),transparent 35%),#090909}
 .pl-race-card.arsenal-race-card{border-color:rgba(255,255,255,.22);background:linear-gradient(145deg,rgba(55,0,60,.42),rgba(255,255,255,.03)),#121315}
 @media(max-width:600px){.pl-competition-brand{padding:9px 12px;gap:10px}.pl-competition-brand img{width:86px}.pl-competition-brand span{font-size:8px}}
+
+
+/* LIVE MATCH LABELS IN THE LEAGUE TABLE */
+.pl-table .club-name-wrap{
+  align-items:center;
+  gap:9px;
+}
+.pl-table .club-name-stack{
+  display:flex;
+  min-width:0;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:4px;
+}
+.pl-table .club-team-name{
+  display:block;
+  line-height:1.25;
+}
+.pl-table .club-live-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+  padding:4px 6px;
+  border-radius:4px;
+  background:#d8001f;
+  color:#fff;
+  font-size:8px;
+  font-weight:1000;
+  letter-spacing:.7px;
+  line-height:1;
+  box-shadow:0 0 10px rgba(216,0,31,.24);
+  animation:nl4-live-pulse 1.8s ease-in-out infinite;
+}
+.pl-table .club-live-meta{
+  display:block;
+  max-width:180px;
+  color:#ffb5bd;
+  font-size:9px;
+  font-weight:800;
+  line-height:1.25;
+  white-space:normal;
+}
+.pl-table .club-live-meta[hidden]{
+  display:none;
+}
+@keyframes nl4-live-pulse{
+  0%,100%{opacity:1}
+  50%{opacity:.72}
+}
+@media(prefers-reduced-motion:reduce){
+  .pl-table .club-live-badge{animation:none}
+}
