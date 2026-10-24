@@ -942,3 +942,54 @@ body.premier-league-page .main{
 .pl-title-race-section{background:radial-gradient(circle at 80% 15%,rgba(55,0,60,.30),transparent 35%),#090909}
 .pl-race-card.arsenal-race-card{border-color:rgba(255,255,255,.22);background:linear-gradient(145deg,rgba(55,0,60,.42),rgba(255,255,255,.03)),#121315}
 @media(max-width:600px){.pl-competition-brand{padding:9px 12px;gap:10px}.pl-competition-brand img{width:86px}.pl-competition-brand span{font-size:8px}}
+
+/* LIVE MATCH INDICATORS IN THE STANDINGS TABLE */
+.pl-table .club-name-wrap{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+}
+.pl-table .club-mini-logo{
+  width:30px;
+  height:30px;
+  flex:0 0 30px;
+  object-fit:contain;
+}
+.pl-table .club-info{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:4px;
+  min-width:0;
+}
+.pl-table .club-name-text{
+  line-height:1.25;
+}
+.pl-table .club-live-pill{
+  flex:0 0 auto;
+  padding:4px 6px;
+  border-radius:4px;
+  background:#c9152b;
+  color:#fff;
+  font-size:8px;
+  font-weight:900;
+  line-height:1;
+  letter-spacing:.6px;
+  box-shadow:0 0 10px rgba(201,21,43,.22);
+}
+.pl-table .club-live-meta{
+  color:#ff6979;
+  font-size:9px;
+  font-weight:800;
+  line-height:1.2;
+  white-space:nowrap;
+}
+.pl-table [hidden]{display:none!important}
+@media(max-width:600px){
+  .pl-table td.club-cell{min-width:245px}
+  .pl-table .club-name-wrap{gap:7px}
+  .pl-table .club-mini-logo{width:26px;height:26px;flex-basis:26px}
+  .pl-table .club-live-pill{font-size:7px;padding:4px}
+  .pl-table .club-live-meta{font-size:8px}
+}
