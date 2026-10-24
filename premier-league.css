@@ -968,15 +968,14 @@ body.premier-league-page .main{
 }
 .pl-table .club-live-pill{
   flex:0 0 auto;
-  padding:4px 6px;
-  border-radius:4px;
-  background:#c9152b;
-  color:#fff;
+  padding:0;
+  background:transparent;
+  color:#ff6979;
   font-size:8px;
   font-weight:900;
   line-height:1;
-  letter-spacing:.6px;
-  box-shadow:0 0 10px rgba(201,21,43,.22);
+  letter-spacing:.4px;
+  white-space:nowrap;
 }
 .pl-table .club-live-meta{
   color:#ff6979;
