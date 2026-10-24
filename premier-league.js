@@ -112,25 +112,19 @@
     };
   }
 
-  // Live fixture decoration is read-only and kept separate from standings math.
-  // The displayed minute is an estimate from kickoff time because fixtures has no
-  // authoritative live-clock column; status itself must come from the stored fixture.
+  // Live match details come only from the narrowly scoped BSD archive RPC.
+  // This is decorative UI and is intentionally separate from standings math.
   let liveMatchByClub = new Map();
 
   function clubKey(name) {
     return String(name || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
   }
 
-  function estimatedLiveMinute(kickoffAt) {
-    const kickoff = new Date(kickoffAt).getTime();
-    if (!Number.isFinite(kickoff)) return '';
-    const elapsed = Math.floor((Date.now() - kickoff) / 60000);
-    if (elapsed < 0 || elapsed > 180) return '';
-    if (elapsed < 45) return `${elapsed}′`;
-    if (elapsed < 60) return 'HT';
-    const matchMinute = elapsed - 15;
-    if (matchMinute <= 90) return `${matchMinute}′`;
-    return '90+′';
+  function formatBsdMatchClock(match) {
+    const period = String(match.period || '').trim().toUpperCase();
+    if (period === 'HT' || period === 'HALF-TIME' || period === 'HALFTIME' || period === 'HALF TIME') return 'HT';
+    const minute = Number(match.current_minute);
+    return Number.isInteger(minute) && minute >= 0 ? `${minute}′` : 'LIVE';
   }
 
   function applyLiveFixtureDetails() {
@@ -149,7 +143,7 @@
       }
       badge.hidden = false;
       meta.hidden = false;
-      meta.textContent = `vs ${match.opponent} · ${match.minute || 'LIVE'}`;
+      meta.textContent = `vs ${match.opponent} · ${match.minute}`;
     });
   }
 
@@ -161,32 +155,29 @@
         window.NL4_SUPABASE ||
         window.supabaseDb ||
         window.db;
-      if (!client || typeof client.from !== 'function') return;
+      if (!client || typeof client.rpc !== 'function') return;
 
-      const { data, error } = await client
-        .from('fixtures')
-        .select('season,competition,home_team,away_team,kickoff_at,status,is_published')
-        .eq('season', '2026/27')
-        .eq('competition', 'Premier League')
-        .eq('is_published', true)
-        .eq('status', 'live')
-        .limit(20);
-
+      const { data, error } = await client.rpc('nl4_public_live_pl_match_details');
       if (error) throw error;
+
       const next = new Map();
-      (Array.isArray(data) ? data : []).forEach(fixture => {
-        if (!fixture?.home_team || !fixture?.away_team) return;
-        const minute = estimatedLiveMinute(fixture.kickoff_at);
-        const homeKey = clubKey(fixture.home_team);
-        const awayKey = clubKey(fixture.away_team);
-        next.set(homeKey, { opponent: fixture.away_team, minute });
-        next.set(awayKey, { opponent: fixture.home_team, minute });
+      (Array.isArray(data) ? data : []).forEach(match => {
+        if (!match?.home_team || !match?.away_team) return;
+        const clock = formatBsdMatchClock(match);
+        const homeKey = clubKey(match.home_team);
+        const awayKey = clubKey(match.away_team);
+        next.set(homeKey, { opponent: match.away_team, minute: clock });
+        next.set(awayKey, { opponent: match.home_team, minute: clock });
       });
+      // An empty successful response means there are no archived live matches:
+      // replacing the map removes the badge after BSD reports full-time.
       liveMatchByClub = next;
       applyLiveFixtureDetails();
     } catch (error) {
-      // A live-detail query failure must never prevent the standings table rendering.
-      console.warn('NL4 live fixture decorations unavailable:', error);
+      // Fail closed: stale live badges should not remain visible if the data source fails.
+      liveMatchByClub = new Map();
+      applyLiveFixtureDetails();
+      console.warn('NL4 live match details unavailable:', error);
     }
   }
 
