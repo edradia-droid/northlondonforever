@@ -996,9 +996,11 @@ body.premier-league-page .main{
 
 /* Keep the live-badge column collapsed when a club has no live fixture.
    Expand it only for live clubs so full-time rows return to their original spacing. */
+/* Reserve one compact badge slot for every club so crests and names
+   never shift when a match starts or finishes. */
 .pl-table .club-name-wrap{
   display:grid;
-  grid-template-columns:0 30px minmax(0,1fr);
+  grid-template-columns:40px 30px minmax(0,1fr);
   column-gap:9px;
   align-items:center;
   position:relative;
@@ -1008,14 +1010,8 @@ body.premier-league-page .main{
   grid-column:1;
   grid-row:1;
   display:block;
-  width:0;
-  min-height:1px;
-}
-.pl-table .club-name-wrap.has-live-match{
-  grid-template-columns:40px 30px minmax(0,1fr);
-}
-.pl-table .club-name-wrap.has-live-match::before{
   width:40px;
+  min-height:1px;
 }
 .pl-table .club-mini-logo{
   grid-column:2;
@@ -1030,23 +1026,27 @@ body.premier-league-page .main{
   left:0;
   top:8px;
   z-index:1;
+  width:40px;
+  justify-content:center;
+  gap:2px;
+  font-size:6.5px;
+  letter-spacing:0;
 }
 @media(max-width:600px){
   .pl-table .club-name-wrap{
-    grid-template-columns:0 26px minmax(0,1fr);
+    grid-template-columns:36px 26px minmax(0,1fr);
     column-gap:7px;
   }
-  .pl-table .club-name-wrap.has-live-match{
-    grid-template-columns:38px 26px minmax(0,1fr);
-  }
   .pl-table .club-name-wrap::before{
-    width:0;
-  }
-  .pl-table .club-name-wrap.has-live-match::before{
-    width:38px;
+    width:36px;
   }
   .pl-table .club-live-pill{
     top:8px;
+    width:36px;
+    justify-content:center;
+    gap:2px;
+    font-size:6px;
+    letter-spacing:0;
   }
 }
 
@@ -1061,9 +1061,9 @@ body.premier-league-page .main{
 .pl-table .club-live-pill::before{
   content:"";
   display:inline-block;
-  width:6px;
-  height:6px;
-  flex:0 0 6px;
+  width:5px;
+  height:5px;
+  flex:0 0 5px;
   border-radius:50%;
   background:#32d583;
   box-shadow:0 0 0 2px rgba(50,213,131,.18);
