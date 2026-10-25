@@ -241,7 +241,7 @@
 
           <td class="club-cell">
             <div class="club-name-wrap" data-club-key="${escapeHtml(clubKey(team.club))}">
-              <span class="club-live-pill" data-club-live-badge hidden aria-label="Match live">🔴 LIVE</span>
+              <span class="club-live-pill" data-club-live-badge hidden aria-label="Match live">LIVE</span>
               ${clubLogo(team.club,"club-mini-logo")}
               <span class="club-info">
                 <span class="club-name-text">${escapeHtml(team.club)}</span>
