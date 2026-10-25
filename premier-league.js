@@ -148,6 +148,7 @@
         return;
       }
       badge.hidden = false;
+      badge.textContent = `LIVE · ${match.venue}`;
       meta.hidden = false;
       const score = Number.isInteger(match.clubScore) && Number.isInteger(match.opponentScore)
         ? ` · ${match.clubScore} : ${match.opponentScore}`
@@ -180,12 +181,14 @@
         const hasScores = Number.isInteger(homeScore) && Number.isInteger(awayScore);
         next.set(homeKey, {
           opponent: match.away_team,
+          venue: 'H',
           clubScore: hasScores ? homeScore : null,
           opponentScore: hasScores ? awayScore : null,
           clock
         });
         next.set(awayKey, {
           opponent: match.home_team,
+          venue: 'A',
           clubScore: hasScores ? awayScore : null,
           opponentScore: hasScores ? homeScore : null,
           clock
