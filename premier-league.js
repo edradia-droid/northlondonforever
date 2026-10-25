@@ -176,8 +176,8 @@
         const clock = formatBsdMatchClock(match);
         const homeKey = clubKey(match.home_team);
         const awayKey = clubKey(match.away_team);
-        const homeScore = Number(match.home_score);
-        const awayScore = Number(match.away_score);
+        const homeScore = match.home_score;
+        const awayScore = match.away_score;
         const hasScores = Number.isInteger(homeScore) && Number.isInteger(awayScore);
         next.set(homeKey, {
           opponent: match.away_team,
