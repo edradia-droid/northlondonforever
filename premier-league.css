@@ -1000,8 +1000,8 @@ body.premier-league-page .main{
    never shift when a match starts or finishes. */
 .pl-table .club-name-wrap{
   display:grid;
-  grid-template-columns:40px 30px minmax(0,1fr);
-  column-gap:9px;
+  grid-template-columns:32px 30px minmax(0,1fr);
+  column-gap:7px;
   align-items:center;
   position:relative;
 }
@@ -1010,7 +1010,7 @@ body.premier-league-page .main{
   grid-column:1;
   grid-row:1;
   display:block;
-  width:40px;
+  width:32px;
   min-height:1px;
 }
 .pl-table .club-mini-logo{
@@ -1034,15 +1034,15 @@ body.premier-league-page .main{
 }
 @media(max-width:600px){
   .pl-table .club-name-wrap{
-    grid-template-columns:36px 26px minmax(0,1fr);
-    column-gap:7px;
+    grid-template-columns:30px 26px minmax(0,1fr);
+    column-gap:5px;
   }
   .pl-table .club-name-wrap::before{
-    width:36px;
+    width:30px;
   }
   .pl-table .club-live-pill{
     top:8px;
-    width:36px;
+    width:30px;
     justify-content:center;
     gap:2px;
     font-size:6px;
