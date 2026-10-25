@@ -149,11 +149,10 @@
       }
       badge.hidden = false;
       meta.hidden = false;
-      const clubName = wrap.querySelector('.club-name-text')?.textContent?.trim() || key;
       const score = Number.isInteger(match.clubScore) && Number.isInteger(match.opponentScore)
         ? ` · ${match.clubScore} : ${match.opponentScore}`
         : '';
-      meta.textContent = `${clubName} vs ${match.opponent}${score} · ${match.clock}`;
+      meta.textContent = `vs ${match.opponent}${score} · ${match.clock}`;
     });
   }
 
