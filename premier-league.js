@@ -129,8 +129,18 @@
   function formatBsdMatchClock(match) {
     const period = String(match.period || '').trim().toUpperCase();
     if (period === 'HT' || period === 'HALF-TIME' || period === 'HALFTIME' || period === 'HALF TIME') return 'HT';
+
     const minute = Number(match.current_minute);
-    return Number.isInteger(minute) && minute >= 0 ? `${minute}′` : 'LIVE';
+    if (!Number.isInteger(minute) || minute < 0) return 'LIVE';
+
+    // Display stoppage time as added minutes (e.g. 45+2′ / 90+2′),
+    // rather than the elapsed total (47′ / 92′).
+    const firstHalf = /FIRST|1ST|1ST_HALF|FIRST_HALF/.test(period);
+    const secondHalf = /SECOND|2ND|2ND_HALF|SECOND_HALF/.test(period);
+    if (firstHalf && minute > 45 && minute <= 60) return `45+${minute - 45}′`;
+    if (secondHalf && minute > 90 && minute <= 120) return `90+${minute - 90}′`;
+
+    return `${minute}′`;
   }
 
   function applyLiveFixtureDetails() {
