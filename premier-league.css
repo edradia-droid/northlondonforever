@@ -1037,3 +1037,32 @@ body.premier-league-page .main{
     top:8px;
   }
 }
+
+
+/* Green styling for the live indicator and fixture details. */
+.pl-table .club-live-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  color:#32d583;
+}
+.pl-table .club-live-pill::before{
+  content:"";
+  display:inline-block;
+  width:6px;
+  height:6px;
+  flex:0 0 6px;
+  border-radius:50%;
+  background:#32d583;
+  box-shadow:0 0 0 2px rgba(50,213,131,.18);
+}
+.pl-table .club-live-meta{
+  color:#32d583;
+}
+@media(max-width:600px){
+  .pl-table .club-live-pill::before{
+    width:5px;
+    height:5px;
+    flex-basis:5px;
+  }
+}
