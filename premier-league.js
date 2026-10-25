@@ -117,7 +117,13 @@
   let liveMatchByClub = new Map();
 
   function clubKey(name) {
-    return String(name || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    const key = String(name || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    // BSD archive names can include club prefixes/suffixes that the table labels omit.
+    const aliases = {
+      liverpoolfc: 'liverpool',
+      bournemouth: 'afcbournemouth'
+    };
+    return aliases[key] || key;
   }
 
   function formatBsdMatchClock(match) {
