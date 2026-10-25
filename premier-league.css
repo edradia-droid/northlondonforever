@@ -1023,7 +1023,7 @@ body.premier-league-page .main{
 }
 .pl-table .club-live-pill{
   position:absolute;
-  left:0;
+  left:-8px;
   top:8px;
   z-index:1;
   width:40px;
