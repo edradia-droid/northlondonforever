@@ -992,3 +992,27 @@ body.premier-league-page .main{
   .pl-table .club-live-pill{font-size:7px;padding:4px}
   .pl-table .club-live-meta{font-size:8px}
 }
+
+
+/* Keep every club crest and name aligned, whether the row is live or not. */
+.pl-table .club-name-wrap{
+  position:relative;
+}
+.pl-table .club-name-wrap::before{
+  content:"";
+  flex:0 0 40px;
+}
+.pl-table .club-live-pill{
+  position:absolute;
+  left:0;
+  top:8px;
+  z-index:1;
+}
+@media(max-width:600px){
+  .pl-table .club-name-wrap::before{
+    flex-basis:38px;
+  }
+  .pl-table .club-live-pill{
+    top:8px;
+  }
+}
