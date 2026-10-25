@@ -1080,8 +1080,8 @@ body.premier-league-page .main{
 }
 
 
-/* Align the CLUB heading with the crest's current left edge in the standings rows. */
+/* Fine-tune the CLUB heading to match the standings rows' adjusted club layout. */
 .pl-table th.club-col{
   text-align:left;
-  padding-left:39px;
+  padding-left:46px;
 }
