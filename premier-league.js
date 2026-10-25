@@ -151,6 +151,8 @@
       const badge = wrap.querySelector('[data-club-live-badge]');
       const meta = wrap.querySelector('[data-club-live-meta]');
       if (!badge || !meta) return;
+      // Only reserve the extra badge column while this club has a live fixture.
+      wrap.classList.toggle('has-live-match', Boolean(match));
       if (!match) {
         badge.hidden = true;
         meta.hidden = true;
