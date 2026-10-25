@@ -149,7 +149,11 @@
       }
       badge.hidden = false;
       meta.hidden = false;
-      meta.textContent = `vs ${match.opponent} · ${match.minute}`;
+      const clubName = wrap.querySelector('.club-name-text')?.textContent?.trim() || key;
+      const score = Number.isInteger(match.clubScore) && Number.isInteger(match.opponentScore)
+        ? ` · ${match.clubScore} : ${match.opponentScore}`
+        : '';
+      meta.textContent = `${clubName} vs ${match.opponent}${score} · ${match.clock}`;
     });
   }
 
@@ -172,8 +176,21 @@
         const clock = formatBsdMatchClock(match);
         const homeKey = clubKey(match.home_team);
         const awayKey = clubKey(match.away_team);
-        next.set(homeKey, { opponent: match.away_team, minute: clock });
-        next.set(awayKey, { opponent: match.home_team, minute: clock });
+        const homeScore = Number(match.home_score);
+        const awayScore = Number(match.away_score);
+        const hasScores = Number.isInteger(homeScore) && Number.isInteger(awayScore);
+        next.set(homeKey, {
+          opponent: match.away_team,
+          clubScore: hasScores ? homeScore : null,
+          opponentScore: hasScores ? awayScore : null,
+          clock
+        });
+        next.set(awayKey, {
+          opponent: match.home_team,
+          clubScore: hasScores ? awayScore : null,
+          opponentScore: hasScores ? homeScore : null,
+          clock
+        });
       });
       // An empty successful response means there are no archived live matches:
       // replacing the map removes the badge after BSD reports full-time.
