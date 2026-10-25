@@ -994,13 +994,30 @@ body.premier-league-page .main{
 }
 
 
-/* Keep every club crest and name aligned, whether the row is live or not. */
+/* Reserve a dedicated first grid column for the LIVE badge on every row.
+   This keeps crests and club names in the same columns for live and non-live clubs. */
 .pl-table .club-name-wrap{
+  display:grid;
+  grid-template-columns:40px 30px minmax(0,1fr);
+  column-gap:9px;
+  align-items:center;
   position:relative;
 }
 .pl-table .club-name-wrap::before{
   content:"";
-  flex:0 0 40px;
+  grid-column:1;
+  grid-row:1;
+  display:block;
+  width:40px;
+  min-height:1px;
+}
+.pl-table .club-mini-logo{
+  grid-column:2;
+  grid-row:1;
+}
+.pl-table .club-info{
+  grid-column:3;
+  grid-row:1;
 }
 .pl-table .club-live-pill{
   position:absolute;
@@ -1009,8 +1026,12 @@ body.premier-league-page .main{
   z-index:1;
 }
 @media(max-width:600px){
+  .pl-table .club-name-wrap{
+    grid-template-columns:38px 26px minmax(0,1fr);
+    column-gap:7px;
+  }
   .pl-table .club-name-wrap::before{
-    flex-basis:38px;
+    width:38px;
   }
   .pl-table .club-live-pill{
     top:8px;
