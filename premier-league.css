@@ -942,3 +942,146 @@ body.premier-league-page .main{
 .pl-title-race-section{background:radial-gradient(circle at 80% 15%,rgba(55,0,60,.30),transparent 35%),#090909}
 .pl-race-card.arsenal-race-card{border-color:rgba(255,255,255,.22);background:linear-gradient(145deg,rgba(55,0,60,.42),rgba(255,255,255,.03)),#121315}
 @media(max-width:600px){.pl-competition-brand{padding:9px 12px;gap:10px}.pl-competition-brand img{width:86px}.pl-competition-brand span{font-size:8px}}
+
+/* LIVE MATCH INDICATORS IN THE STANDINGS TABLE */
+.pl-table .club-name-wrap{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+}
+.pl-table .club-mini-logo{
+  width:30px;
+  height:30px;
+  flex:0 0 30px;
+  object-fit:contain;
+}
+.pl-table .club-info{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:4px;
+  min-width:0;
+}
+.pl-table .club-name-text{
+  line-height:1.25;
+}
+.pl-table .club-live-pill{
+  flex:0 0 auto;
+  padding:0;
+  background:transparent;
+  color:#ff6979;
+  font-size:8px;
+  font-weight:900;
+  line-height:1;
+  letter-spacing:.4px;
+  white-space:nowrap;
+}
+.pl-table .club-live-meta{
+  color:#ff6979;
+  font-size:9px;
+  font-weight:800;
+  line-height:1.2;
+  white-space:nowrap;
+}
+.pl-table [hidden]{display:none!important}
+@media(max-width:600px){
+  .pl-table td.club-cell{min-width:245px}
+  .pl-table .club-name-wrap{gap:7px}
+  .pl-table .club-mini-logo{width:26px;height:26px;flex-basis:26px}
+  .pl-table .club-live-pill{font-size:7px;padding:4px}
+  .pl-table .club-live-meta{font-size:8px}
+}
+
+
+/* Keep the live-badge column collapsed when a club has no live fixture.
+   Expand it only for live clubs so full-time rows return to their original spacing. */
+/* Reserve one compact badge slot for every club so crests and names
+   never shift when a match starts or finishes. */
+.pl-table .club-name-wrap{
+  display:grid;
+  grid-template-columns:32px 30px minmax(0,1fr);
+  column-gap:7px;
+  align-items:center;
+  position:relative;
+}
+.pl-table .club-name-wrap::before{
+  content:"";
+  grid-column:1;
+  grid-row:1;
+  display:block;
+  width:32px;
+  min-height:1px;
+}
+.pl-table .club-mini-logo{
+  grid-column:2;
+  grid-row:1;
+}
+.pl-table .club-info{
+  grid-column:3;
+  grid-row:1;
+}
+.pl-table .club-live-pill{
+  position:absolute;
+  left:-25px;
+  top:8px;
+  z-index:1;
+  width:40px;
+  justify-content:center;
+  gap:2px;
+  font-size:6.5px;
+  letter-spacing:0;
+}
+@media(max-width:600px){
+  .pl-table .club-name-wrap{
+    grid-template-columns:30px 26px minmax(0,1fr);
+    column-gap:5px;
+  }
+  .pl-table .club-name-wrap::before{
+    width:30px;
+  }
+  .pl-table .club-live-pill{
+    top:8px;
+    width:30px;
+    justify-content:center;
+    gap:2px;
+    font-size:6px;
+    letter-spacing:0;
+  }
+}
+
+
+/* Green styling for the live indicator and fixture details. */
+.pl-table .club-live-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  color:#32d583;
+}
+.pl-table .club-live-pill::before{
+  content:"";
+  display:inline-block;
+  width:5px;
+  height:5px;
+  flex:0 0 5px;
+  border-radius:50%;
+  background:#32d583;
+  box-shadow:0 0 0 2px rgba(50,213,131,.18);
+}
+.pl-table .club-live-meta{
+  color:#32d583;
+}
+@media(max-width:600px){
+  .pl-table .club-live-pill::before{
+    width:5px;
+    height:5px;
+    flex-basis:5px;
+  }
+}
+
+
+/* Fine-tune the CLUB heading to match the standings rows' adjusted club layout. */
+.pl-table th.club-col{
+  text-align:left;
+  padding-left:46px;
+}

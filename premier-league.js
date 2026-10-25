@@ -112,6 +112,112 @@
     };
   }
 
+  // Live match details come only from the narrowly scoped BSD archive RPC.
+  // This is decorative UI and is intentionally separate from standings math.
+  let liveMatchByClub = new Map();
+
+  function clubKey(name) {
+    const key = String(name || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    // BSD archive names can include club prefixes/suffixes that the table labels omit.
+    const aliases = {
+      liverpoolfc: 'liverpool',
+      bournemouth: 'afcbournemouth'
+    };
+    return aliases[key] || key;
+  }
+
+  function formatBsdMatchClock(match) {
+    const period = String(match.period || '').trim().toUpperCase();
+    if (period === 'HT' || period === 'HALF-TIME' || period === 'HALFTIME' || period === 'HALF TIME') return 'HT';
+
+    const minute = Number(match.current_minute);
+    if (!Number.isInteger(minute) || minute < 0) return 'LIVE';
+
+    // Display stoppage time as added minutes (e.g. 45+2′ / 90+2′),
+    // rather than the elapsed total (47′ / 92′).
+    const firstHalf = /FIRST|1ST|1ST_HALF|FIRST_HALF/.test(period);
+    const secondHalf = /SECOND|2ND|2ND_HALF|SECOND_HALF/.test(period);
+    if (firstHalf && minute > 45 && minute <= 60) return `45+${minute - 45}′`;
+    if (secondHalf && minute > 90 && minute <= 120) return `90+${minute - 90}′`;
+
+    return `${minute}′`;
+  }
+
+  function applyLiveFixtureDetails() {
+    if (!tableBody) return;
+    tableBody.querySelectorAll('.club-name-wrap[data-club-key]').forEach(wrap => {
+      const key = wrap.getAttribute('data-club-key');
+      const match = liveMatchByClub.get(key);
+      const badge = wrap.querySelector('[data-club-live-badge]');
+      const meta = wrap.querySelector('[data-club-live-meta]');
+      if (!badge || !meta) return;
+      // Only reserve the extra badge column while this club has a live fixture.
+      wrap.classList.toggle('has-live-match', Boolean(match));
+      if (!match) {
+        badge.hidden = true;
+        meta.hidden = true;
+        meta.textContent = '';
+        return;
+      }
+      badge.hidden = false;
+      badge.textContent = `LIVE · ${match.venue}`;
+      meta.hidden = false;
+      const score = Number.isInteger(match.clubScore) && Number.isInteger(match.opponentScore)
+        ? ` · ${match.clubScore} : ${match.opponentScore}`
+        : '';
+      meta.textContent = `vs ${match.opponent}${score} · ${match.clock}`;
+    });
+  }
+
+  async function loadLiveFixtureDetails() {
+    try {
+      const client =
+        window.nl4Supabase ||
+        window.supabaseClient ||
+        window.NL4_SUPABASE ||
+        window.supabaseDb ||
+        window.db;
+      if (!client || typeof client.rpc !== 'function') return;
+
+      const { data, error } = await client.rpc('nl4_public_live_pl_match_details');
+      if (error) throw error;
+
+      const next = new Map();
+      (Array.isArray(data) ? data : []).forEach(match => {
+        if (!match?.home_team || !match?.away_team) return;
+        const clock = formatBsdMatchClock(match);
+        const homeKey = clubKey(match.home_team);
+        const awayKey = clubKey(match.away_team);
+        const homeScore = match.home_score;
+        const awayScore = match.away_score;
+        const hasScores = Number.isInteger(homeScore) && Number.isInteger(awayScore);
+        next.set(homeKey, {
+          opponent: match.away_team,
+          venue: 'H',
+          clubScore: hasScores ? homeScore : null,
+          opponentScore: hasScores ? awayScore : null,
+          clock
+        });
+        next.set(awayKey, {
+          opponent: match.home_team,
+          venue: 'A',
+          clubScore: hasScores ? awayScore : null,
+          opponentScore: hasScores ? homeScore : null,
+          clock
+        });
+      });
+      // An empty successful response means there are no archived live matches:
+      // replacing the map removes the badge after BSD reports full-time.
+      liveMatchByClub = next;
+      applyLiveFixtureDetails();
+    } catch (error) {
+      // Fail closed: stale live badges should not remain visible if the data source fails.
+      liveMatchByClub = new Map();
+      applyLiveFixtureDetails();
+      console.warn('NL4 live match details unavailable:', error);
+    }
+  }
+
   function updateArsenalSummary(arsenal) {
     if (!arsenal) return;
 
@@ -148,9 +254,13 @@
           <td>${team.position}</td>
 
           <td class="club-cell">
-            <div class="club-name-wrap">
+            <div class="club-name-wrap" data-club-key="${escapeHtml(clubKey(team.club))}">
+              <span class="club-live-pill" data-club-live-badge hidden aria-label="Match live">LIVE</span>
               ${clubLogo(team.club,"club-mini-logo")}
-              <span>${escapeHtml(team.club)}</span>
+              <span class="club-info">
+                <span class="club-name-text">${escapeHtml(team.club)}</span>
+                <span class="club-live-meta" data-club-live-meta hidden></span>
+              </span>
             </div>
           </td>
 
@@ -165,6 +275,8 @@
         </tr>
       `;
     }).join('');
+
+    applyLiveFixtureDetails();
 
     const arsenal = standings.find(team =>
       team.club.toLowerCase() === 'arsenal'
@@ -586,4 +698,6 @@
   // Poll Supabase for newly published live standings; no direct BSD calls are
   // made by the public page. Backend quota protection remains authoritative.
   window.setInterval(loadStandings, 30000);
+  loadLiveFixtureDetails();
+  window.setInterval(loadLiveFixtureDetails, 30000);
 })();
